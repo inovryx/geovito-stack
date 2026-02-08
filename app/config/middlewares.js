@@ -1,0 +1,33 @@
+module.exports = ({ env }) => [
+  'strapi::logger',
+  'global::requestid',
+  'global::accesslog',
+  'strapi::errors',
+  'strapi::security',
+  {
+    name: 'strapi::cors',
+    config: {
+      origin: [
+        'http://localhost:1337',
+        'http://127.0.0.1:1337',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:4321',
+        'http://127.0.0.1:4321',
+        'https://geovito.com',
+        'https://www.geovito.com',
+        /\.geovito\.com$/,
+        /\.pages\.dev$/,
+      ],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      headers: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Request-ID'],
+      keepHeadersOnError: true,
+    },
+  },
+  'strapi::poweredBy',
+  'strapi::query',
+  'strapi::body',
+  'strapi::session',
+  'strapi::favicon',
+  'strapi::public',
+];

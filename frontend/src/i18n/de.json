@@ -1,0 +1,105 @@
+{
+  "site": {
+    "brand": "Geovito"
+  },
+  "nav": {
+    "home": "Startseite",
+    "atlas": "Atlas",
+    "blog": "Blog",
+    "about": "Uber uns",
+    "rules": "Regeln",
+    "help": "Hilfe",
+    "account": "Konto"
+  },
+  "language": {
+    "switcherAria": "Sprachauswahl"
+  },
+  "stateBanner": {
+    "runtime": "Runtime-Ubersetzungsvorschau wird angezeigt. Diese Ansicht wird nicht indexiert.",
+    "fallback": "Vollstandiger Inhalt ist in dieser Sprache noch nicht verfugbar ({language}). Die kanonische complete-Version wird angezeigt.",
+    "incomplete": "Inhalt ist in dieser Sprache nicht complete ({language}, Status: {state}). Die kanonische complete-Version wird angezeigt.",
+    "mock": "Auf dieser Seite werden MOCK DATA angezeigt. Diese Ansicht ist immer noindex.",
+    "canonicalLink": "Zur kanonischen complete-Version"
+  },
+  "home": {
+    "defaultTitle": "Geovito Atlas",
+    "defaultExcerpt": "Strapi-gesteuerte Startseite.",
+    "defaultBody": "Noch kein Inhaltstext verfugbar.",
+    "atlasCountries": "Atlas (Lander)",
+    "blogSection": "Blog",
+    "noCountryDescription": "Noch keine Beschreibung vorhanden.",
+    "noPostSummary": "Noch keine Zusammenfassung vorhanden."
+  },
+  "blog": {
+    "listTitle": "Blog",
+    "listDescription": "Geovito Blog-Liste",
+    "listHint": "Beitrage sind sichtbar, auch wenn Ubersetzungen nicht complete sind; unvollstandige Varianten werden nicht indexiert.",
+    "noBody": "Noch kein Inhaltstext verfugbar."
+  },
+  "atlas": {
+    "list": {
+      "title": "Atlas",
+      "description": "Lander-Einstiegspunkte in der Atlas-Hierarchie.",
+      "empty": "Es sind noch keine Lander verfugbar."
+    },
+    "meta": {
+      "placeId": "place_id",
+      "type": "typ",
+      "country": "land",
+      "languageStatus": "sprachstatus"
+    },
+    "links": {
+      "breadcrumb": "Hierarchie",
+      "parent": "Ubergeordneter Ort",
+      "children": "Untergeordnete Orte",
+      "related": "Verwandte Orte",
+      "relatedBlog": "Verwandte Blogbeitrage",
+      "noParent": "Kein ubergeordneter Ort.",
+      "noChildren": "Keine untergeordneten Orte gefunden.",
+      "noRelated": "Keine verwandten Orte gefunden.",
+      "noRelatedBlog": "Keine verwandten Blogbeitrage gefunden."
+    },
+    "noBody": "Noch kein Inhaltstext verfugbar."
+  },
+  "post": {
+    "meta": {
+      "postId": "post_id",
+      "languageStatus": "sprachstatus"
+    },
+    "noBody": "Noch kein Inhaltstext verfugbar."
+  },
+  "uiPage": {
+    "noBody": "Noch kein Inhaltstext verfugbar.",
+    "notFoundTitle": "Seite nicht verfugbar",
+    "notFoundDescription": "Diese Systemseite ist in Strapi noch nicht vorhanden."
+  },
+  "account": {
+    "title": "Konto",
+    "description": "Die Konto-Shell ist derzeit im Nur-Lesen-Modus aktiv.",
+    "authStateTitle": "Authentifizierungsstatus",
+    "authStateBody": "Aktuell wird die ausgeloggte Shell angezeigt. Offentliche Registrierung und personalisierte Kontodaten sind in dieser Phase bewusst deaktiviert.",
+    "loginCta": "Admin-Login offnen",
+    "rolesTitle": "Rollen-Grenzen",
+    "roles": {
+      "public": "Public: Atlas/Blog/UI lesen und Atlas-Vorschlage senden.",
+      "user": "Authenticated user: fur spatere Blog-Einreichungen und Profilfunktionen reserviert.",
+      "editor": "Editor/Admin: Atlas- und Blog-Inhalte prufen und veroffentlichen."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Editorial-sichere Dashboard-Shell.",
+    "readOnlyTitle": "Nur-Lesen-Modus",
+    "readOnlyBody": "Dashboard-Widgets bleiben bewusst eingeschrankt, bis User-Submission-Features aktiviert werden.",
+    "dataTitle": "Geplante Module",
+    "items": {
+      "blogDrafts": "Meine Blog-Entwurfe (spater)",
+      "submissions": "Meine Atlas-Vorschlage (spater)",
+      "savedPlaces": "Gespeicherte Orte/Watchlist (spater)"
+    },
+    "loginCta": "Zur Konto-Shell"
+  },
+  "actions": {
+    "previewOnDemand": "On-demand-Ubersetzungsvorschau offnen (noindex)"
+  }
+}

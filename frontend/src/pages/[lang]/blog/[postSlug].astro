@@ -1,0 +1,106 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import StateBanner from '../../../components/StateBanner.astro';
+import { resolveTranslation } from '../../../lib/languageState';
+import { getBlogPosts, type BlogPost } from '../../../lib/strapi';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../lib/pageHelpers';
+import { chooseSlugForLanguage } from '../../../lib/slugResolver';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  const posts = await getBlogPosts();
+  const paths: Array<{ params: { lang: string; postSlug: string }; props: { post: BlogPost } }> = [];
+  const seen = new Set<string>();
+
+  for (const post of posts) {
+    for (const language of SUPPORTED_LANGUAGES) {
+      const slug = chooseSlugForLanguage(post.translations, language, post.canonical_language);
+      if (!slug) continue;
+      const key = `${language}:${slug}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      paths.push({
+        params: { lang: language, postSlug: slug },
+        props: { post },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const post = Astro.props.post as BlogPost;
+const runtimeMode = Astro.url.searchParams.get('translate') === '1';
+
+const resolution = resolveTranslation(post.translations, lang, post.canonical_language, runtimeMode);
+if (!resolution.output || !resolution.complete) {
+  throw new Error(`No complete translation for ${post.post_id}`);
+}
+
+const title = resolution.output.seo?.metaTitle || resolution.output.title || post.post_id;
+const description = resolution.output.seo?.metaDescription || resolution.output.excerpt || '';
+const isMockView = post.mock === true;
+
+const canonicalPath =
+  resolution.complete.canonical_path ||
+  pathForLanguage(post.canonical_language, `blog/${resolution.complete.slug || post.post_id}`);
+
+const languagePathMap: Record<string, string> = {};
+for (const language of SUPPORTED_LANGUAGES) {
+  const slug = chooseSlugForLanguage(post.translations, language, post.canonical_language);
+  if (slug) {
+    languagePathMap[language] = pathForLanguage(language, `blog/${slug}`);
+  }
+}
+
+const languageLinks = buildLanguageLinks(languagePathMap);
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(canonicalPath);
+const robots = isMockView ? 'noindex,nofollow' : resolution.indexable ? 'index,follow' : 'noindex,nofollow';
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots={robots}
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  {isMockView ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
+
+  {
+    resolution.isRuntime ? (
+      <StateBanner status="runtime" language={lang} canonicalPath={canonical} ui={ui} />
+    ) : resolution.isFallback ? (
+      <StateBanner status="fallback" language={lang} canonicalPath={canonical} ui={ui} />
+    ) : null
+  }
+
+  <h1>{resolution.output.title}</h1>
+  <p class="small">{resolution.output.excerpt}</p>
+  <p>
+    <strong>{translate(ui, 'post.meta.postId')}:</strong> {post.post_id}
+  </p>
+  <p>
+    <strong>{translate(ui, 'post.meta.languageStatus')}:</strong> {resolution.requested?.status || 'missing'}
+  </p>
+  {resolution.output.body ? <article set:html={resolution.output.body}></article> : <p>{translate(ui, 'post.noBody')}</p>}
+
+  {
+    resolution.requested?.status !== 'complete' && !runtimeMode ? (
+      <p>
+        <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
+      </p>
+    ) : null
+  }
+</MainLayout>

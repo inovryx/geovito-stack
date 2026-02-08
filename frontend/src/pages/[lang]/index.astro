@@ -1,0 +1,138 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import StateBanner from '../../components/StateBanner.astro';
+import { resolveTranslation } from '../../lib/languageState';
+import { getAtlasPlaces, getBlogPosts, getUiPage } from '../../lib/strapi';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../lib/pageHelpers';
+import { getUiMessages, translate } from '../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({
+    params: { lang: language },
+  }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const runtimeMode = Astro.url.searchParams.get('translate') === '1';
+const [homePage, places, posts] = await Promise.all([getUiPage('home'), getAtlasPlaces(), getBlogPosts()]);
+
+const homeResolution = homePage
+  ? resolveTranslation(homePage.translations, lang, homePage.canonical_language, runtimeMode)
+  : null;
+
+const homeContent = homeResolution?.output;
+const hasMockContent =
+  Boolean(homePage?.mock) || places.some((item) => item.mock === true) || posts.some((item) => item.mock === true);
+
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language)));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(homeResolution?.complete?.canonical_path || pathForLanguage(lang));
+
+const countryCards = places
+  .filter((place) => place.place_type === 'country')
+  .map((place) => {
+    const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
+    const requested = resolved.requested;
+    const complete = resolved.complete;
+    const slug = requested?.status === 'complete' ? requested.slug : complete?.slug;
+
+    return {
+      place_id: place.place_id,
+      title: resolved.output?.title || place.place_id,
+      excerpt: resolved.output?.excerpt || translate(ui, 'home.noCountryDescription'),
+      href: slug ? `/${lang}/atlas/${slug}/` : null,
+      status: requested?.status || 'missing',
+    };
+  })
+  .filter((card) => card.href);
+
+const postCards = posts.map((post) => {
+  const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
+  const requested = resolved.requested;
+  const complete = resolved.complete;
+  const slug = requested?.status === 'complete' ? requested.slug : complete?.slug;
+
+  return {
+    post_id: post.post_id,
+    title: resolved.output?.title || post.post_id,
+    excerpt: resolved.output?.excerpt || translate(ui, 'home.noPostSummary'),
+    href: slug ? `/${lang}/blog/${slug}/` : null,
+    status: requested?.status || 'missing',
+  };
+});
+
+const robots = hasMockContent
+  ? 'noindex,nofollow'
+  : homeResolution?.indexable
+    ? 'index,follow'
+    : 'noindex,nofollow';
+const title = homeContent?.seo?.metaTitle || homeContent?.title || translate(ui, 'home.defaultTitle');
+const description = homeContent?.seo?.metaDescription || homeContent?.excerpt || translate(ui, 'home.defaultExcerpt');
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots={robots}
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  {hasMockContent ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
+
+  {
+    homeResolution?.isRuntime ? (
+      <StateBanner status="runtime" language={lang} canonicalPath={canonical} ui={ui} />
+    ) : homeResolution?.isFallback ? (
+      <StateBanner status="fallback" language={lang} canonicalPath={canonical} ui={ui} />
+    ) : null
+  }
+
+  <h1>{homeContent?.title || translate(ui, 'home.defaultTitle')}</h1>
+  <p class="small">{homeContent?.excerpt || translate(ui, 'home.defaultExcerpt')}</p>
+  <p>{homeContent?.body || translate(ui, 'home.defaultBody')}</p>
+
+  <div class="grid two">
+    <section class="card">
+      <h2>{translate(ui, 'home.atlasCountries')}</h2>
+      <div class="grid">
+        {
+          countryCards.map((country) => (
+            <article>
+              <a href={country.href || '#'}>
+                <strong>{country.title}</strong>
+              </a>
+              <span class="status-pill">{country.status}</span>
+              <p class="small">{country.excerpt}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>{translate(ui, 'home.blogSection')}</h2>
+      <div class="grid">
+        {
+          postCards.map((post) => (
+            <article>
+              <a href={post.href || '#'}>
+                <strong>{post.title}</strong>
+              </a>
+              <span class="status-pill">{post.status}</span>
+              <p class="small">{post.excerpt}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+</MainLayout>

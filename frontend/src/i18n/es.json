@@ -1,0 +1,105 @@
+{
+  "site": {
+    "brand": "Geovito"
+  },
+  "nav": {
+    "home": "Inicio",
+    "atlas": "Atlas",
+    "blog": "Blog",
+    "about": "Acerca de",
+    "rules": "Reglas",
+    "help": "Ayuda",
+    "account": "Cuenta"
+  },
+  "language": {
+    "switcherAria": "Selector de idioma"
+  },
+  "stateBanner": {
+    "runtime": "Se muestra la vista previa de traduccion en tiempo real. Esta vista no se indexa.",
+    "fallback": "El contenido complete aun no esta listo en este idioma ({language}). Se muestra la version canonica complete.",
+    "incomplete": "El contenido no esta complete en este idioma ({language}, estado: {state}). Se muestra la version canonica complete.",
+    "mock": "Esta pagina muestra MOCK DATA. Esta vista siempre es noindex.",
+    "canonicalLink": "Ir a la version canonica complete"
+  },
+  "home": {
+    "defaultTitle": "Geovito Atlas",
+    "defaultExcerpt": "Pagina de inicio basada en Strapi.",
+    "defaultBody": "Aun no hay contenido.",
+    "atlasCountries": "Atlas (Paises)",
+    "blogSection": "Blog",
+    "noCountryDescription": "Aun no hay descripcion.",
+    "noPostSummary": "Aun no hay resumen."
+  },
+  "blog": {
+    "listTitle": "Blog",
+    "listDescription": "Lista de blog de Geovito",
+    "listHint": "Las entradas son visibles aunque la traduccion no sea complete; las variantes incompletas no se indexan.",
+    "noBody": "Aun no hay contenido."
+  },
+  "atlas": {
+    "list": {
+      "title": "Atlas",
+      "description": "Puntos de entrada por pais dentro de la jerarquia Atlas.",
+      "empty": "Todavia no hay paises disponibles."
+    },
+    "meta": {
+      "placeId": "place_id",
+      "type": "tipo",
+      "country": "pais",
+      "languageStatus": "estado del idioma"
+    },
+    "links": {
+      "breadcrumb": "Jerarquia",
+      "parent": "Lugar padre",
+      "children": "Lugares hijos",
+      "related": "Lugares relacionados",
+      "relatedBlog": "Articulos de blog relacionados",
+      "noParent": "Sin lugar padre.",
+      "noChildren": "No se encontraron lugares hijos.",
+      "noRelated": "No se encontraron lugares relacionados.",
+      "noRelatedBlog": "No se encontraron articulos de blog relacionados."
+    },
+    "noBody": "Aun no hay contenido."
+  },
+  "post": {
+    "meta": {
+      "postId": "post_id",
+      "languageStatus": "estado del idioma"
+    },
+    "noBody": "Aun no hay contenido."
+  },
+  "uiPage": {
+    "noBody": "Aun no hay contenido.",
+    "notFoundTitle": "Pagina no disponible",
+    "notFoundDescription": "Esta pagina del sistema aun no existe en Strapi."
+  },
+  "account": {
+    "title": "Cuenta",
+    "description": "El shell de cuenta esta activo en modo solo lectura por ahora.",
+    "authStateTitle": "Estado de autenticacion",
+    "authStateBody": "Actualmente estas viendo el shell sin iniciar sesion. El registro publico y los datos personalizados de cuenta estan desactivados en esta fase.",
+    "loginCta": "Abrir login de admin",
+    "rolesTitle": "Limites de roles",
+    "roles": {
+      "public": "Public: leer Atlas/Blog/UI y enviar sugerencias de Atlas.",
+      "user": "Authenticated user: reservado para envios de blog y funciones de perfil futuras.",
+      "editor": "Editor/Admin: revisar y publicar contenido de Atlas y Blog."
+    }
+  },
+  "dashboard": {
+    "title": "Panel",
+    "description": "Shell de panel seguro para flujo editorial.",
+    "readOnlyTitle": "Modo solo lectura",
+    "readOnlyBody": "Los widgets del panel se mantienen limitados hasta que se habiliten funciones de envio de usuarios.",
+    "dataTitle": "Modulos planificados",
+    "items": {
+      "blogDrafts": "Mis borradores de blog (futuro)",
+      "submissions": "Mis sugerencias de Atlas (futuro)",
+      "savedPlaces": "Lugares guardados/lista (futuro)"
+    },
+    "loginCta": "Ir al shell de cuenta"
+  },
+  "actions": {
+    "previewOnDemand": "Abrir vista previa de traduccion bajo demanda (noindex)"
+  }
+}

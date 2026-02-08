@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+!.env.prod.example
+!.env.import.example
+**/node_modules/
+frontend/dist/
+frontend/.astro/
+app/build/
+artifacts/
+logs/**/*.log
+logs/**/*.jsonl
+!logs/**/.gitkeep

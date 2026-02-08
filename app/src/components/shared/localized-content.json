@@ -1,0 +1,56 @@
+{
+  "collectionName": "components_shared_localized_contents",
+  "info": {
+    "displayName": "Localized Content",
+    "icon": "translate",
+    "description": "Language-scoped content with translation state"
+  },
+  "options": {},
+  "attributes": {
+    "language": {
+      "type": "enumeration",
+      "enum": ["en", "de", "es", "ru", "zh-cn"],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["missing", "draft", "complete"],
+      "default": "missing",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "slug": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "excerpt": {
+      "type": "text",
+      "maxLength": 320
+    },
+    "body": {
+      "type": "richtext"
+    },
+    "last_reviewed_at": {
+      "type": "datetime"
+    },
+    "canonical_path": {
+      "type": "string"
+    },
+    "runtime_translation": {
+      "type": "boolean",
+      "default": false
+    },
+    "indexable": {
+      "type": "boolean",
+      "default": false
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://geovito.com/search/contracts/atlas-document.v1.schema.json",
+  "title": "Atlas Search Document v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "document_id",
+    "place_id",
+    "place_type",
+    "language",
+    "canonical_language",
+    "title",
+    "slug",
+    "url",
+    "country_code",
+    "is_indexable"
+  ],
+  "properties": {
+    "domain": { "type": "string", "const": "atlas" },
+    "document_id": { "type": "string" },
+    "place_id": { "type": "string" },
+    "place_type": {
+      "type": "string",
+      "enum": ["country", "admin_area", "city", "district", "poi"]
+    },
+    "language": { "type": "string" },
+    "canonical_language": { "type": "string" },
+    "title": { "type": "string" },
+    "slug": { "type": "string" },
+    "url": { "type": "string" },
+    "country_code": { "type": "string" },
+    "parent_place_id": { "type": ["string", "null"] },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "normalized_tokens": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "is_indexable": { "type": "boolean" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

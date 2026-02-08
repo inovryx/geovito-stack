@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "import_batches",
+  "info": {
+    "singularName": "import-batch",
+    "pluralName": "import-batches",
+    "displayName": "Import Batch",
+    "description": "Import contract metadata and idempotency records"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "batch_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "idempotency_key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "contract_version": {
+      "type": "string",
+      "required": true,
+      "default": "atlas-import.v1"
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "default": "gazetteer-upstream"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["received", "validated", "applied", "failed"],
+      "default": "received",
+      "required": true
+    },
+    "dry_run": {
+      "type": "boolean",
+      "default": true
+    },
+    "safe_update_fields": {
+      "type": "json"
+    },
+    "stats": {
+      "type": "json"
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_posts",
+  "info": {
+    "singularName": "blog-post",
+    "pluralName": "blog-posts",
+    "displayName": "Blog Post",
+    "description": "Editorial blog posts independent from Atlas with optional place links"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "post_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "published_on": {
+      "type": "date"
+    },
+    "canonical_language": {
+      "type": "enumeration",
+      "enum": ["en", "de", "es", "ru", "zh-cn"],
+      "default": "en",
+      "required": true
+    },
+    "translations": {
+      "type": "component",
+      "repeatable": true,
+      "required": true,
+      "component": "shared.localized-content"
+    },
+    "hero_image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "related_places": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::atlas-place.atlas-place"
+    },
+    "related_place_refs": {
+      "type": "json"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

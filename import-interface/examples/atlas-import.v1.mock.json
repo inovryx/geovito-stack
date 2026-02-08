@@ -1,0 +1,55 @@
+{
+  "contract_version": "atlas-import.v1",
+  "batch": {
+    "batch_id": "atlas-2026-02-08-mock",
+    "idempotency_key": "atlas-2026-02-08-mock",
+    "source": "gazetteer-upstream",
+    "created_at": "2026-02-08T10:00:00.000Z",
+    "dry_run": true
+  },
+  "places": [
+    {
+      "place_id": "country-de",
+      "place_type": "country",
+      "country_code": "DE",
+      "parent_place_id": null,
+      "admin_level": 2,
+      "coordinates": {
+        "latitude": 51.1657,
+        "longitude": 10.4515
+      },
+      "canonical_language": "en",
+      "import_payload_version": "v1.0.0",
+      "import_checksum": "sha256:demo-country-de",
+      "translations": {
+        "en": {
+          "status": "complete",
+          "title": "Germany",
+          "slug": "germany",
+          "excerpt": "Country profile"
+        },
+        "de": {
+          "status": "complete",
+          "title": "Deutschland",
+          "slug": "deutschland",
+          "excerpt": "Landerprofil"
+        },
+        "es": {
+          "status": "draft",
+          "title": "Alemania",
+          "slug": "alemania"
+        },
+        "ru": {
+          "status": "missing"
+        },
+        "zh-cn": {
+          "status": "missing"
+        }
+      },
+      "raw": {
+        "wikidata": "Q183",
+        "osm_relation": 51477
+      }
+    }
+  ]
+}

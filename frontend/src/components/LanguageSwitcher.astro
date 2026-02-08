@@ -1,0 +1,30 @@
+---
+import { translate } from '../lib/uiLanguage';
+
+interface Props {
+  currentLanguage: string;
+  languageLinks: Record<string, string>;
+  ui: Record<string, unknown>;
+}
+
+const { currentLanguage, languageLinks, ui } = Astro.props;
+const languages = ['en', 'de', 'es', 'ru', 'zh-cn'];
+---
+
+<nav aria-label={translate(ui, 'language.switcherAria')} class="language-switcher">
+  <ul>
+    {
+      languages.map((language) => (
+        <li>
+          <a
+            href={languageLinks[language] || `/${language}/`}
+            class={language === currentLanguage ? 'is-active' : ''}
+            hreflang={language === 'zh-cn' ? 'zh-CN' : language}
+          >
+            {language}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

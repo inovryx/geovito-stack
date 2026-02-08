@@ -1,0 +1,26 @@
+{
+  "version": "safe-update-fields.v1",
+  "description": "Future import can only touch explicitly safe Atlas fields.",
+  "rules": {
+    "immutable": [
+      "place_id",
+      "canonical_language"
+    ],
+    "safe_update_fields": [
+      "translations[].title",
+      "translations[].excerpt",
+      "translations[].body",
+      "translations[].status",
+      "translations[].seo",
+      "country_code",
+      "parent_place_id",
+      "lat",
+      "lng",
+      "admin_level",
+      "import_payload_version",
+      "import_checksum",
+      "updatedAt"
+    ],
+    "never_overwrite_manual_override": true
+  }
+}

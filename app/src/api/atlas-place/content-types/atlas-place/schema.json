@@ -1,0 +1,91 @@
+{
+  "kind": "collectionType",
+  "collectionName": "atlas_places",
+  "info": {
+    "singularName": "atlas-place",
+    "pluralName": "atlas-places",
+    "displayName": "Atlas Place",
+    "description": "Canonical Atlas entities keyed by place_id"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "place_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "place_type": {
+      "type": "enumeration",
+      "enum": ["country", "admin_area", "city", "district", "poi"],
+      "required": true
+    },
+    "slug": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "country_code": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 2
+    },
+    "admin_level": {
+      "type": "integer",
+      "min": 0,
+      "max": 12
+    },
+    "lat": {
+      "type": "decimal"
+    },
+    "lng": {
+      "type": "decimal"
+    },
+    "latitude": {
+      "type": "decimal"
+    },
+    "longitude": {
+      "type": "decimal"
+    },
+    "canonical_language": {
+      "type": "enumeration",
+      "enum": ["en", "de", "es", "ru", "zh-cn"],
+      "default": "en",
+      "required": true
+    },
+    "translations": {
+      "type": "component",
+      "repeatable": true,
+      "required": true,
+      "component": "shared.localized-content"
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    },
+    "import_payload_version": {
+      "type": "string"
+    },
+    "import_checksum": {
+      "type": "string"
+    },
+    "parent_place_id": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "parent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::atlas-place.atlas-place",
+      "inversedBy": "children"
+    },
+    "children": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::atlas-place.atlas-place",
+      "mappedBy": "parent"
+    }
+  }
+}

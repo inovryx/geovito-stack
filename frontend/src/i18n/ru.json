@@ -1,0 +1,105 @@
+{
+  "site": {
+    "brand": "Geovito"
+  },
+  "nav": {
+    "home": "Glavnaya",
+    "atlas": "Atlas",
+    "blog": "Blog",
+    "about": "O proekte",
+    "rules": "Pravila",
+    "help": "Pomoshch",
+    "account": "Account"
+  },
+  "language": {
+    "switcherAria": "Vybor yazyka"
+  },
+  "stateBanner": {
+    "runtime": "Pokazyvaetsya prevyu runtime-perevoda. Eta versiya ne indeksiruetsya.",
+    "fallback": "Polnyy complete-kontent na etom yazyke poka nedostupen ({language}). Pokazyvaetsya kanonicheskaya complete-versiya.",
+    "incomplete": "Kontent na etom yazyke ne complete ({language}, status: {state}). Pokazyvaetsya kanonicheskaya complete-versiya.",
+    "mock": "Na etoy stranitse pokazany MOCK DATA. Eta versiya vsegda noindex.",
+    "canonicalLink": "Pereyti k kanonicheskoy complete-versii"
+  },
+  "home": {
+    "defaultTitle": "Geovito Atlas",
+    "defaultExcerpt": "Glavnaya stranitsa na osnove Strapi.",
+    "defaultBody": "Kontent poka otsutstvuet.",
+    "atlasCountries": "Atlas (Strany)",
+    "blogSection": "Blog",
+    "noCountryDescription": "Opisanie poka otsutstvuet.",
+    "noPostSummary": "Kratkoe opisanie poka otsutstvuet."
+  },
+  "blog": {
+    "listTitle": "Blog",
+    "listDescription": "Spisok bloga Geovito",
+    "listHint": "Posty vidny, dazhe esli perevod ne complete; nepolnye varianty ne indeksiruyutsya.",
+    "noBody": "Kontent poka otsutstvuet."
+  },
+  "atlas": {
+    "list": {
+      "title": "Atlas",
+      "description": "Tochki vhoda po stranam v iyerarkhii Atlas.",
+      "empty": "Stranitsy stran poka nedostupny."
+    },
+    "meta": {
+      "placeId": "place_id",
+      "type": "tip",
+      "country": "strana",
+      "languageStatus": "status yazyka"
+    },
+    "links": {
+      "breadcrumb": "Iyerarkhiya",
+      "parent": "Roditelskiy obekt",
+      "children": "Dochernie obekty",
+      "related": "Svyazannye obekty",
+      "relatedBlog": "Svyazannye blog-posty",
+      "noParent": "Roditelskiy obekt otsutstvuet.",
+      "noChildren": "Dochernie obekty ne naydeny.",
+      "noRelated": "Svyazannye obekty ne naydeny.",
+      "noRelatedBlog": "Svyazannye blog-posty ne naydeny."
+    },
+    "noBody": "Kontent poka otsutstvuet."
+  },
+  "post": {
+    "meta": {
+      "postId": "post_id",
+      "languageStatus": "status yazyka"
+    },
+    "noBody": "Kontent poka otsutstvuet."
+  },
+  "uiPage": {
+    "noBody": "Kontent poka otsutstvuet.",
+    "notFoundTitle": "Stranitsa nedostupna",
+    "notFoundDescription": "Etoy sistemnoy stranitsy poka net v Strapi."
+  },
+  "account": {
+    "title": "Account",
+    "description": "Obolochka akkaunta seychas rabotaet v read-only rezhime.",
+    "authStateTitle": "Status avtorizatsii",
+    "authStateBody": "Seychas pokazana versiya bez vhoda. Public-registratsiya i personalnye dannye akkaunta soznatelno otklyucheny na etom etape.",
+    "loginCta": "Otkryt admin-login",
+    "rolesTitle": "Granitsy roley",
+    "roles": {
+      "public": "Public: chtenie Atlas/Blog/UI i otpravka Atlas-predlozheniy.",
+      "user": "Authenticated user: rezerv dlya budushchikh blog-submission i profile-funktsiy.",
+      "editor": "Editor/Admin: proverka i publikatsiya Atlas i Blog kontenta."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Bezopasnaya dashboard-obolochka dlya editorial potoka.",
+    "readOnlyTitle": "Rezhim tolko chteniya",
+    "readOnlyBody": "Vidzhety dashboard ostayutsya ogranichennymi, poka user-submission funktsii ne vklyucheny.",
+    "dataTitle": "Planiruemye moduli",
+    "items": {
+      "blogDrafts": "Moi blog-chernoviki (future)",
+      "submissions": "Moi Atlas-predlozheniya (future)",
+      "savedPlaces": "Sokhranennye mesta/watchlist (future)"
+    },
+    "loginCta": "Pereyti v account-shell"
+  },
+  "actions": {
+    "previewOnDemand": "Otkryt prevyu perevoda po zaprosu (noindex)"
+  }
+}

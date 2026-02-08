@@ -1,0 +1,26 @@
+---
+import { translate } from '../lib/uiLanguage';
+
+interface Props {
+  currentLanguage: string;
+  ui: Record<string, unknown>;
+}
+
+const { currentLanguage, ui } = Astro.props;
+const base = `/${currentLanguage}`;
+---
+
+<header class="site-header">
+  <a class="brand" href={`${base}/`}>{translate(ui, 'site.brand')}</a>
+  <nav aria-label="Main navigation">
+    <ul>
+      <li><a href={`${base}/`}>{translate(ui, 'nav.home')}</a></li>
+      <li><a href={`${base}/atlas/`}>{translate(ui, 'nav.atlas')}</a></li>
+      <li><a href={`${base}/blog/`}>{translate(ui, 'nav.blog')}</a></li>
+      <li><a href={`${base}/about/`}>{translate(ui, 'nav.about')}</a></li>
+      <li><a href={`${base}/rules/`}>{translate(ui, 'nav.rules')}</a></li>
+      <li><a href={`${base}/help/`}>{translate(ui, 'nav.help')}</a></li>
+      <li><a href={`${base}/account/`}>{translate(ui, 'nav.account')}</a></li>
+    </ul>
+  </nav>
+</header>

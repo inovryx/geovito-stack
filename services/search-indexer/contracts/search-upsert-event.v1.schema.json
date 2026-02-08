@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://geovito.com/search/contracts/search-upsert-event.v1.schema.json",
+  "title": "Search Upsert Event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "domain", "document", "occurred_at"],
+  "properties": {
+    "event_id": { "type": "string" },
+    "event_type": {
+      "type": "string",
+      "enum": ["upsert", "delete", "reindex"]
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["atlas", "blog", "system"]
+    },
+    "document": { "type": "object" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "idempotency_key": { "type": ["string", "null"] }
+  }
+}

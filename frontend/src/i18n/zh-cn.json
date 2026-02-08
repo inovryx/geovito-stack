@@ -1,0 +1,105 @@
+{
+  "site": {
+    "brand": "Geovito"
+  },
+  "nav": {
+    "home": "Shouye",
+    "atlas": "Atlas",
+    "blog": "Boke",
+    "about": "Guanyu",
+    "rules": "Guize",
+    "help": "Bangzhu",
+    "account": "Zhanghu"
+  },
+  "language": {
+    "switcherAria": "Yuyan xuanze"
+  },
+  "stateBanner": {
+    "runtime": "Dangqian xianshi runtime fanyi yulan, ci shitu buhui bei shoulu.",
+    "fallback": "Gai yuyan de complete neirong zanwei jiuxu ({language}), xianshi canon complete banben.",
+    "incomplete": "Gai yuyan neirong wei complete ({language}, zhuangtai: {state}), xianshi canon complete banben.",
+    "mock": "Dangqian yemian wei MOCK DATA, ci shitu yongyuan noindex.",
+    "canonicalLink": "Qianwang canon complete banben"
+  },
+  "home": {
+    "defaultTitle": "Geovito Atlas",
+    "defaultExcerpt": "You Strapi qudong de shouye.",
+    "defaultBody": "Zanwu zhengwen neirong.",
+    "atlasCountries": "Atlas (Guojia)",
+    "blogSection": "Boke",
+    "noCountryDescription": "Zanwu miaoshu.",
+    "noPostSummary": "Zanwu zhaiyao."
+  },
+  "blog": {
+    "listTitle": "Boke",
+    "listDescription": "Geovito boke liebiao",
+    "listHint": "Jishi fanyi wei complete ye keyi xianshi; fei complete banben buhui bei shoulu.",
+    "noBody": "Zanwu zhengwen neirong."
+  },
+  "atlas": {
+    "list": {
+      "title": "Atlas",
+      "description": "Atlas cengji zhong de guojia rukou yemian.",
+      "empty": "Zanwu guojia nei rong."
+    },
+    "meta": {
+      "placeId": "place_id",
+      "type": "leixing",
+      "country": "guojia",
+      "languageStatus": "yuyan zhuangtai"
+    },
+    "links": {
+      "breadcrumb": "cengji",
+      "parent": "fujidi",
+      "children": "zididi",
+      "related": "xiangguan didian",
+      "relatedBlog": "xiangguan boke",
+      "noParent": "zanwu fujidi.",
+      "noChildren": "wei zhaodao zididi.",
+      "noRelated": "wei zhaodao xiangguan didian.",
+      "noRelatedBlog": "wei zhaodao xiangguan boke."
+    },
+    "noBody": "Zanwu zhengwen neirong."
+  },
+  "post": {
+    "meta": {
+      "postId": "post_id",
+      "languageStatus": "yuyan zhuangtai"
+    },
+    "noBody": "Zanwu zhengwen neirong."
+  },
+  "uiPage": {
+    "noBody": "Zanwu zhengwen neirong.",
+    "notFoundTitle": "Yemian zanbuke yong",
+    "notFoundDescription": "Gai xitong yemian zai Strapi zhong shangwei cunzai."
+  },
+  "account": {
+    "title": "Zhanghu",
+    "description": "Dangqian zhanghu ke yong dan wei zhidu mode.",
+    "authStateTitle": "denglu zhuangtai",
+    "authStateBody": "Dangqian wei weidenglu shell. Ben jieduan gongkai zhuce he geren zhanghu shuju jun wei guanbi.",
+    "loginCta": "dakai admin denglu",
+    "rolesTitle": "juese bianjie",
+    "roles": {
+      "public": "Public: yuedu Atlas/Blog/UI bing tijiao Atlas jianyi.",
+      "user": "Authenticated user: yuliu gei weilai boke tijiao he profile gongneng.",
+      "editor": "Editor/Admin: shenhe bing fabu Atlas yu Blog neirong."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Mianxiang bianji liucheng de anquan dashboard shell.",
+    "readOnlyTitle": "zhi du mode",
+    "readOnlyBody": "zai yonghu tijiao gongneng qiyong qian, dashboard zujian baochi jianhua.",
+    "dataTitle": "jihua zhong de mokuai",
+    "items": {
+      "blogDrafts": "wo de boke caogao (future)",
+      "submissions": "wo de Atlas jianyi (future)",
+      "savedPlaces": "shoucang didian/watchlist (future)"
+    },
+    "loginCta": "qianwang zhanghu shell"
+  },
+  "actions": {
+    "previewOnDemand": "Dakai anxu fanyi yulan (noindex)"
+  }
+}

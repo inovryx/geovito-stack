@@ -1,0 +1,146 @@
+import type { LocalizedContent } from './languageState';
+
+export type AtlasPlace = {
+  id: number;
+  documentId?: string;
+  place_id: string;
+  place_type: 'country' | 'admin_area' | 'city' | 'district' | 'poi';
+  slug?: string;
+  parent_place_id?: string | null;
+  country_code: string;
+  admin_level?: number;
+  lat?: number;
+  lng?: number;
+  latitude?: number;
+  longitude?: number;
+  canonical_language: 'en' | 'de' | 'es' | 'ru' | 'zh-cn';
+  translations: LocalizedContent[];
+  mock: boolean;
+  parent?: {
+    id: number;
+    place_id: string;
+  } | null;
+};
+
+export type BlogPost = {
+  id: number;
+  documentId?: string;
+  post_id: string;
+  canonical_language: 'en' | 'de' | 'es' | 'ru' | 'zh-cn';
+  translations: LocalizedContent[];
+  related_place_refs?: string[];
+  related_places?: Array<{
+    id: number;
+    place_id: string;
+  }>;
+  published_on?: string;
+  mock: boolean;
+  tags?: string[];
+};
+
+export type UiPage = {
+  id: number;
+  documentId?: string;
+  page_key: string;
+  canonical_language: 'en' | 'de' | 'es' | 'ru' | 'zh-cn';
+  translations: LocalizedContent[];
+  mock: boolean;
+};
+
+const STRAPI_URL =
+  (import.meta.env.STRAPI_URL as string | undefined) ||
+  (import.meta.env.PUBLIC_STRAPI_URL as string | undefined) ||
+  'http://127.0.0.1:1337';
+
+const STRAPI_API_TOKEN = (import.meta.env.STRAPI_API_TOKEN as string | undefined) || '';
+let atlasPlacesCachePromise: Promise<AtlasPlace[]> | null = null;
+
+const normalizeBaseUrl = (baseUrl: string) => baseUrl.replace(/\/$/, '');
+
+const asEntity = <T extends Record<string, any>>(item: any): T => {
+  if (!item) return item;
+  if (item.attributes) {
+    return {
+      id: item.id,
+      documentId: item.documentId,
+      ...item.attributes,
+    } as T;
+  }
+  return item as T;
+};
+
+const asEntityArray = <T extends Record<string, any>>(payload: any): T[] => {
+  if (!payload?.data || !Array.isArray(payload.data)) return [];
+  return payload.data.map((entry: any) => asEntity<T>(entry));
+};
+
+const asSingleEntity = <T extends Record<string, any>>(payload: any): T | null => {
+  if (!payload?.data) return null;
+  if (Array.isArray(payload.data)) {
+    const first = payload.data[0];
+    return first ? asEntity<T>(first) : null;
+  }
+  return asEntity<T>(payload.data);
+};
+
+const fetchJson = async (path: string, params: Record<string, string> = {}) => {
+  const url = new URL(`${normalizeBaseUrl(STRAPI_URL)}${path}`);
+
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+  };
+
+  if (STRAPI_API_TOKEN) {
+    headers.Authorization = `Bearer ${STRAPI_API_TOKEN}`;
+  }
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    throw new Error(`Strapi request failed (${response.status}): ${url.toString()}`);
+  }
+
+  return response.json();
+};
+
+export const getAtlasPlaces = async () => {
+  if (!atlasPlacesCachePromise) {
+    atlasPlacesCachePromise = (async () => {
+      const payload = await fetchJson('/api/atlas-places', {
+        'populate[0]': 'translations',
+        'populate[1]': 'parent',
+        'pagination[pageSize]': '400',
+      });
+
+      return asEntityArray<AtlasPlace>(payload);
+    })();
+  }
+
+  return atlasPlacesCachePromise;
+};
+
+export const getBlogPosts = async () => {
+  const payload = await fetchJson('/api/blog-posts', {
+    'populate[0]': 'translations',
+    'populate[1]': 'related_places',
+    'pagination[pageSize]': '200',
+    'filters[publishedAt][$notNull]': 'true',
+    sort: 'published_on:desc',
+  });
+
+  return asEntityArray<BlogPost>(payload);
+};
+
+export const getUiPage = async (pageKey: string) => {
+  const payload = await fetchJson('/api/ui-pages', {
+    'populate[0]': 'translations',
+    'filters[page_key][$eq]': pageKey,
+    'pagination[pageSize]': '1',
+  });
+
+  return asSingleEntity<UiPage>(payload);
+};

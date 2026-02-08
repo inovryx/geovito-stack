@@ -1,0 +1,49 @@
+---
+const fallbackLanguage = 'en';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Geovito</title>
+    <meta http-equiv="refresh" content={`0;url=/${fallbackLanguage}/`} />
+  </head>
+  <body>
+    <script is:inline>
+      (() => {
+        const supported = ['en', 'de', 'es', 'ru', 'zh-cn'];
+
+        const normalize = (value) => {
+          if (!value || typeof value !== 'string') return null;
+          const lowered = value.trim().toLowerCase();
+
+          if (supported.includes(lowered)) return lowered;
+          if (lowered.startsWith('zh')) return 'zh-cn';
+
+          const primary = lowered.split('-')[0];
+          if (supported.includes(primary)) return primary;
+
+          return null;
+        };
+
+        let selected = null;
+        try {
+          selected = normalize(localStorage.getItem('geovito.ui_lang'));
+        } catch {
+          selected = null;
+        }
+
+        const browserCandidates = Array.isArray(navigator.languages) && navigator.languages.length
+          ? navigator.languages
+          : [navigator.language];
+
+        const browserLanguage = browserCandidates.map(normalize).find(Boolean) || null;
+        const target = selected || browserLanguage || 'en';
+
+        window.location.replace(`/${target}/`);
+      })();
+    </script>
+  </body>
+</html>

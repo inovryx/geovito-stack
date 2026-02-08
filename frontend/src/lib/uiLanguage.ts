@@ -1,0 +1,79 @@
+import en from '../i18n/en.json';
+import de from '../i18n/de.json';
+import es from '../i18n/es.json';
+import ru from '../i18n/ru.json';
+import zhCn from '../i18n/zh-cn.json';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SiteLanguage } from './languages';
+
+type Dictionary = Record<string, unknown>;
+
+const dictionaries: Record<SiteLanguage, Dictionary> = {
+  en,
+  de,
+  es,
+  ru,
+  'zh-cn': zhCn,
+};
+
+const getByPath = (dictionary: Dictionary, path: string): unknown => {
+  return path.split('.').reduce<unknown>((current, part) => {
+    if (!current || typeof current !== 'object') return undefined;
+    return (current as Record<string, unknown>)[part];
+  }, dictionary);
+};
+
+const interpolate = (text: string, params: Record<string, string | number> = {}) =>
+  text.replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => String(params[key] ?? `{${key}}`));
+
+export const getUiMessages = (language: SiteLanguage): Dictionary => {
+  return dictionaries[language] || dictionaries[DEFAULT_LANGUAGE];
+};
+
+export const translate = (
+  messages: Dictionary,
+  key: string,
+  params: Record<string, string | number> = {},
+  fallback = key
+) => {
+  const value = getByPath(messages, key);
+
+  if (typeof value === 'string') {
+    return interpolate(value, params);
+  }
+
+  const fallbackValue = getByPath(dictionaries[DEFAULT_LANGUAGE], key);
+  if (typeof fallbackValue === 'string') {
+    return interpolate(fallbackValue, params);
+  }
+
+  return fallback;
+};
+
+const normalizeLanguageCode = (value: string | null | undefined): SiteLanguage | null => {
+  if (!value) return null;
+  const normalized = value.trim().toLowerCase();
+
+  if (SUPPORTED_LANGUAGES.includes(normalized as SiteLanguage)) {
+    return normalized as SiteLanguage;
+  }
+
+  if (normalized.startsWith('zh')) {
+    return 'zh-cn';
+  }
+
+  const primary = normalized.split('-')[0];
+  if (SUPPORTED_LANGUAGES.includes(primary as SiteLanguage)) {
+    return primary as SiteLanguage;
+  }
+
+  return null;
+};
+
+export const resolvePreferredLanguage = (candidateLanguages: Array<string | null | undefined>) => {
+  for (const candidate of candidateLanguages) {
+    const normalized = normalizeLanguageCode(candidate);
+    if (normalized) return normalized;
+  }
+
+  return DEFAULT_LANGUAGE;
+};

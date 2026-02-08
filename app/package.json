@@ -1,0 +1,38 @@
+{
+  "name": "travel-atlas-cms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Strapi application",
+  "scripts": {
+    "build": "strapi build",
+    "console": "strapi console",
+    "deploy": "strapi deploy",
+    "dev": "strapi develop",
+    "develop": "strapi develop",
+    "mock:seed": "node scripts/manage_mock_data.js seed",
+    "mock:clear": "node scripts/manage_mock_data.js clear",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "upgrade": "npx @strapi/upgrade latest",
+    "upgrade:dry": "npx @strapi/upgrade latest --dry"
+  },
+  "dependencies": {
+    "@strapi/plugin-cloud": "5.33.2",
+    "@strapi/plugin-users-permissions": "5.33.2",
+    "@strapi/strapi": "5.33.2",
+    "better-sqlite3": "12.4.1",
+    "pg": "^8.17.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "styled-components": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0 <=24.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "be943064-da63-4859-b663-5dcc83e89ef1",
+    "installId": "d037c6ba34a6d93d993a76acc94a9bbe69681683c3227a34ab93eae4e1c902ab"
+  }
+}

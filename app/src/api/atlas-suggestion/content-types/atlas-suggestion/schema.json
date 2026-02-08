@@ -1,0 +1,92 @@
+{
+  "kind": "collectionType",
+  "collectionName": "atlas_suggestions",
+  "info": {
+    "singularName": "atlas-suggestion",
+    "pluralName": "atlas-suggestions",
+    "displayName": "Atlas Suggestion",
+    "description": "User suggestions reviewed by editorial workflow before Atlas changes"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "suggestion_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["new", "triaged", "accepted", "rejected", "implemented"],
+      "default": "new",
+      "required": true
+    },
+    "suggestion_type": {
+      "type": "enumeration",
+      "enum": ["data_error", "missing_place", "hierarchy", "translation", "other"],
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    },
+    "description": {
+      "type": "text",
+      "required": true,
+      "maxLength": 4000
+    },
+    "target_place": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::atlas-place.atlas-place"
+    },
+    "target_place_ref": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "evidence_urls": {
+      "type": "json"
+    },
+    "language": {
+      "type": "string",
+      "required": true,
+      "default": "en",
+      "maxLength": 16
+    },
+    "submitted_by_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "submitted_by_email": {
+      "type": "email"
+    },
+    "submitted_by_display_name": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "moderation_notes": {
+      "type": "text"
+    },
+    "reviewed_by_admin_id": {
+      "type": "integer"
+    },
+    "reviewed_by_admin_email": {
+      "type": "email"
+    },
+    "reviewed_at": {
+      "type": "datetime"
+    },
+    "source_ip_hash": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

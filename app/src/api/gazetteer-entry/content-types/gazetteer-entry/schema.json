@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gazetteer_entries",
+  "info": {
+    "singularName": "gazetteer-entry",
+    "pluralName": "gazetteer-entries",
+    "displayName": "Gazetteer Entry",
+    "description": "Dormant landing table for upstream gazetteer payloads"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "record_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "place_id": {
+      "type": "string",
+      "required": true
+    },
+    "place_type": {
+      "type": "enumeration",
+      "enum": ["country", "admin_area", "city", "district"],
+      "required": true
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": ["wikidata", "osm", "manual", "mock"],
+      "required": true
+    },
+    "source_ref": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "json"
+    },
+    "payload_hash": {
+      "type": "string"
+    },
+    "last_seen_at": {
+      "type": "datetime"
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

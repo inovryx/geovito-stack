@@ -1,0 +1,85 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import StateBanner from '../../../components/StateBanner.astro';
+import { resolveTranslation } from '../../../lib/languageState';
+import { getAtlasPlaces } from '../../../lib/strapi';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { chooseSlugForLanguage } from '../../../lib/slugResolver';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({
+    params: { lang: language },
+  }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const places = await getAtlasPlaces();
+const countries = places.filter((place) => place.place_type === 'country');
+const hasMockContent = countries.some((place) => place.mock === true);
+
+const entries = countries
+  .map((place) => {
+    const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
+    const requested = resolved.requested;
+    const complete = resolved.complete;
+    const slug = chooseSlugForLanguage(place.translations, lang, place.canonical_language);
+
+    if (!slug || !resolved.output || !complete) return null;
+
+    return {
+      place_id: place.place_id,
+      title: resolved.output.title || place.place_id,
+      excerpt: resolved.output.excerpt || '',
+      href: pathForLanguage(lang, `atlas/${slug}`),
+      status: requested?.status || 'missing',
+    };
+  })
+  .filter(Boolean)
+  .sort((left, right) => left.title.localeCompare(right.title));
+
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'atlas')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage(lang, 'atlas'));
+const robots = hasMockContent ? 'noindex,nofollow' : entries.length ? 'index,follow' : 'noindex,nofollow';
+---
+
+<MainLayout
+  title={translate(ui, 'atlas.list.title')}
+  description={translate(ui, 'atlas.list.description')}
+  canonical={canonical}
+  robots={robots}
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  {hasMockContent ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
+
+  <h1>{translate(ui, 'atlas.list.title')}</h1>
+  <p class="small">{translate(ui, 'atlas.list.description')}</p>
+
+  {
+    entries.length ? (
+      <div class="grid">
+        {entries.map((entry) => (
+          <article class="card">
+            <a href={entry.href}>
+              <h2>{entry.title}</h2>
+            </a>
+            <span class="status-pill">{entry.status}</span>
+            <p class="small">{entry.excerpt}</p>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p>{translate(ui, 'atlas.list.empty')}</p>
+    )
+  }
+</MainLayout>

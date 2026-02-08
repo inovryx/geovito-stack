@@ -1,0 +1,105 @@
+{
+  "site": {
+    "brand": "Geovito"
+  },
+  "nav": {
+    "home": "Home",
+    "atlas": "Atlas",
+    "blog": "Blog",
+    "about": "About",
+    "rules": "Rules",
+    "help": "Help",
+    "account": "Account"
+  },
+  "language": {
+    "switcherAria": "Language selector"
+  },
+  "stateBanner": {
+    "runtime": "Runtime translation preview is shown. This view is not indexed.",
+    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
+    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
+    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
+    "canonicalLink": "Go to canonical complete version"
+  },
+  "home": {
+    "defaultTitle": "Geovito Atlas",
+    "defaultExcerpt": "Strapi-driven homepage.",
+    "defaultBody": "No body content yet.",
+    "atlasCountries": "Atlas (Countries)",
+    "blogSection": "Blog",
+    "noCountryDescription": "No description yet.",
+    "noPostSummary": "No summary yet."
+  },
+  "blog": {
+    "listTitle": "Blog",
+    "listDescription": "Geovito blog list",
+    "listHint": "Posts are visible even when translation is not complete; incomplete variants are not indexable.",
+    "noBody": "No content body yet."
+  },
+  "atlas": {
+    "list": {
+      "title": "Atlas",
+      "description": "Country-level entry points in the Atlas hierarchy.",
+      "empty": "No countries are available yet."
+    },
+    "meta": {
+      "placeId": "place_id",
+      "type": "type",
+      "country": "country",
+      "languageStatus": "language status"
+    },
+    "links": {
+      "breadcrumb": "Hierarchy",
+      "parent": "Parent place",
+      "children": "Child places",
+      "related": "Related places",
+      "relatedBlog": "Related blog posts",
+      "noParent": "No parent place.",
+      "noChildren": "No child places found.",
+      "noRelated": "No related places found.",
+      "noRelatedBlog": "No related blog posts found."
+    },
+    "noBody": "No content body yet."
+  },
+  "post": {
+    "meta": {
+      "postId": "post_id",
+      "languageStatus": "language status"
+    },
+    "noBody": "No content body yet."
+  },
+  "uiPage": {
+    "noBody": "No content body yet.",
+    "notFoundTitle": "Page not available",
+    "notFoundDescription": "This system page does not exist in Strapi yet."
+  },
+  "account": {
+    "title": "Account",
+    "description": "User account shell is active in read-only mode for now.",
+    "authStateTitle": "Authentication status",
+    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
+    "loginCta": "Open admin login",
+    "rolesTitle": "Role boundaries",
+    "roles": {
+      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions.",
+      "user": "Authenticated user: reserved for future blog submissions and profile features.",
+      "editor": "Editor/Admin: review and publish Atlas and Blog content."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Editorial-safe user dashboard shell.",
+    "readOnlyTitle": "Read-only mode",
+    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
+    "dataTitle": "Planned modules",
+    "items": {
+      "blogDrafts": "My blog drafts (future)",
+      "submissions": "My Atlas suggestions (future self-view)",
+      "savedPlaces": "Saved places/watchlist (future)"
+    },
+    "loginCta": "Go to account shell"
+  },
+  "actions": {
+    "previewOnDemand": "Open on-demand translation preview (noindex)"
+  }
+}

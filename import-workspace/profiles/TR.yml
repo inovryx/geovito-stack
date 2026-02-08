@@ -1,0 +1,30 @@
+country:
+  code: TR
+  name: Turkey
+  wikidata_qid: Q43
+
+locale: tr
+
+import:
+  admin_areas: true
+  cities: true
+  districts: true
+  pois: false
+
+limits:
+  max_pages: 3
+  max_entities: 2500
+
+filters:
+  exclude_historical: true
+  exclude_disambiguation: true
+  exclude_former_entities: true
+
+aliases:
+  max_aliases_per_entity: 3
+  allow:
+    - short_name
+    - common_name
+  deny:
+    - historical_name
+    - native_name_only

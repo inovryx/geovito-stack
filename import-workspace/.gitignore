@@ -1,0 +1,30 @@
+# Never commit secrets or operational dumps
+.env
+.env.*
+!.env.example
+
+secrets/
+tokens/
+keys/
+
+# Runtime outputs
+logs/
+output/
+tmp/
+tmp/**
+reports/
+artifacts/
+dumps/
+*.dump
+*.sql
+*.sqlite
+*.db
+
+# Node/Python local state
+node_modules/
+.venv/
+__pycache__/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

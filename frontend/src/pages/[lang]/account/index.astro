@@ -1,0 +1,53 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({
+    params: { lang: language },
+  }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'account')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage(lang, 'account'));
+---
+
+<MainLayout
+  title={translate(ui, 'account.title')}
+  description={translate(ui, 'account.description')}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <h1>{translate(ui, 'account.title')}</h1>
+  <p class="small">{translate(ui, 'account.description')}</p>
+
+  <section class="card">
+    <h2>{translate(ui, 'account.authStateTitle')}</h2>
+    <p>{translate(ui, 'account.authStateBody')}</p>
+    <p>
+      <a href="/admin">{translate(ui, 'account.loginCta')}</a>
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>{translate(ui, 'account.rolesTitle')}</h2>
+    <ul class="place-link-list">
+      <li>{translate(ui, 'account.roles.public')}</li>
+      <li>{translate(ui, 'account.roles.user')}</li>
+      <li>{translate(ui, 'account.roles.editor')}</li>
+    </ul>
+  </section>
+</MainLayout>

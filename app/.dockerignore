@@ -1,0 +1,15 @@
+node_modules
+build
+.cache
+.tmp
+.git
+.gitignore
+.env
+.env.*
+.strapi
+coverage
+logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store

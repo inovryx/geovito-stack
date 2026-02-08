@@ -1,0 +1,29 @@
+---
+import { translate } from '../lib/uiLanguage';
+
+interface Props {
+  status: 'fallback' | 'runtime' | 'mock';
+  language: string;
+  canonicalPath: string;
+  contentStatus?: 'missing' | 'draft' | 'complete' | null;
+  ui: Record<string, unknown>;
+}
+
+const { status, language, canonicalPath, contentStatus = null, ui } = Astro.props;
+---
+
+{
+  status === 'mock' ? (
+    <aside class="state-banner mock">{translate(ui, 'stateBanner.mock')}</aside>
+  ) : status === 'runtime' ? (
+    <aside class="state-banner runtime">
+      {translate(ui, 'stateBanner.runtime')}
+      <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>
+    </aside>
+  ) : (
+    <aside class="state-banner fallback">
+      {translate(ui, 'stateBanner.incomplete', { language, state: contentStatus || 'missing' })}
+      <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>
+    </aside>
+  )
+}

@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ui_pages",
+  "info": {
+    "singularName": "ui-page",
+    "pluralName": "ui-pages",
+    "displayName": "UI Page",
+    "description": "System/UI content pages such as home, about, rules and help"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "page_key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "canonical_language": {
+      "type": "enumeration",
+      "enum": ["en", "de", "es", "ru", "zh-cn"],
+      "default": "en",
+      "required": true
+    },
+    "translations": {
+      "type": "component",
+      "repeatable": true,
+      "required": true,
+      "component": "shared.localized-content"
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
