@@ -62,6 +62,15 @@ cd /home/ali/geovito-stack
 bash tools/pre_design_gate_check.sh
 ```
 
+Includes:
+- `tools/prod_health.sh`
+- `tools/import_dormant_check.sh`
+- `tools/import_log_sanity_check.sh`
+- `tools/pre_import_index_gate_check.sh`
+- `tools/shell_smoke_test.sh`
+- `tools/pages_build_check.sh`
+- `tools/purge_mock.sh`
+
 ## Logs By Domain
 Domain log folders (human + jsonl):
 - `logs/atlas/`

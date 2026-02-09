@@ -36,6 +36,8 @@ echo "GEOVITO PRE-DESIGN GATE CHECK"
 echo "=============================================================="
 
 run_gate "Production Health" bash tools/prod_health.sh
+run_gate "Import Dormant Guard" bash tools/import_dormant_check.sh
+run_gate "Import Log Domain Sanity" bash tools/import_log_sanity_check.sh
 run_gate "Pre-Import Index Gate" bash tools/pre_import_index_gate_check.sh
 run_gate "Shell Smoke Test" bash tools/shell_smoke_test.sh
 run_gate "Cloudflare Pages Build Check" bash tools/pages_build_check.sh

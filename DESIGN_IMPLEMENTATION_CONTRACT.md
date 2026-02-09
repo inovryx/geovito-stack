@@ -21,6 +21,8 @@ bash tools/pre_design_gate_check.sh
   - incomplete dil varyantlari canonical olarak best complete varyanta isaret eder
 - Import:
   - `tools/run_import.sh` dormant kalir (non-zero)
+  - `tools/import_dormant_check.sh` PASS olmali
+  - `tools/import_log_sanity_check.sh` PASS olmali (`domain=import total=0`)
 - Public permissions:
   - public write sadece `POST /api/atlas-suggestions/submit`
   - Atlas/Blog/UI direct public write yasak
