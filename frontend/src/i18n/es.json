@@ -46,6 +46,9 @@
       "placeId": "place_id",
       "type": "tipo",
       "country": "pais",
+      "region": "region",
+      "coordinates": "coordenadas",
+      "notAvailable": "no disponible",
       "languageStatus": "estado del idioma"
     },
     "links": {

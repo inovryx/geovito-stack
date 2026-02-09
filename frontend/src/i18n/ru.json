@@ -46,6 +46,9 @@
       "placeId": "place_id",
       "type": "tip",
       "country": "strana",
+      "region": "region",
+      "coordinates": "koordinaty",
+      "notAvailable": "nedostupno",
       "languageStatus": "status yazyka"
     },
     "links": {

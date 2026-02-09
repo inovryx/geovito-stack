@@ -108,6 +108,11 @@ const robots = indexGate.robots;
 const parentPlaceId = place.parent_place_id || place.parent?.place_id || null;
 const parentPlace = parentPlaceId ? placeMap.get(parentPlaceId) || null : null;
 const parentLink = parentPlace ? mapPlaceLink(parentPlace) : null;
+const regionLabel = parentLink?.title || null;
+const latitude = typeof place.lat === 'number' ? place.lat : typeof place.latitude === 'number' ? place.latitude : null;
+const longitude = typeof place.lng === 'number' ? place.lng : typeof place.longitude === 'number' ? place.longitude : null;
+const coordinatesLabel =
+  latitude !== null && longitude !== null ? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` : null;
 
 const childPlaces = allPlaces.filter(
   (entry) => (entry.parent_place_id || entry.parent?.place_id || null) === place.place_id
@@ -230,6 +235,14 @@ const relatedBlogLinks = allPosts
         <div>
           <dt>{translate(ui, 'atlas.meta.country')}</dt>
           <dd>{place.country_code}</dd>
+        </div>
+        <div>
+          <dt>{translate(ui, 'atlas.meta.region')}</dt>
+          <dd>{regionLabel || translate(ui, 'atlas.meta.notAvailable')}</dd>
+        </div>
+        <div>
+          <dt>{translate(ui, 'atlas.meta.coordinates')}</dt>
+          <dd>{coordinatesLabel || translate(ui, 'atlas.meta.notAvailable')}</dd>
         </div>
         <div>
           <dt>{translate(ui, 'atlas.meta.languageStatus')}</dt>

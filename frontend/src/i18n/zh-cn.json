@@ -46,6 +46,9 @@
       "placeId": "place_id",
       "type": "leixing",
       "country": "guojia",
+      "region": "quyu",
+      "coordinates": "zuobiao",
+      "notAvailable": "zanwu",
       "languageStatus": "yuyan zhuangtai"
     },
     "links": {
