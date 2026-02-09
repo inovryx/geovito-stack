@@ -3,7 +3,7 @@ import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getAtlasPlaces, getBlogPosts, type AtlasPlace } from '../../../lib/strapi';
-import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../lib/pageHelpers';
 import { buildIndexableLanguagePathMap, resolveIndexGate } from '../../../lib/indexGate';
 import { chooseSlugForLanguage } from '../../../lib/slugResolver';
@@ -74,10 +74,15 @@ if (!resolution.output || !resolution.complete) {
 const title = resolution.output.seo?.metaTitle || resolution.output.title || place.place_id;
 const description = resolution.output.seo?.metaDescription || resolution.output.excerpt || '';
 const isMockView = place.mock === true;
+const enComplete =
+  place.translations.find((translation) => translation.language === DEFAULT_LANGUAGE && translation.status === 'complete') ||
+  null;
+const canonicalSource = enComplete || resolution.complete;
+const canonicalLanguage = enComplete ? DEFAULT_LANGUAGE : place.canonical_language;
+const canonicalSlug = canonicalSource?.slug || place.place_id;
 
 const canonicalPath =
-  resolution.complete.canonical_path ||
-  pathForLanguage(place.canonical_language, `atlas/${resolution.complete.slug || place.place_id}`);
+  canonicalSource?.canonical_path || pathForLanguage(canonicalLanguage, `atlas/${canonicalSlug}`);
 
 const languagePathMap: Record<string, string> = {};
 for (const language of SUPPORTED_LANGUAGES) {
@@ -89,15 +94,15 @@ for (const language of SUPPORTED_LANGUAGES) {
 
 const languageLinks = buildLanguageLinks(languagePathMap);
 const indexableLanguagePathMap = buildIndexableLanguagePathMap(place.translations, 'atlas', isMockView);
-if (!isMockView && !indexableLanguagePathMap[place.canonical_language]) {
-  indexableLanguagePathMap[place.canonical_language] = canonicalPath;
+if (!isMockView && enComplete?.slug && !indexableLanguagePathMap[DEFAULT_LANGUAGE]) {
+  indexableLanguagePathMap[DEFAULT_LANGUAGE] = canonicalPath;
 }
 const indexableLanguageLinks = Object.fromEntries(
   Object.entries(indexableLanguagePathMap).map(([language, urlPath]) => [language, absoluteUrl(urlPath)])
 );
 const alternates = toAlternates(indexableLanguageLinks);
 const canonical = absoluteUrl(canonicalPath);
-const indexGate = resolveIndexGate(isMockView, resolution);
+const indexGate = resolveIndexGate(isMockView, resolution, lang);
 const robots = indexGate.robots;
 
 const parentPlaceId = place.parent_place_id || place.parent?.place_id || null;
@@ -200,42 +205,58 @@ const relatedBlogLinks = allPosts
     ) : null
   }
 
-  <h1>{resolution.output.title}</h1>
-  <p class="small">{resolution.output.excerpt}</p>
+  <section class="place-hero">
+    <div class="place-hero-content">
+      <p class="eyebrow">{place.place_type}</p>
+      <h1>{resolution.output.title}</h1>
+      <p class="hero-lead">{resolution.output.excerpt || translate(ui, 'atlas.noBody')}</p>
+      <div class="chip-row">
+        <span class="status-pill">{resolution.requested?.status || 'missing'}</span>
+        <span class="status-pill">{place.country_code}</span>
+      </div>
+    </div>
 
-  <p>
-    <strong>{translate(ui, 'atlas.meta.placeId')}:</strong> {place.place_id}
-  </p>
-  <p>
-    <strong>{translate(ui, 'atlas.meta.type')}:</strong> {place.place_type}
-  </p>
-  <p>
-    <strong>{translate(ui, 'atlas.meta.country')}:</strong> {place.country_code}
-  </p>
-  <p>
-    <strong>{translate(ui, 'atlas.meta.languageStatus')}:</strong> {resolution.requested?.status || 'missing'}
-  </p>
+    <aside class="card place-facts">
+      <h2>{translate(ui, 'atlas.meta.placeId')}</h2>
+      <dl class="fact-grid">
+        <div>
+          <dt>{translate(ui, 'atlas.meta.placeId')}</dt>
+          <dd>{place.place_id}</dd>
+        </div>
+        <div>
+          <dt>{translate(ui, 'atlas.meta.type')}</dt>
+          <dd>{place.place_type}</dd>
+        </div>
+        <div>
+          <dt>{translate(ui, 'atlas.meta.country')}</dt>
+          <dd>{place.country_code}</dd>
+        </div>
+        <div>
+          <dt>{translate(ui, 'atlas.meta.languageStatus')}</dt>
+          <dd>{resolution.requested?.status || 'missing'}</dd>
+        </div>
+      </dl>
+    </aside>
+  </section>
 
-  <nav aria-label={translate(ui, 'atlas.links.breadcrumb')}>
-    <strong>{translate(ui, 'atlas.links.breadcrumb')}:</strong>
+  <nav class="card breadcrumb-card" aria-label={translate(ui, 'atlas.links.breadcrumb')}>
+    <strong>{translate(ui, 'atlas.links.breadcrumb')}</strong>
     <ol class="place-breadcrumb">
       {
         breadcrumbLinks.map((entry, index) => (
           <li>
-            {index === breadcrumbLinks.length - 1 ? (
-              <span>{entry.title}</span>
-            ) : (
-              <a href={entry.href}>{entry.title}</a>
-            )}
+            {index === breadcrumbLinks.length - 1 ? <span>{entry.title}</span> : <a href={entry.href}>{entry.title}</a>}
           </li>
         ))
       }
     </ol>
   </nav>
 
-  <div class="grid two">
-    <section class="card">
-      <h2>{translate(ui, 'atlas.links.parent')}</h2>
+  <div class="grid two feature-grid">
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'atlas.links.parent')}</h2>
+      </div>
       {
         parentLink ? (
           <p>
@@ -243,13 +264,17 @@ const relatedBlogLinks = allPosts
             <span class="status-pill">{parentLink.state}</span>
           </p>
         ) : (
-          <p>{translate(ui, 'atlas.links.noParent')}</p>
+          <div class="empty-state">
+            <p>{translate(ui, 'atlas.links.noParent')}</p>
+          </div>
         )
       }
     </section>
 
-    <section class="card">
-      <h2>{translate(ui, 'atlas.links.children')}</h2>
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'atlas.links.children')}</h2>
+      </div>
       {
         visibleChildLinks.length ? (
           <ul class="place-link-list">
@@ -261,57 +286,71 @@ const relatedBlogLinks = allPosts
             ))}
           </ul>
         ) : (
-          <p>{translate(ui, 'atlas.links.noChildren')}</p>
+          <div class="empty-state">
+            <p>{translate(ui, 'atlas.links.noChildren')}</p>
+          </div>
         )
       }
       {hiddenChildCount > 0 ? <p class="small">+{hiddenChildCount} more children</p> : null}
     </section>
   </div>
 
-  <section class="card">
-    <h2>{translate(ui, 'atlas.links.related')}</h2>
+  <div class="grid two feature-grid">
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'atlas.links.related')}</h2>
+      </div>
+      {
+        relatedLinks.length ? (
+          <ul class="place-link-list">
+            {relatedLinks.map((entry) => (
+              <li>
+                <a href={entry.href}>{entry.title}</a>
+                <span class="status-pill">{entry.state}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="empty-state">
+            <p>{translate(ui, 'atlas.links.noRelated')}</p>
+          </div>
+        )
+      }
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'atlas.links.relatedBlog')}</h2>
+      </div>
+      {
+        relatedBlogLinks.length ? (
+          <ul class="place-link-list">
+            {relatedBlogLinks.map((entry) => (
+              <li>
+                <a href={entry.href}>{entry.title}</a>
+                <span class="status-pill">{entry.status}</span>
+                <span class="small">{entry.published_on}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="empty-state">
+            <p>{translate(ui, 'atlas.links.noRelatedBlog')}</p>
+          </div>
+        )
+      }
+    </section>
+  </div>
+
+  <section class="card prose-card">
+    {resolution.output.body ? <article class="prose-body" set:html={resolution.output.body}></article> : <p>{translate(ui, 'atlas.noBody')}</p>}
+
     {
-      relatedLinks.length ? (
-        <ul class="place-link-list">
-          {relatedLinks.map((entry) => (
-            <li>
-              <a href={entry.href}>{entry.title}</a>
-              <span class="status-pill">{entry.state}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>{translate(ui, 'atlas.links.noRelated')}</p>
-      )
+      resolution.requested?.status !== 'complete' && !runtimeMode ? (
+        <p>
+          <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
+        </p>
+      ) : null
     }
   </section>
-
-  <section class="card">
-    <h2>{translate(ui, 'atlas.links.relatedBlog')}</h2>
-    {
-      relatedBlogLinks.length ? (
-        <ul class="place-link-list">
-          {relatedBlogLinks.map((entry) => (
-            <li>
-              <a href={entry.href}>{entry.title}</a>
-              <span class="status-pill">{entry.status}</span>
-              <span class="small">{entry.published_on}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>{translate(ui, 'atlas.links.noRelatedBlog')}</p>
-      )
-    }
-  </section>
-
-  {resolution.output.body ? <article set:html={resolution.output.body}></article> : <p>{translate(ui, 'atlas.noBody')}</p>}
-
-  {
-    resolution.requested?.status !== 'complete' && !runtimeMode ? (
-      <p>
-        <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
-      </p>
-    ) : null
-  }
 </MainLayout>

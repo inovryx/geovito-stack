@@ -14,15 +14,20 @@ const { status, language, canonicalPath, contentStatus = null, ui } = Astro.prop
 
 {
   status === 'mock' ? (
-    <aside class="state-banner mock">{translate(ui, 'stateBanner.mock')}</aside>
+    <aside class="state-banner mock">
+      <strong class="state-badge">MOCK</strong>
+      <span>{translate(ui, 'stateBanner.mock')}</span>
+    </aside>
   ) : status === 'runtime' ? (
     <aside class="state-banner runtime">
-      {translate(ui, 'stateBanner.runtime')}
+      <strong class="state-badge">RUNTIME</strong>
+      <span>{translate(ui, 'stateBanner.runtime')}</span>
       <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>
     </aside>
   ) : (
     <aside class="state-banner fallback">
-      {translate(ui, 'stateBanner.incomplete', { language, state: contentStatus || 'missing' })}
+      <strong class="state-badge">FALLBACK</strong>
+      <span>{translate(ui, 'stateBanner.incomplete', { language, state: contentStatus || 'missing' })}</span>
       <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>
     </aside>
   )

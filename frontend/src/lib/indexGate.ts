@@ -1,4 +1,4 @@
-import { SUPPORTED_LANGUAGES, pathForLanguage, type SiteLanguage } from './languages';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, pathForLanguage, type SiteLanguage } from './languages';
 import type { LocalizedContent, TranslationResolution } from './languageState';
 
 export type IndexGateDecision = {
@@ -12,9 +12,14 @@ const normalizeRelativePath = (value: string) => {
   return raw.startsWith('/') ? raw : `/${raw}`;
 };
 
-export const resolveIndexGate = (isMock: boolean, resolution: TranslationResolution): IndexGateDecision => {
+export const resolveIndexGate = (
+  isMock: boolean,
+  resolution: TranslationResolution,
+  requestedLanguage: SiteLanguage
+): IndexGateDecision => {
   const requestedComplete = resolution.requested?.status === 'complete';
-  const indexable = !isMock && requestedComplete && !resolution.isRuntime && resolution.indexable;
+  const indexable =
+    !isMock && requestedLanguage === DEFAULT_LANGUAGE && requestedComplete && !resolution.isRuntime && resolution.indexable;
 
   return {
     indexable,
@@ -33,6 +38,7 @@ export const buildIndexableLanguagePathMap = (
   for (const translation of translations) {
     const language = String(translation?.language || '').trim().toLowerCase() as SiteLanguage;
     if (!SUPPORTED_LANGUAGES.includes(language)) continue;
+    if (language !== DEFAULT_LANGUAGE) continue;
     if (translation.status !== 'complete') continue;
     if (translation.runtime_translation) continue;
     if (translation.indexable === false) continue;

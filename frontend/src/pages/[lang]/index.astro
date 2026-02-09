@@ -25,14 +25,11 @@ const [homePage, places, posts] = await Promise.all([getUiPage('home'), getAtlas
 const homeResolution = homePage
   ? resolveTranslation(homePage.translations, lang, homePage.canonical_language, runtimeMode)
   : null;
+const enHomeResolution = homePage ? resolveTranslation(homePage.translations, 'en', homePage.canonical_language) : null;
 
 const homeContent = homeResolution?.output;
 const hasMockContent =
   Boolean(homePage?.mock) || places.some((item) => item.mock === true) || posts.some((item) => item.mock === true);
-
-const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language)));
-const alternates = toAlternates(languageLinks);
-const canonical = absoluteUrl(homeResolution?.complete?.canonical_path || pathForLanguage(lang));
 
 const countryCards = places
   .filter((place) => place.place_type === 'country')
@@ -67,11 +64,18 @@ const postCards = posts.map((post) => {
   };
 });
 
-const robots = hasMockContent
-  ? 'noindex,nofollow'
-  : homeResolution?.indexable
-    ? 'index,follow'
-    : 'noindex,nofollow';
+const completeCountryCount = countryCards.filter((country) => country.status === 'complete').length;
+const completePostCount = postCards.filter((post) => post.status === 'complete').length;
+
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language)));
+const alternates = toAlternates(languageLinks);
+const homeCanonicalPath = enHomeResolution?.complete?.canonical_path || pathForLanguage('en');
+const canonical = absoluteUrl(homeCanonicalPath);
+
+const homeIndexable =
+  lang === 'en' && homeResolution?.requested?.status === 'complete' && !homeResolution?.isRuntime && homeResolution?.indexable;
+const robots = hasMockContent ? 'noindex,nofollow' : homeIndexable ? 'index,follow' : 'noindex,nofollow';
+
 const title = homeContent?.seo?.metaTitle || homeContent?.title || translate(ui, 'home.defaultTitle');
 const description = homeContent?.seo?.metaDescription || homeContent?.excerpt || translate(ui, 'home.defaultExcerpt');
 ---
@@ -96,43 +100,84 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
     ) : null
   }
 
-  <h1>{homeContent?.title || translate(ui, 'home.defaultTitle')}</h1>
-  <p class="small">{homeContent?.excerpt || translate(ui, 'home.defaultExcerpt')}</p>
-  <p>{homeContent?.body || translate(ui, 'home.defaultBody')}</p>
+  <section class="hero hero-home">
+    <p class="eyebrow">{translate(ui, 'site.brand')}</p>
+    <h1>{homeContent?.title || translate(ui, 'home.defaultTitle')}</h1>
+    <p class="hero-lead">{homeContent?.excerpt || translate(ui, 'home.defaultExcerpt')}</p>
+    <p>{homeContent?.body || translate(ui, 'home.defaultBody')}</p>
+    <div class="hero-actions">
+      <a class="button-link" href={`/${lang}/atlas/`}>
+        {translate(ui, 'nav.atlas')}
+      </a>
+      <a class="button-link button-link-secondary" href={`/${lang}/blog/`}>
+        {translate(ui, 'nav.blog')}
+      </a>
+    </div>
+    <div class="stats-grid">
+      <article class="stat-card">
+        <p class="small">{translate(ui, 'home.atlasCountries')}</p>
+        <strong>{countryCards.length}</strong>
+        <span class="small">{completeCountryCount} complete</span>
+      </article>
+      <article class="stat-card">
+        <p class="small">{translate(ui, 'home.blogSection')}</p>
+        <strong>{postCards.length}</strong>
+        <span class="small">{completePostCount} complete</span>
+      </article>
+    </div>
+  </section>
 
-  <div class="grid two">
-    <section class="card">
-      <h2>{translate(ui, 'home.atlasCountries')}</h2>
-      <div class="grid">
-        {
-          countryCards.map((country) => (
-            <article>
-              <a href={country.href || '#'}>
-                <strong>{country.title}</strong>
-              </a>
-              <span class="status-pill">{country.status}</span>
-              <p class="small">{country.excerpt}</p>
-            </article>
-          ))
-        }
+  <div class="grid two feature-grid">
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'home.atlasCountries')}</h2>
+        <span class="small">{completeCountryCount}/{countryCards.length}</span>
       </div>
+      {
+        countryCards.length ? (
+          <ul class="teaser-list">
+            {countryCards.map((country) => (
+              <li class="teaser-item">
+                <a href={country.href || '#'}>
+                  <strong>{country.title}</strong>
+                </a>
+                <span class="status-pill">{country.status}</span>
+                <p class="small">{country.excerpt}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="empty-state">
+            <p>{translate(ui, 'atlas.list.empty')}</p>
+          </div>
+        )
+      }
     </section>
 
-    <section class="card">
-      <h2>{translate(ui, 'home.blogSection')}</h2>
-      <div class="grid">
-        {
-          postCards.map((post) => (
-            <article>
-              <a href={post.href || '#'}>
-                <strong>{post.title}</strong>
-              </a>
-              <span class="status-pill">{post.status}</span>
-              <p class="small">{post.excerpt}</p>
-            </article>
-          ))
-        }
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'home.blogSection')}</h2>
+        <span class="small">{completePostCount}/{postCards.length}</span>
       </div>
+      {
+        postCards.length ? (
+          <ul class="teaser-list">
+            {postCards.map((post) => (
+              <li class="teaser-item">
+                <a href={post.href || '#'}>
+                  <strong>{post.title}</strong>
+                </a>
+                <span class="status-pill">{post.status}</span>
+                <p class="small">{post.excerpt}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="empty-state">
+            <p>{translate(ui, 'blog.listHint')}</p>
+          </div>
+        )
+      }
     </section>
   </div>
 </MainLayout>
