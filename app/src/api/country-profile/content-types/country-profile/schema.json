@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "country_profiles",
+  "info": {
+    "singularName": "country-profile",
+    "pluralName": "country-profiles",
+    "displayName": "Country Profile",
+    "description": "Country-specific Atlas hierarchy, labels and validation rules"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "country_code": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 2,
+      "maxLength": 2
+    },
+    "enabled_levels": {
+      "type": "json",
+      "required": true
+    },
+    "level_labels": {
+      "type": "json"
+    },
+    "parent_rules": {
+      "type": "json"
+    },
+    "region_auto_assign": {
+      "type": "json"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    },
+    "places": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::atlas-place.atlas-place",
+      "mappedBy": "country_profile"
+    }
+  }
+}

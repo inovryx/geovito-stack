@@ -1,7 +1,7 @@
 import { SUPPORTED_LANGUAGES } from './languages';
 import { buildIndexableLanguagePathMap } from './indexGate';
 import { absoluteUrl } from './pageHelpers';
-import { getAtlasPlaces } from './strapi';
+import { getAtlasPlaces, getRegionGroups } from './strapi';
 
 const resolveChunkSize = () => {
   const rawValue = Number(import.meta.env.SITEMAP_CHUNK_SIZE || 5000);
@@ -35,7 +35,7 @@ const chunkArray = <T>(items: T[], size: number) => {
 };
 
 export const buildAtlasSitemapChunks = async () => {
-  const places = await getAtlasPlaces();
+  const [places, regionGroups] = await Promise.all([getAtlasPlaces(), getRegionGroups()]);
   const byLanguage = new Map<string, Set<string>>();
 
   for (const language of SUPPORTED_LANGUAGES) {
@@ -44,6 +44,20 @@ export const buildAtlasSitemapChunks = async () => {
 
   for (const place of places) {
     const languagePathMap = buildIndexableLanguagePathMap(place.translations, 'atlas', place.mock === true);
+    for (const [language, urlPath] of Object.entries(languagePathMap)) {
+      if (!byLanguage.has(language)) {
+        byLanguage.set(language, new Set());
+      }
+      byLanguage.get(language)?.add(absoluteUrl(urlPath));
+    }
+  }
+
+  for (const regionGroup of regionGroups) {
+    const languagePathMap = buildIndexableLanguagePathMap(
+      regionGroup.translations,
+      'regions',
+      regionGroup.mock === true
+    );
     for (const [language, urlPath] of Object.entries(languagePathMap)) {
       if (!byLanguage.has(language)) {
         byLanguage.set(language, new Set());

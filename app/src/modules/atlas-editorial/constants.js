@@ -2,9 +2,22 @@
 
 const { SUPPORTED_LANGUAGES } = require('../language-state/constants');
 
-const ATLAS_PLACE_TYPES = Object.freeze(['country', 'admin_area', 'city', 'district', 'poi']);
+const ATLAS_PLACE_TYPES = Object.freeze([
+  'country',
+  'admin1',
+  'admin2',
+  'admin3',
+  'locality',
+  'neighborhood',
+  'street',
+  'poi',
+  // Legacy-compatible aliases kept active to avoid destructive migration.
+  'admin_area',
+  'city',
+  'district',
+]);
 
-const NON_COUNTRY_TYPES = new Set(['admin_area', 'city', 'district', 'poi']);
+const NON_COUNTRY_TYPES = new Set(ATLAS_PLACE_TYPES.filter((item) => item !== 'country'));
 
 const languageSuffix = (language) => String(language || '').trim().toLowerCase().replace(/-/g, '_');
 

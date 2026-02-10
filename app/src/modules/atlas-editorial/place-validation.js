@@ -2,8 +2,17 @@
 
 const { DEFAULT_LANGUAGE } = require('../language-state/constants');
 const { ATLAS_PLACE_TYPES, NON_COUNTRY_TYPES } = require('./constants');
+const {
+  normalizeCountryCode,
+  resolveCountryProfile,
+  isLevelEnabled,
+  isParentAllowed,
+  resolveAutoRegionKey,
+} = require('../country-profiles');
 
 const PLACE_TYPE_SET = new Set(ATLAS_PLACE_TYPES);
+
+const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object || {}, key);
 
 const isBlank = (value) => typeof value !== 'string' || value.trim().length === 0;
 
@@ -27,7 +36,7 @@ const fetchExisting = async (uid, where) => {
   if (where.id) {
     return strapi.entityService.findOne(uid, where.id, {
       publicationState: 'preview',
-      populate: ['translations', 'parent'],
+      populate: ['translations', 'parent', 'country_profile', 'region_groups'],
     });
   }
 
@@ -35,7 +44,7 @@ const fetchExisting = async (uid, where) => {
     const existing = await strapi.entityService.findMany(uid, {
       publicationState: 'preview',
       filters: { documentId: where.documentId },
-      populate: ['translations', 'parent'],
+      populate: ['translations', 'parent', 'country_profile', 'region_groups'],
       limit: 1,
     });
     return existing[0] || null;
@@ -49,7 +58,7 @@ const findByPlaceId = async (placeId) => {
   const list = await strapi.entityService.findMany('api::atlas-place.atlas-place', {
     publicationState: 'preview',
     filters: { place_id: placeId },
-    fields: ['id', 'place_id', 'country_code'],
+    fields: ['id', 'place_id', 'country_code', 'place_type'],
     limit: 1,
   });
   return list[0] || null;
@@ -59,16 +68,24 @@ const findById = async (id) => {
   if (!id) return null;
   return strapi.entityService.findOne('api::atlas-place.atlas-place', id, {
     publicationState: 'preview',
-    fields: ['id', 'place_id', 'country_code'],
+    fields: ['id', 'place_id', 'country_code', 'place_type'],
   });
 };
 
-const normalizeCountryCode = (value) => {
-  const normalized = String(value || '').trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(normalized)) {
-    throw new Error('country_code must be a two-letter uppercase code');
-  }
-  return normalized;
+const findRegionGroupByKey = async (regionKey, countryCode) => {
+  if (isBlank(regionKey) || isBlank(countryCode)) return null;
+
+  const list = await strapi.entityService.findMany('api::region-group.region-group', {
+    publicationState: 'preview',
+    filters: {
+      region_key: regionKey,
+      country_code: countryCode,
+    },
+    fields: ['id', 'region_key', 'country_code'],
+    limit: 1,
+  });
+
+  return list[0] || null;
 };
 
 const normalizeCoordinate = (value, label) => {
@@ -80,11 +97,28 @@ const normalizeCoordinate = (value, label) => {
   return numberValue;
 };
 
-const toParentId = (parentValue) => {
-  if (!parentValue) return null;
-  if (typeof parentValue === 'number') return parentValue;
-  if (typeof parentValue === 'string' && parentValue.trim()) return Number(parentValue);
-  if (typeof parentValue === 'object' && parentValue.id) return Number(parentValue.id);
+const toRelationId = (value) => {
+  if (!value) return null;
+
+  if (typeof value === 'number') return value;
+
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  if (typeof value === 'object') {
+    if (value.id) return Number(value.id);
+
+    if (Array.isArray(value.connect) && value.connect[0]?.id) {
+      return Number(value.connect[0].id);
+    }
+
+    if (Array.isArray(value.set) && value.set[0]?.id) {
+      return Number(value.set[0].id);
+    }
+  }
+
   return null;
 };
 
@@ -115,7 +149,7 @@ const resolveParentForWrite = async (data, existing) => {
     typeof data.parent_place_id === 'string' && data.parent_place_id.trim().length > 0
       ? data.parent_place_id.trim()
       : null;
-  const explicitParentId = toParentId(data.parent);
+  const explicitParentId = toRelationId(data.parent);
 
   if (explicitParentPlaceId) {
     const parentEntry = await findByPlaceId(explicitParentPlaceId);
@@ -152,13 +186,48 @@ const resolveParentForWrite = async (data, existing) => {
   return null;
 };
 
-const enforceHierarchyRules = (data, existing, parentEntry) => {
+const resolveCountryProfileForWrite = async (data, existing) => {
+  const explicitProfileId = toRelationId(data.country_profile);
+  const existingProfileId = existing?.country_profile?.id || null;
+  const profileId = explicitProfileId || existingProfileId || null;
+
+  const normalizedCountryCode = normalizeCountryCode(data.country_code || existing?.country_code || '');
+  if (!/^[A-Z]{2}$/.test(normalizedCountryCode)) {
+    throw new Error('country_code must be a two-letter uppercase code');
+  }
+
+  const profile = await resolveCountryProfile({
+    countryCode: normalizedCountryCode,
+    profileId,
+  });
+
+  if (profile?.country_code && profile.country_code !== normalizedCountryCode) {
+    throw new Error(
+      `country_profile (${profile.id || 'default'}) is for ${profile.country_code}, but place country_code is ${normalizedCountryCode}`
+    );
+  }
+
+  if (profile?.id) {
+    data.country_profile = profile.id;
+  }
+
+  return profile;
+};
+
+const enforceHierarchyRules = (data, existing, parentEntry, profile) => {
   const placeType = data.place_type || existing?.place_type;
   if (!placeType) return;
   assertPlaceType(placeType);
 
+  if (!isLevelEnabled(profile, placeType)) {
+    throw new Error(
+      `${placeType} is disabled for country ${profile?.country_code || data.country_code || existing?.country_code}`
+    );
+  }
+
   const effectivePlaceId = data.place_id || existing?.place_id;
   const effectiveParentPlaceId = data.parent_place_id || parentEntry?.place_id || existing?.parent_place_id || null;
+  const effectiveParentPlaceType = parentEntry?.place_type || existing?.parent?.place_type || null;
 
   if (effectivePlaceId && effectiveParentPlaceId && effectivePlaceId === effectiveParentPlaceId) {
     throw new Error('A place cannot be its own parent');
@@ -176,6 +245,14 @@ const enforceHierarchyRules = (data, existing, parentEntry) => {
   if (NON_COUNTRY_TYPES.has(placeType) && !effectiveParentPlaceId) {
     throw new Error(`${placeType} requires parent_place_id (or parent relation)`);
   }
+
+  if (!isParentAllowed(profile, placeType, effectiveParentPlaceType)) {
+    throw new Error(
+      `${placeType} cannot be attached to parent type ${effectiveParentPlaceType || 'unknown'} for country ${
+        profile?.country_code || data.country_code || existing?.country_code
+      }`
+    );
+  }
 };
 
 const enforceCountryConsistency = (data, existing, parentEntry) => {
@@ -183,6 +260,10 @@ const enforceCountryConsistency = (data, existing, parentEntry) => {
   if (!countryCode) return;
 
   const normalized = normalizeCountryCode(countryCode);
+  if (!/^[A-Z]{2}$/.test(normalized)) {
+    throw new Error('country_code must be a two-letter uppercase code');
+  }
+
   data.country_code = normalized;
 
   if (parentEntry?.country_code && parentEntry.country_code !== normalized) {
@@ -205,6 +286,31 @@ const enforceCoordinates = (data) => {
     data.lng = lng;
     data.longitude = lng;
   }
+};
+
+const applyAutoRegionAssignment = async (data, existing, profile) => {
+  const hasExplicitRegionGroups = hasOwn(data, 'region_groups');
+  const existingRegionGroups = Array.isArray(existing?.region_groups) ? existing.region_groups : [];
+
+  if (hasExplicitRegionGroups || existingRegionGroups.length > 0) {
+    return;
+  }
+
+  const autoRegionKey = resolveAutoRegionKey(profile, data, existing);
+  if (isBlank(autoRegionKey)) {
+    return;
+  }
+
+  if (isBlank(data.region)) {
+    data.region = autoRegionKey;
+  }
+
+  const regionGroup = await findRegionGroupByKey(autoRegionKey, data.country_code || existing?.country_code);
+  if (!regionGroup) {
+    return;
+  }
+
+  data.region_groups = [regionGroup.id];
 };
 
 const enforceImmutableIdentity = (data, existing) => {
@@ -251,7 +357,11 @@ const beforeCreate = async (event, uid) => {
 
   enforceCoordinates(data);
   enforceCountryConsistency(data, null, parentEntry);
-  enforceHierarchyRules(data, null, parentEntry);
+
+  const countryProfile = await resolveCountryProfileForWrite(data, null);
+  enforceHierarchyRules(data, null, parentEntry, countryProfile);
+  await applyAutoRegionAssignment(data, null, countryProfile);
+
   enforceCanonicalSlugOnCreate(data);
 
   event.params.data = data;
@@ -264,7 +374,11 @@ const beforeUpdate = async (event, uid) => {
   const parentEntry = await resolveParentForWrite(data, existing);
   enforceCoordinates(data);
   enforceCountryConsistency(data, existing, parentEntry);
-  enforceHierarchyRules(data, existing, parentEntry);
+
+  const countryProfile = await resolveCountryProfileForWrite(data, existing);
+  enforceHierarchyRules(data, existing, parentEntry, countryProfile);
+  await applyAutoRegionAssignment(data, existing, countryProfile);
+
   enforceImmutableIdentity(data, existing);
 
   event.params.data = data;

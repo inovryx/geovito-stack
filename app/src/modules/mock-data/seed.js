@@ -7,6 +7,8 @@ const {
   gazetteerEntries,
   importBatches,
   atlasSuggestions,
+  countryProfiles,
+  regionGroups,
 } = require('./dataset');
 
 const now = () => new Date();
@@ -51,6 +53,61 @@ const seedUiPages = async (strapiInstance) => {
       publish: true,
     });
   }
+};
+
+const seedCountryProfiles = async (strapiInstance) => {
+  const app = getStrapi(strapiInstance);
+  const profileMap = new Map();
+
+  for (const profile of countryProfiles) {
+    const upserted = await upsert(
+      app,
+      'api::country-profile.country-profile',
+      'country_code',
+      profile.country_code,
+      profile
+    );
+
+    profileMap.set(profile.country_code, upserted);
+  }
+
+  return profileMap;
+};
+
+const seedRegionGroups = async (strapiInstance, profileMap, placeMap = null) => {
+  const app = getStrapi(strapiInstance);
+  const groupMap = new Map();
+
+  for (const group of regionGroups) {
+    const payload = { ...group };
+    const memberPlaceIds = payload.member_place_ids || [];
+    delete payload.member_place_ids;
+
+    const countryProfile = profileMap.get(group.country_code);
+    if (countryProfile) {
+      payload.country_profile = countryProfile.id;
+    }
+
+    if (placeMap) {
+      payload.members = memberPlaceIds.map((placeId) => placeMap.get(placeId)?.id).filter(Boolean);
+    }
+
+    const upserted = await upsert(
+      app,
+      'api::region-group.region-group',
+      'region_key',
+      group.region_key,
+      payload,
+      {
+        publish: true,
+        populate: ['members', 'country_profile'],
+      }
+    );
+
+    groupMap.set(group.region_key, upserted);
+  }
+
+  return groupMap;
 };
 
 const seedAtlasPlaces = async (strapiInstance) => {
@@ -158,7 +215,10 @@ const seedAtlasSuggestions = async (strapiInstance, placeMap) => {
 const seedMockData = async (strapiInstance) => {
   const app = getStrapi(strapiInstance);
   await seedUiPages(app);
+  const profileMap = await seedCountryProfiles(app);
+  await seedRegionGroups(app, profileMap, null);
   const placeMap = await seedAtlasPlaces(app);
+  await seedRegionGroups(app, profileMap, placeMap);
   await seedBlogPosts(app, placeMap);
   await seedAtlasSuggestions(app, placeMap);
   await seedGazetteerEntries(app);

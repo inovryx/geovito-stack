@@ -2,10 +2,9 @@
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
 import { resolveTranslation } from '../../../lib/languageState';
-import { getAtlasPlaces } from '../../../lib/strapi';
+import { getRegionGroups } from '../../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
-import { chooseSlugForLanguage } from '../../../lib/slugResolver';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export async function getStaticPaths() {
@@ -20,39 +19,41 @@ if (!isSupportedLanguage(lang)) {
 }
 
 const ui = getUiMessages(lang);
-const places = await getAtlasPlaces();
-const countries = places.filter((place) => place.place_type === 'country');
-const hasMockContent = countries.some((place) => place.mock === true);
+const groups = await getRegionGroups();
+const hasMockContent = groups.some((group) => group.mock === true);
 
-const entries = countries
-  .map((place) => {
-    const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
+const entries = groups
+  .map((group) => {
+    const resolved = resolveTranslation(group.translations, lang, group.canonical_language);
     const requested = resolved.requested;
     const complete = resolved.complete;
-    const slug = chooseSlugForLanguage(place.translations, lang, place.canonical_language);
 
-    if (!slug || !resolved.output || !complete) return null;
+    if (!resolved.output || !complete?.slug) return null;
 
+    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
     return {
-      place_id: place.place_id,
-      title: resolved.output.title || place.place_id,
+      region_key: group.region_key,
+      title: resolved.output.title || group.region_key,
       excerpt: resolved.output.excerpt || '',
-      href: pathForLanguage(lang, `atlas/${slug}`),
+      href: pathForLanguage(lang, `regions/${slug}`),
       status: requested?.status || 'missing',
+      mock: group.mock === true,
     };
   })
   .filter(Boolean)
-  .sort((left, right) => left.title.localeCompare(right.title));
+  .sort((a, b) => a.title.localeCompare(b.title));
 
-const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'atlas')));
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'regions')));
 const alternates = toAlternates(languageLinks);
-const canonical = absoluteUrl(pathForLanguage('en', 'atlas'));
-const robots = hasMockContent ? 'noindex,nofollow' : lang === 'en' && entries.length ? 'index,follow' : 'noindex,nofollow';
+const canonical = absoluteUrl(pathForLanguage('en', 'regions'));
+
+const hasIndexableEn = entries.some((entry) => entry.status === 'complete' && entry.mock === false);
+const robots = lang === 'en' && !hasMockContent && hasIndexableEn ? 'index,follow' : 'noindex,nofollow';
 ---
 
 <MainLayout
-  title={translate(ui, 'atlas.list.title')}
-  description={translate(ui, 'atlas.list.description')}
+  title={translate(ui, 'regions.list.title')}
+  description={translate(ui, 'regions.list.description')}
   canonical={canonical}
   robots={robots}
   currentLanguage={lang}
@@ -62,8 +63,8 @@ const robots = hasMockContent ? 'noindex,nofollow' : lang === 'en' && entries.le
 >
   {hasMockContent ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
 
-  <h1>{translate(ui, 'atlas.list.title')}</h1>
-  <p class="small">{translate(ui, 'atlas.list.description')}</p>
+  <h1>{translate(ui, 'regions.list.title')}</h1>
+  <p class="small">{translate(ui, 'regions.list.description')}</p>
 
   {
     entries.length ? (
@@ -79,7 +80,9 @@ const robots = hasMockContent ? 'noindex,nofollow' : lang === 'en' && entries.le
         ))}
       </div>
     ) : (
-      <p>{translate(ui, 'atlas.list.empty')}</p>
+      <div class="empty-state">
+        <p>{translate(ui, 'regions.list.empty')}</p>
+      </div>
     )
   }
 </MainLayout>

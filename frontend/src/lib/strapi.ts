@@ -4,10 +4,22 @@ export type AtlasPlace = {
   id: number;
   documentId?: string;
   place_id: string;
-  place_type: 'country' | 'admin_area' | 'city' | 'district' | 'poi';
+  place_type:
+    | 'country'
+    | 'admin1'
+    | 'admin2'
+    | 'admin3'
+    | 'locality'
+    | 'neighborhood'
+    | 'street'
+    | 'poi'
+    | 'admin_area'
+    | 'city'
+    | 'district';
   slug?: string;
   parent_place_id?: string | null;
   country_code: string;
+  region?: string | null;
   admin_level?: number;
   lat?: number;
   lng?: number;
@@ -20,6 +32,15 @@ export type AtlasPlace = {
     id: number;
     place_id: string;
   } | null;
+  country_profile?: {
+    id: number;
+    country_code: string;
+  } | null;
+  region_groups?: Array<{
+    id: number;
+    region_key: string;
+    country_code: string;
+  }>;
 };
 
 export type BlogPost = {
@@ -47,6 +68,17 @@ export type UiPage = {
   mock: boolean;
 };
 
+export type RegionGroup = {
+  id: number;
+  documentId?: string;
+  region_key: string;
+  country_code: string;
+  canonical_language: 'en' | 'de' | 'es' | 'ru' | 'zh-cn';
+  translations: LocalizedContent[];
+  mock: boolean;
+  members?: AtlasPlace[];
+};
+
 const STRAPI_URL =
   (import.meta.env.STRAPI_URL as string | undefined) ||
   (import.meta.env.PUBLIC_STRAPI_URL as string | undefined) ||
@@ -54,6 +86,7 @@ const STRAPI_URL =
 
 const STRAPI_API_TOKEN = (import.meta.env.STRAPI_API_TOKEN as string | undefined) || '';
 let atlasPlacesCachePromise: Promise<AtlasPlace[]> | null = null;
+let regionGroupsCachePromise: Promise<RegionGroup[]> | null = null;
 
 const normalizeBaseUrl = (baseUrl: string) => baseUrl.replace(/\/$/, '');
 
@@ -113,6 +146,8 @@ export const getAtlasPlaces = async () => {
       const payload = await fetchJson('/api/atlas-places', {
         'populate[0]': 'translations',
         'populate[1]': 'parent',
+        'populate[2]': 'country_profile',
+        'populate[3]': 'region_groups',
         'pagination[pageSize]': '400',
       });
 
@@ -121,6 +156,24 @@ export const getAtlasPlaces = async () => {
   }
 
   return atlasPlacesCachePromise;
+};
+
+export const getRegionGroups = async () => {
+  if (!regionGroupsCachePromise) {
+    regionGroupsCachePromise = (async () => {
+      const payload = await fetchJson('/api/region-groups', {
+        'populate[0]': 'translations',
+        'populate[1]': 'members',
+        'populate[2]': 'members.translations',
+        'populate[3]': 'members.parent',
+        'pagination[pageSize]': '200',
+      });
+
+      return asEntityArray<RegionGroup>(payload);
+    })();
+  }
+
+  return regionGroupsCachePromise;
 };
 
 export const getBlogPosts = async () => {

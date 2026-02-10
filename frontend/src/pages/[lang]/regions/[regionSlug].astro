@@ -1,0 +1,205 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import StateBanner from '../../../components/StateBanner.astro';
+import { resolveTranslation } from '../../../lib/languageState';
+import { getRegionGroups, getAtlasPlaces, type AtlasPlace, type RegionGroup } from '../../../lib/strapi';
+import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../lib/pageHelpers';
+import { buildIndexableLanguagePathMap, resolveIndexGate } from '../../../lib/indexGate';
+import { chooseSlugForLanguage } from '../../../lib/slugResolver';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  const groups = await getRegionGroups();
+  const paths: Array<{ params: { lang: string; regionSlug: string }; props: { regionKey: string } }> = [];
+  const seen = new Set<string>();
+
+  for (const group of groups) {
+    for (const language of SUPPORTED_LANGUAGES) {
+      const slug = chooseSlugForLanguage(group.translations, language, group.canonical_language);
+      if (!slug) continue;
+      const key = `${language}:${slug}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      paths.push({
+        params: { lang: language, regionSlug: slug },
+        props: { regionKey: group.region_key },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const [groups, allPlaces] = await Promise.all([getRegionGroups(), getAtlasPlaces()]);
+const group = groups.find((entry) => entry.region_key === Astro.props.regionKey) as RegionGroup | undefined;
+if (!group) {
+  throw new Error(`Region group not found for region_key=${Astro.props.regionKey}`);
+}
+
+const ui = getUiMessages(lang);
+const runtimeMode = Astro.url.searchParams.get('translate') === '1';
+const resolution = resolveTranslation(group.translations, lang, group.canonical_language, runtimeMode);
+
+if (!resolution.output || !resolution.complete) {
+  throw new Error(`No complete translation for region group ${group.region_key}`);
+}
+
+const placeMap = new Map(allPlaces.map((entry) => [entry.place_id, entry]));
+const memberPlaces = (Array.isArray(group.members) ? group.members : [])
+  .map((entry) => (entry?.place_id ? placeMap.get(entry.place_id) || entry : entry))
+  .filter(Boolean) as AtlasPlace[];
+
+const title = resolution.output.seo?.metaTitle || resolution.output.title || group.region_key;
+const description = resolution.output.seo?.metaDescription || resolution.output.excerpt || '';
+const isMockView = group.mock === true;
+const enComplete =
+  group.translations.find((translation) => translation.language === DEFAULT_LANGUAGE && translation.status === 'complete') ||
+  null;
+const canonicalSource = enComplete || resolution.complete;
+const canonicalLanguage = enComplete ? DEFAULT_LANGUAGE : group.canonical_language;
+const canonicalSlug = canonicalSource?.slug || group.region_key;
+
+const canonicalPath =
+  canonicalSource?.canonical_path || pathForLanguage(canonicalLanguage, `regions/${canonicalSlug}`);
+
+const languagePathMap: Record<string, string> = {};
+for (const language of SUPPORTED_LANGUAGES) {
+  const slug = chooseSlugForLanguage(group.translations, language, group.canonical_language);
+  if (slug) {
+    languagePathMap[language] = pathForLanguage(language, `regions/${slug}`);
+  }
+}
+
+const languageLinks = buildLanguageLinks(languagePathMap);
+const indexableLanguagePathMap = buildIndexableLanguagePathMap(group.translations, 'regions', isMockView);
+if (!isMockView && enComplete?.slug && !indexableLanguagePathMap[DEFAULT_LANGUAGE]) {
+  indexableLanguagePathMap[DEFAULT_LANGUAGE] = canonicalPath;
+}
+const indexableLanguageLinks = Object.fromEntries(
+  Object.entries(indexableLanguagePathMap).map(([language, urlPath]) => [language, absoluteUrl(urlPath)])
+);
+const alternates = toAlternates(indexableLanguageLinks);
+const canonical = absoluteUrl(canonicalPath);
+const indexGate = resolveIndexGate(isMockView, resolution, lang);
+const robots = indexGate.robots;
+
+const memberLinks = memberPlaces
+  .map((entry) => {
+    const translated = resolveTranslation(entry.translations, lang, entry.canonical_language);
+    const requested = translated.requested;
+    const complete = translated.complete;
+    const output = translated.output;
+    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete?.slug;
+
+    if (!output || !slug) return null;
+
+    return {
+      place_id: entry.place_id,
+      place_type: entry.place_type,
+      title: output.title || entry.place_id,
+      href: pathForLanguage(lang, `atlas/${slug}`),
+      state: requested?.status || 'missing',
+    };
+  })
+  .filter(Boolean)
+  .sort((a, b) => a.title.localeCompare(b.title));
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots={robots}
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  {isMockView ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
+
+  {
+    resolution.isRuntime ? (
+      <StateBanner status="runtime" language={lang} canonicalPath={canonical} ui={ui} />
+    ) : resolution.isFallback ? (
+      <StateBanner
+        status="fallback"
+        language={lang}
+        canonicalPath={canonical}
+        contentStatus={resolution.requested?.status || 'missing'}
+        ui={ui}
+      />
+    ) : null
+  }
+
+  <section class="place-hero">
+    <div class="place-hero-content">
+      <p class="eyebrow">region-group</p>
+      <h1>{resolution.output.title}</h1>
+      <p class="hero-lead">{resolution.output.excerpt || translate(ui, 'regions.noBody')}</p>
+      <div class="chip-row">
+        <span class="status-pill">{resolution.requested?.status || 'missing'}</span>
+        <span class="status-pill">{group.country_code}</span>
+        <span class="status-pill">{memberLinks.length}</span>
+      </div>
+    </div>
+
+    <aside class="card place-facts">
+      <h2>{translate(ui, 'regions.meta.title')}</h2>
+      <dl class="fact-grid">
+        <div>
+          <dt>{translate(ui, 'regions.meta.regionKey')}</dt>
+          <dd>{group.region_key}</dd>
+        </div>
+        <div>
+          <dt>{translate(ui, 'regions.meta.country')}</dt>
+          <dd>{group.country_code}</dd>
+        </div>
+        <div>
+          <dt>{translate(ui, 'regions.meta.memberCount')}</dt>
+          <dd>{memberLinks.length}</dd>
+        </div>
+      </dl>
+    </aside>
+  </section>
+
+  <section class="card panel">
+    <div class="panel-head">
+      <h2>{translate(ui, 'regions.members')}</h2>
+    </div>
+    {
+      memberLinks.length ? (
+        <ul class="place-link-list">
+          {memberLinks.map((entry) => (
+            <li>
+              <a href={entry.href}>{entry.title}</a>
+              <span class="status-pill">{entry.place_type}</span>
+              <span class="status-pill">{entry.state}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="empty-state">
+          <p>{translate(ui, 'regions.noMembers')}</p>
+        </div>
+      )
+    }
+  </section>
+
+  <section class="card prose-card">
+    {resolution.output.body ? <article class="prose-body" set:html={resolution.output.body}></article> : <p>{translate(ui, 'regions.noBody')}</p>}
+  </section>
+
+  {
+    resolution.requested?.status !== 'complete' && !runtimeMode ? (
+      <p>
+        <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
+      </p>
+    ) : null
+  }
+</MainLayout>

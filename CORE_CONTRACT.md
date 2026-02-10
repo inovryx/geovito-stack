@@ -14,7 +14,9 @@ Yeni ozellikler bu kontrata uymak zorundadir.
   - `missing`
   - `draft`
   - `complete`
-- Varsayilan olarak yalnizca `complete` indexlenebilir.
+- Atlas ve RegionGroup sayfalari icin varsayilan indexleme EN-merkezlidir:
+  - yalnizca `en + complete + mock=false` indexlenebilir
+  - diger tum dil varyantlari `noindex` kalir ve EN complete canonical'a baglanir
 - Runtime/otomatik ceviri gorunumleri:
   - acikca etiketlenir
   - non-index kalir

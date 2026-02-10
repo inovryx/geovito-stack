@@ -5,6 +5,7 @@
   "nav": {
     "home": "Inicio",
     "atlas": "Atlas",
+    "regions": "Regiones",
     "blog": "Blog",
     "about": "Acerca de",
     "rules": "Reglas",
@@ -62,6 +63,22 @@
       "noRelated": "No se encontraron lugares relacionados.",
       "noRelatedBlog": "No se encontraron articulos de blog relacionados."
     },
+    "noBody": "Aun no hay contenido."
+  },
+  "regions": {
+    "list": {
+      "title": "Regiones",
+      "description": "Paginas de grupos regionales por pais sin cambiar la jerarquia principal.",
+      "empty": "Todavia no hay grupos regionales."
+    },
+    "meta": {
+      "title": "Metadatos de region",
+      "regionKey": "region key",
+      "country": "pais",
+      "memberCount": "cantidad de miembros"
+    },
+    "members": "Lugares miembros",
+    "noMembers": "No se encontraron lugares miembros.",
     "noBody": "Aun no hay contenido."
   },
   "post": {

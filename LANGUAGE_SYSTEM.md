@@ -1,67 +1,76 @@
 # Geovito Language System
 
-## Scope Split
-Geovito has two language layers that must never be mixed:
+## 1) Two-Layer Language Design
+Geovito separates language concerns into two strict layers:
+1. UI language layer (frontend file-based i18n)
+2. Content language layer (Strapi translations with status)
 
-1. UI language layer (file-based)
-2. Content language layer (Strapi-managed)
+They must never be mixed.
 
-## 1) UI Language Layer
+## 2) UI Language Layer (File-based)
+Files:
+- `frontend/src/i18n/en.json` (source of truth)
+- `frontend/src/i18n/de.json`
+- `frontend/src/i18n/es.json`
+- `frontend/src/i18n/ru.json`
+- `frontend/src/i18n/zh-cn.json`
 
-UI strings are stored in JSON files under `frontend/src/i18n/`:
-- `en.json` (source of truth)
-- `de.json`
-- `es.json`
-- `ru.json`
-- `zh-cn.json`
+Active route namespaces:
+- `/en /de /es /ru /zh-cn`
+
+Validation:
+- `cd frontend && npm run i18n:check`
+- Any key mismatch fails build.
 
 Rules:
-- No UI text is hardcoded in page/components.
-- Runtime machine translation is not used.
-- All UI labels, system hints, and banners come from i18n files.
+- no runtime UI machine translation
+- no hardcoded UI copy outside i18n files
+- EN keys define canonical UI schema
 
-### Runtime Preference Order
-UI language selection follows this order:
-1. User-selected language (`localStorage['geovito.ui_lang']`)
-2. Browser language (if supported)
-3. English fallback (`en`)
-
-This is resolved on `frontend/src/pages/index.astro` before redirecting to `/:lang/`.
-
-### Workflow
-Validation and export commands:
-- `cd frontend && npm run i18n:check`
-- `cd frontend && npm run i18n:export`
-
-`i18n:check` enforces key parity with `en.json`.
-`i18n:export` creates flat key maps in `frontend/i18n-export/` for offline translation workflows.
-
-## 2) Content Language Layer (Atlas/Blog/UI Content)
-
-Content translations are stored in Strapi `translations[]` with explicit state:
+## 3) Content Language Layer (Strapi)
+All localized content (`atlas_place`, `region_group`, `blog_post`, `ui_page`) uses `translations[]` with:
 - `missing`
 - `draft`
 - `complete`
 
-Implemented in:
-- `app/src/components/shared/localized-content.json`
-- `app/src/modules/language-state/`
+Language fields are normalized server-side by language-state module.
 
-Rules:
-- Only `complete` is indexable.
-- Canonical always points to complete content.
-- Runtime translation preview is non-indexed.
+## 4) Indexing Rules by Domain
 
-## SEO Safety Contract
-- Any non-complete language variant is `noindex`.
-- Any on-demand translation preview is `noindex`.
-- UI language does not override content quality state.
+### Atlas + RegionGroup (strict)
+- Indexable only if `lang=en` and `status=complete` and `mock=false`
+- Non-EN: `noindex,nofollow`
+- Non-EN canonical -> EN complete URL (when available)
+- Runtime preview (`?translate=1`) always noindex
 
-## Future Extension Guardrails
-Allowed:
-- Add new supported UI locale files.
-- Add offline translation tooling.
+### UI/System Pages
+- Editable per language as independent system content
+- Canonical/self strategy can remain per-language
+- Project can choose stricter EN-only policy later without changing Atlas rules
 
+### Blog
+- Translation statuses can be applied
+- More flexible than Atlas, but mock/noindex and quality gating still enforced
+
+## 5) Banner Semantics (Frontend)
+State banners communicate non-index conditions:
+- `state-banner mock`
+- `state-banner fallback`
+- `state-banner runtime`
+
+Badges are rendered explicitly (MOCK/FALLBACK/RUNTIME).
+
+## 6) Country Profile + Labels
+Country-specific terms (State/Il/Province etc.) are label-mapped in `country_profile.level_labels`.
+This changes presentation only, not core storage model.
+
+## 7) Import/Export Translation Workflow
+- Translation export/import remains contract-driven
+- Import execution is dormant by default
+- Form edits in Strapi remain valid and should not be overwritten outside safe-field contracts
+
+## 8) Guardrails
 Not allowed:
-- Inject runtime machine translation into UI.
-- Bypass content language-state for SEO indexability.
+- Runtime translation for indexable pages
+- Treating frontend as translation source of truth
+- Bypassing status gate for SEO eligibility

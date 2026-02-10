@@ -5,6 +5,7 @@
   "nav": {
     "home": "Startseite",
     "atlas": "Atlas",
+    "regions": "Regionen",
     "blog": "Blog",
     "about": "Uber uns",
     "rules": "Regeln",
@@ -62,6 +63,22 @@
       "noRelated": "Keine verwandten Orte gefunden.",
       "noRelatedBlog": "Keine verwandten Blogbeitrage gefunden."
     },
+    "noBody": "Noch kein Inhaltstext verfugbar."
+  },
+  "regions": {
+    "list": {
+      "title": "Regionen",
+      "description": "Landerspezifische Regionsseiten ohne Anderung der Kern-Hierarchie.",
+      "empty": "Noch keine Regionsgruppen verfugbar."
+    },
+    "meta": {
+      "title": "Regions-Metadaten",
+      "regionKey": "region key",
+      "country": "land",
+      "memberCount": "anzahl mitglieder"
+    },
+    "members": "Mitgliedsorte",
+    "noMembers": "Keine Mitgliedsorte gefunden.",
     "noBody": "Noch kein Inhaltstext verfugbar."
   },
   "post": {

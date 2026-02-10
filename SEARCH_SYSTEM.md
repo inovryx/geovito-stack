@@ -1,66 +1,63 @@
 # Geovito Search System
 
-## Purpose
-Search is a separate domain, not a CMS side-effect.
+## 1) Search Role
+Search is a derived layer, never canonical truth.
+Canonical authority remains Strapi domain models.
 
-Current architecture keeps search decoupled and import-ready while Atlas import remains dormant.
+## 2) Domain Separation
+Independent search contracts are kept for:
+- Atlas
+- Blog
+- (future) system/help
 
-## Service Boundary
-Independent service:
-- `services/search-indexer/`
+No mixed ranking policy between Atlas and Blog.
 
-Strapi is canonical content source.
-Search index is a derived read model.
+## 3) Index Gate Alignment
+Search index eligibility must follow frontend/SEO gate rules.
 
-## Domain Separation
-Search domains are isolated:
-1. Atlas search
-2. Blog search
-3. System/help search (future)
+### Atlas + RegionGroup eligibility
+- EN only
+- translation status must be `complete`
+- `mock=false`
 
-Rules:
-- No mixed ranking logic across domains.
-- Language-state gates index eligibility.
-- Atlas hierarchy (country -> admin -> city -> district) is preserved in searchable documents.
+Non-EN or non-complete variants are excluded from indexable output.
 
-## Current API Surface (search-indexer)
-- `GET /health`
-- `POST /webhook`
-- `POST /reindex`
+## 4) Sitemap Alignment
+Sitemap generation follows the same gate:
+- only EN complete non-mock Atlas/RegionGroup URLs are included
+- non-indexable variants are excluded
 
-These endpoints currently accept events and log requests.
+## 5) Top Cities Logic
+"Top cities" is a cross-country city-class list, not an admin-level bucket.
+- Include `place_type` in (`city`, `locality`) as same class
+- Example: Istanbul and New York can appear in same city-class output
+- admin levels remain hierarchy metadata, not top-city segmentation key
 
-## Contracts
-Schema contracts are defined under:
+## 6) Contracts and Tooling
+Contracts:
 - `services/search-indexer/contracts/atlas-document.v1.schema.json`
 - `services/search-indexer/contracts/blog-document.v1.schema.json`
 - `services/search-indexer/contracts/search-upsert-event.v1.schema.json`
 
-This keeps search import-ready without forcing active indexing jobs now.
+Export utility:
+- `tools/export_search_documents.sh`
+- `tools/export_search_documents.js`
 
-## Language Rules in Search
-- Index only `complete` content variants.
-- Store `language`, `canonical_language`, `is_indexable` fields.
-- Runtime translation previews never become index documents.
+Current export behavior for Atlas:
+- emits EN complete documents
+- marks indexability using strict gate + mock check
+- preserves place identity via immutable `place_id`
 
-## Atlas-Specific Search Rules
-- Place identity key: `place_id` (immutable)
-- Stable URLs and canonical continuity are mandatory.
-- Aliases and normalized tokens are additive, never destructive.
+## 7) CountryProfile + RegionGroup Context
+Search transformation can use:
+- `country_profile` level labels/rules for normalization
+- `region_group` membership as additive metadata
 
-## Blog-Specific Search Rules
-- Blog documents do not mutate Atlas truth.
-- Place links are optional enrichments.
-- Blog ranking rules do not override Atlas ranking rules.
+This is additive enrichment only; it must not mutate canonical Atlas hierarchy.
 
-## Not In Scope (Current Phase)
-- Active crawler/fetch jobs from Wikidata/OSM
-- Cron-driven full reindex orchestration
-- Relevance tuning by monetization signals
+## 8) Not In Scope (Current Phase)
+- real-time external import-driven indexing
+- crawler jobs
+- monetization-tuned ranking
 
-## Evolution Plan
-When import pipeline is activated later:
-1. Validate event payload against contracts.
-2. Apply domain-specific transform.
-3. Upsert domain-specific search index.
-4. Keep idempotent event processing.
+Import stays dormant until controlled activation.

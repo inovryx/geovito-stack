@@ -51,7 +51,9 @@ const clearMockData = async (strapiInstance) => {
     'api::atlas-suggestion.atlas-suggestion',
     'api::blog-post.blog-post',
     'api::ui-page.ui-page',
+    'api::region-group.region-group',
     'api::atlas-place.atlas-place',
+    'api::country-profile.country-profile',
     'api::gazetteer-entry.gazetteer-entry',
     'api::import-batch.import-batch',
   ];

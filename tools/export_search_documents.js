@@ -8,6 +8,7 @@ const STRAPI_BASE_URL = (process.env.STRAPI_BASE_URL || 'http://127.0.0.1:1337')
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN || '';
 const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://www.geovito.com').replace(/\/$/, '');
 const OUTPUT_PATH = process.env.OUTPUT_PATH || path.join(process.cwd(), 'artifacts/search/atlas-documents.json');
+const DEFAULT_INDEX_LANGUAGE = 'en';
 
 const normalizeToken = (value) =>
   String(value || '')
@@ -93,6 +94,7 @@ const buildAtlasDocument = (place, translation) => {
   );
 
   const isMock = place.mock === true;
+  const isTopCity = ['city', 'locality'].includes(String(place.place_type || '').toLowerCase());
 
   return {
     document_id: documentId,
@@ -108,9 +110,10 @@ const buildAtlasDocument = (place, translation) => {
       url,
       country_code: place.country_code,
       parent_place_id: parentPlaceId,
+      city_class: isTopCity ? 'city' : null,
       aliases: [],
       normalized_tokens: normalizedTokens,
-      is_indexable: translation.indexable === true && !isMock,
+      is_indexable: translation.language === DEFAULT_INDEX_LANGUAGE && translation.indexable === true && !isMock,
       updated_at: place.updatedAt || new Date().toISOString(),
     },
     meta: {
@@ -127,6 +130,7 @@ const main = async () => {
     const translations = Array.isArray(place.translations) ? place.translations : [];
     for (const translation of translations) {
       if (translation?.status !== 'complete') continue;
+      if (translation?.language !== DEFAULT_INDEX_LANGUAGE) continue;
       if (!translation?.title || !translation?.slug) continue;
       records.push(buildAtlasDocument(place, translation));
     }

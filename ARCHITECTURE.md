@@ -1,152 +1,143 @@
-# Geovito Clean Rebuild Architecture
+# Geovito Clean Core Atlas Architecture
 
-## 1) Canli Mimari (Live)
-- `app/`: Strapi (canonical CMS + API)
-- `frontend/`: Astro frontend (Cloudflare Pages-ready)
-- `services/search-indexer/`: bagimsiz search katmani (domain-aware)
+## 1) Live Platform Shape
+- `app/`: Strapi canonical CMS + API
+- `frontend/`: Astro read-only consumer (Cloudflare Pages target)
+- `services/search-indexer/`: domain-separated derived search layer
 
-Destekleyici dokumanlar:
-- `CORE_CONTRACT.md`
-- `LANGUAGE_SYSTEM.md`
-- `SEARCH_SYSTEM.md`
-- `SUGGESTIONS_SYSTEM.md`
+Core guardrails:
+- Atlas is authoritative
+- Blog/UI are contributory or system domains
+- Import execution remains dormant
+- Frontend does not own business truth
 
-## 2) Mock Katmani
-Mock veri sadece Strapi icinde tutulur ve tamaminda `mock=true` vardir.
-
-Komutlar:
-```bash
-cd /home/ali/geovito-stack
-ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed
-bash tools/mock_data.sh clear
-bash tools/purge_mock.sh
-```
-
-Mock seti su domainleri doldurur:
-- Atlas: 3 mock ulke (Turkiye, United States, Germany) + 1 non-mock pilot (Italy Pilot)
-- Blog: 2 post
-- UI pages: home/about/rules/help
-- Suggestion: 2 moderasyon ornegi (`status=new`)
-- Gazetteer/import tablolari: metadata seviyesinde ornek kayitlar
-
-## 3) Import Bekleyen Alan (Dormant)
-- `import-interface/contracts/atlas-import.v1.schema.json`: resmi import kontrati
-- `import-interface/examples/atlas-import.v1.mock.json`: ornek payload
-- `import-interface/adapters/`: gelecekteki import adapter baglanti noktasi
-
-Bu repoda aktif import execution YOK:
-- cron YOK
-- worker YOK
-- `tools/run_import.sh` bilerek devre disi
-
-## 4) Domain Ayrimi
-### Core CMS (Strapi)
-- Icerik modelleri
-- Dil durum modeli (`missing | draft | complete`)
-- Editorial kontrol
+## 2) Domain Separation (Non-Negotiable)
 
 ### Atlas Domain
-- `api::atlas-place.atlas-place`
-- `place_id` merkezli model
-- `country/admin_area/city/district`
-- Otomatik publish yok
-- Index yalnizca `complete`
+- Primary model: `api::atlas-place.atlas-place`
+- One global place model with country-specific behavior via profile rules
+- Stable `place_id`, immutable identity, canonical URL continuity
+
+### Region Group Domain (Atlas-adjacent, non-parent chain)
+- Model: `api::region-group.region-group`
+- Purpose: country-specific grouping pages (example: Turkiye geographic regions)
+- Grouping does not force extra parent levels in core place hierarchy
+
+### Country Profile Domain
+- Model: `api::country-profile.country-profile`
+- Purpose: country-specific level enablement, label mapping, parent validation rules, optional auto-region assignment
+- Keeps global schema stable while allowing country variation
 
 ### Blog Domain
-- `api::blog-post.blog-post`
-- Atlas'tan bagimsiz
-- `related_places` opsiyonel
-- Atlas'i override etmez
+- Model: `api::blog-post.blog-post`
+- Independent from Atlas authority
+- Optional place references only
 
-### System/UI Domain
-- `api::ui-page.ui-page`
-- Home, About, Rules, Help
-- UI metinleri dosya bazli i18n (`frontend/src/i18n/*.json`)
-
-### Search Domain
-- `services/search-indexer/` Strapi'den ayridir
-- Atlas ve Blog arama dokumanlari ayrik tasarlanir
-- Kontratlar: `services/search-indexer/contracts/`
+### UI/System Domain
+- Model: `api::ui-page.ui-page`
+- Home/About/Rules/Help and system content
+- UI text layer remains file-based i18n in frontend
 
 ### Suggestion Domain
-- `api::atlas-suggestion.atlas-suggestion`
-- Kullanici/editor onerileri Atlas kaydina dogrudan yazilmaz
-- Moderasyon state machine: `new -> triaged -> accepted/rejected -> implemented`
-- `accepted` sonrasinda Atlas degisiklikleri manuel uygulanir
+- Model: `api::atlas-suggestion.atlas-suggestion`
+- Public submit + editorial moderation
+- No automatic Atlas mutation
 
-### AI Domain (Flag-Gated)
-- `api/ai` endpointleri local-only policy ile korunur
-- Varsayilan kapali: `AI_ENABLED=false`
-- AI ciktilari draft/diagnostic seviyesindedir
-- Atlas auto-mutate/publish yapamaz
-- Her AI cagrisi `logs/ai/ai-audit.*` dosyalarina audit yazar
+### Search Domain
+- Derived from canonical content
+- Atlas and Blog ranking/index contracts separated
 
-### Import Interface (Dormant)
+### Import Domain (Dormant)
 - `api::gazetteer-entry.gazetteer-entry`
 - `api::import-batch.import-batch`
-- Kontrat hazir, execution kapali
+- Contract-ready, execution disabled by default
 
-## 5) Dil Durum Modeli
-Her icerik icin `translations[]` alaninda her dil kaydinda:
-- `status`: `missing | draft | complete`
-- `runtime_translation`: on-demand UI gostergesi
-- `indexable`: backend kuraliyla normalize edilir
+## 3) Atlas Data Model (Single Core + Country Variants)
 
-Kurallar:
-- Sadece `complete` indexlenebilir
-- Runtime/on-demand gorunumler `noindex`
-- Canonical URL her zaman complete varyanta gider
+### `atlas_place`
+Key fields:
+- `place_id` (immutable)
+- `place_type`:
+  - modern levels: `country|admin1|admin2|admin3|locality|neighborhood|street|poi`
+  - compatibility levels kept active: `admin_area|city|district`
+- `country_code`
+- `parent` + `parent_place_id`
+- `translations[]` with `missing|draft|complete`
+- `country_profile` relation
+- `region_groups` relation
+- optional `region`, `lat/lng`
+- `mock`
 
-## 6) Astro Davranisi
-- Namespace: `/en /de /es /ru /zh-cn`
-- Hreflang uretimi aktif
-- Strapi disinda data kaynagi yok
-- Incomplete/missing dilde fallback + banner
-- `?translate=1` ile on-demand ceviri UI (noindex)
-- Kok rota dil secimi: user secimi -> browser dili -> en
-- Sitemap yapisi: `sitemap.xml` (index) + `sitemaps/atlas-<lang>-<chunk>.xml`
+### `country_profile`
+Key fields:
+- `country_code`
+- `enabled_levels[]`
+- `parent_rules{}`
+- `level_labels{}`
+- `region_auto_assign{ by_place_id / by_slug }`
+- `mock`
 
-## 7) Klasor Yapisi
-```text
-geovito-stack/
-  app/                      # Strapi CMS/API
-    src/api/
-      atlas-place/
-      atlas-suggestion/
-      ai/
-      blog-post/
-      ui-page/
-      gazetteer-entry/
-      import-batch/
-    src/components/shared/
-      localized-content.json
-    src/modules/
-      ai/
-      domain-logging/
-      language-state/
-      mock-data/
-      suggestions/
-    scripts/manage_mock_data.js
-  frontend/                 # Astro web app
-    src/i18n/              # UI language files (JSON)
-    src/pages/
-    src/lib/
-    scripts/i18n_workflow.mjs
-  services/search-indexer/
-    contracts/             # domain search contracts
-  import-interface/         # Dormant import contract boundary
-    contracts/
-    examples/
-    adapters/
-  import-workspace/         # Future isolated import operations scaffold (design-only)
-    contracts/
-    profiles/
-    scripts/
-  tools/
-    run_import.sh           # intentionally disabled
-```
+### `region_group`
+Key fields:
+- `region_key` (stable key)
+- `country_code`
+- `translations[]`
+- `members` (many-to-many Atlas places)
+- optional `country_profile` relation
+- `mock`
 
-## 8) Live vs Mock vs Waiting Ozeti
-- Live: Strapi API + Astro rendering + language-state enforcement
-- Mock: atlas/blog/ui/gazetteer/import-batch test verileri
-- Waiting: gercek gazetteer import execution pipeline
+## 4) Validation Rules (Server-side)
+Validation runs in Strapi lifecycle before create/update:
+- `place_type` must be in allowed type set
+- non-country place must have parent
+- country must not have parent
+- `country_code` normalized and enforced
+- parent/child compatibility resolved via effective country profile rules
+- coordinates normalized (`lat/lng`, `latitude/longitude`)
+- `place_id` immutable after creation
+- canonical slug immutability preserved
+- optional auto region assignment uses country profile mapping
+
+This enables form-based editorial additions without import execution.
+
+## 5) Frontend Route Plan
+Implemented/active routes:
+- `/:lang/atlas/:placeSlug/`
+- `/:lang/atlas/`
+- `/:lang/regions/:regionSlug/`
+- `/:lang/regions/`
+- `/:lang/blog/` and `/:lang/blog/:postSlug/`
+- `/:lang/about|rules|help`
+- `/:lang/account` and `/:lang/dashboard`
+
+Frontend remains read-only and renders Strapi output + SEO meta decisions.
+
+## 6) SEO / Index Contract (Atlas + RegionGroup)
+Atlas and RegionGroup use strict EN-centric gate:
+- Indexable only when `lang=en` and translation state `complete` and `mock=false`
+- Non-EN variants: `noindex,nofollow`
+- Non-EN canonical points to EN complete URL when available
+- Mock pages always noindex + mock banner
+
+Sitemap includes only indexable documents (EN complete, non-mock).
+
+## 7) Mock Layer and Safety
+Mock data includes:
+- Atlas places
+- Blog posts
+- UI pages
+- Suggestions
+- Gazetteer/import metadata
+- Country profiles
+- Region groups
+
+All mock cleanup remains one-command via `tools/purge_mock.sh` and clear pipeline.
+
+## 8) Import Boundary
+Import is intentionally dormant:
+- no cron
+- no automatic fetch
+- no background importer in runtime
+- `tools/run_import.sh` returns non-zero with `[DORMANT]`
+
+Future import runs in controlled phases with idempotency + safe-field contracts.

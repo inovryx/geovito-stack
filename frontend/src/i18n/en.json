@@ -5,6 +5,7 @@
   "nav": {
     "home": "Home",
     "atlas": "Atlas",
+    "regions": "Regions",
     "blog": "Blog",
     "about": "About",
     "rules": "Rules",
@@ -62,6 +63,22 @@
       "noRelated": "No related places found.",
       "noRelatedBlog": "No related blog posts found."
     },
+    "noBody": "No content body yet."
+  },
+  "regions": {
+    "list": {
+      "title": "Regions",
+      "description": "Country-specific regional group pages without changing core parent chains.",
+      "empty": "No region groups are available yet."
+    },
+    "meta": {
+      "title": "Region metadata",
+      "regionKey": "region key",
+      "country": "country",
+      "memberCount": "member count"
+    },
+    "members": "Member places",
+    "noMembers": "No member places found.",
     "noBody": "No content body yet."
   },
   "post": {

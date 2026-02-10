@@ -860,6 +860,147 @@ const atlasSuggestions = [
   },
 ];
 
+const countryProfiles = [
+  {
+    country_code: 'TR',
+    enabled_levels: ['country', 'admin1', 'admin2', 'admin3', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
+    level_labels: {
+      admin1: 'Il',
+      admin2: 'Ilce',
+      admin3: 'Mahalle',
+      city: 'Sehir',
+      district: 'Ilce',
+      locality: 'Yerlesim',
+      neighborhood: 'Mahalle',
+      poi: 'Nokta',
+    },
+    parent_rules: {
+      admin1: ['country'],
+      admin2: ['admin1', 'city', 'country'],
+      admin3: ['admin2', 'district'],
+      city: ['country', 'admin1'],
+      district: ['city', 'admin1', 'admin2'],
+      locality: ['country', 'admin1', 'admin2'],
+      neighborhood: ['locality', 'city', 'district', 'admin2'],
+      poi: ['district', 'city', 'neighborhood', 'locality', 'admin2', 'admin3'],
+    },
+    region_auto_assign: {
+      by_place_id: {
+        'city-tr-antalya': 'tr-mediterranean-region',
+        'city-tr-mugla': 'tr-aegean-region',
+        'city-tr-istanbul': 'tr-marmara-region',
+      },
+    },
+    notes: 'Mock profile for Turkiye hierarchy + automatic region key assignment.',
+    mock: true,
+  },
+  {
+    country_code: 'US',
+    enabled_levels: ['country', 'admin1', 'admin2', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
+    level_labels: {
+      admin1: 'State',
+      admin2: 'County',
+      locality: 'City',
+      neighborhood: 'Neighborhood',
+      city: 'City',
+      district: 'District',
+      poi: 'Point of Interest',
+    },
+    parent_rules: {
+      admin1: ['country'],
+      admin2: ['admin1', 'country'],
+      locality: ['admin1', 'admin2', 'country'],
+      neighborhood: ['locality', 'city', 'admin2', 'district'],
+      city: ['admin1', 'admin2', 'country'],
+      district: ['city', 'locality', 'admin2'],
+      poi: ['neighborhood', 'district', 'city', 'locality'],
+    },
+    notes: 'Mock profile for US hierarchy.',
+    mock: true,
+  },
+  {
+    country_code: 'DE',
+    enabled_levels: ['country', 'admin1', 'admin2', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
+    level_labels: {
+      admin1: 'Bundesland',
+      admin2: 'Regierungsbezirk',
+      locality: 'Stadt',
+      neighborhood: 'Bezirk',
+      city: 'Stadt',
+      district: 'Bezirk',
+      poi: 'POI',
+    },
+    parent_rules: {
+      admin1: ['country'],
+      admin2: ['admin1', 'country'],
+      locality: ['admin1', 'admin2', 'country'],
+      neighborhood: ['locality', 'city', 'district'],
+      city: ['admin1', 'admin2', 'country'],
+      district: ['city', 'locality', 'admin2'],
+      poi: ['district', 'neighborhood', 'city', 'locality'],
+    },
+    notes: 'Mock profile for Germany hierarchy.',
+    mock: true,
+  },
+];
+
+const regionGroups = [
+  {
+    region_key: 'tr-mediterranean-region',
+    country_code: 'TR',
+    canonical_language: 'en',
+    mock: true,
+    member_place_ids: ['city-tr-antalya', 'district-tr-antalya-kas', 'district-tr-antalya-manavgat', 'poi-tr-kas-antiphellos'],
+    translations: buildTranslations({
+      en: {
+        title: 'Mediterranean Region',
+        slug: 'tr-mediterranean-region',
+        excerpt: 'Regional group page for Mediterranean-side Turkiye destinations.',
+        body: 'Mock RegionGroup page linking Turkiye places in the Mediterranean cluster.',
+        canonicalPath: '/en/regions/tr-mediterranean-region',
+      },
+      de: {
+        kind: 'draft',
+        title: 'Mittelmeerregion',
+        slug: 'tr-mittelmeerregion',
+        excerpt: 'Entwurf der deutschen Regionsseite.',
+      },
+    }),
+  },
+  {
+    region_key: 'tr-aegean-region',
+    country_code: 'TR',
+    canonical_language: 'en',
+    mock: true,
+    member_place_ids: ['city-tr-mugla', 'district-tr-mugla-bodrum', 'district-tr-mugla-fethiye'],
+    translations: buildTranslations({
+      en: {
+        title: 'Aegean Region',
+        slug: 'tr-aegean-region',
+        excerpt: 'Regional group page for Aegean-side Turkiye destinations.',
+        body: 'Mock RegionGroup page linking Turkiye places in the Aegean cluster.',
+        canonicalPath: '/en/regions/tr-aegean-region',
+      },
+    }),
+  },
+  {
+    region_key: 'tr-marmara-region',
+    country_code: 'TR',
+    canonical_language: 'en',
+    mock: true,
+    member_place_ids: ['city-tr-istanbul'],
+    translations: buildTranslations({
+      en: {
+        title: 'Marmara Region',
+        slug: 'tr-marmara-region',
+        excerpt: 'Regional group page for Marmara-side Turkiye destinations.',
+        body: 'Mock RegionGroup page linking Turkiye places in the Marmara cluster.',
+        canonicalPath: '/en/regions/tr-marmara-region',
+      },
+    }),
+  },
+];
+
 module.exports = {
   atlasPlaces,
   blogPosts,
@@ -867,4 +1008,6 @@ module.exports = {
   gazetteerEntries,
   importBatches,
   atlasSuggestions,
+  countryProfiles,
+  regionGroups,
 };

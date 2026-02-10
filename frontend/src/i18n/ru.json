@@ -5,6 +5,7 @@
   "nav": {
     "home": "Glavnaya",
     "atlas": "Atlas",
+    "regions": "Regiony",
     "blog": "Blog",
     "about": "O proekte",
     "rules": "Pravila",
@@ -62,6 +63,22 @@
       "noRelated": "Svyazannye obekty ne naydeny.",
       "noRelatedBlog": "Svyazannye blog-posty ne naydeny."
     },
+    "noBody": "Kontent poka otsutstvuet."
+  },
+  "regions": {
+    "list": {
+      "title": "Regiony",
+      "description": "Stranitsy regionalnykh grupp po stranam bez izmeneniya bazovoy iyerarkhii.",
+      "empty": "Regionalnye gruppy poka otsutstvuyut."
+    },
+    "meta": {
+      "title": "Metadannye regiona",
+      "regionKey": "region key",
+      "country": "strana",
+      "memberCount": "kolichestvo uchastnikov"
+    },
+    "members": "Mesta-uchastniki",
+    "noMembers": "Mesta-uchastniki ne naydeny.",
     "noBody": "Kontent poka otsutstvuet."
   },
   "post": {

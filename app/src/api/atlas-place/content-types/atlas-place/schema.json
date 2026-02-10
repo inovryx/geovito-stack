@@ -19,7 +19,19 @@
     },
     "place_type": {
       "type": "enumeration",
-      "enum": ["country", "admin_area", "city", "district", "poi"],
+      "enum": [
+        "country",
+        "admin1",
+        "admin2",
+        "admin3",
+        "locality",
+        "neighborhood",
+        "street",
+        "poi",
+        "admin_area",
+        "city",
+        "district"
+      ],
       "required": true
     },
     "slug": {
@@ -71,9 +83,25 @@
     "import_checksum": {
       "type": "string"
     },
+    "region": {
+      "type": "string",
+      "maxLength": 120
+    },
     "parent_place_id": {
       "type": "string",
       "maxLength": 160
+    },
+    "country_profile": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::country-profile.country-profile",
+      "inversedBy": "places"
+    },
+    "region_groups": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::region-group.region-group",
+      "mappedBy": "members"
     },
     "parent": {
       "type": "relation",

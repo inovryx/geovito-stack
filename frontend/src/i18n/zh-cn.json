@@ -5,6 +5,7 @@
   "nav": {
     "home": "Shouye",
     "atlas": "Atlas",
+    "regions": "Qvyu",
     "blog": "Boke",
     "about": "Guanyu",
     "rules": "Guize",
@@ -62,6 +63,22 @@
       "noRelated": "wei zhaodao xiangguan didian.",
       "noRelatedBlog": "wei zhaodao xiangguan boke."
     },
+    "noBody": "Zanwu zhengwen neirong."
+  },
+  "regions": {
+    "list": {
+      "title": "Qvyu",
+      "description": "An guojia guili de qvyu zufen yemian, bu gaibian hexin fujidi lian.",
+      "empty": "Zanwu qvyu zufen."
+    },
+    "meta": {
+      "title": "Qvyu yuan shuju",
+      "regionKey": "region key",
+      "country": "guojia",
+      "memberCount": "chengyuan shuliang"
+    },
+    "members": "chengyuan didian",
+    "noMembers": "wei zhaodao chengyuan didian.",
     "noBody": "Zanwu zhengwen neirong."
   },
   "post": {

@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "region_groups",
+  "info": {
+    "singularName": "region-group",
+    "pluralName": "region-groups",
+    "displayName": "Region Group",
+    "description": "Country-specific regional grouping pages without changing core parent chain"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "region_key": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 160
+    },
+    "country_code": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 2
+    },
+    "canonical_language": {
+      "type": "enumeration",
+      "enum": ["en", "de", "es", "ru", "zh-cn"],
+      "default": "en",
+      "required": true
+    },
+    "translations": {
+      "type": "component",
+      "repeatable": true,
+      "required": true,
+      "component": "shared.localized-content"
+    },
+    "members": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::atlas-place.atlas-place",
+      "inversedBy": "region_groups"
+    },
+    "country_profile": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::country-profile.country-profile"
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
