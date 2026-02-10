@@ -36,4 +36,14 @@ if ! rg -q '^TRANSLATION_BUNDLE_ENABLED=false' .env.prod.example; then
   exit 1
 fi
 
+if ! rg -q '^TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false' .env.example; then
+  echo "FAIL: .env.example must declare TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false"
+  exit 1
+fi
+
+if ! rg -q '^TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false' .env.prod.example; then
+  echo "FAIL: .env.prod.example must declare TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false"
+  exit 1
+fi
+
 echo "PASS: translation bundle import remains locked by default"

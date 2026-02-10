@@ -29,7 +29,10 @@
     "atlasCountries": "Atlas (Guojia)",
     "blogSection": "Boke",
     "noCountryDescription": "Zanwu miaoshu.",
-    "noPostSummary": "Zanwu zhaiyao."
+    "noPostSummary": "Zanwu zhaiyao.",
+    "trendingTitle": "Trending places",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noTrending": "No trending places yet."
   },
   "blog": {
     "listTitle": "Boke",

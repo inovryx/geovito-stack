@@ -1,4 +1,5 @@
 import en from '../i18n/en.json';
+import tr from '../i18n/tr.json';
 import de from '../i18n/de.json';
 import es from '../i18n/es.json';
 import ru from '../i18n/ru.json';
@@ -9,6 +10,7 @@ type Dictionary = Record<string, unknown>;
 
 const dictionaries: Record<SiteLanguage, Dictionary> = {
   en,
+  tr,
   de,
   es,
   ru,

@@ -23,7 +23,19 @@
     "place_id": { "type": "string" },
     "place_type": {
       "type": "string",
-      "enum": ["country", "admin_area", "city", "district", "poi"]
+      "enum": [
+        "country",
+        "admin1",
+        "admin2",
+        "admin3",
+        "locality",
+        "neighborhood",
+        "street",
+        "poi",
+        "admin_area",
+        "city",
+        "district"
+      ]
     },
     "language": { "type": "string" },
     "canonical_language": { "type": "string" },

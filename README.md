@@ -42,7 +42,8 @@ Search contract export (Atlas complete-only):
 cd /home/ali/geovito-stack
 bash tools/export_search_documents.sh
 bash tools/export_blog_documents.sh
-node tools/suggest_internal_links.js --atlas artifacts/search/atlas-documents.json --blog artifacts/search/blog-documents.json
+bash tools/suggest_internal_links.sh --blog artifacts/search/blog-documents.json
+bash tools/suggest_internal_links.sh --text "Antalya ve New York notlari" --language tr --country-context TR
 ```
 
 Translation bundle (guarded):
@@ -50,6 +51,7 @@ Translation bundle (guarded):
 cd /home/ali/geovito-stack
 bash tools/export_translation_bundle.sh
 bash tools/translation_bundle_dormant_check.sh
+# TRANSLATION_BUNDLE_ENABLED=true bash tools/import_translation_bundle.sh --dry-run
 ```
 
 Future isolated import workspace (design-only):

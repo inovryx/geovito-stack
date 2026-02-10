@@ -1,5 +1,6 @@
 ---
 import { translate } from '../lib/uiLanguage';
+import { SUPPORTED_LANGUAGES } from '../lib/languages';
 
 interface Props {
   currentLanguage: string;
@@ -8,7 +9,7 @@ interface Props {
 }
 
 const { currentLanguage, languageLinks, ui } = Astro.props;
-const languages = ['en', 'de', 'es', 'ru', 'zh-cn'];
+const languages = SUPPORTED_LANGUAGES;
 ---
 
 <nav aria-label={translate(ui, 'language.switcherAria')} class="language-switcher">

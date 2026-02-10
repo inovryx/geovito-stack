@@ -66,6 +66,35 @@ const postCards = posts.map((post) => {
 
 const completeCountryCount = countryCards.filter((country) => country.status === 'complete').length;
 const completePostCount = postCards.filter((post) => post.status === 'complete').length;
+const DEFAULT_CITY_LIKE_LEVELS = ['city', 'locality', 'admin2'];
+
+const trendingPlaces = places
+  .filter((place) => {
+    const levels =
+      Array.isArray(place.country_profile?.city_like_levels) && place.country_profile?.city_like_levels.length > 0
+        ? place.country_profile.city_like_levels
+        : DEFAULT_CITY_LIKE_LEVELS;
+    return levels.includes(String(place.place_type || '').toLowerCase());
+  })
+  .map((place) => {
+    const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
+    const requested = resolved.requested;
+    const complete = resolved.complete;
+    const slug = requested?.status === 'complete' ? requested.slug : complete?.slug;
+    const labelMap = place.country_profile?.label_mapping || place.country_profile?.level_labels || {};
+
+    return {
+      place_id: place.place_id,
+      title: resolved.output?.title || place.place_id,
+      excerpt: resolved.output?.excerpt || translate(ui, 'home.noCountryDescription'),
+      href: slug ? pathForLanguage(lang, `atlas/${slug}`) : null,
+      status: requested?.status || 'missing',
+      place_type_label: labelMap[place.place_type] || place.place_type,
+    };
+  })
+  .filter((entry) => entry.href)
+  .sort((left, right) => left.title.localeCompare(right.title))
+  .slice(0, 8);
 
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language)));
 const alternates = toAlternates(languageLinks);
@@ -180,4 +209,32 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
       }
     </section>
   </div>
+
+  <section class="card panel">
+    <div class="panel-head">
+      <h2>{translate(ui, 'home.trendingTitle')}</h2>
+      <span class="small">{trendingPlaces.length}</span>
+    </div>
+    <p class="small">{translate(ui, 'home.trendingHint')}</p>
+    {
+      trendingPlaces.length ? (
+        <ul class="teaser-list">
+          {trendingPlaces.map((place) => (
+            <li class="teaser-item">
+              <a href={place.href || '#'}>
+                <strong>{place.title}</strong>
+              </a>
+              <span class="status-pill">{place.place_type_label}</span>
+              <span class="status-pill">{place.status}</span>
+              <p class="small">{place.excerpt}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="empty-state">
+          <p>{translate(ui, 'home.noTrending')}</p>
+        </div>
+      )
+    }
+  </section>
 </MainLayout>

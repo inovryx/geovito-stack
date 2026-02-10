@@ -14,9 +14,9 @@ bash tools/pre_design_gate_check.sh
 - Index gate kurali:
   - `mock=true` => `noindex,nofollow` + `MOCK` banner
   - `missing/draft` => `noindex,nofollow` + `DRAFT/MISSING` banner
-  - sadece `complete + mock=false` indexlenebilir
+  - sadece `lang=en + complete + mock=false` indexlenebilir
 - Sitemap filtreleme:
-  - sadece `complete + mock=false` URL'ler sitemap'e girer
+  - sadece `lang=en + complete + mock=false` URL'ler sitemap'e girer
 - Canonical davranisi:
   - incomplete dil varyantlari canonical olarak best complete varyanta isaret eder
 - Import:

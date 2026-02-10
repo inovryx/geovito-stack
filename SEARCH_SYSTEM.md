@@ -1,68 +1,66 @@
 # Geovito Search System
 
 ## 1) Search Role
-Search is a derived layer, never canonical truth.
-Canonical authority remains Strapi domain models.
+Search is derived data, never canonical truth.
+Canonical source remains Strapi domain models.
 
 ## 2) Domain Separation
-Independent search contracts are kept for:
+Separate contracts/ranking domains:
 - Atlas
 - Blog
 - (future) system/help
 
-No mixed ranking policy between Atlas and Blog.
+No mixed ranking rules between Atlas and Blog.
 
 ## 3) Index Gate Alignment
-Search index eligibility must follow frontend/SEO gate rules.
+Search eligibility must match SEO gate.
 
-### Atlas + RegionGroup eligibility
-- EN only
-- translation status must be `complete`
+Atlas + RegionGroup indexable only when:
+- `language=en`
+- translation `status=complete`
 - `mock=false`
 
-Non-EN or non-complete variants are excluded from indexable output.
+Non-EN, draft/missing, runtime, and mock variants are excluded from indexable output.
 
 ## 4) Sitemap Alignment
-Sitemap generation follows the same gate:
-- only EN complete non-mock Atlas/RegionGroup URLs are included
-- non-indexable variants are excluded
+Sitemap and search must stay consistent:
+- include only EN complete non-mock URLs
+- exclude non-complete and non-EN variants
+- include region pages only when indexable by same rule
 
-## 5) Top Cities Logic
-"Top cities" is a cross-country city-class list, not an admin-level bucket.
-- Include country-profile `city_like_levels` as city-class source
-- Example: Istanbul and New York can appear in same city-class output
-- admin levels remain hierarchy metadata, not top-city segmentation key
+## 5) Metadata Enrichment (Contract-safe)
+Atlas export can include:
+- `place_type`
+- `place_type_label` (from `country_profile.label_mapping`)
+- `region`
+- `city_class` (from `country_profile.city_like_levels`)
 
-## 6) Contracts and Tooling
+This is additive metadata only; parent-chain authority remains Atlas core.
+
+## 6) City-like / Trending Behavior
+`country_profile.city_like_levels` drives city-class lists.
+This allows cross-country city-class outputs (example: Istanbul and New York) even when source admin levels differ.
+
+## 7) Contracts and Tools
 Contracts:
 - `services/search-indexer/contracts/atlas-document.v1.schema.json`
 - `services/search-indexer/contracts/blog-document.v1.schema.json`
 - `services/search-indexer/contracts/search-upsert-event.v1.schema.json`
 
-Export utility:
+Tools:
 - `tools/export_search_documents.sh`
-- `tools/export_search_documents.js`
+- `tools/export_blog_documents.sh`
+- `tools/suggest_internal_links.js`
+- `tools/suggest_internal_links.sh`
 
-Current export behavior for Atlas:
-- emits EN complete documents
-- marks indexability using strict gate + mock check
-- preserves place identity via immutable `place_id`
-- adds metadata enrichment fields:
-  - `place_type`
-  - `place_type_label` (from `country_profile.label_mapping`)
-  - `region`
-  - `city_class` (from `country_profile.city_like_levels`)
+## 8) Internal Link Suggestions (Offline)
+Link suggestions are generated offline from exported data:
+- produces JSON/TSV reports
+- supports TR/EN mention matching with optional country context
+- target URLs are EN canonical Atlas URLs
+- no auto-write to Strapi, no auto-publish
 
-## 7) CountryProfile + RegionGroup Context
-Search transformation can use:
-- `country_profile` level labels/rules for normalization
-- `region_group` membership as additive metadata
-
-This is additive enrichment only; it must not mutate canonical Atlas hierarchy.
-
-## 8) Not In Scope (Current Phase)
-- real-time external import-driven indexing
-- crawler jobs
-- monetization-tuned ranking
-
-Import stays dormant until controlled activation.
+## 9) Out of Scope (Current Phase)
+- real-time crawler import indexing
+- import execution hooks
+- AI provider dependent ranking

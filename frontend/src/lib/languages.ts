@@ -1,4 +1,4 @@
-export const SUPPORTED_LANGUAGES = ['en', 'de', 'es', 'ru', 'zh-cn'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'tr', 'de', 'es', 'ru', 'zh-cn'] as const;
 
 export type SiteLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
@@ -6,6 +6,7 @@ export const DEFAULT_LANGUAGE: SiteLanguage = 'en';
 
 const HREFLANG_MAP: Record<SiteLanguage, string> = {
   en: 'en',
+  tr: 'tr',
   de: 'de',
   es: 'es',
   ru: 'ru',

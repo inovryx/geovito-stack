@@ -191,12 +191,19 @@ Country-profile sanity check:
 ```bash
 cd /home/ali/geovito-stack
 bash tools/country_profile_sanity_check.sh
+# Optional strict reference validation:
+# COUNTRY_PROFILE_SANITY_STRICT=true bash tools/country_profile_sanity_check.sh
 ```
 
 Checklist endpoint (computed, read-only):
 ```bash
 curl "http://127.0.0.1:1337/api/atlas-places/city-de-berlin/editorial-checklist?language=en"
 ```
+
+Checklist now includes:
+- `expected_parent_types`
+- `expected_parent_labels`
+- `profile_country_code`
 
 ## Atlas Indexability Verification
 - `complete` language: indexable candidate
@@ -263,9 +270,8 @@ docker compose exec -T db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < 
 cd /home/ali/geovito-stack
 bash tools/export_search_documents.sh
 bash tools/export_blog_documents.sh
-node tools/suggest_internal_links.js \
-  --atlas artifacts/search/atlas-documents.json \
-  --blog artifacts/search/blog-documents.json
+bash tools/suggest_internal_links.sh --blog artifacts/search/blog-documents.json
+bash tools/suggest_internal_links.sh --text "Antalya ve New York icin gezi notu" --language tr --country-context TR
 ```
 
 ## Translation Bundle (Guarded)
@@ -274,8 +280,14 @@ cd /home/ali/geovito-stack
 bash tools/export_translation_bundle.sh
 bash tools/translation_bundle_dormant_check.sh
 # Controlled phase only:
-# TRANSLATION_BUNDLE_ENABLED=true bash tools/import_translation_bundle.sh
+# TRANSLATION_BUNDLE_ENABLED=true bash tools/import_translation_bundle.sh --dry-run
+# TRANSLATION_BUNDLE_ENABLED=true TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=true bash tools/import_translation_bundle.sh
 ```
+
+Translation bundle safe-field contract:
+- Allowed localized fields: `title`, `slug`, `excerpt`, `body`, `seo`
+- Blocked core/editorial fields: parent relations, `place_type`, `country_profile`, `region_override`, `region_groups`, `mock`
+- `status` and `last_reviewed_at` are mutable only when `TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=true`
 
 ## AI Smoke Tests (Flags OFF by default)
 Enable flags first (`app/.env.example` -> real env):

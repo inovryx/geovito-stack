@@ -14,6 +14,7 @@ Ornek runtime degiskenleri:
 - `APP_KEYS`, `JWT_SECRET`, `ADMIN_JWT_SECRET`, `ENCRYPTION_KEY`
 - `IMPORT_ENABLED` (default `false`, import dormant guard)
 - `TRANSLATION_BUNDLE_ENABLED` (default `false`, translation bundle import guard)
+- `TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE` (default `false`, bundle status mutations disabled)
 - `AI_ENABLED`, `AI_DIAGNOSTICS_ENABLED`, `AI_DRAFT_ENABLED` (default OFF)
 
 Kural:
@@ -51,5 +52,6 @@ bash tools/pages_build_check.sh
 - Mock seed varsayilan kapali: `SEED_MOCK_ON_BOOT=false`
 - Import varsayilan kapali: `IMPORT_ENABLED=false`
 - Translation bundle import varsayilan kapali: `TRANSLATION_BUNDLE_ENABLED=false`
+- Translation bundle status promote varsayilan kapali: `TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false`
 - AI varsayilan kapali: `AI_ENABLED=false`, `AI_DIAGNOSTICS_ENABLED=false`, `AI_DRAFT_ENABLED=false`
 - Import execution bu fazda kapali kalir: `tools/run_import.sh` non-zero doner

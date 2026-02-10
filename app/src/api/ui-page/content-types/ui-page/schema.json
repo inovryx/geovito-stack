@@ -19,7 +19,7 @@
     },
     "canonical_language": {
       "type": "enumeration",
-      "enum": ["en", "de", "es", "ru", "zh-cn"],
+      "enum": ["en", "tr", "de", "es", "ru", "zh-cn"],
       "default": "en",
       "required": true
     },

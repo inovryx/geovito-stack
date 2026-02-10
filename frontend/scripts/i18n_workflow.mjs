@@ -5,7 +5,7 @@ const ROOT = process.cwd();
 const I18N_DIR = join(ROOT, 'src', 'i18n');
 const OUTPUT_DIR = join(ROOT, 'i18n-export');
 
-const localeFiles = ['en.json', 'de.json', 'es.json', 'ru.json', 'zh-cn.json'];
+const localeFiles = ['en.json', 'tr.json', 'de.json', 'es.json', 'ru.json', 'zh-cn.json'];
 
 const loadJson = (file) => JSON.parse(readFileSync(join(I18N_DIR, file), 'utf8'));
 

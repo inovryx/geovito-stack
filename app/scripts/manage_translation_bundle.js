@@ -4,21 +4,10 @@ const fs = require('fs/promises');
 const path = require('path');
 const { createStrapi } = require('@strapi/core');
 
-const SUPPORTED_LANGUAGES = ['en', 'de', 'es', 'ru', 'zh-cn'];
+const SUPPORTED_LANGUAGES = ['en', 'tr', 'de', 'es', 'ru', 'zh-cn'];
 const BUNDLE_VERSION = 'translation-bundle.v1';
 
-const SAFE_TRANSLATION_FIELDS = [
-  'title',
-  'slug',
-  'excerpt',
-  'body',
-  'status',
-  'last_reviewed_at',
-  'canonical_path',
-  'runtime_translation',
-  'indexable',
-  'seo',
-];
+const SAFE_TRANSLATION_FIELDS = ['title', 'slug', 'excerpt', 'body', 'seo'];
 
 const SAFE_COUNTRY_PROFILE_FIELDS = [
   'enabled_levels',
@@ -29,10 +18,17 @@ const SAFE_COUNTRY_PROFILE_FIELDS = [
   'notes',
 ];
 
+const TRANSLATION_STATUS_ORDER = Object.freeze({
+  missing: 0,
+  draft: 1,
+  complete: 2,
+});
+
 const APP_DIR = path.resolve(__dirname, '..');
 let strapiInstance = null;
 
 const isTrue = (value) => String(value || '').trim().toLowerCase() === 'true';
+const isBlank = (value) => typeof value !== 'string' || value.trim().length === 0;
 
 const asEntity = (entry) => {
   if (!entry) return null;
@@ -73,14 +69,10 @@ const listAll = async (uid, options = {}) => {
     });
 
     const normalizedBatch = (Array.isArray(batch) ? batch : [batch]).filter(Boolean).map(asEntity);
-    if (normalizedBatch.length === 0) {
-      break;
-    }
+    if (normalizedBatch.length === 0) break;
 
     items.push(...normalizedBatch);
-    if (normalizedBatch.length < pageSize) {
-      break;
-    }
+    if (normalizedBatch.length < pageSize) break;
 
     start += pageSize;
   }
@@ -102,14 +94,18 @@ const pickTranslation = (translations, language) => {
   return clone(found);
 };
 
-const mergeTranslation = (translations, language, patch) => {
+const mergeTranslation = (translations, language, patch, options = {}) => {
   const list = Array.isArray(translations) ? clone(translations) : [];
   const targetLanguage = String(language || '').trim().toLowerCase();
   if (!SUPPORTED_LANGUAGES.includes(targetLanguage)) {
     throw new Error(`Unsupported translation language: ${targetLanguage}`);
   }
 
+  const warnings = Array.isArray(options.warnings) ? options.warnings : [];
+  const contextLabel = String(options.context || 'translation').trim();
+  const allowStatusPromote = Boolean(options.allowStatusPromote);
   const patchRecord = patch && typeof patch === 'object' ? patch : {};
+
   const index = list.findIndex((entry) => entry?.language === targetLanguage);
   const base =
     index >= 0
@@ -125,17 +121,46 @@ const mergeTranslation = (translations, language, patch) => {
 
   for (const field of SAFE_TRANSLATION_FIELDS) {
     if (!(field in patchRecord)) continue;
+
     if (field === 'seo' && patchRecord[field] !== null && typeof patchRecord[field] !== 'object') {
+      warnings.push(`${contextLabel}: ignored seo payload because it is not an object`);
       continue;
     }
+
     next[field] = patchRecord[field];
   }
 
-  next.language = targetLanguage;
+  const requestedStatus = String(patchRecord.status || '').trim().toLowerCase();
+  if (requestedStatus) {
+    if (!allowStatusPromote) {
+      warnings.push(`${contextLabel}: ignored status change because TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false`);
+    } else if (!Object.prototype.hasOwnProperty.call(TRANSLATION_STATUS_ORDER, requestedStatus)) {
+      warnings.push(`${contextLabel}: ignored unsupported status '${requestedStatus}'`);
+    } else {
+      const currentStatus = String(base.status || 'missing').trim().toLowerCase();
+      const currentRank = TRANSLATION_STATUS_ORDER[currentStatus] ?? 0;
+      const nextRank = TRANSLATION_STATUS_ORDER[requestedStatus];
 
-  if (next.status !== 'complete' || next.runtime_translation) {
-    next.indexable = false;
+      if (nextRank < currentRank) {
+        warnings.push(`${contextLabel}: ignored status downgrade ${currentStatus} -> ${requestedStatus}`);
+      } else if (requestedStatus === 'complete' && (isBlank(next.title) || isBlank(next.slug) || isBlank(next.body))) {
+        warnings.push(`${contextLabel}: ignored status=complete because title/slug/body is incomplete`);
+      } else {
+        next.status = requestedStatus;
+      }
+    }
   }
+
+  if ('last_reviewed_at' in patchRecord) {
+    if (allowStatusPromote) {
+      next.last_reviewed_at = patchRecord.last_reviewed_at || null;
+    } else {
+      warnings.push(`${contextLabel}: ignored last_reviewed_at because TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false`);
+    }
+  }
+
+  next.language = targetLanguage;
+  next.indexable = next.status === 'complete' && !next.runtime_translation;
 
   if (index >= 0) {
     list[index] = next;
@@ -173,6 +198,7 @@ const exportBundles = async (outputDir) => {
     version: BUNDLE_VERSION,
     generated_at: generatedAt,
     locales: SUPPORTED_LANGUAGES,
+    safe_translation_fields: SAFE_TRANSLATION_FIELDS,
     files: {},
   };
 
@@ -260,13 +286,15 @@ const findRegionGroup = async (regionKey, countryCode) => {
   return (Array.isArray(entries) ? entries : [entries]).filter(Boolean).map(asEntity)[0] || null;
 };
 
-const importBundles = async (inputDir) => {
+const importBundles = async (inputDir, options = {}) => {
   if (!isTrue(process.env.TRANSLATION_BUNDLE_ENABLED)) {
     console.error('[DORMANT] Translation bundle import disabled. Set TRANSLATION_BUNDLE_ENABLED=true for controlled runs.');
     process.exitCode = 1;
     return null;
   }
 
+  const dryRun = Boolean(options.dryRun);
+  const allowStatusPromote = Boolean(options.allowStatusPromote);
   const manifestPath = path.join(inputDir, 'manifest.json');
   const manifest = await readJson(manifestPath);
 
@@ -280,6 +308,14 @@ const importBundles = async (inputDir) => {
     atlas_places_minimal: 0,
     country_profiles: 0,
   };
+
+  const plannedUpdates = {
+    ui_pages: 0,
+    region_groups: 0,
+    atlas_places_minimal: 0,
+    country_profiles: 0,
+  };
+
   const warnings = [];
   const processedCountryProfiles = new Set();
 
@@ -303,13 +339,21 @@ const importBundles = async (inputDir) => {
         continue;
       }
 
-      const translations = mergeTranslation(entity.translations, language, item.translation || {});
-      await strapiInstance.entityService.update('api::ui-page.ui-page', entity.id, {
-        data: {
-          translations,
-        },
+      const translations = mergeTranslation(entity.translations, language, item.translation || {}, {
+        warnings,
+        allowStatusPromote,
+        context: `ui_page:${key}:${language}`,
       });
-      updates.ui_pages += 1;
+
+      plannedUpdates.ui_pages += 1;
+      if (!dryRun) {
+        await strapiInstance.entityService.update('api::ui-page.ui-page', entity.id, {
+          data: {
+            translations,
+          },
+        });
+        updates.ui_pages += 1;
+      }
     }
 
     for (const item of content.region_groups || []) {
@@ -323,13 +367,21 @@ const importBundles = async (inputDir) => {
         continue;
       }
 
-      const translations = mergeTranslation(entity.translations, language, item.translation || {});
-      await strapiInstance.entityService.update('api::region-group.region-group', entity.id, {
-        data: {
-          translations,
-        },
+      const translations = mergeTranslation(entity.translations, language, item.translation || {}, {
+        warnings,
+        allowStatusPromote,
+        context: `region_group:${countryCode}:${regionKey}:${language}`,
       });
-      updates.region_groups += 1;
+
+      plannedUpdates.region_groups += 1;
+      if (!dryRun) {
+        await strapiInstance.entityService.update('api::region-group.region-group', entity.id, {
+          data: {
+            translations,
+          },
+        });
+        updates.region_groups += 1;
+      }
     }
 
     for (const item of content.atlas_places_minimal || []) {
@@ -342,13 +394,21 @@ const importBundles = async (inputDir) => {
         continue;
       }
 
-      const translations = mergeTranslation(entity.translations, language, item.translation || {});
-      await strapiInstance.entityService.update('api::atlas-place.atlas-place', entity.id, {
-        data: {
-          translations,
-        },
+      const translations = mergeTranslation(entity.translations, language, item.translation || {}, {
+        warnings,
+        allowStatusPromote,
+        context: `atlas_place:${placeId}:${language}`,
       });
-      updates.atlas_places_minimal += 1;
+
+      plannedUpdates.atlas_places_minimal += 1;
+      if (!dryRun) {
+        await strapiInstance.entityService.update('api::atlas-place.atlas-place', entity.id, {
+          data: {
+            translations,
+          },
+        });
+        updates.atlas_places_minimal += 1;
+      }
     }
 
     for (const item of content.country_profiles || []) {
@@ -373,10 +433,14 @@ const importBundles = async (inputDir) => {
         continue;
       }
 
-      await strapiInstance.entityService.update('api::country-profile.country-profile', entity.id, {
-        data: updatePayload,
-      });
-      updates.country_profiles += 1;
+      plannedUpdates.country_profiles += 1;
+      if (!dryRun) {
+        await strapiInstance.entityService.update('api::country-profile.country-profile', entity.id, {
+          data: updatePayload,
+        });
+        updates.country_profiles += 1;
+      }
+
       processedCountryProfiles.add(countryCode);
     }
   }
@@ -384,17 +448,46 @@ const importBundles = async (inputDir) => {
   return {
     input_dir: inputDir,
     manifest: manifestPath,
+    dry_run: dryRun,
+    allow_status_promote: allowStatusPromote,
     updates,
+    planned_updates: plannedUpdates,
     warnings,
   };
 };
 
+const parseArgs = () => {
+  const args = process.argv.slice(2);
+  const command = String(args[0] || '').trim().toLowerCase();
+  let directoryArg = '';
+  let dryRun = false;
+
+  for (let index = 1; index < args.length; index += 1) {
+    const arg = String(args[index] || '').trim();
+    if (!arg) continue;
+
+    if (arg === '--dry-run') {
+      dryRun = true;
+      continue;
+    }
+
+    if (!directoryArg) {
+      directoryArg = arg;
+      continue;
+    }
+
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+
+  const targetDir = path.resolve(directoryArg || path.join(APP_DIR, 'artifacts/translation-bundle/latest'));
+  return { command, targetDir, dryRun };
+};
+
 const run = async () => {
-  const command = String(process.argv[2] || '').trim().toLowerCase();
-  const targetDir = path.resolve(process.argv[3] || path.join(APP_DIR, 'artifacts/translation-bundle/latest'));
+  const { command, targetDir, dryRun } = parseArgs();
 
   if (!['export', 'import'].includes(command)) {
-    console.error('Usage: node scripts/manage_translation_bundle.js <export|import> [dir]');
+    console.error('Usage: node scripts/manage_translation_bundle.js <export|import> [dir] [--dry-run]');
     process.exit(1);
   }
 
@@ -413,7 +506,10 @@ const run = async () => {
       return;
     }
 
-    const result = await importBundles(targetDir);
+    const result = await importBundles(targetDir, {
+      dryRun,
+      allowStatusPromote: isTrue(process.env.TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE),
+    });
     if (!result) {
       return;
     }

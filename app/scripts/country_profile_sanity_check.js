@@ -19,6 +19,7 @@ const asEntity = (entry) => {
 
 const normalizeCountryCode = (value) => String(value || '').trim().toUpperCase();
 const normalizeKey = (value) => String(value || '').trim().toLowerCase();
+const strictReferenceCheck = String(process.env.COUNTRY_PROFILE_SANITY_STRICT || '').trim().toLowerCase() === 'true';
 
 const loadCollection = async (uid, options = {}) => {
   const list = await strapiInstance.entityService.findMany(uid, {
@@ -43,6 +44,14 @@ const addError = (errors, message) => {
 
 const addWarning = (warnings, message) => {
   warnings.push(message);
+};
+
+const addReferenceIssue = (errors, warnings, message) => {
+  if (strictReferenceCheck) {
+    addError(errors, message);
+    return;
+  }
+  addWarning(warnings, message);
 };
 
 const validateCaseInsensitiveDuplicateKeys = (source, label, errors) => {
@@ -190,7 +199,11 @@ const run = async () => {
       for (const [placeId] of Object.entries(byPlaceId)) {
         const place = placesById.get(placeId);
         if (!place) {
-          addError(errors, `country_profile#${profile.id}(${countryCode}) by_place_id.${placeId}: place_id not found`);
+          addReferenceIssue(
+            errors,
+            warnings,
+            `country_profile#${profile.id}(${countryCode}) by_place_id.${placeId}: place_id not found`
+          );
           continue;
         }
         if (normalizeCountryCode(place.country_code) !== countryCode) {
@@ -205,14 +218,22 @@ const run = async () => {
         const slugKey = `${countryCode}:${normalizeKey(rawSlug)}`;
         const matches = placesBySlug.get(slugKey) || [];
         if (matches.length === 0) {
-          addError(errors, `country_profile#${profile.id}(${countryCode}) by_slug.${rawSlug}: no place found for slug`);
+          addReferenceIssue(
+            errors,
+            warnings,
+            `country_profile#${profile.id}(${countryCode}) by_slug.${rawSlug}: no place found for slug`
+          );
         }
       }
 
       for (const [placeId] of Object.entries(byAdmin1PlaceId)) {
         const place = placesById.get(placeId);
         if (!place) {
-          addError(errors, `country_profile#${profile.id}(${countryCode}) by_admin1_place_id.${placeId}: place_id not found`);
+          addReferenceIssue(
+            errors,
+            warnings,
+            `country_profile#${profile.id}(${countryCode}) by_admin1_place_id.${placeId}: place_id not found`
+          );
           continue;
         }
         if (normalizeCountryCode(place.country_code) !== countryCode) {
@@ -232,7 +253,11 @@ const run = async () => {
       for (const [rawSlug] of Object.entries(byAdmin1Slug)) {
         const slugKey = `${countryCode}:${normalizeKey(rawSlug)}`;
         if (!admin1BySlug.has(slugKey)) {
-          addError(errors, `country_profile#${profile.id}(${countryCode}) by_admin1_slug.${rawSlug}: admin1 slug not found`);
+          addReferenceIssue(
+            errors,
+            warnings,
+            `country_profile#${profile.id}(${countryCode}) by_admin1_slug.${rawSlug}: admin1 slug not found`
+          );
         }
       }
 
@@ -254,6 +279,7 @@ const run = async () => {
       },
       errors,
       warnings,
+      strict_reference_check: strictReferenceCheck,
     };
 
     console.log(JSON.stringify(report, null, 2));

@@ -27,6 +27,8 @@ const getPlaceRecord = (entity) => {
 const getTranslationByLanguage = (translations, language) =>
   (Array.isArray(translations) ? translations : []).find((item) => item?.language === language) || null;
 
+const normalizeType = (value) => String(value || '').trim().toLowerCase();
+
 const buildEditorialSnapshot = (entity) => {
   const place = getPlaceRecord(entity);
   const translations = Array.isArray(place.translations) ? place.translations : [];
@@ -65,10 +67,24 @@ const buildChecklistForLanguage = (entity, language) => {
   const hasType = !isBlank(place.place_type);
   const slugOk = !isBlank(slugValue) && normalizedSlug === slugValue;
   const state = translation?.status || 'missing';
+  const normalizedType = normalizeType(place.place_type);
+  const parentRules =
+    place?.country_profile && typeof place.country_profile === 'object' && !Array.isArray(place.country_profile)
+      ? place.country_profile.parent_rules || {}
+      : {};
+  const labelMapping =
+    place?.country_profile && typeof place.country_profile === 'object' && !Array.isArray(place.country_profile)
+      ? place.country_profile.label_mapping || place.country_profile.level_labels || {}
+      : {};
+  const expectedParentTypes = Array.isArray(parentRules[normalizedType]) ? parentRules[normalizedType] : [];
+  const expectedParentLabels = expectedParentTypes.map((type) => String(labelMapping[type] || type));
 
   return {
     language,
     state,
+    expected_parent_types: expectedParentTypes,
+    expected_parent_labels: expectedParentLabels,
+    profile_country_code: place.country_profile?.country_code || null,
     complete_ready: hasTitle && hasBody && hasParent && hasType && slugOk,
     checks: {
       title_present: hasTitle,

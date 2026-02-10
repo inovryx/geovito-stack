@@ -1,6 +1,6 @@
 'use strict';
 
-const SUPPORTED_LANGUAGES = ['en', 'de', 'es', 'ru', 'zh-cn'];
+const SUPPORTED_LANGUAGES = ['en', 'tr', 'de', 'es', 'ru', 'zh-cn'];
 
 const languageKey = (language) => (language === 'zh-cn' ? 'zhCn' : language);
 
@@ -78,6 +78,13 @@ const atlasPlaces = [
         body: 'Mock country entry for Turkiye.',
         canonicalPath: '/en/atlas/turkiye',
       },
+      tr: {
+        title: 'Turkiye',
+        slug: 'turkiye',
+        excerpt: 'Geovito Atlas icin Turkiye ulke profili.',
+        body: 'Turkiye icin mock ulke kaydi.',
+        canonicalPath: '/tr/atlas/turkiye',
+      },
       de: {
         kind: 'draft',
         title: 'Turkei',
@@ -131,6 +138,13 @@ const atlasPlaces = [
         excerpt: 'Coastal city profile for Antalya.',
         body: 'Mock city entry for Antalya.',
         canonicalPath: '/en/atlas/antalya',
+      },
+      tr: {
+        title: 'Antalya',
+        slug: 'antalya',
+        excerpt: 'Antalya sahil sehir profili.',
+        body: 'Antalya icin mock sehir kaydi.',
+        canonicalPath: '/tr/atlas/antalya',
       },
     }),
   },
@@ -696,6 +710,13 @@ const uiPages = [
         body: 'This home page text is mock data served from Strapi.',
         canonicalPath: '/en/',
       },
+      tr: {
+        title: 'Geovito Atlas',
+        slug: 'home',
+        excerpt: 'Dil durumu kontrollu atlas ve gezi icerigi.',
+        body: 'Bu anasayfa metni Strapi uzerinden gelen mock veridir.',
+        canonicalPath: '/tr/',
+      },
       de: {
         kind: 'draft',
         title: 'Geovito Atlas Startseite',
@@ -890,11 +911,6 @@ const countryProfiles = [
         'city-tr-antalya': 'tr-mediterranean-region',
         'city-tr-mugla': 'tr-aegean-region',
         'city-tr-istanbul': 'tr-marmara-region',
-      },
-      by_admin1_slug: {
-        antalya: 'tr-mediterranean-region',
-        mugla: 'tr-aegean-region',
-        istanbul: 'tr-marmara-region',
       },
     },
     notes: 'Mock profile for Turkiye hierarchy + automatic region key assignment.',

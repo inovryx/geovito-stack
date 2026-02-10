@@ -75,6 +75,9 @@
         "en": {
           "$ref": "#/$defs/localizedEntry"
         },
+        "tr": {
+          "$ref": "#/$defs/localizedEntry"
+        },
         "de": {
           "$ref": "#/$defs/localizedEntry"
         },
@@ -108,7 +111,19 @@
         },
         "place_type": {
           "type": "string",
-          "enum": ["country", "admin_area", "city", "district"]
+          "enum": [
+            "country",
+            "admin1",
+            "admin2",
+            "admin3",
+            "locality",
+            "neighborhood",
+            "street",
+            "poi",
+            "admin_area",
+            "city",
+            "district"
+          ]
         },
         "country_code": {
           "type": "string",
@@ -138,7 +153,7 @@
         },
         "canonical_language": {
           "type": "string",
-          "enum": ["en", "de", "es", "ru", "zh-cn"]
+          "enum": ["en", "tr", "de", "es", "ru", "zh-cn"]
         },
         "import_payload_version": {
           "type": "string"

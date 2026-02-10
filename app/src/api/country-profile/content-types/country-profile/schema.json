@@ -21,25 +21,32 @@
     },
     "enabled_levels": {
       "type": "json",
+      "description": "Ordered enabled place types for this country (for editorial forms and validation).",
       "required": true
     },
     "label_mapping": {
-      "type": "json"
+      "type": "json",
+      "description": "UI labels per place type (example: admin1=State for US, admin1=Il for TR)."
     },
     "level_labels": {
-      "type": "json"
+      "type": "json",
+      "description": "Compatibility mirror of label_mapping."
     },
     "parent_rules": {
-      "type": "json"
+      "type": "json",
+      "description": "Allowed parent types for each child place type."
     },
     "city_like_levels": {
-      "type": "json"
+      "type": "json",
+      "description": "Place types considered city-class for region/trending widgets."
     },
     "region_auto_assign": {
-      "type": "json"
+      "type": "json",
+      "description": "Optional region auto-assign maps (by_place_id/by_slug/by_admin1_place_id/by_admin1_slug)."
     },
     "notes": {
-      "type": "text"
+      "type": "text",
+      "description": "Editorial notes for operators."
     },
     "mock": {
       "type": "boolean",

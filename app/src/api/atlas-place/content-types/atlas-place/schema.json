@@ -19,6 +19,7 @@
     },
     "place_type": {
       "type": "enumeration",
+      "description": "Global normalized level. Country-specific labels and rules come from country_profile.",
       "enum": [
         "country",
         "admin1",
@@ -63,7 +64,7 @@
     },
     "canonical_language": {
       "type": "enumeration",
-      "enum": ["en", "de", "es", "ru", "zh-cn"],
+      "enum": ["en", "tr", "de", "es", "ru", "zh-cn"],
       "default": "en",
       "required": true
     },
@@ -89,30 +90,36 @@
     },
     "region_override": {
       "type": "string",
+      "description": "Manual region key override. If set, this wins over country_profile auto-region rules.",
       "maxLength": 160
     },
     "editorial_notes": {
-      "type": "text"
+      "type": "text",
+      "description": "Internal editorial notes. Not rendered for SEO/content output."
     },
     "parent_place_id": {
       "type": "string",
+      "description": "Canonical parent place_id. Keep aligned with parent relation.",
       "maxLength": 160
     },
     "country_profile": {
       "type": "relation",
       "relation": "manyToOne",
+      "description": "Country-specific hierarchy profile (enabled levels, labels, parent rules).",
       "target": "api::country-profile.country-profile",
       "inversedBy": "places"
     },
     "region_groups": {
       "type": "relation",
       "relation": "manyToMany",
+      "description": "Grouping only. Does not alter canonical parent chain.",
       "target": "api::region-group.region-group",
       "mappedBy": "members"
     },
     "parent": {
       "type": "relation",
       "relation": "manyToOne",
+      "description": "Choose parent according to country_profile.parent_rules.",
       "target": "api::atlas-place.atlas-place",
       "inversedBy": "children"
     },

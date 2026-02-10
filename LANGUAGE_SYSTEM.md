@@ -1,91 +1,114 @@
 # Geovito Language System
 
-## 1) Two-Layer Language Design
-Geovito separates language concerns into two strict layers:
-1. UI language layer (frontend file-based i18n)
-2. Content language layer (Strapi translations with status)
+## 1) Layer Separation (UI vs Content)
+Geovito keeps two independent language layers:
+1. UI language layer (frontend file-based JSON)
+2. Content language layer (Strapi translations + status)
 
-They must never be mixed.
+These layers are intentionally separate and cannot override each other.
 
 ## 2) UI Language Layer (File-based)
+Source of truth:
+- `frontend/src/i18n/en.json`
+
+Supported UI locales:
+- `en`, `tr`, `de`, `es`, `ru`, `zh-cn`
+
 Files:
-- `frontend/src/i18n/en.json` (source of truth)
+- `frontend/src/i18n/en.json`
+- `frontend/src/i18n/tr.json`
 - `frontend/src/i18n/de.json`
 - `frontend/src/i18n/es.json`
 - `frontend/src/i18n/ru.json`
 - `frontend/src/i18n/zh-cn.json`
 
-Active route namespaces:
-- `/en /de /es /ru /zh-cn`
-
 Validation:
 - `cd frontend && npm run i18n:check`
-- Any key mismatch fails build.
+- Any key mismatch fails the build.
 
 Rules:
-- no runtime UI machine translation
+- no runtime UI translation
 - no hardcoded UI copy outside i18n files
-- EN keys define canonical UI schema
+- EN key-set defines the contract
 
-## 3) Content Language Layer (Strapi)
-All localized content (`atlas_place`, `region_group`, `blog_post`, `ui_page`) uses `translations[]` with:
+## 3) Atlas Content Languages (Authoring + SEO)
+Atlas locales:
+- `en`, `tr`, `de`, `es`, `ru`, `zh-cn`
+
+Per content-language status:
 - `missing`
 - `draft`
 - `complete`
 
-Language fields are normalized server-side by language-state module.
+Authoring and SEO policy:
+- TR is allowed as an editorial authoring locale.
+- EN remains canonical SEO locale for index eligibility.
+- Non-EN routes can render fallback/runtimes for UX, but stay noindex.
 
-## 4) Indexing Rules by Domain
+## 4) Indexing Rules (Atlas + RegionGroup)
+Strict gate:
+- Indexable only when `lang=en` + `status=complete` + `mock=false`
+- Non-EN always `noindex,nofollow`
+- Non-EN canonical points to EN complete URL (if available)
+- Runtime preview (`?translate=1`) always `noindex,nofollow`
+- Mock pages always `noindex,nofollow` + MOCK banner
 
-### Atlas + RegionGroup (strict)
-- Indexable only if `lang=en` and `status=complete` and `mock=false`
-- Non-EN: `noindex,nofollow`
-- Non-EN canonical -> EN complete URL (when available)
-- Runtime preview (`?translate=1`) always noindex
-
-### UI/System Pages
-- Editable per language as independent system content
-- Canonical/self strategy can remain per-language
-- Project can choose stricter EN-only policy later without changing Atlas rules
-
-### Blog
-- Translation statuses can be applied
-- More flexible than Atlas, but mock/noindex and quality gating still enforced
-
-## 5) Banner Semantics (Frontend)
-State banners communicate non-index conditions:
+## 5) Banner Semantics
+Frontend keeps explicit state tokens:
 - `state-banner mock`
 - `state-banner fallback`
 - `state-banner runtime`
 
-Badges are rendered explicitly (MOCK/FALLBACK/RUNTIME).
+These are test/gate markers and must remain stable.
 
-## 6) Country Profile + Labels
-Country-specific terms (State/Il/Province etc.) are label-mapped in `country_profile.label_mapping`.
-This changes presentation only, not core storage model.
+## 6) Translation Bundle Workflow (Locked by Default)
+Dedicated scripts:
+- `bash tools/export_translation_bundle.sh`
+- `bash tools/import_translation_bundle.sh`
 
-## 7) Translation Bundle Workflow (Guarded)
-Translation bundle akisi import pipeline'dan ayridir:
-- Export:
-  - `bash tools/export_translation_bundle.sh`
-- Import:
-  - `bash tools/import_translation_bundle.sh`
+Dormant guard:
+- `TRANSLATION_BUNDLE_ENABLED=false` by default
+- without enabling this flag, import exits non-zero with `[DORMANT]`
+- check script: `bash tools/translation_bundle_dormant_check.sh`
 
-Bundle import guard:
-- `TRANSLATION_BUNDLE_ENABLED=false` varsayilan
-- flag `true` olmadan import script `[DORMANT]` ile fail eder
-- kontrol scripti: `bash tools/translation_bundle_dormant_check.sh`
+Optional status promotion guard:
+- `TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false` by default
+- if false: bundle cannot mutate translation status or `last_reviewed_at`
+- if true: status updates are allowed as *promotion only* (no downgrade)
 
-Bundle safe-field kurali:
-- `ui_page.translations`
-- `region_group.translations`
-- `country_profile` kurallari (`label_mapping`, `city_like_levels`, vb.)
-- opsiyonel minimal `atlas_place.translations`
+Dry-run:
+- `TRANSLATION_BUNDLE_ENABLED=true bash tools/import_translation_bundle.sh --dry-run`
 
-Import execution (gazetteer) bundleden ayri kalir ve dormant guardini korur.
+## 7) Translation Bundle Safe Update Contract
+Allowed by bundle import (localized layer):
+- `title`
+- `slug`
+- `excerpt`
+- `body`
+- `seo`
 
-## 8) Guardrails
-Not allowed:
+Blocked from bundle import (editorial/core safety):
+- parent relations (`parent`, `parent_place_id`)
+- `place_type`
+- `country_profile` relation
+- `region_override`
+- `region_groups` relations
+- `mock`
+- runtime import flags / background import settings
+
+Status workflow note:
+- `status` and `last_reviewed_at` are blocked unless
+  `TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=true`.
+
+## 8) Example Editorial Flow (TR Authoring)
+1. Editor writes Atlas content in TR via Strapi panel.
+2. EN canonical content is completed/reviewed for SEO publication.
+3. Remaining locales are translated offline.
+4. Bundle export/import is used for controlled localized updates.
+5. Import remains manual and guarded; no cron or auto-fetch runs.
+
+## 9) Not Allowed
 - Runtime translation for indexable pages
-- Treating frontend as translation source of truth
-- Bypassing status gate for SEO eligibility
+- Frontend becoming translation source of truth
+- Bypassing EN-only index gate
+- Enabling import execution by default

@@ -1,6 +1,6 @@
 'use strict';
 
-const DEFAULT_AUTHOR_LANGUAGES = Object.freeze(['en', 'de', 'es', 'ru', 'zh-cn']);
+const DEFAULT_AUTHOR_LANGUAGES = Object.freeze(['en', 'tr', 'de', 'es', 'ru', 'zh-cn']);
 
 const parseBool = (value) => String(value || '').trim().toLowerCase() === 'true';
 

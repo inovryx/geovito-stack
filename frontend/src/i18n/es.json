@@ -29,7 +29,10 @@
     "atlasCountries": "Atlas (Paises)",
     "blogSection": "Blog",
     "noCountryDescription": "Aun no hay descripcion.",
-    "noPostSummary": "Aun no hay resumen."
+    "noPostSummary": "Aun no hay resumen.",
+    "trendingTitle": "Trending places",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noTrending": "No trending places yet."
   },
   "blog": {
     "listTitle": "Blog",

@@ -29,7 +29,10 @@
     "atlasCountries": "Atlas (Strany)",
     "blogSection": "Blog",
     "noCountryDescription": "Opisanie poka otsutstvuet.",
-    "noPostSummary": "Kratkoe opisanie poka otsutstvuet."
+    "noPostSummary": "Kratkoe opisanie poka otsutstvuet.",
+    "trendingTitle": "Trending places",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noTrending": "No trending places yet."
   },
   "blog": {
     "listTitle": "Blog",

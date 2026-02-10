@@ -117,6 +117,8 @@ const normalizeAutoAssign = (value) => {
 
   const byPlaceIdSource = isRecord(value.by_place_id) ? value.by_place_id : {};
   const bySlugSource = isRecord(value.by_slug) ? value.by_slug : {};
+  const byAdmin1PlaceIdSource = isRecord(value.by_admin1_place_id) ? value.by_admin1_place_id : {};
+  const byAdmin1SlugSource = isRecord(value.by_admin1_slug) ? value.by_admin1_slug : {};
 
   const sanitize = (source, fieldPath) => {
     const output = {};
@@ -134,6 +136,8 @@ const normalizeAutoAssign = (value) => {
   return {
     by_place_id: sanitize(byPlaceIdSource, 'region_auto_assign.by_place_id'),
     by_slug: sanitize(bySlugSource, 'region_auto_assign.by_slug'),
+    by_admin1_place_id: sanitize(byAdmin1PlaceIdSource, 'region_auto_assign.by_admin1_place_id'),
+    by_admin1_slug: sanitize(byAdmin1SlugSource, 'region_auto_assign.by_admin1_slug'),
   };
 };
 

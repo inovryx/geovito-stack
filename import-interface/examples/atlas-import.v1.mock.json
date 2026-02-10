@@ -28,6 +28,11 @@
           "slug": "germany",
           "excerpt": "Country profile"
         },
+        "tr": {
+          "status": "draft",
+          "title": "Almanya",
+          "slug": "almanya"
+        },
         "de": {
           "status": "complete",
           "title": "Deutschland",

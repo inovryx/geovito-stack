@@ -29,7 +29,10 @@
     "atlasCountries": "Atlas (Lander)",
     "blogSection": "Blog",
     "noCountryDescription": "Noch keine Beschreibung vorhanden.",
-    "noPostSummary": "Noch keine Zusammenfassung vorhanden."
+    "noPostSummary": "Noch keine Zusammenfassung vorhanden.",
+    "trendingTitle": "Trending places",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noTrending": "No trending places yet."
   },
   "blog": {
     "listTitle": "Blog",

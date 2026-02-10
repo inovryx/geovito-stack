@@ -6,6 +6,7 @@ UI metinleri dosya tabanli i18n ile yonetilir (`src/i18n/*.json`).
 
 ## Diller
 - `/en`
+- `/tr`
 - `/de`
 - `/es`
 - `/ru`

@@ -78,7 +78,7 @@ module.exports = createCoreController('api::atlas-place.atlas-place', ({ strapi 
     const entries = await strapi.entityService.findMany('api::atlas-place.atlas-place', {
       publicationState: 'preview',
       filters: { place_id: placeId },
-      populate: ['translations', 'parent', 'children'],
+      populate: ['translations', 'parent', 'children', 'country_profile'],
       limit: 1,
     });
 

@@ -1,165 +1,128 @@
 # Geovito Clean Core Atlas Architecture
 
-## 1) Live Platform Shape
-- `app/`: Strapi canonical CMS + API
+## 1) Live Shape
+- `app/`: Strapi canonical CMS/API
 - `frontend/`: Astro read-only consumer (Cloudflare Pages target)
-- `services/search-indexer/`: domain-separated derived search layer
+- `services/search-indexer/`: derived search layer
 
 Core guardrails:
-- Atlas is authoritative
-- Blog/UI are contributory or system domains
-- Import execution remains dormant
-- Frontend does not own business truth
+- Atlas authoritative
+- Blog/UI contributory or system domains
+- Import execution dormant
+- Frontend non-authoritative
 
-## 2) Domain Separation (Non-Negotiable)
+## 2) Domain Modules
 
-### Atlas Domain
-- Primary model: `api::atlas-place.atlas-place`
-- One global place model with country-specific behavior via profile rules
-- Stable `place_id`, immutable identity, canonical URL continuity
+### Atlas Core
+- Model: `api::atlas-place.atlas-place`
+- Stable `place_id`
+- Single global `place_type` model
+- Country-specific behavior via `country_profile`
 
-### Region Group Domain (Atlas-adjacent, non-parent chain)
-- Model: `api::region-group.region-group`
-- Purpose: country-specific grouping pages (example: Turkiye geographic regions)
-- Grouping does not force extra parent levels in core place hierarchy
-
-### Country Profile Domain
+### Country Profile
 - Model: `api::country-profile.country-profile`
-- Purpose: country-specific level enablement, label mapping, parent validation rules, optional auto-region assignment
-- Keeps global schema stable while allowing country variation
+- Defines: `enabled_levels`, `parent_rules`, `label_mapping`, `city_like_levels`, `region_auto_assign`
+- Keeps global schema stable while allowing country-level differences
 
-### Blog Domain
+### Region Group (Grouping Layer)
+- Model: `api::region-group.region-group`
+- Country-specific grouping pages (example: TR regional pages)
+- Not part of canonical parent chain
+
+### Blog
 - Model: `api::blog-post.blog-post`
-- Independent from Atlas authority
-- Optional place references only
+- Contributory domain
+- Optional Atlas linking only
 
-### UI/System Domain
+### UI/System
 - Model: `api::ui-page.ui-page`
-- Home/About/Rules/Help and system content
-- UI text layer remains file-based i18n in frontend
+- Home/About/Rules/Help style pages
+- UI text still file-based i18n in frontend
 
-### Suggestion Domain
+### Suggestions
 - Model: `api::atlas-suggestion.atlas-suggestion`
 - Public submit + editorial moderation
 - No automatic Atlas mutation
 
-### Search Domain
+### Search
 - Derived from canonical content
-- Atlas and Blog ranking/index contracts separated
+- Atlas and Blog contracts separated
 
-### Import Domain (Dormant)
-- `api::gazetteer-entry.gazetteer-entry`
-- `api::import-batch.import-batch`
-- Contract-ready, execution disabled by default
+### Import (Dormant)
+- Gazetteer/import models exist for contract readiness
+- Execution remains disabled by default
 
-## 3) Atlas Data Model (Single Core + Country Variants)
+## 3) Language + SEO Contract
+UI locales:
+- `en`, `tr`, `de`, `es`, `ru`, `zh-cn`
 
-### `atlas_place`
-Key fields:
-- `place_id` (immutable)
-- `place_type`:
-  - modern levels: `country|admin1|admin2|admin3|locality|neighborhood|street|poi`
-  - compatibility levels kept active: `admin_area|city|district`
-- `country_code`
-- `parent` + `parent_place_id`
-- `translations[]` with `missing|draft|complete`
-- `country_profile` relation
-- `region_groups` relation
-- optional `region`, `region_override`, `editorial_notes`, `lat/lng`
-- `mock`
+Atlas/RegionGroup statuses:
+- `missing`, `draft`, `complete`
 
-### `country_profile`
-Key fields:
-- `country_code`
-- `enabled_levels[]`
-- `parent_rules{}`
-- `label_mapping{}`
-- `city_like_levels[]`
-- compatibility mirror: `level_labels{}`
-- `region_auto_assign{ by_place_id / by_slug / by_admin1_place_id / by_admin1_slug }`
-- `mock`
+Index rule (strict):
+- only `en + complete + mock=false` indexable
+- non-EN noindex + canonical to EN complete
+- mock always noindex
 
-### `region_group`
-Key fields:
-- `region_key` (stable key)
-- `country_code`
-- `translations[]`
-- `members` (many-to-many Atlas places)
-- optional `country_profile` relation
-- `mock`
+Authoring rule:
+- TR can be editorial authoring locale
+- EN remains canonical/index locale
 
-## 4) Validation Rules (Server-side)
-Validation runs in Strapi lifecycle before create/update:
-- `place_type` must be in allowed type set
-- non-country place must have parent
-- country must not have parent
-- `country_code` normalized and enforced
-- parent/child compatibility resolved via effective country profile rules
-- hierarchy cycle detection blocks circular parent chains
-- coordinates normalized (`lat/lng`, `latitude/longitude`)
-- `place_id` immutable after creation
-- canonical slug immutability preserved
-- effective region precedence:
-  - `region_override` (manual) wins
-  - otherwise country-profile auto mapping resolves region
-- effective region is written to `region`
-- resolved effective region enforces additive `region_groups` membership (auto group + manual groups)
+## 4) Editorial Forms (Panel-first)
+Strapi panel is canonical editorial surface:
+- Atlas place create/edit with hierarchy safety
+- Country profile rule editing
+- Region group editing + membership
+- UI page locale content editing
 
-This enables form-based editorial additions without import execution.
+Server-side validation enforces:
+- parent/child legality from `country_profile.parent_rules`
+- level enablement from `country_profile.enabled_levels`
+- cycle prevention
+- country consistency
+- region precedence and additive region group membership
 
-## 5) Frontend Route Plan
-Implemented/active routes:
-- `/:lang/atlas/:placeSlug/`
-- `/:lang/atlas/`
-- `/:lang/regions/:regionSlug/`
-- `/:lang/regions/`
-- `/:lang/blog/` and `/:lang/blog/:postSlug/`
-- `/:lang/about|rules|help`
-- `/:lang/account` and `/:lang/dashboard`
+## 5) Region Behavior (TR-safe, Global-safe)
+Effective region precedence:
+1. `region_override` (manual)
+2. `country_profile.region_auto_assign` (including admin1 mapping)
+3. else null
 
-Frontend remains read-only and renders Strapi output + SEO meta decisions.
+If effective region resolves:
+- `region` field is set
+- matching `region_group` membership is enforced additively
+- manual extra memberships are preserved
 
-## 6) SEO / Index Contract (Atlas + RegionGroup)
-Atlas and RegionGroup use strict EN-centric gate:
-- Indexable only when `lang=en` and translation state `complete` and `mock=false`
-- Non-EN variants: `noindex,nofollow`
-- Non-EN canonical points to EN complete URL when available
-- Mock pages always noindex + mock banner
-
-Sitemap includes only indexable documents (EN complete, non-mock).
-
-## 7) Mock Layer and Safety
-Mock data includes:
-- Atlas places
-- Blog posts
-- UI pages
-- Suggestions
-- Gazetteer/import metadata
-- Country profiles
-- Region groups
-
-All mock cleanup remains one-command via `tools/purge_mock.sh` and clear pipeline.
-
-## 8) Translation Bundle Boundary (Locked by Default)
-Dedicated scripts exist for form-friendly translation bundle operations:
+## 6) Translation Bundle Boundary
+Scripts:
 - `tools/export_translation_bundle.sh`
 - `tools/import_translation_bundle.sh`
 
-Import side remains locked unless `TRANSLATION_BUNDLE_ENABLED=true`.
-Default mode is dormant and enforced by:
+Guards:
+- `TRANSLATION_BUNDLE_ENABLED=false` (default)
+- `TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE=false` (default)
+
+Import is idempotent and safe-field scoped.
+No real import execution is enabled.
+
+## 7) Frontend Route Plan
+- `/:lang/`
+- `/:lang/atlas/`
+- `/:lang/atlas/:placeSlug/`
+- `/:lang/regions/`
+- `/:lang/regions/:regionSlug/`
+- `/:lang/blog/`
+- `/:lang/blog/:postSlug/`
+- `/:lang/about|rules|help`
+- `/:lang/account/`, `/:lang/dashboard/`
+
+## 8) Operational Gates
+Critical scripts:
+- `tools/pre_design_gate_check.sh`
+- `tools/pre_import_index_gate_check.sh`
+- `tools/shell_smoke_test.sh`
+- `tools/pages_build_check.sh`
+- `tools/import_dormant_check.sh`
 - `tools/translation_bundle_dormant_check.sh`
 
-Bundle import is idempotent and safe-field scoped for:
-- `ui_page`
-- `country_profile`
-- `region_group`
-- optional minimal `atlas_place` translation fields
-
-## 9) Import Boundary
-Import is intentionally dormant:
-- no cron
-- no automatic fetch
-- no background importer in runtime
-- `tools/run_import.sh` returns non-zero with `[DORMANT]`
-
-Future import runs in controlled phases with idempotency + safe-field contracts.
+These must remain green before feature merges.

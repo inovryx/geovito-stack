@@ -35,6 +35,7 @@ services:
       SEED_ON_BOOT: ${SEED_ON_BOOT:-false}
       SEED_MOCK_ON_BOOT: ${SEED_MOCK_ON_BOOT:-false}
       TRANSLATION_BUNDLE_ENABLED: ${TRANSLATION_BUNDLE_ENABLED:-false}
+      TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE: ${TRANSLATION_BUNDLE_ALLOW_STATUS_PROMOTE:-false}
 
       DATABASE_CLIENT: ${DATABASE_CLIENT:-postgres}
       DATABASE_HOST: db
@@ -55,7 +56,7 @@ services:
       AI_ENABLED: ${AI_ENABLED:-false}
       AI_DIAGNOSTICS_ENABLED: ${AI_DIAGNOSTICS_ENABLED:-false}
       AI_DRAFT_ENABLED: ${AI_DRAFT_ENABLED:-false}
-      AI_AUTHOR_LANGUAGES: ${AI_AUTHOR_LANGUAGES:-en,de,es,ru,zh-cn}
+      AI_AUTHOR_LANGUAGES: ${AI_AUTHOR_LANGUAGES:-en,tr,de,es,ru,zh-cn}
     volumes:
       - geovito_uploads:/opt/app/public/uploads
       - ./logs:/opt/logs
