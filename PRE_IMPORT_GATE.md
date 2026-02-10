@@ -14,7 +14,7 @@ Script ile dogrulama:
 ## 2) Sitemap Gate
 - [ ] Sitemap index uretiliyor (`/sitemap.xml`)
 - [ ] Sitemap chunk dosyalari uretiliyor (`/sitemaps/atlas-<lang>-<n>.xml`)
-- [ ] Sadece `mock=false` + `complete` URL'ler dahil
+- [ ] Sadece `mock=false` + `complete` URL'ler dahil (Atlas + RegionGroup EN)
 - [ ] mock URL ve non-complete dil varyantlari dislanmis
 
 Script ile dogrulama:
@@ -41,9 +41,11 @@ Script ile dogrulama:
 ## 5) Import Dormancy Gate
 - [ ] Gercek import execution acik degil
 - [ ] `tools/run_import.sh` bilincli non-zero donuyor
+- [ ] Translation bundle import varsayilan locked (`TRANSLATION_BUNDLE_ENABLED=false`)
 
 Komut:
 - `bash tools/run_import.sh ; echo $?`
+- `bash tools/translation_bundle_dormant_check.sh`
 
 ## 6) Observability Gate
 - [ ] Domain log klasorleri: `atlas, blog, ui, search, suggestions, ops, import, ai`

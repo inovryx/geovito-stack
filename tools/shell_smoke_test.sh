@@ -199,9 +199,15 @@ check_page "/en/atlas/mitte-berlin/" "200" "noindex,nofollow" "https://www.geovi
 check_page "/en/atlas/antiphellos-ruins/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/antiphellos-ruins" "mock"
 check_page "/en/atlas/times-square/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/times-square" "mock"
 
+check_page "/en/regions/tr-mediterranean-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/tr-mediterranean-region" "mock"
+check_page "/de/regions/tr-mediterranean-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/tr-mediterranean-region" "mock,fallback"
+check_page "/en/regions/it-pilot-region/" "200" "index,follow" "https://www.geovito.com/en/regions/it-pilot-region" "none"
+check_page "/de/regions/it-pilot-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/it-pilot-region" "fallback"
+
 check_contains "/en/atlas/kas-antalya/" "/en/blog/reading-city-through-district-layers/" "Kas page related blog link"
 check_contains "/en/atlas/manhattan/" "/en/blog/neighborhood-food-walks-no-tourist-traps/" "Manhattan page related blog link"
 check_contains "/en/atlas/mitte-berlin/" "/en/blog/reading-city-through-district-layers/" "Mitte page related blog link"
+check_contains "/en/regions/tr-mediterranean-region/" "/en/atlas/antalya/" "TR region page city-like member link"
 
 check_page "/en/blog/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/" "mock"
 check_page "/en/blog/plan-3-day-europe-city-break/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/plan-3-day-europe-city-break" "mock"

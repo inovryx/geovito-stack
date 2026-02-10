@@ -65,7 +65,7 @@ Key fields:
 - `translations[]` with `missing|draft|complete`
 - `country_profile` relation
 - `region_groups` relation
-- optional `region`, `lat/lng`
+- optional `region`, `region_override`, `editorial_notes`, `lat/lng`
 - `mock`
 
 ### `country_profile`
@@ -73,8 +73,10 @@ Key fields:
 - `country_code`
 - `enabled_levels[]`
 - `parent_rules{}`
-- `level_labels{}`
-- `region_auto_assign{ by_place_id / by_slug }`
+- `label_mapping{}`
+- `city_like_levels[]`
+- compatibility mirror: `level_labels{}`
+- `region_auto_assign{ by_place_id / by_slug / by_admin1_place_id / by_admin1_slug }`
 - `mock`
 
 ### `region_group`
@@ -93,10 +95,15 @@ Validation runs in Strapi lifecycle before create/update:
 - country must not have parent
 - `country_code` normalized and enforced
 - parent/child compatibility resolved via effective country profile rules
+- hierarchy cycle detection blocks circular parent chains
 - coordinates normalized (`lat/lng`, `latitude/longitude`)
 - `place_id` immutable after creation
 - canonical slug immutability preserved
-- optional auto region assignment uses country profile mapping
+- effective region precedence:
+  - `region_override` (manual) wins
+  - otherwise country-profile auto mapping resolves region
+- effective region is written to `region`
+- resolved effective region enforces additive `region_groups` membership (auto group + manual groups)
 
 This enables form-based editorial additions without import execution.
 
@@ -133,7 +140,22 @@ Mock data includes:
 
 All mock cleanup remains one-command via `tools/purge_mock.sh` and clear pipeline.
 
-## 8) Import Boundary
+## 8) Translation Bundle Boundary (Locked by Default)
+Dedicated scripts exist for form-friendly translation bundle operations:
+- `tools/export_translation_bundle.sh`
+- `tools/import_translation_bundle.sh`
+
+Import side remains locked unless `TRANSLATION_BUNDLE_ENABLED=true`.
+Default mode is dormant and enforced by:
+- `tools/translation_bundle_dormant_check.sh`
+
+Bundle import is idempotent and safe-field scoped for:
+- `ui_page`
+- `country_profile`
+- `region_group`
+- optional minimal `atlas_place` translation fields
+
+## 9) Import Boundary
 Import is intentionally dormant:
 - no cron
 - no automatic fetch

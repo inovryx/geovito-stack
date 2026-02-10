@@ -20,6 +20,8 @@ export type AtlasPlace = {
   parent_place_id?: string | null;
   country_code: string;
   region?: string | null;
+  region_override?: string | null;
+  editorial_notes?: string | null;
   admin_level?: number;
   lat?: number;
   lng?: number;
@@ -35,6 +37,9 @@ export type AtlasPlace = {
   country_profile?: {
     id: number;
     country_code: string;
+    label_mapping?: Record<string, string>;
+    level_labels?: Record<string, string>;
+    city_like_levels?: string[];
   } | null;
   region_groups?: Array<{
     id: number;
@@ -77,6 +82,13 @@ export type RegionGroup = {
   translations: LocalizedContent[];
   mock: boolean;
   members?: AtlasPlace[];
+  country_profile?: {
+    id: number;
+    country_code: string;
+    city_like_levels?: string[];
+    label_mapping?: Record<string, string>;
+    level_labels?: Record<string, string>;
+  } | null;
 };
 
 const STRAPI_URL =
@@ -166,6 +178,8 @@ export const getRegionGroups = async () => {
         'populate[1]': 'members',
         'populate[2]': 'members.translations',
         'populate[3]': 'members.parent',
+        'populate[4]': 'members.country_profile',
+        'populate[5]': 'country_profile',
         'pagination[pageSize]': '200',
       });
 

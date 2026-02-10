@@ -41,6 +41,15 @@ Search contract export (Atlas complete-only):
 ```bash
 cd /home/ali/geovito-stack
 bash tools/export_search_documents.sh
+bash tools/export_blog_documents.sh
+node tools/suggest_internal_links.js --atlas artifacts/search/atlas-documents.json --blog artifacts/search/blog-documents.json
+```
+
+Translation bundle (guarded):
+```bash
+cd /home/ali/geovito-stack
+bash tools/export_translation_bundle.sh
+bash tools/translation_bundle_dormant_check.sh
 ```
 
 Future isolated import workspace (design-only):

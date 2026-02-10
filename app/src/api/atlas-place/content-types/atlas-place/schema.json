@@ -87,6 +87,13 @@
       "type": "string",
       "maxLength": 120
     },
+    "region_override": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "editorial_notes": {
+      "type": "text"
+    },
     "parent_place_id": {
       "type": "string",
       "maxLength": 160

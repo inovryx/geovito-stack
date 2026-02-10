@@ -65,6 +65,7 @@ bash tools/pre_design_gate_check.sh
 Includes:
 - `tools/prod_health.sh`
 - `tools/import_dormant_check.sh`
+- `tools/translation_bundle_dormant_check.sh`
 - `tools/import_log_sanity_check.sh`
 - `tools/pre_import_index_gate_check.sh`
 - `tools/shell_smoke_test.sh`
@@ -85,6 +86,14 @@ Domain log folders (human + jsonl):
 Not:
 - `import` domain is reserved for future real import execution events.
 - mock seed/purge events must go to `ops`, not `import`.
+
+## Known Warning (Strapi 6 Migration Note)
+Eger loglarda su uyari gorulurse:
+- `admin.auth.options.expiresIn is deprecated and will be removed in Strapi 6`
+
+Bu sprintte davranis degistirilmez; not edilir.
+Strapi 6 gecisinde `admin.auth.sessions.maxRefreshTokenLifespan` ve
+`admin.auth.sessions.maxSessionLifespan` alanlari ile yeni yapilandirma uygulanacaktir.
 
 ## How To Trace By Request ID
 1. Capture request id from API response header:
@@ -168,13 +177,21 @@ Current auth mode:
 1. Create `Atlas Place` in Strapi admin.
 2. Fill identity:
    - `place_id` (stable, immutable)
-   - `place_type` (`country|admin_area|city|district|poi`)
+   - `place_type` (`country|admin1|admin2|admin3|locality|neighborhood|street|poi`)
    - `country_code`, `slug`
 3. Set hierarchy:
    - `parent_place_id` and/or `parent` relation
+   - optional `region_override` (manual region key override)
+   - optional `editorial_notes`
 4. Fill `translations[]` for each language:
    - `title`, `excerpt`, `body`, `status`
 5. Mark a language as `complete` only when title + body are filled.
+
+Country-profile sanity check:
+```bash
+cd /home/ali/geovito-stack
+bash tools/country_profile_sanity_check.sh
+```
 
 Checklist endpoint (computed, read-only):
 ```bash
@@ -245,6 +262,19 @@ docker compose exec -T db sh -lc 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < 
 ```bash
 cd /home/ali/geovito-stack
 bash tools/export_search_documents.sh
+bash tools/export_blog_documents.sh
+node tools/suggest_internal_links.js \
+  --atlas artifacts/search/atlas-documents.json \
+  --blog artifacts/search/blog-documents.json
+```
+
+## Translation Bundle (Guarded)
+```bash
+cd /home/ali/geovito-stack
+bash tools/export_translation_bundle.sh
+bash tools/translation_bundle_dormant_check.sh
+# Controlled phase only:
+# TRANSLATION_BUNDLE_ENABLED=true bash tools/import_translation_bundle.sh
 ```
 
 ## AI Smoke Tests (Flags OFF by default)

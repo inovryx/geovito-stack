@@ -51,9 +51,28 @@ if (!resolution.output || !resolution.complete) {
 }
 
 const placeMap = new Map(allPlaces.map((entry) => [entry.place_id, entry]));
-const memberPlaces = (Array.isArray(group.members) ? group.members : [])
+const countryProfile = group.country_profile || null;
+const cityLikeLevels =
+  Array.isArray(countryProfile?.city_like_levels) && countryProfile.city_like_levels.length > 0
+    ? countryProfile.city_like_levels
+    : ['city', 'locality'];
+const levelLabels = countryProfile?.label_mapping || countryProfile?.level_labels || {};
+
+const relatedByRelation = (Array.isArray(group.members) ? group.members : [])
   .map((entry) => (entry?.place_id ? placeMap.get(entry.place_id) || entry : entry))
   .filter(Boolean) as AtlasPlace[];
+
+const relatedByEffectiveRegion = allPlaces.filter(
+  (entry) => entry.country_code === group.country_code && String(entry.region || '').trim() === group.region_key
+);
+
+const memberPlaces = Array.from(
+  new Map(
+    [...relatedByRelation, ...relatedByEffectiveRegion]
+      .filter((entry) => cityLikeLevels.includes(String(entry.place_type || '').toLowerCase()))
+      .map((entry) => [entry.place_id, entry])
+  ).values()
+) as AtlasPlace[];
 
 const title = resolution.output.seo?.metaTitle || resolution.output.title || group.region_key;
 const description = resolution.output.seo?.metaDescription || resolution.output.excerpt || '';
@@ -102,6 +121,7 @@ const memberLinks = memberPlaces
     return {
       place_id: entry.place_id,
       place_type: entry.place_type,
+      place_type_label: levelLabels[entry.place_type] || entry.place_type,
       title: output.title || entry.place_id,
       href: pathForLanguage(lang, `atlas/${slug}`),
       state: requested?.status || 'missing',
@@ -178,7 +198,7 @@ const memberLinks = memberPlaces
           {memberLinks.map((entry) => (
             <li>
               <a href={entry.href}>{entry.title}</a>
-              <span class="status-pill">{entry.place_type}</span>
+              <span class="status-pill">{entry.place_type_label}</span>
               <span class="status-pill">{entry.state}</span>
             </li>
           ))}

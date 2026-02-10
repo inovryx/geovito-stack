@@ -67,11 +67,28 @@ const mergeLabelMap = (...labelSources) => {
   return merged;
 };
 
+const mergeCityLikeLevels = (...levelSources) => {
+  const merged = [];
+  for (const source of levelSources) {
+    if (!Array.isArray(source)) continue;
+    for (const rawLevel of source) {
+      const normalizedLevel = normalizePlaceType(rawLevel);
+      if (!PLACE_TYPE_SET.has(normalizedLevel)) continue;
+      if (!merged.includes(normalizedLevel)) {
+        merged.push(normalizedLevel);
+      }
+    }
+  }
+  return merged;
+};
+
 const normalizeAutoAssign = (value) => {
   if (!isRecord(value)) return {};
 
   const byPlaceId = isRecord(value.by_place_id) ? value.by_place_id : {};
   const bySlug = isRecord(value.by_slug) ? value.by_slug : {};
+  const byAdmin1PlaceId = isRecord(value.by_admin1_place_id) ? value.by_admin1_place_id : {};
+  const byAdmin1Slug = isRecord(value.by_admin1_slug) ? value.by_admin1_slug : {};
 
   const sanitizeMap = (source) => {
     const output = {};
@@ -87,6 +104,8 @@ const normalizeAutoAssign = (value) => {
   return {
     by_place_id: sanitizeMap(byPlaceId),
     by_slug: sanitizeMap(bySlug),
+    by_admin1_place_id: sanitizeMap(byAdmin1PlaceId),
+    by_admin1_slug: sanitizeMap(byAdmin1Slug),
   };
 };
 
@@ -101,7 +120,18 @@ const normalizeProfileData = (profile, countryCode) => {
   );
 
   const parentRules = mergeRuleMap(DEFAULT_PROFILE.parent_rules, defaults.parent_rules, profile?.parent_rules);
-  const levelLabels = mergeLabelMap(DEFAULT_PROFILE.level_labels, defaults.level_labels, profile?.level_labels);
+  const levelLabels = mergeLabelMap(
+    DEFAULT_PROFILE.label_mapping,
+    defaults.label_mapping,
+    defaults.level_labels,
+    profile?.label_mapping,
+    profile?.level_labels
+  );
+  const cityLikeLevels = mergeCityLikeLevels(
+    DEFAULT_PROFILE.city_like_levels,
+    defaults.city_like_levels,
+    profile?.city_like_levels
+  );
   const regionAutoAssign = normalizeAutoAssign(profile?.region_auto_assign || defaults.region_auto_assign);
 
   return {
@@ -109,7 +139,9 @@ const normalizeProfileData = (profile, countryCode) => {
     country_code: normalizedCountry,
     enabled_levels: enabledLevels,
     parent_rules: parentRules,
+    label_mapping: levelLabels,
     level_labels: levelLabels,
+    city_like_levels: cityLikeLevels,
     region_auto_assign: regionAutoAssign,
   };
 };
@@ -175,9 +207,11 @@ const isParentAllowed = (profile, placeType, parentPlaceType) => {
   return allowedParents.includes(parent);
 };
 
-const resolveAutoRegionKey = (profile, data, existing = null) => {
+const resolveAutoRegionKey = (profile, data, existing = null, context = {}) => {
   const placeId = String(data.place_id || existing?.place_id || '').trim();
   const slug = String(data.slug || existing?.slug || '').trim();
+  const admin1PlaceId = String(context.admin1PlaceId || '').trim();
+  const admin1Slug = String(context.admin1Slug || '').trim();
 
   const byPlaceId = profile?.region_auto_assign?.by_place_id || {};
   if (placeId && byPlaceId[placeId]) {
@@ -189,7 +223,31 @@ const resolveAutoRegionKey = (profile, data, existing = null) => {
     return String(bySlug[slug]).trim();
   }
 
+  const byAdmin1PlaceId = profile?.region_auto_assign?.by_admin1_place_id || {};
+  if (admin1PlaceId && byAdmin1PlaceId[admin1PlaceId]) {
+    return String(byAdmin1PlaceId[admin1PlaceId]).trim();
+  }
+
+  const byAdmin1Slug = profile?.region_auto_assign?.by_admin1_slug || {};
+  if (admin1Slug && byAdmin1Slug[admin1Slug]) {
+    return String(byAdmin1Slug[admin1Slug]).trim();
+  }
+
   return '';
+};
+
+const isCityLikeLevel = (profile, placeType) => {
+  const normalized = normalizePlaceType(placeType);
+  if (!normalized) return false;
+  const levels = Array.isArray(profile?.city_like_levels) ? profile.city_like_levels : [];
+  return levels.includes(normalized);
+};
+
+const getLabelForLevel = (profile, placeType) => {
+  const normalized = normalizePlaceType(placeType);
+  if (!normalized) return '';
+  const mapping = isRecord(profile?.label_mapping) ? profile.label_mapping : {};
+  return String(mapping[normalized] || normalized).trim();
 };
 
 module.exports = {
@@ -199,5 +257,7 @@ module.exports = {
   isLevelEnabled,
   isParentAllowed,
   resolveAutoRegionKey,
+  isCityLikeLevel,
+  getLabelForLevel,
   getDefaultProfile,
 };

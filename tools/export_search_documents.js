@@ -66,6 +66,7 @@ const fetchAllAtlasPlaces = async () => {
     const payload = await fetchJson('/api/atlas-places', {
       'populate[0]': 'translations',
       'populate[1]': 'parent',
+      'populate[2]': 'country_profile',
       'pagination[page]': page,
       'pagination[pageSize]': pageSize,
     });
@@ -87,14 +88,26 @@ const buildAtlasDocument = (place, translation) => {
     ? toAbsoluteUrl(translation.canonical_path)
     : toAbsoluteUrl(`/${translation.language}/atlas/${translation.slug}/`);
 
+  const placeTypeLabel = place.country_profile?.label_mapping?.[place.place_type] || place.place_type;
   const normalizedTokens = unique(
-    [translation.title, translation.slug, place.country_code, place.place_id, parentPlaceId]
+    [
+      translation.title,
+      translation.slug,
+      place.country_code,
+      place.place_id,
+      parentPlaceId,
+      place.region,
+      placeTypeLabel,
+    ]
       .map(normalizeToken)
       .flatMap((value) => value.split(/\s+/g))
   );
 
   const isMock = place.mock === true;
-  const isTopCity = ['city', 'locality'].includes(String(place.place_type || '').toLowerCase());
+  const cityLikeLevels = Array.isArray(place.country_profile?.city_like_levels)
+    ? place.country_profile.city_like_levels.map((entry) => String(entry || '').toLowerCase())
+    : ['city', 'locality'];
+  const isTopCity = cityLikeLevels.includes(String(place.place_type || '').toLowerCase());
 
   return {
     document_id: documentId,
@@ -110,6 +123,8 @@ const buildAtlasDocument = (place, translation) => {
       url,
       country_code: place.country_code,
       parent_place_id: parentPlaceId,
+      region: place.region || null,
+      place_type_label: placeTypeLabel,
       city_class: isTopCity ? 'city' : null,
       aliases: [],
       normalized_tokens: normalizedTokens,

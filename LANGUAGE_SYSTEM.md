@@ -61,13 +61,28 @@ State banners communicate non-index conditions:
 Badges are rendered explicitly (MOCK/FALLBACK/RUNTIME).
 
 ## 6) Country Profile + Labels
-Country-specific terms (State/Il/Province etc.) are label-mapped in `country_profile.level_labels`.
+Country-specific terms (State/Il/Province etc.) are label-mapped in `country_profile.label_mapping`.
 This changes presentation only, not core storage model.
 
-## 7) Import/Export Translation Workflow
-- Translation export/import remains contract-driven
-- Import execution is dormant by default
-- Form edits in Strapi remain valid and should not be overwritten outside safe-field contracts
+## 7) Translation Bundle Workflow (Guarded)
+Translation bundle akisi import pipeline'dan ayridir:
+- Export:
+  - `bash tools/export_translation_bundle.sh`
+- Import:
+  - `bash tools/import_translation_bundle.sh`
+
+Bundle import guard:
+- `TRANSLATION_BUNDLE_ENABLED=false` varsayilan
+- flag `true` olmadan import script `[DORMANT]` ile fail eder
+- kontrol scripti: `bash tools/translation_bundle_dormant_check.sh`
+
+Bundle safe-field kurali:
+- `ui_page.translations`
+- `region_group.translations`
+- `country_profile` kurallari (`label_mapping`, `city_like_levels`, vb.)
+- opsiyonel minimal `atlas_place.translations`
+
+Import execution (gazetteer) bundleden ayri kalir ve dormant guardini korur.
 
 ## 8) Guardrails
 Not allowed:

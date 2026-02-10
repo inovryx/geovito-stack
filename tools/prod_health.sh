@@ -13,9 +13,17 @@ echo "=============================================================="
 
 docker compose ps
 
-admin_status="$(curl -s -o /dev/null -w '%{http_code}' "$API_BASE/admin")"
+admin_status=""
+for _ in $(seq 1 60); do
+  admin_status="$(curl -s -o /dev/null -w '%{http_code}' "$API_BASE/admin" || true)"
+  if [[ "$admin_status" == "200" ]]; then
+    break
+  fi
+  sleep 2
+done
+
 if [[ "$admin_status" != "200" ]]; then
-  echo "FAIL: /admin returned $admin_status"
+  echo "FAIL: /admin returned $admin_status after readiness wait"
   exit 1
 fi
 echo "OK: /admin -> 200"

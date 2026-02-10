@@ -11,8 +11,11 @@
     "develop": "strapi develop",
     "mock:seed": "node scripts/manage_mock_data.js seed",
     "mock:clear": "node scripts/manage_mock_data.js clear",
+    "profile:sanity": "node scripts/country_profile_sanity_check.js",
     "start": "strapi start",
     "strapi": "strapi",
+    "translation:bundle:export": "node scripts/manage_translation_bundle.js export",
+    "translation:bundle:import": "node scripts/manage_translation_bundle.js import",
     "upgrade": "npx @strapi/upgrade latest",
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },

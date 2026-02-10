@@ -29,7 +29,7 @@ Sitemap generation follows the same gate:
 
 ## 5) Top Cities Logic
 "Top cities" is a cross-country city-class list, not an admin-level bucket.
-- Include `place_type` in (`city`, `locality`) as same class
+- Include country-profile `city_like_levels` as city-class source
 - Example: Istanbul and New York can appear in same city-class output
 - admin levels remain hierarchy metadata, not top-city segmentation key
 
@@ -47,6 +47,11 @@ Current export behavior for Atlas:
 - emits EN complete documents
 - marks indexability using strict gate + mock check
 - preserves place identity via immutable `place_id`
+- adds metadata enrichment fields:
+  - `place_type`
+  - `place_type_label` (from `country_profile.label_mapping`)
+  - `region`
+  - `city_class` (from `country_profile.city_like_levels`)
 
 ## 7) CountryProfile + RegionGroup Context
 Search transformation can use:

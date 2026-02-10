@@ -8,6 +8,7 @@ Yeni ozellikler bu kontrata uymak zorundadir.
 - Canonical URL kurali sabittir; slug politikasi geriye donuk kirilmadan evrimlesir.
 - Guncellemeler yikici degil, evrimsel olmalidir.
 - URL ve ic link yapisi SEO surekliligini bozacak sekilde degistirilemez.
+- Region group katmani parent-chain katmani degildir; yalnizca grouping alanidir.
 
 ## 2) Dil ve Indexleme Kurali
 - Atlas icerikleri dil bazinda yalnizca su durumlarda olabilir:
@@ -26,6 +27,10 @@ Yeni ozellikler bu kontrata uymak zorundadir.
 - Kullanici Atlas kaydini dogrudan degistiremez.
 - Kullanici yalnizca suggestion gonderir.
 - Suggestion kayitlari Atlas kaydini otomatik mutate etmez.
+- Region precedence kontrati:
+  - `region_override` varsa bu deger authoritative olur.
+  - `region_override` yoksa country-profile auto mapping kullanilir.
+  - effective region, `region` alanina yazilir ve ilgili auto `region_group` uyeligini zorlar.
 
 ## 4) Search Siniri
 - Search index turetilmis veridir, canonical kaynak degildir.
@@ -38,6 +43,7 @@ Yeni ozellikler bu kontrata uymak zorundadir.
   - idempotent olmalidir
   - yalnizca safe update fields uzerinden calismalidir
 - Manuel override edilen alanlar otomatik sureclerce ezilemez.
+- Translation bundle import da default dormant kalir (`TRANSLATION_BUNDLE_ENABLED=false`).
 
 ## 6) Yeni Ozellik Degerlendirme Checklist
 Her yeni ozellik PR'i icin zorunlu kontrol:

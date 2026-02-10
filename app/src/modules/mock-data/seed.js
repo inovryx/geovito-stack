@@ -89,7 +89,8 @@ const seedRegionGroups = async (strapiInstance, profileMap, placeMap = null) => 
     }
 
     if (placeMap) {
-      payload.members = memberPlaceIds.map((placeId) => placeMap.get(placeId)?.id).filter(Boolean);
+      const memberIds = memberPlaceIds.map((placeId) => placeMap.get(placeId)?.id).filter(Boolean);
+      payload.members = { set: memberIds };
     }
 
     const upserted = await upsert(

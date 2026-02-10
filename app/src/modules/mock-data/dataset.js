@@ -864,7 +864,7 @@ const countryProfiles = [
   {
     country_code: 'TR',
     enabled_levels: ['country', 'admin1', 'admin2', 'admin3', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
-    level_labels: {
+    label_mapping: {
       admin1: 'Il',
       admin2: 'Ilce',
       admin3: 'Mahalle',
@@ -874,6 +874,7 @@ const countryProfiles = [
       neighborhood: 'Mahalle',
       poi: 'Nokta',
     },
+    city_like_levels: ['city', 'locality', 'admin2'],
     parent_rules: {
       admin1: ['country'],
       admin2: ['admin1', 'city', 'country'],
@@ -890,6 +891,11 @@ const countryProfiles = [
         'city-tr-mugla': 'tr-aegean-region',
         'city-tr-istanbul': 'tr-marmara-region',
       },
+      by_admin1_slug: {
+        antalya: 'tr-mediterranean-region',
+        mugla: 'tr-aegean-region',
+        istanbul: 'tr-marmara-region',
+      },
     },
     notes: 'Mock profile for Turkiye hierarchy + automatic region key assignment.',
     mock: true,
@@ -897,7 +903,7 @@ const countryProfiles = [
   {
     country_code: 'US',
     enabled_levels: ['country', 'admin1', 'admin2', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
-    level_labels: {
+    label_mapping: {
       admin1: 'State',
       admin2: 'County',
       locality: 'City',
@@ -906,6 +912,7 @@ const countryProfiles = [
       district: 'District',
       poi: 'Point of Interest',
     },
+    city_like_levels: ['city', 'locality'],
     parent_rules: {
       admin1: ['country'],
       admin2: ['admin1', 'country'],
@@ -921,7 +928,7 @@ const countryProfiles = [
   {
     country_code: 'DE',
     enabled_levels: ['country', 'admin1', 'admin2', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
-    level_labels: {
+    label_mapping: {
       admin1: 'Bundesland',
       admin2: 'Regierungsbezirk',
       locality: 'Stadt',
@@ -930,6 +937,7 @@ const countryProfiles = [
       district: 'Bezirk',
       poi: 'POI',
     },
+    city_like_levels: ['city', 'locality'],
     parent_rules: {
       admin1: ['country'],
       admin2: ['admin1', 'country'],
@@ -996,6 +1004,28 @@ const regionGroups = [
         excerpt: 'Regional group page for Marmara-side Turkiye destinations.',
         body: 'Mock RegionGroup page linking Turkiye places in the Marmara cluster.',
         canonicalPath: '/en/regions/tr-marmara-region',
+      },
+    }),
+  },
+  {
+    region_key: 'it-pilot-region',
+    country_code: 'IT',
+    canonical_language: 'en',
+    mock: false,
+    member_place_ids: ['country-it-pilot'],
+    translations: buildTranslations({
+      en: {
+        title: 'Italy Pilot Region',
+        slug: 'it-pilot-region',
+        excerpt: 'Pilot non-mock region-group page used for region sitemap/index-gate checks.',
+        body: 'Controlled non-mock region-group for EN-only index validation.',
+        canonicalPath: '/en/regions/it-pilot-region',
+      },
+      de: {
+        kind: 'draft',
+        title: 'Italien Pilot Region',
+        slug: 'italien-pilot-region',
+        excerpt: 'Entwurf der deutschen Pilot-Regionsseite.',
       },
     }),
   },

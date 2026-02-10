@@ -32,6 +32,26 @@ const normalizeLevelList = (value) => {
   return levels;
 };
 
+const normalizeCityLikeLevels = (value, enabledLevels) => {
+  const rawLevels = Array.isArray(value) ? value : [];
+  const levels = [];
+
+  for (const level of rawLevels) {
+    const normalized = normalizePlaceType(level);
+    if (!PLACE_TYPE_SET.has(normalized)) {
+      throw new Error(`city_like_levels contains invalid place type: ${String(level)}`);
+    }
+    if (!enabledLevels.includes(normalized)) {
+      throw new Error(`city_like_levels.${normalized} must also exist in enabled_levels`);
+    }
+    if (!levels.includes(normalized)) {
+      levels.push(normalized);
+    }
+  }
+
+  return levels;
+};
+
 const normalizeRuleMap = (value, fieldName) => {
   if (value === null || value === undefined) return {};
   if (!isRecord(value)) {
@@ -129,10 +149,34 @@ const applyNormalization = (event, existing = null) => {
   data.country_code = countryCode;
   data.enabled_levels = normalizeLevelList(data.enabled_levels || existing?.enabled_levels || fallback.enabled_levels);
   data.parent_rules = normalizeRuleMap(data.parent_rules || existing?.parent_rules || fallback.parent_rules, 'parent_rules');
-  data.level_labels = normalizeLabelMap(data.level_labels || existing?.level_labels || fallback.level_labels, 'level_labels');
+
+  const normalizedLabelMapping = normalizeLabelMap(
+    data.label_mapping || data.level_labels || existing?.label_mapping || existing?.level_labels || fallback.label_mapping,
+    'label_mapping'
+  );
+  data.label_mapping = normalizedLabelMapping;
+  data.level_labels = normalizedLabelMapping;
+
+  data.city_like_levels = normalizeCityLikeLevels(
+    data.city_like_levels || existing?.city_like_levels || fallback.city_like_levels,
+    data.enabled_levels
+  );
+
   data.region_auto_assign = normalizeAutoAssign(
     data.region_auto_assign || existing?.region_auto_assign || fallback.region_auto_assign
   );
+
+  for (const [childType, parentTypes] of Object.entries(data.parent_rules)) {
+    if (!data.enabled_levels.includes(childType)) {
+      throw new Error(`parent_rules.${childType} is defined, but ${childType} is not enabled`);
+    }
+
+    for (const parentType of parentTypes) {
+      if (!data.enabled_levels.includes(parentType)) {
+        throw new Error(`parent_rules.${childType} contains parent ${parentType}, but it is not enabled`);
+      }
+    }
+  }
 
   event.params.data = data;
 };

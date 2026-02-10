@@ -46,17 +46,21 @@ const DEFAULT_LEVEL_LABELS = Object.freeze({
   district: 'District',
 });
 
+const DEFAULT_CITY_LIKE_LEVELS = Object.freeze(['city', 'locality']);
+
 const DEFAULT_PROFILE = Object.freeze({
   enabled_levels: DEFAULT_ENABLED_LEVELS,
   parent_rules: DEFAULT_PARENT_RULES,
+  label_mapping: DEFAULT_LEVEL_LABELS,
   level_labels: DEFAULT_LEVEL_LABELS,
+  city_like_levels: DEFAULT_CITY_LIKE_LEVELS,
   region_auto_assign: {},
 });
 
 const COUNTRY_DEFAULTS = Object.freeze({
   TR: {
     enabled_levels: ['country', 'admin1', 'admin2', 'admin3', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
-    level_labels: {
+    label_mapping: {
       admin1: 'Il',
       admin2: 'Ilce',
       admin3: 'Mahalle',
@@ -66,6 +70,7 @@ const COUNTRY_DEFAULTS = Object.freeze({
       district: 'Ilce',
       poi: 'Nokta',
     },
+    city_like_levels: ['city', 'locality', 'admin2'],
     parent_rules: {
       admin1: ['country'],
       admin2: ['admin1', 'city', 'country'],
@@ -82,11 +87,16 @@ const COUNTRY_DEFAULTS = Object.freeze({
         'city-tr-mugla': 'tr-aegean-region',
         'city-tr-istanbul': 'tr-marmara-region',
       },
+      by_admin1_slug: {
+        antalya: 'tr-mediterranean-region',
+        mugla: 'tr-aegean-region',
+        istanbul: 'tr-marmara-region',
+      },
     },
   },
   US: {
     enabled_levels: ['country', 'admin1', 'admin2', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
-    level_labels: {
+    label_mapping: {
       admin1: 'State',
       admin2: 'County',
       locality: 'City',
@@ -95,6 +105,7 @@ const COUNTRY_DEFAULTS = Object.freeze({
       district: 'District',
       poi: 'Point of Interest',
     },
+    city_like_levels: ['city', 'locality'],
     parent_rules: {
       admin1: ['country'],
       admin2: ['admin1', 'country'],
@@ -107,7 +118,7 @@ const COUNTRY_DEFAULTS = Object.freeze({
   },
   DE: {
     enabled_levels: ['country', 'admin1', 'admin2', 'locality', 'neighborhood', 'street', 'poi', 'city', 'district'],
-    level_labels: {
+    label_mapping: {
       admin1: 'Bundesland',
       admin2: 'Regierungsbezirk',
       locality: 'Stadt',
@@ -116,6 +127,7 @@ const COUNTRY_DEFAULTS = Object.freeze({
       district: 'Bezirk',
       poi: 'POI',
     },
+    city_like_levels: ['city', 'locality'],
     parent_rules: {
       admin1: ['country'],
       admin2: ['admin1', 'country'],
@@ -133,6 +145,7 @@ module.exports = {
   DEFAULT_ENABLED_LEVELS,
   DEFAULT_PARENT_RULES,
   DEFAULT_LEVEL_LABELS,
+  DEFAULT_CITY_LIKE_LEVELS,
   DEFAULT_PROFILE,
   COUNTRY_DEFAULTS,
 };

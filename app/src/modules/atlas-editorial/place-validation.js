@@ -25,6 +25,8 @@ const normalizeSlug = (value) =>
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
 
+const normalizeRegionKey = (value) => normalizeSlug(value);
+
 const looksLikeComponentReference = (translations) =>
   Array.isArray(translations) &&
   translations.length > 0 &&
@@ -58,7 +60,7 @@ const findByPlaceId = async (placeId) => {
   const list = await strapi.entityService.findMany('api::atlas-place.atlas-place', {
     publicationState: 'preview',
     filters: { place_id: placeId },
-    fields: ['id', 'place_id', 'country_code', 'place_type'],
+    fields: ['id', 'place_id', 'country_code', 'place_type', 'parent_place_id', 'slug'],
     limit: 1,
   });
   return list[0] || null;
@@ -68,7 +70,7 @@ const findById = async (id) => {
   if (!id) return null;
   return strapi.entityService.findOne('api::atlas-place.atlas-place', id, {
     publicationState: 'preview',
-    fields: ['id', 'place_id', 'country_code', 'place_type'],
+    fields: ['id', 'place_id', 'country_code', 'place_type', 'parent_place_id', 'slug'],
   });
 };
 
@@ -122,6 +124,33 @@ const toRelationId = (value) => {
   return null;
 };
 
+const collectRelationIds = (value) => {
+  const output = [];
+  const append = (candidate) => {
+    const relationId = toRelationId(candidate);
+    if (relationId && !output.includes(relationId)) {
+      output.push(relationId);
+    }
+  };
+
+  if (!value) return output;
+
+  if (Array.isArray(value)) {
+    value.forEach(append);
+    return output;
+  }
+
+  if (typeof value === 'object') {
+    if (value.id) append(value);
+    if (Array.isArray(value.set)) value.set.forEach(append);
+    if (Array.isArray(value.connect)) value.connect.forEach(append);
+    return output;
+  }
+
+  append(value);
+  return output;
+};
+
 const resolveCanonicalSlug = (data, existing) => {
   const canonicalLanguage = data.canonical_language || existing?.canonical_language || DEFAULT_LANGUAGE;
   const translations = Array.isArray(data.translations) ? data.translations : existing?.translations || [];
@@ -145,6 +174,15 @@ const assertPlaceType = (value) => {
 };
 
 const resolveParentForWrite = async (data, existing) => {
+  if (hasOwn(data, 'parent_place_id') && isBlank(data.parent_place_id)) {
+    data.parent_place_id = null;
+  }
+
+  if (hasOwn(data, 'parent') && data.parent === null) {
+    data.parent_place_id = null;
+    return null;
+  }
+
   const explicitParentPlaceId =
     typeof data.parent_place_id === 'string' && data.parent_place_id.trim().length > 0
       ? data.parent_place_id.trim()
@@ -214,14 +252,21 @@ const resolveCountryProfileForWrite = async (data, existing) => {
   return profile;
 };
 
+const levelLabel = (profile, placeType) => {
+  const mapping = profile?.label_mapping || profile?.level_labels || {};
+  return String(mapping[placeType] || placeType || 'unknown').trim();
+};
+
 const enforceHierarchyRules = (data, existing, parentEntry, profile) => {
   const placeType = data.place_type || existing?.place_type;
-  if (!placeType) return;
+  if (!placeType) return null;
   assertPlaceType(placeType);
 
   if (!isLevelEnabled(profile, placeType)) {
     throw new Error(
-      `${placeType} is disabled for country ${profile?.country_code || data.country_code || existing?.country_code}`
+      `${levelLabel(profile, placeType)} (${placeType}) is disabled for country ${
+        profile?.country_code || data.country_code || existing?.country_code
+      }`
     );
   }
 
@@ -239,20 +284,22 @@ const enforceHierarchyRules = (data, existing, parentEntry, profile) => {
     }
     data.parent = null;
     data.parent_place_id = null;
-    return;
+    return placeType;
   }
 
   if (NON_COUNTRY_TYPES.has(placeType) && !effectiveParentPlaceId) {
-    throw new Error(`${placeType} requires parent_place_id (or parent relation)`);
+    throw new Error(`${levelLabel(profile, placeType)} (${placeType}) requires parent_place_id (or parent relation)`);
   }
 
   if (!isParentAllowed(profile, placeType, effectiveParentPlaceType)) {
     throw new Error(
-      `${placeType} cannot be attached to parent type ${effectiveParentPlaceType || 'unknown'} for country ${
-        profile?.country_code || data.country_code || existing?.country_code
-      }`
+      `${levelLabel(profile, placeType)} (${placeType}) cannot be attached to parent ${
+        levelLabel(profile, effectiveParentPlaceType)
+      } (${effectiveParentPlaceType || 'unknown'}) for ${profile?.country_code || data.country_code || existing?.country_code}`
     );
   }
+
+  return placeType;
 };
 
 const enforceCountryConsistency = (data, existing, parentEntry) => {
@@ -288,29 +335,132 @@ const enforceCoordinates = (data) => {
   }
 };
 
-const applyAutoRegionAssignment = async (data, existing, profile) => {
-  const hasExplicitRegionGroups = hasOwn(data, 'region_groups');
-  const existingRegionGroups = Array.isArray(existing?.region_groups) ? existing.region_groups : [];
+const resolveAdmin1Context = async (data, existing, parentEntry, placeType) => {
+  if (placeType === 'admin1') {
+    return {
+      admin1PlaceId: String(data.place_id || existing?.place_id || '').trim(),
+      admin1Slug: normalizeSlug(data.slug || existing?.slug || ''),
+    };
+  }
 
-  if (hasExplicitRegionGroups || existingRegionGroups.length > 0) {
+  let cursor = parentEntry || null;
+  const visited = new Set();
+
+  for (let depth = 0; cursor && depth < 24; depth += 1) {
+    if (cursor.place_type === 'admin1') {
+      return {
+        admin1PlaceId: String(cursor.place_id || '').trim(),
+        admin1Slug: normalizeSlug(cursor.slug || ''),
+      };
+    }
+
+    const nextParentPlaceId = cursor.parent_place_id || null;
+    if (!nextParentPlaceId || visited.has(nextParentPlaceId)) {
+      break;
+    }
+
+    visited.add(nextParentPlaceId);
+    cursor = await findByPlaceId(nextParentPlaceId);
+  }
+
+  return {
+    admin1PlaceId: '',
+    admin1Slug: '',
+  };
+};
+
+const enforceNoCycle = async (data, existing, parentEntry) => {
+  if (!parentEntry) return;
+
+  const effectivePlaceId = String(data.place_id || existing?.place_id || '').trim();
+  const effectiveEntityId = existing?.id ? Number(existing.id) : null;
+
+  let cursor = parentEntry;
+  const visited = new Set();
+
+  for (let depth = 0; cursor && depth < 64; depth += 1) {
+    if (effectiveEntityId && Number(cursor.id) === effectiveEntityId) {
+      throw new Error('Parent cycle detected: selected parent resolves to the same record');
+    }
+
+    if (effectivePlaceId && cursor.place_id === effectivePlaceId) {
+      throw new Error('Parent cycle detected: selected parent resolves to the same place_id chain');
+    }
+
+    const cursorPlaceId = String(cursor.place_id || '').trim();
+    if (cursorPlaceId) {
+      if (visited.has(cursorPlaceId)) {
+        throw new Error('Parent hierarchy contains an existing cycle; please repair parent links first');
+      }
+      visited.add(cursorPlaceId);
+    }
+
+    const nextParentPlaceId = cursor.parent_place_id || null;
+    if (!nextParentPlaceId) {
+      return;
+    }
+
+    cursor = await findByPlaceId(nextParentPlaceId);
+  }
+
+  if (cursor) {
+    throw new Error('Parent hierarchy is too deep or cyclic; validation aborted');
+  }
+};
+
+const resolveEffectiveRegionKey = async (data, existing, profile, parentEntry, placeType) => {
+  let overrideRegion = '';
+
+  if (hasOwn(data, 'region_override')) {
+    overrideRegion = normalizeRegionKey(data.region_override);
+    data.region_override = overrideRegion || null;
+  } else {
+    overrideRegion = normalizeRegionKey(existing?.region_override || '');
+  }
+
+  if (overrideRegion) {
+    return overrideRegion;
+  }
+
+  if (placeType === 'country') {
+    return '';
+  }
+
+  const admin1Context = await resolveAdmin1Context(data, existing, parentEntry, placeType);
+  const autoRegionKey = resolveAutoRegionKey(profile, data, existing, admin1Context);
+  return normalizeRegionKey(autoRegionKey);
+};
+
+const applyEffectiveRegionAssignment = async (data, existing, profile, parentEntry, placeType) => {
+  const effectiveRegion = await resolveEffectiveRegionKey(data, existing, profile, parentEntry, placeType);
+
+  data.region = effectiveRegion || null;
+
+  if (!effectiveRegion) {
     return;
   }
 
-  const autoRegionKey = resolveAutoRegionKey(profile, data, existing);
-  if (isBlank(autoRegionKey)) {
+  const countryCode = normalizeCountryCode(data.country_code || existing?.country_code || profile?.country_code || '');
+  if (!countryCode) {
     return;
   }
 
-  if (isBlank(data.region)) {
-    data.region = autoRegionKey;
-  }
-
-  const regionGroup = await findRegionGroupByKey(autoRegionKey, data.country_code || existing?.country_code);
+  const regionGroup = await findRegionGroupByKey(effectiveRegion, countryCode);
   if (!regionGroup) {
-    return;
+    throw new Error(
+      `effective region '${effectiveRegion}' is missing in region_group for country ${countryCode}. Create region_group first.`
+    );
   }
 
-  data.region_groups = [regionGroup.id];
+  const existingRegionGroupIds = Array.isArray(existing?.region_groups)
+    ? existing.region_groups.map((entry) => toRelationId(entry)).filter(Boolean)
+    : [];
+  const incomingRegionGroupIds = collectRelationIds(data.region_groups);
+
+  const nextRegionGroupIds = Array.from(new Set([...existingRegionGroupIds, ...incomingRegionGroupIds, regionGroup.id]));
+  data.region_groups = {
+    set: nextRegionGroupIds.map((id) => ({ id })),
+  };
 };
 
 const enforceImmutableIdentity = (data, existing) => {
@@ -359,8 +509,9 @@ const beforeCreate = async (event, uid) => {
   enforceCountryConsistency(data, null, parentEntry);
 
   const countryProfile = await resolveCountryProfileForWrite(data, null);
-  enforceHierarchyRules(data, null, parentEntry, countryProfile);
-  await applyAutoRegionAssignment(data, null, countryProfile);
+  const placeType = enforceHierarchyRules(data, null, parentEntry, countryProfile);
+  await enforceNoCycle(data, null, parentEntry);
+  await applyEffectiveRegionAssignment(data, null, countryProfile, parentEntry, placeType);
 
   enforceCanonicalSlugOnCreate(data);
 
@@ -376,8 +527,9 @@ const beforeUpdate = async (event, uid) => {
   enforceCountryConsistency(data, existing, parentEntry);
 
   const countryProfile = await resolveCountryProfileForWrite(data, existing);
-  enforceHierarchyRules(data, existing, parentEntry, countryProfile);
-  await applyAutoRegionAssignment(data, existing, countryProfile);
+  const placeType = enforceHierarchyRules(data, existing, parentEntry, countryProfile);
+  await enforceNoCycle(data, existing, parentEntry);
+  await applyEffectiveRegionAssignment(data, existing, countryProfile, parentEntry, placeType);
 
   enforceImmutableIdentity(data, existing);
 
