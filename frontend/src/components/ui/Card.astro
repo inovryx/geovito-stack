@@ -1,0 +1,25 @@
+---
+interface Props {
+  as?: 'div' | 'section' | 'article' | 'aside';
+  class?: string;
+  title?: string;
+  description?: string;
+  interactive?: boolean;
+}
+
+const {
+  as: Tag = 'section',
+  class: className = '',
+  title,
+  description,
+  interactive = false,
+} = Astro.props as Props;
+
+const classes = ['ui-card', interactive ? 'is-interactive' : '', className].filter(Boolean).join(' ');
+---
+
+<Tag class={classes}>
+  {title ? <h2 class="ui-card-title">{title}</h2> : null}
+  {description ? <p class="ui-card-description">{description}</p> : null}
+  <slot />
+</Tag>

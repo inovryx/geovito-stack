@@ -1,0 +1,143 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import LeftSidebar from '../components/LeftSidebar.astro';
+import RightTools from '../components/RightTools.astro';
+import Accordion from '../components/ui/Accordion.astro';
+import Icon from '../components/Icon.astro';
+import { translate } from '../lib/uiLanguage';
+
+interface AlternateLink {
+  hreflang: string;
+  href: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical: string;
+  robots?: string;
+  currentLanguage: string;
+  languageLinks: Record<string, string>;
+  alternates?: AlternateLink[];
+  ui: Record<string, unknown>;
+  showTools?: boolean;
+  toolsContext?: string | null;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  robots,
+  currentLanguage,
+  languageLinks,
+  alternates = [],
+  ui,
+  showTools = false,
+  toolsContext = null,
+} = Astro.props as Props;
+
+const hasCustomTools = Astro.slots.has('tools');
+const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots={robots}
+  currentLanguage={currentLanguage}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`}>
+    <aside class="left-column desktop-tablet-column" aria-label={t('layout.mainNavigation', 'Main navigation')}>
+      <div class="left-nav-card">
+        <LeftSidebar currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
+      </div>
+    </aside>
+
+    <main class="center-column">
+      <section class="content">
+        <slot />
+      </section>
+
+      {
+        showTools ? (
+          <div class="tablet-tools">
+            <Accordion title={t('layout.toolsTitle', 'Tools')}>
+              <div class="tablet-tools-body">
+                {hasCustomTools ? <slot name="tools" /> : <RightTools currentLanguage={currentLanguage} ui={ui} contextLabel={toolsContext} />}
+              </div>
+            </Accordion>
+          </div>
+        ) : null
+      }
+    </main>
+
+    {
+      showTools ? (
+        <aside class="right-column desktop-tools-column" aria-label={t('layout.toolsTitle', 'Tools')}>
+          {hasCustomTools ? <slot name="tools" /> : <RightTools currentLanguage={currentLanguage} ui={ui} contextLabel={toolsContext} />}
+        </aside>
+      ) : null
+    }
+  </div>
+
+  <div class="drawer-backdrop" data-shell-backdrop hidden></div>
+
+  <aside class="mobile-drawer" data-shell-drawer aria-hidden="true">
+    <div class="mobile-drawer-head">
+      <strong class="brand drawer-brand">
+        <Icon name="Map" size={20} />
+        <span class="truncate">{t('layout.mainNavigation', 'Navigation')}</span>
+      </strong>
+      <button type="button" class="icon-button" data-shell-menu-close aria-label={t('layout.closeMenu', 'Close menu')}>
+        <Icon name="X" size={20} />
+        <span class="sr-only">{t('layout.closeMenu', 'Close menu')}</span>
+      </button>
+    </div>
+
+    <div class="mobile-drawer-scroll">
+      <LeftSidebar currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
+      {
+        showTools ? (
+          <div class="mobile-drawer-tools">
+            <h2 class="sidebar-title">{t('layout.toolsTitle', 'Tools')}</h2>
+            {hasCustomTools ? <slot name="tools" /> : <RightTools currentLanguage={currentLanguage} ui={ui} contextLabel={toolsContext} />}
+          </div>
+        ) : null
+      }
+    </div>
+  </aside>
+
+  <script is:inline>
+    (() => {
+      const drawer = document.querySelector('[data-shell-drawer]');
+      const backdrop = document.querySelector('[data-shell-backdrop]');
+      const openButtons = Array.from(document.querySelectorAll('[data-shell-menu-open]'));
+      const closeButtons = Array.from(document.querySelectorAll('[data-shell-menu-close]'));
+
+      if (!drawer || !backdrop || openButtons.length === 0) {
+        return;
+      }
+
+      const setOpen = (open) => {
+        drawer.classList.toggle('is-open', open);
+        drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+        backdrop.hidden = !open;
+        document.body.classList.toggle('drawer-open', open);
+      };
+
+      openButtons.forEach((button) => button.addEventListener('click', () => setOpen(true)));
+      closeButtons.forEach((button) => button.addEventListener('click', () => setOpen(false)));
+      backdrop.addEventListener('click', () => setOpen(false));
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          setOpen(false);
+        }
+      });
+    })();
+  </script>
+</BaseLayout>

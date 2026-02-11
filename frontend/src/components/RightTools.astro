@@ -1,0 +1,39 @@
+---
+import Card from './ui/Card.astro';
+import Badge from './ui/Badge.astro';
+import { translate } from '../lib/uiLanguage';
+
+interface Props {
+  currentLanguage: string;
+  ui: Record<string, unknown>;
+  contextLabel?: string | null;
+}
+
+const { currentLanguage, ui, contextLabel = null } = Astro.props as Props;
+const hasContext = Boolean(contextLabel && contextLabel.trim());
+const contextText = hasContext
+  ? translate(ui, 'tools.contextReady', { context: contextLabel || '' }, `Context: ${contextLabel}`)
+  : translate(ui, 'tools.contextMissing', {}, 'No place selected yet. Pick a country/city to activate quick helpers.');
+---
+
+<div class="right-tools-stack">
+  <Card title={translate(ui, 'tools.currency.title', {}, 'Currency')} description={translate(ui, 'tools.currency.description', {}, 'Quick FX note')}>
+    <p class="small">{contextText}</p>
+    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'context ready' : 'context needed'}</Badge>
+    <p class="small">
+      <a href={`/${currentLanguage}/atlas/`}>{translate(ui, 'tools.openAtlas', {}, 'Open atlas to choose context')}</a>
+    </p>
+  </Card>
+
+  <Card title={translate(ui, 'tools.visa.title', {}, 'Visa')} description={translate(ui, 'tools.visa.description', {}, 'Entry checklist starter')}>
+    <p class="small">{contextText}</p>
+    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'draft checklist' : 'prompt only'}</Badge>
+    <p class="small">{translate(ui, 'tools.visa.hint', {}, 'Regulations vary by passport and destination.')}</p>
+  </Card>
+
+  <Card title={translate(ui, 'tools.flights.title', {}, 'Flights')} description={translate(ui, 'tools.flights.description', {}, 'Route planning cue')}>
+    <p class="small">{contextText}</p>
+    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'route hints' : 'select place first'}</Badge>
+    <p class="small">{translate(ui, 'tools.flights.hint', {}, 'Use this as a planning prompt, not booking engine.')}</p>
+  </Card>
+</div>

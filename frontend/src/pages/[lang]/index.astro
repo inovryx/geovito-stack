@@ -1,6 +1,9 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import StateBanner from '../../components/StateBanner.astro';
+import SearchBar from '../../components/SearchBar.astro';
+import Badge from '../../components/ui/Badge.astro';
+import EmptyState from '../../components/ui/EmptyState.astro';
 import { resolveTranslation } from '../../lib/languageState';
 import { getAtlasPlaces, getBlogPosts, getUiPage } from '../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../lib/languages';
@@ -31,7 +34,7 @@ const homeContent = homeResolution?.output;
 const hasMockContent =
   Boolean(homePage?.mock) || places.some((item) => item.mock === true) || posts.some((item) => item.mock === true);
 
-const countryCards = places
+const topCountries = places
   .filter((place) => place.place_type === 'country')
   .map((place) => {
     const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
@@ -42,33 +45,16 @@ const countryCards = places
     return {
       place_id: place.place_id,
       title: resolved.output?.title || place.place_id,
-      excerpt: resolved.output?.excerpt || translate(ui, 'home.noCountryDescription'),
-      href: slug ? `/${lang}/atlas/${slug}/` : null,
+      href: slug ? pathForLanguage(lang, `atlas/${slug}`) : null,
       status: requested?.status || 'missing',
     };
   })
-  .filter((card) => card.href);
+  .filter((entry) => entry.href)
+  .sort((a, b) => a.title.localeCompare(b.title))
+  .slice(0, 8);
 
-const postCards = posts.map((post) => {
-  const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
-  const requested = resolved.requested;
-  const complete = resolved.complete;
-  const slug = requested?.status === 'complete' ? requested.slug : complete?.slug;
-
-  return {
-    post_id: post.post_id,
-    title: resolved.output?.title || post.post_id,
-    excerpt: resolved.output?.excerpt || translate(ui, 'home.noPostSummary'),
-    href: slug ? `/${lang}/blog/${slug}/` : null,
-    status: requested?.status || 'missing',
-  };
-});
-
-const completeCountryCount = countryCards.filter((country) => country.status === 'complete').length;
-const completePostCount = postCards.filter((post) => post.status === 'complete').length;
 const DEFAULT_CITY_LIKE_LEVELS = ['city', 'locality', 'admin2'];
-
-const trendingPlaces = places
+const topCities = places
   .filter((place) => {
     const levels =
       Array.isArray(place.country_profile?.city_like_levels) && place.country_profile?.city_like_levels.length > 0
@@ -81,20 +67,52 @@ const trendingPlaces = places
     const requested = resolved.requested;
     const complete = resolved.complete;
     const slug = requested?.status === 'complete' ? requested.slug : complete?.slug;
-    const labelMap = place.country_profile?.label_mapping || place.country_profile?.level_labels || {};
 
     return {
       place_id: place.place_id,
       title: resolved.output?.title || place.place_id,
-      excerpt: resolved.output?.excerpt || translate(ui, 'home.noCountryDescription'),
       href: slug ? pathForLanguage(lang, `atlas/${slug}`) : null,
       status: requested?.status || 'missing',
-      place_type_label: labelMap[place.place_type] || place.place_type,
     };
   })
   .filter((entry) => entry.href)
-  .sort((left, right) => left.title.localeCompare(right.title))
+  .sort((a, b) => a.title.localeCompare(b.title))
   .slice(0, 8);
+
+const blogEntries = posts
+  .map((post) => {
+    const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
+    const requested = resolved.requested;
+    const complete = resolved.complete;
+
+    if (!resolved.output || !complete?.slug) {
+      return null;
+    }
+
+    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
+
+    return {
+      post_id: post.post_id,
+      title: resolved.output.title || post.post_id,
+      href: pathForLanguage(lang, `blog/${slug}`),
+      status: requested?.status || 'missing',
+      published_on: post.published_on || '',
+    };
+  })
+  .filter(Boolean)
+  .sort((a, b) => String(b.published_on).localeCompare(String(a.published_on)));
+
+const now = new Date();
+const oneWeekAgo = new Date(now);
+oneWeekAgo.setDate(now.getDate() - 7);
+
+const newThisWeek = blogEntries.filter((entry) => {
+  if (!entry.published_on) return false;
+  const publishedAt = new Date(entry.published_on);
+  return !Number.isNaN(publishedAt.getTime()) && publishedAt >= oneWeekAgo;
+});
+
+const latestPosts = blogEntries.slice(0, 8);
 
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language)));
 const alternates = toAlternates(languageLinks);
@@ -118,6 +136,7 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
+  showTools={true}
 >
   {hasMockContent ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
 
@@ -129,112 +148,114 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
     ) : null
   }
 
-  <section class="hero hero-home">
+  <section class="hero">
     <p class="eyebrow">{translate(ui, 'site.brand')}</p>
     <h1>{homeContent?.title || translate(ui, 'home.defaultTitle')}</h1>
-    <p class="hero-lead">{homeContent?.excerpt || translate(ui, 'home.defaultExcerpt')}</p>
-    <p>{homeContent?.body || translate(ui, 'home.defaultBody')}</p>
-    <div class="hero-actions">
-      <a class="button-link" href={`/${lang}/atlas/`}>
-        {translate(ui, 'nav.atlas')}
-      </a>
-      <a class="button-link button-link-secondary" href={`/${lang}/blog/`}>
-        {translate(ui, 'nav.blog')}
-      </a>
+    <p class="hero-lead">{translate(ui, 'home.microHeroLead', {}, 'Plan trips faster with country-to-city exploration in one place.')}</p>
+
+    <SearchBar currentLanguage={lang} ui={ui} variant="large" />
+
+    <div class="micro-hero-chips" aria-label={translate(ui, 'home.searchScope', {}, 'Search scope')}>
+      <Badge variant="info">{translate(ui, 'home.chipCountry', {}, 'Country')}</Badge>
+      <Badge variant="info">{translate(ui, 'home.chipCity', {}, 'City')}</Badge>
+      <Badge variant="info">{translate(ui, 'home.chipLandmark', {}, 'Landmark')}</Badge>
     </div>
-    <div class="stats-grid">
-      <article class="stat-card">
-        <p class="small">{translate(ui, 'home.atlasCountries')}</p>
-        <strong>{countryCards.length}</strong>
-        <span class="small">{completeCountryCount} complete</span>
-      </article>
-      <article class="stat-card">
-        <p class="small">{translate(ui, 'home.blogSection')}</p>
-        <strong>{postCards.length}</strong>
-        <span class="small">{completePostCount} complete</span>
-      </article>
+
+    <div class="hero-text-links">
+      <a href={pathForLanguage(lang, 'atlas')}>{translate(ui, 'home.exploreAtlas', {}, 'Explore atlas')}</a>
+      <a href={pathForLanguage(lang, 'regions')}>{translate(ui, 'home.exploreRegions', {}, 'Browse regions')}</a>
     </div>
   </section>
 
   <div class="grid two feature-grid">
     <section class="card panel">
       <div class="panel-head">
-        <h2>{translate(ui, 'home.atlasCountries')}</h2>
-        <span class="small">{completeCountryCount}/{countryCards.length}</span>
+        <h2>{translate(ui, 'home.topCountries', {}, 'Top countries')}</h2>
+        <span class="small">{topCountries.length}/8</span>
       </div>
       {
-        countryCards.length ? (
+        topCountries.length ? (
           <ul class="teaser-list">
-            {countryCards.map((country) => (
+            {topCountries.map((entry) => (
               <li class="teaser-item">
-                <a href={country.href || '#'}>
-                  <strong>{country.title}</strong>
-                </a>
-                <span class="status-pill">{country.status}</span>
-                <p class="small">{country.excerpt}</p>
+                <a href={entry.href || '#'}>{entry.title}</a>
+                <span class="status-pill">{entry.status}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <div class="empty-state">
-            <p>{translate(ui, 'atlas.list.empty')}</p>
-          </div>
+          <EmptyState title={translate(ui, 'atlas.list.empty')} icon="MapPinned" />
         )
       }
     </section>
 
     <section class="card panel">
       <div class="panel-head">
-        <h2>{translate(ui, 'home.blogSection')}</h2>
-        <span class="small">{completePostCount}/{postCards.length}</span>
+        <h2>{translate(ui, 'home.topCities', {}, 'Top cities')}</h2>
+        <span class="small">{topCities.length}/8</span>
       </div>
       {
-        postCards.length ? (
+        topCities.length ? (
           <ul class="teaser-list">
-            {postCards.map((post) => (
+            {topCities.map((entry) => (
               <li class="teaser-item">
-                <a href={post.href || '#'}>
-                  <strong>{post.title}</strong>
-                </a>
-                <span class="status-pill">{post.status}</span>
-                <p class="small">{post.excerpt}</p>
+                <a href={entry.href || '#'}>{entry.title}</a>
+                <span class="status-pill">{entry.status}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <div class="empty-state">
-            <p>{translate(ui, 'blog.listHint')}</p>
-          </div>
+          <EmptyState title={translate(ui, 'home.noTrending')} icon="Building2" />
         )
       }
     </section>
   </div>
 
-  <section class="card panel">
-    <div class="panel-head">
-      <h2>{translate(ui, 'home.trendingTitle')}</h2>
-      <span class="small">{trendingPlaces.length}</span>
-    </div>
-    <p class="small">{translate(ui, 'home.trendingHint')}</p>
-    {
-      trendingPlaces.length ? (
-        <ul class="teaser-list">
-          {trendingPlaces.map((place) => (
-            <li class="teaser-item">
-              <a href={place.href || '#'}>
-                <strong>{place.title}</strong>
-              </a>
-              <span class="status-pill">{place.place_type_label}</span>
-              <span class="status-pill">{place.status}</span>
-              <p class="small">{place.excerpt}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div class="empty-state">
-          <p>{translate(ui, 'home.noTrending')}</p>
-        </div>
-      )
-    }
-  </section>
+  <div class="grid two feature-grid">
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'home.newThisWeek', {}, 'New this week')}</h2>
+        <span class="small">{newThisWeek.length}</span>
+      </div>
+      {
+        newThisWeek.length ? (
+          <ul class="teaser-list">
+            {newThisWeek.slice(0, 8).map((entry) => (
+              <li class="teaser-item">
+                <a href={entry.href}>{entry.title}</a>
+                <span class="small">{entry.published_on}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            title={translate(ui, 'home.noNewThisWeek', {}, 'No new items this week')}
+            description={translate(ui, 'home.noNewThisWeekHint', {}, 'Fresh entries will appear automatically.')}
+            icon="Clock3"
+          />
+        )
+      }
+    </section>
+
+    <section class="card panel">
+      <div class="panel-head">
+        <h2>{translate(ui, 'home.latestBlogPosts', {}, 'Latest blog posts')}</h2>
+        <span class="small">{latestPosts.length}</span>
+      </div>
+      {
+        latestPosts.length ? (
+          <ul class="teaser-list">
+            {latestPosts.map((entry) => (
+              <li class="teaser-item">
+                <a href={entry.href}>{entry.title}</a>
+                <span class="status-pill">{entry.status}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState title={translate(ui, 'blog.listHint')} icon="Newspaper" />
+        )
+      }
+    </section>
+  </div>
 </MainLayout>

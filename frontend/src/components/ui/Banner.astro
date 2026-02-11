@@ -1,0 +1,69 @@
+---
+import Icon from '../Icon.astro';
+
+interface Props {
+  variant?: 'info' | 'success' | 'warning' | 'danger';
+  title?: string;
+  dismissible?: boolean;
+  storageKey?: string;
+  class?: string;
+}
+
+const {
+  variant = 'info',
+  title,
+  dismissible = false,
+  storageKey = '',
+  class: className = '',
+} = Astro.props as Props;
+
+const key = storageKey || `geovito.ui-banner.${variant}`;
+---
+
+<aside class={`ui-banner ui-banner-${variant} ${className}`.trim()} data-ui-banner data-ui-banner-key={key}>
+  <div class="ui-banner-content">
+    {title ? <strong>{title}</strong> : <Icon name="Info" size={16} />}
+    <span><slot /></span>
+  </div>
+  {
+    dismissible ? (
+      <button type="button" class="ui-banner-close" data-ui-banner-dismiss aria-label="Dismiss banner">
+        <Icon name="X" size={16} />
+      </button>
+    ) : null
+  }
+</aside>
+
+{
+  dismissible ? (
+    <script is:inline>
+      (() => {
+        document.querySelectorAll('[data-ui-banner]').forEach((banner) => {
+          const key = banner.getAttribute('data-ui-banner-key');
+          if (!key) return;
+
+          try {
+            if (localStorage.getItem(key) === '1') {
+              banner.classList.add('is-dismissed');
+            }
+          } catch {
+            // no-op
+          }
+
+          const button = banner.querySelector('[data-ui-banner-dismiss]');
+          if (!button || button.getAttribute('data-bound') === 'true') return;
+          button.setAttribute('data-bound', 'true');
+
+          button.addEventListener('click', () => {
+            banner.classList.add('is-dismissed');
+            try {
+              localStorage.setItem(key, '1');
+            } catch {
+              // no-op
+            }
+          });
+        });
+      })();
+    </script>
+  ) : null
+}

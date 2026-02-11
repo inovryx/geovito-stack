@@ -1,0 +1,34 @@
+---
+interface TabItem {
+  label: string;
+  href?: string;
+  active?: boolean;
+}
+
+interface Props {
+  items: TabItem[];
+  ariaLabel?: string;
+}
+
+const { items = [], ariaLabel = 'Tabs' } = Astro.props as Props;
+---
+
+<nav class="ui-tabs" aria-label={ariaLabel}>
+  <ul>
+    {
+      items.map((item) => (
+        <li>
+          {item.href ? (
+            <a href={item.href} class={`ui-tab ${item.active ? 'is-active' : ''}`}>
+              <span class="truncate">{item.label}</span>
+            </a>
+          ) : (
+            <button type="button" class={`ui-tab ${item.active ? 'is-active' : ''}`}>
+              <span class="truncate">{item.label}</span>
+            </button>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</nav>

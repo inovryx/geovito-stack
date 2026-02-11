@@ -1,0 +1,169 @@
+---
+import '../styles/global.css';
+import Icon from '../components/Icon.astro';
+import SearchBar from '../components/SearchBar.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import { translate } from '../lib/uiLanguage';
+
+interface AlternateLink {
+  hreflang: string;
+  href: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical: string;
+  robots?: string;
+  currentLanguage: string;
+  languageLinks: Record<string, string>;
+  alternates?: AlternateLink[];
+  ui: Record<string, unknown>;
+}
+
+const {
+  title,
+  description = 'Geovito Atlas frontend on top of Strapi.',
+  canonical,
+  robots = 'index,follow',
+  currentLanguage,
+  languageLinks,
+  alternates = [],
+  ui,
+} = Astro.props as Props;
+
+const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
+---
+
+<!doctype html>
+<html lang={currentLanguage}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    {alternates.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
+    <link rel="alternate" hreflang="x-default" href={languageLinks['en'] || '/en/'} />
+
+    <script is:inline>
+      (() => {
+        try {
+          const theme = localStorage.getItem('theme');
+          const isDark = theme === 'dark';
+          document.documentElement.classList.toggle('dark', isDark);
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+        } catch {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.style.colorScheme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <script is:inline>
+      try {
+        const pageLanguage = document.documentElement.lang?.toLowerCase();
+        if (pageLanguage) {
+          localStorage.setItem('geovito.ui_lang', pageLanguage);
+        }
+      } catch {
+        // no-op
+      }
+    </script>
+
+    <div class="background-layer" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="site-header-inner">
+        <button type="button" class="icon-button shell-menu-button" data-shell-menu-open aria-label={t('layout.openMenu', 'Open menu')}>
+          <Icon name="Menu" size={20} />
+          <span class="sr-only">{t('layout.openMenu', 'Open menu')}</span>
+        </button>
+
+        <a class="brand header-brand" href={`/${currentLanguage}/`}>
+          <Icon name="Globe2" size={20} />
+          <span class="truncate">{t('site.brand', 'Geovito')}</span>
+        </a>
+
+        <div class="header-search-wrap">
+          <SearchBar currentLanguage={currentLanguage} ui={ui} variant="small" />
+        </div>
+
+        <div class="site-header-actions">
+          <ThemeToggle
+            compact={true}
+            label={t('layout.themeToggle', 'Toggle theme')}
+            lightLabel={t('layout.themeLight', 'Light')}
+            darkLabel={t('layout.themeDark', 'Dark')}
+          />
+        </div>
+      </div>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <span>{t('layout.footerNote', 'GeoVito: search-first atlas and regional discovery.')}</span>
+        <div class="site-footer-links">
+          <a href={`/${currentLanguage}/about/`}>{t('nav.about', 'About')}</a>
+          <a href={`/${currentLanguage}/rules/`}>{t('nav.rules', 'Rules')}</a>
+          <a href={`/${currentLanguage}/help/`}>{t('nav.help', 'Help')}</a>
+        </div>
+      </div>
+    </footer>
+
+    <script is:inline>
+      (() => {
+        const applyTheme = (theme) => {
+          const isDark = theme === 'dark';
+          document.documentElement.classList.toggle('dark', isDark);
+          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+          document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+            button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+            const labelEl = button.querySelector('[data-theme-toggle-label]');
+            if (labelEl) {
+              labelEl.textContent = isDark
+                ? button.getAttribute('data-label-dark') || 'Dark'
+                : button.getAttribute('data-label-light') || 'Light';
+            }
+          });
+        };
+
+        const readTheme = () => {
+          try {
+            const value = localStorage.getItem('theme');
+            return value === 'dark' ? 'dark' : 'light';
+          } catch {
+            return 'light';
+          }
+        };
+
+        const writeTheme = (theme) => {
+          try {
+            localStorage.setItem('theme', theme);
+          } catch {
+            // no-op
+          }
+        };
+
+        const bindToggles = () => {
+          document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+            if (button.getAttribute('data-theme-bound') === 'true') return;
+            button.setAttribute('data-theme-bound', 'true');
+            button.addEventListener('click', () => {
+              const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+              writeTheme(next);
+              applyTheme(next);
+            });
+          });
+        };
+
+        applyTheme(readTheme());
+        bindToggles();
+      })();
+    </script>
+  </body>
+</html>

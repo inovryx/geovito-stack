@@ -1,6 +1,7 @@
 ---
 import { translate } from '../lib/uiLanguage';
 import { SUPPORTED_LANGUAGES } from '../lib/languages';
+import Icon from './Icon.astro';
 
 interface Props {
   currentLanguage: string;
@@ -12,17 +13,18 @@ const { currentLanguage, languageLinks, ui } = Astro.props;
 const languages = SUPPORTED_LANGUAGES;
 ---
 
-<nav aria-label={translate(ui, 'language.switcherAria')} class="language-switcher">
-  <ul>
+<nav aria-label={translate(ui, 'language.switcherAria', {}, 'Language selector')} class="language-switcher">
+  <ul class="language-tabs">
     {
       languages.map((language) => (
         <li>
           <a
             href={languageLinks[language] || `/${language}/`}
-            class={language === currentLanguage ? 'is-active' : ''}
+            class={`language-tab ${language === currentLanguage ? 'is-active' : ''}`}
             hreflang={language === 'zh-cn' ? 'zh-CN' : language}
           >
-            {language}
+            <Icon name="Languages" size={16} />
+            <span class="truncate">{language.toUpperCase()}</span>
           </a>
         </li>
       ))

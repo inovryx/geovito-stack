@@ -1,0 +1,427 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import SearchBar from '../../../components/SearchBar.astro';
+import Skeleton from '../../../components/ui/Skeleton.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
+import { resolveTranslation } from '../../../lib/languageState';
+import { getAtlasPlaces, getBlogPosts, getRegionGroups } from '../../../lib/strapi';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { chooseSlugForLanguage } from '../../../lib/slugResolver';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+type SearchKind = 'all' | 'country' | 'city' | 'landmark' | 'region' | 'blog';
+
+type SearchItem = {
+  id: string;
+  kind: Exclude<SearchKind, 'all'>;
+  title: string;
+  excerpt: string;
+  href: string;
+  publishedOn: string | null;
+  status: string;
+  countryCode: string | null;
+  placeType: string | null;
+};
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({
+    params: { lang: language },
+  }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const [places, groups, posts] = await Promise.all([getAtlasPlaces(), getRegionGroups(), getBlogPosts()]);
+
+const DEFAULT_CITY_LIKE_LEVELS = ['city', 'locality', 'admin2', 'district'];
+const isCityLike = (placeType: string, cityLikeLevels: string[]) =>
+  cityLikeLevels.includes(String(placeType || '').toLowerCase());
+
+const mapPlaceKind = (placeType: string, cityLikeLevels: string[]): Exclude<SearchKind, 'all'> => {
+  const normalized = String(placeType || '').toLowerCase();
+
+  if (normalized === 'country') return 'country';
+  if (isCityLike(normalized, cityLikeLevels)) return 'city';
+  if (['poi', 'street', 'neighborhood'].includes(normalized)) return 'landmark';
+  return 'city';
+};
+
+const placeItems: SearchItem[] = places
+  .map((place) => {
+    const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
+    const requested = resolved.requested;
+    const complete = resolved.complete;
+    const slug = requested?.status === 'complete' ? requested.slug : complete?.slug;
+    if (!resolved.output || !slug) return null;
+
+    const cityLikeLevels =
+      Array.isArray(place.country_profile?.city_like_levels) && place.country_profile?.city_like_levels.length > 0
+        ? place.country_profile.city_like_levels
+        : DEFAULT_CITY_LIKE_LEVELS;
+
+    return {
+      id: `atlas:${place.place_id}`,
+      kind: mapPlaceKind(place.place_type, cityLikeLevels),
+      title: resolved.output.title || place.place_id,
+      excerpt: resolved.output.excerpt || '',
+      href: pathForLanguage(lang, `atlas/${slug}`),
+      publishedOn: null,
+      status: requested?.status || 'missing',
+      countryCode: place.country_code,
+      placeType: place.place_type,
+    } as SearchItem;
+  })
+  .filter(Boolean) as SearchItem[];
+
+const regionItems: SearchItem[] = groups
+  .map((group) => {
+    const resolved = resolveTranslation(group.translations, lang, group.canonical_language);
+    const requested = resolved.requested;
+    const slug = chooseSlugForLanguage(group.translations, lang, group.canonical_language);
+    if (!resolved.output || !slug) return null;
+
+    return {
+      id: `region:${group.region_key}`,
+      kind: 'region',
+      title: resolved.output.title || group.region_key,
+      excerpt: resolved.output.excerpt || '',
+      href: pathForLanguage(lang, `regions/${slug}`),
+      publishedOn: null,
+      status: requested?.status || 'missing',
+      countryCode: group.country_code,
+      placeType: null,
+    } as SearchItem;
+  })
+  .filter(Boolean) as SearchItem[];
+
+const blogItems: SearchItem[] = posts
+  .map((post) => {
+    const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
+    const requested = resolved.requested;
+    const complete = resolved.complete;
+    if (!resolved.output || !complete?.slug) return null;
+
+    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
+
+    return {
+      id: `blog:${post.post_id}`,
+      kind: 'blog',
+      title: resolved.output.title || post.post_id,
+      excerpt: resolved.output.excerpt || '',
+      href: pathForLanguage(lang, `blog/${slug}`),
+      publishedOn: post.published_on || null,
+      status: requested?.status || 'missing',
+      countryCode: null,
+      placeType: null,
+    } as SearchItem;
+  })
+  .filter(Boolean) as SearchItem[];
+
+const searchItems = [...placeItems, ...regionItems, ...blogItems].sort((a, b) => a.title.localeCompare(b.title));
+const serializedItems = JSON.stringify(searchItems);
+const serializedUiText = JSON.stringify({
+  totalResults: translate(ui, 'search.totalResults', {}, '{count} results for "{query}"'),
+  totalNoQuery: translate(ui, 'search.totalNoQuery', {}, '{count} total results'),
+  unknownDate: translate(ui, 'search.unknownDate', {}, 'Unknown date'),
+});
+
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'search')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage('en', 'search'));
+---
+
+<MainLayout
+  title={translate(ui, 'search.pageTitle', {}, 'Search results')}
+  description={translate(ui, 'search.pageDescription', {}, 'Find countries, cities, landmarks, regions and posts from one search view.')}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <section class="card panel search-intro-card">
+    <h1>{translate(ui, 'search.pageTitle', {}, 'Search results')}</h1>
+    <p class="small search-lead">{translate(ui, 'search.pageDescription', {}, 'Find countries, cities, landmarks, regions and posts from one search view.')}</p>
+
+    <SearchBar currentLanguage={lang} ui={ui} variant="large" query={Astro.url.searchParams.get('q') || ''} />
+
+    <div class="search-controls">
+      <div class="search-chip-row" role="tablist" aria-label={translate(ui, 'search.filterAria', {}, 'Filter results')}>
+        <button type="button" class="search-chip is-active" data-search-chip data-kind="all" role="tab" aria-selected="true">
+          <span class="truncate">{translate(ui, 'search.filterAll', {}, 'All')}</span>
+          <span class="search-chip-count" data-chip-count="all">0</span>
+        </button>
+        <button type="button" class="search-chip" data-search-chip data-kind="country" role="tab" aria-selected="false">
+          <span class="truncate">{translate(ui, 'search.filterCountry', {}, 'Country')}</span>
+          <span class="search-chip-count" data-chip-count="country">0</span>
+        </button>
+        <button type="button" class="search-chip" data-search-chip data-kind="city" role="tab" aria-selected="false">
+          <span class="truncate">{translate(ui, 'search.filterCity', {}, 'City')}</span>
+          <span class="search-chip-count" data-chip-count="city">0</span>
+        </button>
+        <button type="button" class="search-chip" data-search-chip data-kind="landmark" role="tab" aria-selected="false">
+          <span class="truncate">{translate(ui, 'search.filterLandmark', {}, 'Landmark')}</span>
+          <span class="search-chip-count" data-chip-count="landmark">0</span>
+        </button>
+        <button type="button" class="search-chip" data-search-chip data-kind="region" role="tab" aria-selected="false">
+          <span class="truncate">{translate(ui, 'search.filterRegion', {}, 'Region')}</span>
+          <span class="search-chip-count" data-chip-count="region">0</span>
+        </button>
+        <button type="button" class="search-chip" data-search-chip data-kind="blog" role="tab" aria-selected="false">
+          <span class="truncate">{translate(ui, 'search.filterBlog', {}, 'Blog')}</span>
+          <span class="search-chip-count" data-chip-count="blog">0</span>
+        </button>
+      </div>
+
+      <label class="search-sort-control" for="search-sort">
+        <span>{translate(ui, 'search.sortLabel', {}, 'Sort')}</span>
+        <select id="search-sort" data-search-sort>
+          <option value="relevance">{translate(ui, 'search.sortRelevance', {}, 'Relevance')}</option>
+          <option value="az">{translate(ui, 'search.sortAZ', {}, 'A to Z')}</option>
+          <option value="newest">{translate(ui, 'search.sortNewest', {}, 'Newest')}</option>
+        </select>
+      </label>
+    </div>
+
+    <p class="small search-meta" data-search-meta>{translate(ui, 'search.loadingMeta', {}, 'Preparing results...')}</p>
+  </section>
+
+  <section class="card panel" data-search-skeleton>
+    <Skeleton lines={3} />
+    <Skeleton lines={2} />
+    <Skeleton lines={3} />
+  </section>
+
+  <section class="card panel" data-search-empty hidden>
+    <EmptyState
+      title={translate(ui, 'search.emptyTitle', {}, 'No matching results')}
+      description={translate(ui, 'search.emptyBody', {}, 'Try a broader keyword or switch to another filter.')}
+      actionLabel={translate(ui, 'search.emptyAction', {}, 'Open atlas')}
+      actionHref={pathForLanguage(lang, 'atlas')}
+      icon="SearchX"
+    />
+  </section>
+
+  <section class="grid search-results-list" data-search-results></section>
+
+  <script id="search-data" type="application/json" set:html={serializedItems}></script>
+  <script id="search-ui-text" type="application/json" set:html={serializedUiText}></script>
+
+  <script is:inline>
+    (() => {
+      const dataNode = document.getElementById('search-data');
+      const uiNode = document.getElementById('search-ui-text');
+      if (!dataNode) return;
+      const uiText = uiNode ? JSON.parse(uiNode.textContent || '{}') : {};
+
+      const escapeHtml = (value) =>
+        String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+      const interpolate = (template, params) =>
+        String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => String(params[key] ?? `{${key}}`));
+
+      const payload = JSON.parse(dataNode.textContent || '[]');
+      const resultsRoot = document.querySelector('[data-search-results]');
+      const skeleton = document.querySelector('[data-search-skeleton]');
+      const emptyState = document.querySelector('[data-search-empty]');
+      const meta = document.querySelector('[data-search-meta]');
+      const chips = Array.from(document.querySelectorAll('[data-search-chip]'));
+      const sortSelect = document.querySelector('[data-search-sort]');
+      const searchForm = document.querySelector('.search-intro-card form[role="search"]');
+      const searchInput = searchForm ? searchForm.querySelector('input[name="q"]') : null;
+
+      if (!resultsRoot || !skeleton || !emptyState || !meta || !sortSelect) return;
+
+      const toLower = (text) => String(text || '').toLowerCase();
+      const parseDate = (value) => {
+        if (!value) return 0;
+        const ts = new Date(value).getTime();
+        return Number.isNaN(ts) ? 0 : ts;
+      };
+      const compareByLabel = (a, b) => {
+        const titleDiff = String(a.title || '').localeCompare(String(b.title || ''), undefined, { sensitivity: 'base' });
+        if (titleDiff !== 0) return titleDiff;
+        const kindDiff = String(a.kind || '').localeCompare(String(b.kind || ''));
+        if (kindDiff !== 0) return kindDiff;
+        return String(a.id || '').localeCompare(String(b.id || ''));
+      };
+
+      const scoreItem = (item, query) => {
+        if (!query) return 0;
+        const tokens = query.split(/\s+/).filter(Boolean);
+        if (!tokens.length) return 0;
+
+        const title = toLower(item.title);
+        const excerpt = toLower(item.excerpt);
+        const full = `${title} ${excerpt} ${toLower(item.countryCode || '')} ${toLower(item.placeType || '')}`;
+
+        let score = 0;
+        const joined = tokens.join(' ');
+        if (title.includes(joined)) score += 10;
+        if (full.includes(joined)) score += 6;
+
+        for (const token of tokens) {
+          if (title.includes(token)) score += 3;
+          if (excerpt.includes(token)) score += 1;
+          if (full.includes(token)) score += 1;
+        }
+
+        return score;
+      };
+
+      const params = new URLSearchParams(window.location.search);
+
+      const state = {
+        query: (params.get('q') || '').trim(),
+        kind: params.get('type') || 'all',
+        sort: params.get('sort') || 'relevance',
+      };
+
+      if (searchInput) {
+        searchInput.value = state.query;
+      }
+
+      if (!['all', 'country', 'city', 'landmark', 'region', 'blog'].includes(state.kind)) {
+        state.kind = 'all';
+      }
+      if (!['relevance', 'az', 'newest'].includes(state.sort)) {
+        state.sort = 'relevance';
+      }
+
+      sortSelect.value = state.sort;
+
+      const updateUrl = () => {
+        const next = new URLSearchParams();
+        if (state.query) next.set('q', state.query);
+        if (state.kind !== 'all') next.set('type', state.kind);
+        if (state.sort !== 'relevance') next.set('sort', state.sort);
+
+        const nextQuery = next.toString();
+        const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`;
+        window.history.replaceState({}, '', nextUrl);
+      };
+
+      const updateChipSelection = () => {
+        chips.forEach((chip) => {
+          const kind = chip.getAttribute('data-kind') || 'all';
+          const active = kind === state.kind;
+          chip.classList.toggle('is-active', active);
+          chip.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+      };
+
+      const render = () => {
+        const loweredQuery = toLower(state.query);
+
+        const scored = payload
+          .map((item) => ({ item, score: scoreItem(item, loweredQuery) }))
+          .filter((entry) => {
+            if (state.kind !== 'all' && entry.item.kind !== state.kind) return false;
+            if (!loweredQuery) return true;
+            return entry.score > 0;
+          });
+
+        const counts = {
+          all: payload.length,
+          country: payload.filter((entry) => entry.kind === 'country').length,
+          city: payload.filter((entry) => entry.kind === 'city').length,
+          landmark: payload.filter((entry) => entry.kind === 'landmark').length,
+          region: payload.filter((entry) => entry.kind === 'region').length,
+          blog: payload.filter((entry) => entry.kind === 'blog').length,
+        };
+
+        Object.entries(counts).forEach(([kind, count]) => {
+          const el = document.querySelector(`[data-chip-count="${kind}"]`);
+          if (el) el.textContent = String(count);
+        });
+
+        scored.sort((a, b) => {
+          if (state.sort === 'az') return compareByLabel(a.item, b.item);
+          if (state.sort === 'newest') {
+            const dateDiff = parseDate(b.item.publishedOn) - parseDate(a.item.publishedOn);
+            if (dateDiff !== 0) return dateDiff;
+            if (b.score !== a.score) return b.score - a.score;
+            return compareByLabel(a.item, b.item);
+          }
+
+          if (b.score !== a.score) return b.score - a.score;
+          return compareByLabel(a.item, b.item);
+        });
+
+        const limited = scored.slice(0, 80);
+
+        if (limited.length === 0) {
+          resultsRoot.innerHTML = '';
+          emptyState.hidden = false;
+        } else {
+          emptyState.hidden = true;
+          resultsRoot.innerHTML = limited
+            .map(({ item }) => {
+              const dateText = item.publishedOn ? escapeHtml(item.publishedOn) : uiText.unknownDate;
+              return `
+                <article class="card search-result-item">
+                  <div class="search-result-head">
+                    <span class="search-kind-badge">${escapeHtml(item.kind)}</span>
+                    <span class="status-pill">${escapeHtml(item.status || 'missing')}</span>
+                  </div>
+                  <a class="search-result-title" href="${escapeHtml(item.href)}" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</a>
+                  <p class="small search-result-excerpt">${escapeHtml(item.excerpt || '')}</p>
+                  <div class="search-result-meta">
+                    ${item.countryCode ? `<span class="small">${escapeHtml(item.countryCode)}</span>` : ''}
+                    ${item.kind === 'blog' ? `<span class="small">${dateText}</span>` : ''}
+                  </div>
+                </article>
+              `;
+            })
+            .join('');
+        }
+
+        const metaText = state.query
+          ? interpolate(uiText.totalResults, { count: limited.length, query: state.query })
+          : interpolate(uiText.totalNoQuery, { count: limited.length });
+
+        meta.textContent = metaText;
+        skeleton.hidden = true;
+        updateChipSelection();
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          state.kind = chip.getAttribute('data-kind') || 'all';
+          updateUrl();
+          render();
+        });
+      });
+
+      sortSelect.addEventListener('change', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) return;
+        state.sort = target.value;
+        updateUrl();
+        render();
+      });
+
+      if (searchForm && searchInput) {
+        searchForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          state.query = (searchInput.value || '').trim();
+          updateUrl();
+          render();
+        });
+      }
+
+      render();
+    })();
+  </script>
+</MainLayout>

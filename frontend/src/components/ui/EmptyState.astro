@@ -1,0 +1,33 @@
+---
+import Icon from '../Icon.astro';
+import Button from './Button.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  actionLabel?: string;
+  actionHref?: string;
+  icon?: string;
+}
+
+const {
+  title,
+  description = '',
+  actionLabel,
+  actionHref,
+  icon = 'Inbox',
+} = Astro.props as Props;
+---
+
+<section class="ui-empty-state" role="status">
+  <div class="ui-empty-icon">
+    <Icon name={icon} size={24} />
+  </div>
+  <h3 class="ui-empty-title">{title}</h3>
+  {description ? <p class="ui-empty-description">{description}</p> : null}
+  {actionLabel && actionHref ? (
+    <Button href={actionHref} variant="secondary" size="sm">
+      {actionLabel}
+    </Button>
+  ) : null}
+</section>

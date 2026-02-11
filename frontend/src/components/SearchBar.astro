@@ -1,0 +1,45 @@
+---
+import Icon from './Icon.astro';
+import { translate } from '../lib/uiLanguage';
+
+interface Props {
+  currentLanguage: string;
+  ui: Record<string, unknown>;
+  variant?: 'small' | 'large';
+  query?: string;
+}
+
+const {
+  currentLanguage,
+  ui,
+  variant = 'small',
+  query = '',
+} = Astro.props as Props;
+
+const isLarge = variant === 'large';
+const ariaLabel = translate(ui, 'search.aria', {}, 'Search places');
+const placeholder = translate(
+  ui,
+  isLarge ? 'search.largePlaceholder' : 'search.smallPlaceholder',
+  {},
+  isLarge ? 'Search countries, cities, landmarks' : 'Search'
+);
+const buttonLabel = translate(ui, 'search.button', {}, 'Search');
+---
+
+<form class={`search-bar ${isLarge ? 'search-bar-large' : 'search-bar-small'}`} action={`/${currentLanguage}/search/`} method="get" role="search" aria-label={ariaLabel}>
+  <label class="sr-only" for={`search-${variant}-${currentLanguage}`}>{ariaLabel}</label>
+  <Icon name="Search" size={isLarge ? 20 : 16} class="search-icon" />
+  <input
+    id={`search-${variant}-${currentLanguage}`}
+    class="search-input"
+    type="search"
+    name="q"
+    value={query}
+    placeholder={placeholder}
+    autocomplete="off"
+  />
+  <button type="submit" class={`search-submit ${isLarge ? 'is-primary' : ''}`}>
+    <span class="truncate">{buttonLabel}</span>
+  </button>
+</form>

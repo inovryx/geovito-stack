@@ -1,8 +1,5 @@
 ---
-import MainLayout from '../../../layouts/MainLayout.astro';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
-import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
-import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export async function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map((language) => ({
@@ -15,39 +12,5 @@ if (!isSupportedLanguage(lang)) {
   throw new Error(`Unsupported language: ${lang}`);
 }
 
-const ui = getUiMessages(lang);
-const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'dashboard')));
-const alternates = toAlternates(languageLinks);
-const canonical = absoluteUrl(pathForLanguage(lang, 'dashboard'));
+return Astro.redirect(pathForLanguage(lang, 'login'));
 ---
-
-<MainLayout
-  title={translate(ui, 'dashboard.title')}
-  description={translate(ui, 'dashboard.description')}
-  canonical={canonical}
-  robots="noindex,nofollow"
-  currentLanguage={lang}
-  languageLinks={languageLinks}
-  alternates={alternates}
-  ui={ui}
->
-  <h1>{translate(ui, 'dashboard.title')}</h1>
-  <p class="small">{translate(ui, 'dashboard.description')}</p>
-
-  <section class="card">
-    <h2>{translate(ui, 'dashboard.readOnlyTitle')}</h2>
-    <p>{translate(ui, 'dashboard.readOnlyBody')}</p>
-  </section>
-
-  <section class="card">
-    <h2>{translate(ui, 'dashboard.dataTitle')}</h2>
-    <ul class="place-link-list">
-      <li>{translate(ui, 'dashboard.items.blogDrafts')}</li>
-      <li>{translate(ui, 'dashboard.items.submissions')}</li>
-      <li>{translate(ui, 'dashboard.items.savedPlaces')}</li>
-    </ul>
-    <p>
-      <a href={pathForLanguage(lang, 'account')}>{translate(ui, 'dashboard.loginCta')}</a>
-    </p>
-  </section>
-</MainLayout>

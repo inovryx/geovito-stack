@@ -1,0 +1,46 @@
+---
+interface Props {
+  id: string;
+  name?: string;
+  label?: string;
+  value?: string;
+  placeholder?: string;
+  type?: string;
+  disabled?: boolean;
+  required?: boolean;
+  error?: string;
+}
+
+const {
+  id,
+  name,
+  label,
+  value = '',
+  placeholder = '',
+  type = 'text',
+  disabled = false,
+  required = false,
+  error = '',
+} = Astro.props as Props;
+---
+
+<label class="ui-field" for={id}>
+  {label ? <span class="ui-field-label truncate">{label}</span> : null}
+  <input
+    id={id}
+    name={name || id}
+    type={type}
+    value={value}
+    placeholder={placeholder}
+    class={`ui-input ${error ? 'is-error' : ''}`}
+    disabled={disabled}
+    required={required}
+    aria-invalid={error ? 'true' : 'false'}
+    aria-describedby={error ? `${id}-error` : undefined}
+  />
+  {error ? (
+    <span id={`${id}-error`} class="ui-field-error">
+      {error}
+    </span>
+  ) : null}
+</label>

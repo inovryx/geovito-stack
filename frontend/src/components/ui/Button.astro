@@ -1,0 +1,51 @@
+---
+import Icon from '../Icon.astro';
+
+interface Props {
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  loading?: boolean;
+  class?: string;
+  ariaLabel?: string;
+}
+
+const {
+  href,
+  type = 'button',
+  variant = 'primary',
+  size = 'md',
+  disabled = false,
+  loading = false,
+  class: className = '',
+  ariaLabel,
+} = Astro.props as Props;
+
+const isDisabled = disabled || loading;
+const classes = [
+  'ui-button',
+  `ui-button-${variant}`,
+  `ui-button-${size}`,
+  isDisabled ? 'is-disabled' : '',
+  loading ? 'is-loading' : '',
+  className,
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+{
+  href ? (
+    <a href={isDisabled ? undefined : href} class={classes} aria-disabled={isDisabled ? 'true' : undefined}>
+      {loading ? <Icon name="LoaderCircle" size={16} class="spin" /> : null}
+      <span class="ui-button-label truncate"><slot /></span>
+    </a>
+  ) : (
+    <button type={type} class={classes} disabled={isDisabled} aria-label={ariaLabel} aria-busy={loading ? 'true' : 'false'}>
+      {loading ? <Icon name="LoaderCircle" size={16} class="spin" /> : null}
+      <span class="ui-button-label truncate"><slot /></span>
+    </button>
+  )
+}

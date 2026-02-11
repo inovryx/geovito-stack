@@ -1,5 +1,6 @@
 ---
 import { translate } from '../lib/uiLanguage';
+import Icon from './Icon.astro';
 
 interface Props {
   status: 'fallback' | 'runtime' | 'mock';
@@ -10,25 +11,64 @@ interface Props {
 }
 
 const { status, language, canonicalPath, contentStatus = null, ui } = Astro.props;
+const bannerKey = `geovito.state-banner.${status}.${encodeURIComponent(canonicalPath)}`;
 ---
 
 {
   status === 'mock' ? (
-    <aside class="state-banner mock">
+    <aside class="state-banner mock" data-state-banner data-state-banner-key={bannerKey}>
       <strong class="state-badge">MOCK</strong>
       <span>{translate(ui, 'stateBanner.mock')}</span>
+      <button type="button" class="state-banner-close" data-state-banner-dismiss aria-label="Dismiss banner">
+        <Icon name="X" size={16} />
+      </button>
     </aside>
   ) : status === 'runtime' ? (
-    <aside class="state-banner runtime">
+    <aside class="state-banner runtime" data-state-banner data-state-banner-key={bannerKey}>
       <strong class="state-badge">RUNTIME</strong>
       <span>{translate(ui, 'stateBanner.runtime')}</span>
       <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>
+      <button type="button" class="state-banner-close" data-state-banner-dismiss aria-label="Dismiss banner">
+        <Icon name="X" size={16} />
+      </button>
     </aside>
   ) : (
-    <aside class="state-banner fallback">
+    <aside class="state-banner fallback" data-state-banner data-state-banner-key={bannerKey}>
       <strong class="state-badge">FALLBACK</strong>
       <span>{translate(ui, 'stateBanner.incomplete', { language, state: contentStatus || 'missing' })}</span>
       <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>
+      <button type="button" class="state-banner-close" data-state-banner-dismiss aria-label="Dismiss banner">
+        <Icon name="X" size={16} />
+      </button>
     </aside>
   )
 }
+
+<script is:inline>
+  (() => {
+    document.querySelectorAll('[data-state-banner]').forEach((banner) => {
+      const key = banner.getAttribute('data-state-banner-key');
+      if (!key) return;
+
+      try {
+        if (localStorage.getItem(key) === '1') {
+          banner.classList.add('is-dismissed');
+        }
+      } catch {
+        // no-op
+      }
+
+      const closeButton = banner.querySelector('[data-state-banner-dismiss]');
+      if (!closeButton || closeButton.getAttribute('data-bound') === 'true') return;
+      closeButton.setAttribute('data-bound', 'true');
+      closeButton.addEventListener('click', () => {
+        banner.classList.add('is-dismissed');
+        try {
+          localStorage.setItem(key, '1');
+        } catch {
+          // no-op
+        }
+      });
+    });
+  })();
+</script>

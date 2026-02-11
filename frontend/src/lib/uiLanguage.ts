@@ -27,6 +27,15 @@ const getByPath = (dictionary: Dictionary, path: string): unknown => {
 const interpolate = (text: string, params: Record<string, string | number> = {}) =>
   text.replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => String(params[key] ?? `{${key}}`));
 
+const makeFallbackText = (key: string) => {
+  const tail = key.split('.').pop() || '';
+  const normalized = tail
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .trim();
+  return normalized || 'Text unavailable';
+};
+
 export const getUiMessages = (language: SiteLanguage): Dictionary => {
   return dictionaries[language] || dictionaries[DEFAULT_LANGUAGE];
 };
@@ -35,7 +44,7 @@ export const translate = (
   messages: Dictionary,
   key: string,
   params: Record<string, string | number> = {},
-  fallback = key
+  fallback?: string
 ) => {
   const value = getByPath(messages, key);
 
@@ -48,7 +57,7 @@ export const translate = (
     return interpolate(fallbackValue, params);
   }
 
-  return fallback;
+  return fallback || makeFallbackText(key);
 };
 
 const normalizeLanguageCode = (value: string | null | undefined): SiteLanguage | null => {

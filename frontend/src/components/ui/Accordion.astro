@@ -1,0 +1,21 @@
+---
+import Icon from '../Icon.astro';
+
+interface Props {
+  title: string;
+  open?: boolean;
+  class?: string;
+}
+
+const { title, open = false, class: className = '' } = Astro.props as Props;
+---
+
+<details class={`ui-accordion ${className}`.trim()} open={open}>
+  <summary>
+    <span class="truncate">{title}</span>
+    <Icon name="ChevronDown" size={16} class="accordion-chevron" />
+  </summary>
+  <div class="ui-accordion-body">
+    <slot />
+  </div>
+</details>

@@ -1,0 +1,68 @@
+---
+import { icons } from 'lucide/dist/cjs/lucide.js';
+
+interface Props {
+  name: string;
+  size?: 16 | 20 | 24 | number;
+  class?: string;
+  strokeWidth?: number;
+  title?: string;
+  decorative?: boolean;
+}
+
+const {
+  name,
+  size = 20,
+  class: className = '',
+  strokeWidth = 1.9,
+  title,
+  decorative = true,
+} = Astro.props as Props;
+
+const allowedSizes = [16, 20, 24];
+const resolvedSize = allowedSizes.includes(Number(size)) ? Number(size) : 20;
+const iconMap = icons as Record<string, Array<[string, Record<string, string>]> | undefined>;
+const iconNode = iconMap[name] || iconMap.CircleHelp || [];
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const toAttrs = (input: Record<string, string>) =>
+  Object.entries(input)
+    .map(([key, value]) => `${key}="${escapeHtml(value)}"`)
+    .join(' ');
+
+const svgAttributes: Record<string, string> = {
+  xmlns: 'http://www.w3.org/2000/svg',
+  width: String(resolvedSize),
+  height: String(resolvedSize),
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': String(strokeWidth),
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  class: ['gv-icon', className].filter(Boolean).join(' '),
+};
+
+if (decorative && !title) {
+  svgAttributes['aria-hidden'] = 'true';
+  svgAttributes.focusable = 'false';
+} else {
+  svgAttributes.role = 'img';
+}
+
+const content = iconNode
+  .map(([tagName, attrs]) => `<${tagName} ${toAttrs(attrs)}></${tagName}>`)
+  .join('');
+
+const titleMarkup = title ? `<title>${escapeHtml(title)}</title>` : '';
+const svg = `<svg ${toAttrs(svgAttributes)}>${titleMarkup}${content}</svg>`;
+---
+
+<span class="gv-icon-wrap" set:html={svg}></span>

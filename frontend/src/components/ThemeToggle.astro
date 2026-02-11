@@ -1,0 +1,31 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  class?: string;
+  label?: string;
+  lightLabel?: string;
+  darkLabel?: string;
+  compact?: boolean;
+}
+
+const {
+  class: className = '',
+  label = 'Toggle theme',
+  lightLabel = 'Light',
+  darkLabel = 'Dark',
+  compact = false,
+} = Astro.props as Props;
+---
+
+<button
+  type="button"
+  class={`theme-toggle ${compact ? 'is-compact' : ''} ${className}`.trim()}
+  data-theme-toggle
+  data-label-light={lightLabel}
+  data-label-dark={darkLabel}
+  aria-label={label}
+>
+  <Icon name="SunMoon" size={20} />
+  <span class={compact ? 'sr-only' : 'theme-toggle-label truncate'} data-theme-toggle-label>{lightLabel}</span>
+</button>

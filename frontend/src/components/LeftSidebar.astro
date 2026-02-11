@@ -1,0 +1,29 @@
+---
+import Nav from './Nav.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { translate } from '../lib/uiLanguage';
+
+interface Props {
+  currentLanguage: string;
+  languageLinks: Record<string, string>;
+  ui: Record<string, unknown>;
+}
+
+const { currentLanguage, languageLinks, ui } = Astro.props as Props;
+---
+
+<div class="left-sidebar-stack">
+  <section class="sidebar-block">
+    <Nav currentLanguage={currentLanguage} ui={ui} />
+  </section>
+
+  <section class="sidebar-block">
+    <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
+    <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
+  </section>
+
+  <section class="sidebar-block sidebar-auth-links">
+    <a href={`/${currentLanguage}/login/`} class="small-link">{translate(ui, 'auth.login', {}, 'Login')}</a>
+    <a href={`/${currentLanguage}/register/`} class="small-link">{translate(ui, 'auth.register', {}, 'Register')}</a>
+  </section>
+</div>

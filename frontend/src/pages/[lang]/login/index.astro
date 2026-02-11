@@ -1,0 +1,56 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({
+    params: { lang: language },
+  }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'login')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage('en', 'login'));
+---
+
+<MainLayout
+  title={translate(ui, 'auth.login', {}, 'Login')}
+  description={translate(ui, 'auth.loginDescription', {}, 'Sign in placeholder for future account features.')}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <h1>{translate(ui, 'auth.login', {}, 'Login')}</h1>
+  <p class="small">{translate(ui, 'auth.loginDescription', {}, 'Sign in placeholder for future account features.')}</p>
+
+  <section class="card panel">
+    <p>
+      <a href="/admin">{translate(ui, 'auth.loginCta', {}, 'Continue to admin login')}</a>
+    </p>
+    <p class="small">
+      {translate(ui, 'auth.noAccount', {}, 'No account yet?')}
+      {' '}
+      <a href={pathForLanguage(lang, 'register')}>{translate(ui, 'auth.register', {}, 'Register')}</a>
+    </p>
+  </section>
+
+  <section class="card panel">
+    <EmptyState
+      title={translate(ui, 'saved.comingSoonTitle', {}, 'Saved places coming soon')}
+      description={translate(ui, 'saved.comingSoonBody', {}, 'Saved lists and watchlist features will be enabled in a later phase.')}
+      icon="Bookmark"
+    />
+  </section>
+</MainLayout>

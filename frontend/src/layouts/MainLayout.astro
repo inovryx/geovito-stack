@@ -1,7 +1,5 @@
 ---
-import '../styles/global.css';
-import Nav from '../components/Nav.astro';
-import LanguageSwitcher from '../components/LanguageSwitcher.astro';
+import AppShell from './AppShell.astro';
 
 interface AlternateLink {
   hreflang: string;
@@ -17,6 +15,8 @@ interface Props {
   languageLinks: Record<string, string>;
   alternates?: AlternateLink[];
   ui: Record<string, unknown>;
+  showTools?: boolean;
+  toolsContext?: string | null;
 }
 
 const {
@@ -28,39 +28,23 @@ const {
   languageLinks,
   alternates = [],
   ui,
-} = Astro.props;
+  showTools = false,
+  toolsContext = null,
+} = Astro.props as Props;
 ---
 
-<!doctype html>
-<html lang={currentLanguage}>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="robots" content={robots} />
-    <link rel="canonical" href={canonical} />
-    {alternates.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
-    <link rel="alternate" hreflang="x-default" href={languageLinks['en'] || '/en/'} />
-  </head>
-  <body>
-    <script is:inline>
-      try {
-        const pageLanguage = document.documentElement.lang?.toLowerCase();
-        if (pageLanguage) {
-          localStorage.setItem('geovito.ui_lang', pageLanguage);
-        }
-      } catch {
-        // no-op
-      }
-    </script>
-    <div class="background-layer" aria-hidden="true"></div>
-    <main class="shell">
-      <Nav currentLanguage={currentLanguage} ui={ui} />
-      <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
-      <section class="content">
-        <slot />
-      </section>
-    </main>
-  </body>
-</html>
+<AppShell
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots={robots}
+  currentLanguage={currentLanguage}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+  showTools={showTools}
+  toolsContext={toolsContext}
+>
+  <slot />
+  <slot name="tools" slot="tools" />
+</AppShell>

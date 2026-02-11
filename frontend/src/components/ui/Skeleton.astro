@@ -1,0 +1,14 @@
+---
+interface Props {
+  lines?: number;
+  class?: string;
+}
+
+const { lines = 1, class: className = '' } = Astro.props as Props;
+const count = Math.max(1, lines);
+const lineWidths = Array.from({ length: count }, (_, index) => (index === count - 1 ? '72%' : '100%'));
+---
+
+<div class={`ui-skeleton ${className}`} aria-hidden="true">
+  {lineWidths.map((width) => <span class="ui-skeleton-line" style={`width:${width};`}></span>)}
+</div>

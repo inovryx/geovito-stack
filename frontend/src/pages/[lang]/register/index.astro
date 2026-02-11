@@ -1,0 +1,47 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({
+    params: { lang: language },
+  }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'register')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage('en', 'register'));
+---
+
+<MainLayout
+  title={translate(ui, 'auth.register', {}, 'Register')}
+  description={translate(ui, 'auth.registerDescription', {}, 'Registration is not open yet; this is a placeholder.')}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <h1>{translate(ui, 'auth.register', {}, 'Register')}</h1>
+  <p class="small">{translate(ui, 'auth.registerDescription', {}, 'Registration is not open yet; this is a placeholder.')}</p>
+
+  <section class="card panel">
+    <EmptyState
+      title={translate(ui, 'auth.registerSoon', {}, 'Registration will open soon')}
+      description={translate(ui, 'auth.registerHint', {}, 'For now, editorial access is managed manually.')}
+      icon="UserPlus"
+      actionLabel={translate(ui, 'auth.backToLogin', {}, 'Back to login')}
+      actionHref={pathForLanguage(lang, 'login')}
+    />
+  </section>
+</MainLayout>

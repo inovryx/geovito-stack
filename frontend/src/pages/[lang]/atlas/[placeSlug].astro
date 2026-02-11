@@ -200,6 +200,8 @@ const relatedBlogLinks = allPosts
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
+  showTools={true}
+  toolsContext={resolution.output.title}
 >
   {isMockView ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
 
@@ -265,8 +267,14 @@ const relatedBlogLinks = allPosts
     <ol class="place-breadcrumb">
       {
         breadcrumbLinks.map((entry, index) => (
-          <li>
-            {index === breadcrumbLinks.length - 1 ? <span>{entry.title}</span> : <a href={entry.href}>{entry.title}</a>}
+          <li class={index === breadcrumbLinks.length - 1 ? 'is-current' : ''}>
+            {index === breadcrumbLinks.length - 1 ? (
+              <span class="breadcrumb-current" title={entry.title}>
+                {entry.title}
+              </span>
+            ) : (
+              <a href={entry.href}>{entry.title}</a>
+            )}
           </li>
         ))
       }

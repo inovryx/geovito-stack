@@ -1,0 +1,28 @@
+---
+interface Props {
+  headers: string[];
+  rows: Array<Array<string | number | null | undefined>>;
+  compact?: boolean;
+}
+
+const { headers = [], rows = [], compact = false } = Astro.props as Props;
+---
+
+<div class={`ui-table-wrap ${compact ? 'is-compact' : ''}`}>
+  <table class="ui-table">
+    <thead>
+      <tr>
+        {headers.map((header) => <th>{header}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            {row.map((cell) => <td>{cell ?? '-'}</td>)}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

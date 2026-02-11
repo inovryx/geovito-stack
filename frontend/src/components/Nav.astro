@@ -1,5 +1,6 @@
 ---
 import { translate } from '../lib/uiLanguage';
+import Icon from './Icon.astro';
 
 interface Props {
   currentLanguage: string;
@@ -8,20 +9,29 @@ interface Props {
 
 const { currentLanguage, ui } = Astro.props;
 const base = `/${currentLanguage}`;
+const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
+const links = [
+  { key: 'home', icon: 'House', path: '', fallback: 'Home' },
+  { key: 'atlas', icon: 'MapPinned', path: 'atlas', fallback: 'Atlas' },
+  { key: 'regions', icon: 'Layers', path: 'regions', fallback: 'Regions' },
+  { key: 'blog', icon: 'Newspaper', path: 'blog', fallback: 'Blog' },
+  { key: 'about', icon: 'Info', path: 'about', fallback: 'About' },
+  { key: 'rules', icon: 'ScrollText', path: 'rules', fallback: 'Rules' },
+  { key: 'help', icon: 'CircleHelp', path: 'help', fallback: 'Help' },
+];
 ---
 
-<header class="site-header">
-  <a class="brand" href={`${base}/`}>{translate(ui, 'site.brand')}</a>
-  <nav aria-label="Main navigation">
-    <ul>
-      <li><a href={`${base}/`}>{translate(ui, 'nav.home')}</a></li>
-      <li><a href={`${base}/atlas/`}>{translate(ui, 'nav.atlas')}</a></li>
-      <li><a href={`${base}/regions/`}>{translate(ui, 'nav.regions')}</a></li>
-      <li><a href={`${base}/blog/`}>{translate(ui, 'nav.blog')}</a></li>
-      <li><a href={`${base}/about/`}>{translate(ui, 'nav.about')}</a></li>
-      <li><a href={`${base}/rules/`}>{translate(ui, 'nav.rules')}</a></li>
-      <li><a href={`${base}/help/`}>{translate(ui, 'nav.help')}</a></li>
-      <li><a href={`${base}/account/`}>{translate(ui, 'nav.account')}</a></li>
-    </ul>
-  </nav>
-</header>
+<nav aria-label={t('layout.mainNavigation', 'Main navigation')} class="app-nav">
+  <ul class="app-nav-list">
+    {
+      links.map((entry) => (
+        <li>
+          <a class="app-nav-link" href={entry.path ? `${base}/${entry.path}/` : `${base}/`}>
+            <Icon name={entry.icon} size={20} />
+            <span class="truncate">{t(`nav.${entry.key}`, entry.fallback)}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
