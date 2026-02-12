@@ -1,0 +1,111 @@
+---
+import Badge from '../ui/Badge.astro';
+import BadgeGroup from '../ui/BadgeGroup.astro';
+import Card from '../ui/Card.astro';
+import EmptyState from '../ui/EmptyState.astro';
+
+interface PlaceLinkItem {
+  place_id: string;
+  title: string;
+  href: string;
+  stateKey: string;
+  stateLabel: string;
+  place_type_label: string;
+}
+
+interface Props {
+  sectionId?: string;
+  title: string;
+  parentTitle: string;
+  childrenTitle: string;
+  parent: PlaceLinkItem | null;
+  children: PlaceLinkItem[];
+  noParentTitle: string;
+  noParentDescription: string;
+  noChildrenTitle: string;
+  noChildrenDescription: string;
+  hiddenChildrenLabel?: string | null;
+  badgeAriaLabel: string;
+}
+
+const {
+  sectionId = 'hierarchy',
+  title,
+  parentTitle,
+  childrenTitle,
+  parent,
+  children,
+  noParentTitle,
+  noParentDescription,
+  noChildrenTitle,
+  noChildrenDescription,
+  hiddenChildrenLabel = null,
+  badgeAriaLabel,
+} = Astro.props as Props;
+
+const childItems = Array.isArray(children) ? children : [];
+
+const stateVariant = (state: string) => {
+  if (state === 'complete') return 'success';
+  if (state === 'draft') return 'warning';
+  if (state === 'missing') return 'danger';
+  return 'neutral';
+};
+---
+
+<section id={sectionId} class="atlas-detail-section" data-atlas-hierarchy>
+  <h2 class="atlas-section-title">{title}</h2>
+
+  <div class="atlas-hierarchy-grid">
+    <Card class="atlas-hierarchy-card" title={parentTitle}>
+      {
+        parent ? (
+          <article class="atlas-link-card">
+            <a class="atlas-link-card-title" href={parent.href} title={parent.title}>
+              {parent.title}
+            </a>
+            <BadgeGroup class="atlas-link-card-badges" ariaLabel={badgeAriaLabel}>
+              <Badge variant={stateVariant(parent.stateKey)} class="atlas-state-badge">
+                {parent.stateLabel}
+              </Badge>
+              <Badge variant="info" class="atlas-kind-badge">
+                {parent.place_type_label}
+              </Badge>
+            </BadgeGroup>
+          </article>
+        ) : (
+          <EmptyState title={noParentTitle} description={noParentDescription} icon="GitBranchPlus" />
+        )
+      }
+    </Card>
+
+    <Card class="atlas-hierarchy-card" title={childrenTitle}>
+      {
+        childItems.length ? (
+          <ul class="atlas-link-list">
+            {
+              childItems.map((child) => (
+                <li>
+                  <a class="atlas-link-card-title" href={child.href} title={child.title}>
+                    {child.title}
+                  </a>
+                  <BadgeGroup class="atlas-link-card-badges" ariaLabel={badgeAriaLabel}>
+                    <Badge variant={stateVariant(child.stateKey)} class="atlas-state-badge">
+                      {child.stateLabel}
+                    </Badge>
+                    <Badge variant="info" class="atlas-kind-badge">
+                      {child.place_type_label}
+                    </Badge>
+                  </BadgeGroup>
+                </li>
+              ))
+            }
+          </ul>
+        ) : (
+          <EmptyState title={noChildrenTitle} description={noChildrenDescription} icon="TreePine" />
+        )
+      }
+      {hiddenChildrenLabel ? <p class="small atlas-hierarchy-more">{hiddenChildrenLabel}</p> : null}
+    </Card>
+  </div>
+</section>

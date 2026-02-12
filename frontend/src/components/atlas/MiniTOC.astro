@@ -1,0 +1,50 @@
+---
+interface TocSection {
+  id: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  ariaLabel: string;
+  sections: TocSection[];
+}
+
+const { title, ariaLabel, sections } = Astro.props as Props;
+const items = (Array.isArray(sections) ? sections : []).filter((section) => section?.id && section?.label);
+---
+
+<aside class="atlas-mini-toc" data-atlas-mini-toc>
+  <nav class="atlas-mini-toc-desktop" aria-label={ariaLabel} data-atlas-mini-toc-desktop>
+    <p class="atlas-mini-toc-title">{title}</p>
+    <ol class="atlas-mini-toc-list">
+      {
+        items.map((section) => (
+          <li>
+            <a href={`#${section.id}`}>{section.label}</a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+
+  <details class="ui-accordion atlas-mini-toc-mobile" data-atlas-mini-toc-mobile>
+    <summary>
+      <span class="truncate">{title}</span>
+      <span class="accordion-chevron" aria-hidden="true">v</span>
+    </summary>
+    <div class="ui-accordion-body">
+      <nav aria-label={ariaLabel}>
+        <ol class="atlas-mini-toc-list">
+          {
+            items.map((section) => (
+              <li>
+                <a href={`#${section.id}`}>{section.label}</a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+    </div>
+  </details>
+</aside>

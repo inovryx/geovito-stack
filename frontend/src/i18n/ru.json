@@ -75,6 +75,44 @@
         "pageCurrentLabel": "Tekushchaya stranitsa, {page}"
       }
     },
+    "section": {
+      "overview": "Obzor",
+      "quickFacts": "Bystrye fakty",
+      "hierarchy": "Iyerarkhiya",
+      "travelEssentials": "Travel essentials",
+      "relatedPosts": "Svyazannye posty",
+      "nearbyPlaces": "Mesta ryadom"
+    },
+    "quickFacts": {
+      "population": "Naselenie",
+      "coordinates": "Koordinaty",
+      "timezone": "Chasovoy poyas",
+      "currency": "Valyuta",
+      "language": "Yazyk",
+      "elevation": "Vysota"
+    },
+    "toc": {
+      "title": "Na etoy stranitse",
+      "aria": "Na etoy stranitse"
+    },
+    "hierarchy": {
+      "noParent": "Roditelskiy obekt otsutstvuet",
+      "noChildren": "Dochernie obekty otsutstvuyut",
+      "moreChildren": "+{count} dopolnitelnykh dochernikh obektov",
+      "badgesAria": "Status i tip obekta"
+    },
+    "relatedPosts": {
+      "empty": "Svyazannykh postov poka net"
+    },
+    "travelEssentials": {
+      "visa": "Viza",
+      "flights": "Reysy",
+      "currency": "Valyuta",
+      "helper": {
+        "noOrigin": "Vyberite punkt vyleta, chtoby otsenit varianty reysov."
+      },
+      "comingSoon": "Skoro"
+    },
     "meta": {
       "placeId": "place_id",
       "type": "tip",

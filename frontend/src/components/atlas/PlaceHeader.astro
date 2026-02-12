@@ -1,0 +1,80 @@
+---
+import Badge from '../ui/Badge.astro';
+import BadgeGroup from '../ui/BadgeGroup.astro';
+
+interface BreadcrumbItem {
+  title: string;
+  href: string;
+}
+
+interface Props {
+  breadcrumbLabel: string;
+  breadcrumbs: BreadcrumbItem[];
+  title: string;
+  kindLabel: string;
+  languageState: string;
+  stateVariant?: 'neutral' | 'success' | 'warning' | 'danger' | 'info';
+  metaLine?: string | null;
+  badgeGroupLabel?: string;
+}
+
+const {
+  breadcrumbLabel,
+  breadcrumbs,
+  title,
+  kindLabel,
+  languageState,
+  stateVariant = 'neutral',
+  metaLine = null,
+  badgeGroupLabel = 'Place labels',
+} = Astro.props as Props;
+
+const items = Array.isArray(breadcrumbs) ? breadcrumbs.filter((item) => item?.title && item?.href) : [];
+const tailIndex = Math.max(0, items.length - 1);
+---
+
+<header class="atlas-place-header" data-atlas-place-header>
+  {items.length ? (
+    <nav class="atlas-place-breadcrumb" aria-label={breadcrumbLabel}>
+      <ol>
+        {
+          items.map((item, index) => (
+            <li class={index === tailIndex ? 'is-current' : ''}>
+              {index === tailIndex ? (
+                <span class="atlas-place-breadcrumb-current" title={item.title}>
+                  {item.title}
+                </span>
+              ) : (
+                <a href={item.href} title={item.title}>
+                  {item.title}
+                </a>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  ) : null}
+
+  <div class="atlas-place-heading">
+    <div class="atlas-place-heading-copy">
+      <h1 class="atlas-place-title" title={title}>
+        {title}
+      </h1>
+      {metaLine ? (
+        <p class="atlas-place-meta" title={metaLine}>
+          {metaLine}
+        </p>
+      ) : null}
+    </div>
+
+    <BadgeGroup class="atlas-place-badges" ariaLabel={badgeGroupLabel}>
+      <Badge variant="info" class="atlas-kind-badge">
+        {kindLabel}
+      </Badge>
+      <Badge variant={stateVariant} class="atlas-state-badge">
+        {languageState}
+      </Badge>
+    </BadgeGroup>
+  </div>
+</header>

@@ -75,6 +75,44 @@
         "pageCurrentLabel": "Dangqian ye, {page}"
       }
     },
+    "section": {
+      "overview": "Gaikuang",
+      "quickFacts": "Kuaisu xinxi",
+      "hierarchy": "Cengji",
+      "travelEssentials": "Lvxing gongju",
+      "relatedPosts": "Xiangguan wenzhang",
+      "nearbyPlaces": "Fujin didian"
+    },
+    "quickFacts": {
+      "population": "Renkou",
+      "coordinates": "Zuobiao",
+      "timezone": "Shiqu",
+      "currency": "Huobi",
+      "language": "Yuyan",
+      "elevation": "Haiba"
+    },
+    "toc": {
+      "title": "Benye daolan",
+      "aria": "Benye daolan"
+    },
+    "hierarchy": {
+      "noParent": "Zanwu fujidi",
+      "noChildren": "Zanwu zididi",
+      "moreChildren": "+{count} ge gengduo zididi",
+      "badgesAria": "Didian zhuangtai he leixing"
+    },
+    "relatedPosts": {
+      "empty": "Zanwu xiangguan wenzhang"
+    },
+    "travelEssentials": {
+      "visa": "Qianzheng",
+      "flights": "Hangban",
+      "currency": "Huobi",
+      "helper": {
+        "noOrigin": "Qing xuanze chufa di yi guding hangban guji."
+      },
+      "comingSoon": "Jijiang shangxian"
+    },
     "meta": {
       "placeId": "place_id",
       "type": "leixing",

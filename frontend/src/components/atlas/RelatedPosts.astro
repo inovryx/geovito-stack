@@ -1,0 +1,63 @@
+---
+import Badge from '../ui/Badge.astro';
+import Card from '../ui/Card.astro';
+import EmptyState from '../ui/EmptyState.astro';
+
+interface RelatedPostItem {
+  post_id: string;
+  title: string;
+  href: string;
+  statusKey: string;
+  statusLabel: string;
+  published_on?: string;
+}
+
+interface Props {
+  sectionId?: string;
+  title: string;
+  posts: RelatedPostItem[];
+  emptyTitle: string;
+  emptyDescription: string;
+}
+
+const { sectionId = 'related-posts', title, posts, emptyTitle, emptyDescription } = Astro.props as Props;
+
+const items = (Array.isArray(posts) ? posts : []).slice(0, 5);
+
+const statusVariant = (state: string) => {
+  if (state === 'complete') return 'success';
+  if (state === 'draft') return 'warning';
+  if (state === 'missing') return 'danger';
+  return 'neutral';
+};
+---
+
+<section id={sectionId} class="atlas-detail-section" data-atlas-related-posts>
+  <h2 class="atlas-section-title">{title}</h2>
+
+  {
+    items.length ? (
+      <ul class="atlas-related-posts-list">
+        {
+          items.map((post) => (
+            <li>
+              <Card class="atlas-related-post-card" as="article" interactive={true}>
+                <a href={post.href} class="atlas-related-post-title" title={post.title}>
+                  {post.title}
+                </a>
+                <div class="atlas-related-post-meta">
+                  <Badge variant={statusVariant(post.statusKey)} class="atlas-state-badge">
+                    {post.statusLabel}
+                  </Badge>
+                  {post.published_on ? <span class="small">{post.published_on}</span> : null}
+                </div>
+              </Card>
+            </li>
+          ))
+        }
+      </ul>
+    ) : (
+      <EmptyState title={emptyTitle} description={emptyDescription} icon="Newspaper" />
+    )
+  }
+</section>

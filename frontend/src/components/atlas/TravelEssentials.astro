@@ -1,0 +1,41 @@
+---
+import Badge from '../ui/Badge.astro';
+import Card from '../ui/Card.astro';
+
+interface TravelCard {
+  key: string;
+  title: string;
+  description: string;
+  helper: string;
+}
+
+interface Props {
+  sectionId?: string;
+  title: string;
+  cards: TravelCard[];
+  comingSoonLabel: string;
+}
+
+const { sectionId = 'travel-essentials', title, cards, comingSoonLabel } = Astro.props as Props;
+
+const items = (Array.isArray(cards) ? cards : []).slice(0, 3);
+---
+
+<section id={sectionId} class="atlas-detail-section" data-atlas-travel-essentials>
+  <h2 class="atlas-section-title">{title}</h2>
+
+  <div class="atlas-travel-grid">
+    {
+      items.map((item) => (
+        <Card class="atlas-travel-card" as="article">
+          <header class="atlas-travel-head">
+            <h3 class="atlas-travel-title">{item.title}</h3>
+            <Badge variant="warning">{comingSoonLabel}</Badge>
+          </header>
+          <p class="small atlas-travel-description">{item.description}</p>
+          <p class="small atlas-travel-helper">{item.helper}</p>
+        </Card>
+      ))
+    }
+  </div>
+</section>

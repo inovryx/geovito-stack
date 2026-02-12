@@ -75,6 +75,44 @@
         "pageCurrentLabel": "Current page, {page}"
       }
     },
+    "section": {
+      "overview": "Genel Bakis",
+      "quickFacts": "Hizli Bilgiler",
+      "hierarchy": "Hiyerarsi",
+      "travelEssentials": "Seyahat Temelleri",
+      "relatedPosts": "Ilgili Blog Yazilari",
+      "nearbyPlaces": "Yakin Yerler"
+    },
+    "quickFacts": {
+      "population": "Nufus",
+      "coordinates": "Koordinatlar",
+      "timezone": "Saat Dilimi",
+      "currency": "Para Birimi",
+      "language": "Dil",
+      "elevation": "Rakim"
+    },
+    "toc": {
+      "title": "Bu sayfada",
+      "aria": "Bu sayfada"
+    },
+    "hierarchy": {
+      "noParent": "Ust yer yok",
+      "noChildren": "Alt yer yok",
+      "moreChildren": "+{count} daha fazla alt yer",
+      "badgesAria": "Yer durumu ve turu"
+    },
+    "relatedPosts": {
+      "empty": "Henuz ilgili yazi yok"
+    },
+    "travelEssentials": {
+      "visa": "Vize",
+      "flights": "Ucuslar",
+      "currency": "Para Birimi",
+      "helper": {
+        "noOrigin": "Ucus tahmini icin bir cikis noktasi secin."
+      },
+      "comingSoon": "Yakinda"
+    },
     "meta": {
       "placeId": "place_id",
       "type": "type",

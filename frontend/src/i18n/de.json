@@ -75,6 +75,44 @@
         "pageCurrentLabel": "Aktuelle Seite, {page}"
       }
     },
+    "section": {
+      "overview": "Uberblick",
+      "quickFacts": "Schnellinfos",
+      "hierarchy": "Hierarchie",
+      "travelEssentials": "Reise Essentials",
+      "relatedPosts": "Verwandte Beitrage",
+      "nearbyPlaces": "Nahe Orte"
+    },
+    "quickFacts": {
+      "population": "Bevolkerung",
+      "coordinates": "Koordinaten",
+      "timezone": "Zeitzone",
+      "currency": "Wahrung",
+      "language": "Sprache",
+      "elevation": "Hohe"
+    },
+    "toc": {
+      "title": "Auf dieser Seite",
+      "aria": "Auf dieser Seite"
+    },
+    "hierarchy": {
+      "noParent": "Kein ubergeordneter Ort",
+      "noChildren": "Keine untergeordneten Orte",
+      "moreChildren": "+{count} weitere untergeordnete Orte",
+      "badgesAria": "Ortstatus und Ortstyp"
+    },
+    "relatedPosts": {
+      "empty": "Noch keine verwandten Beitrage"
+    },
+    "travelEssentials": {
+      "visa": "Visa",
+      "flights": "Fluge",
+      "currency": "Wahrung",
+      "helper": {
+        "noOrigin": "Wahle einen Abflugort, um Flugoptionen zu schatzen."
+      },
+      "comingSoon": "Demnachst"
+    },
     "meta": {
       "placeId": "place_id",
       "type": "typ",

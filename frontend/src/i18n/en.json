@@ -75,6 +75,44 @@
         "pageCurrentLabel": "Current page, {page}"
       }
     },
+    "section": {
+      "overview": "Overview",
+      "quickFacts": "Quick Facts",
+      "hierarchy": "Hierarchy",
+      "travelEssentials": "Travel Essentials",
+      "relatedPosts": "Related Posts",
+      "nearbyPlaces": "Nearby Places"
+    },
+    "quickFacts": {
+      "population": "Population",
+      "coordinates": "Coordinates",
+      "timezone": "Timezone",
+      "currency": "Currency",
+      "language": "Language",
+      "elevation": "Elevation"
+    },
+    "toc": {
+      "title": "On this page",
+      "aria": "On this page"
+    },
+    "hierarchy": {
+      "noParent": "No parent place",
+      "noChildren": "No child places",
+      "moreChildren": "+{count} more children",
+      "badgesAria": "Place state and type"
+    },
+    "relatedPosts": {
+      "empty": "No related posts yet"
+    },
+    "travelEssentials": {
+      "visa": "Visa",
+      "flights": "Flights",
+      "currency": "Currency",
+      "helper": {
+        "noOrigin": "Select an origin to estimate flights."
+      },
+      "comingSoon": "Coming soon"
+    },
     "meta": {
       "placeId": "place_id",
       "type": "type",

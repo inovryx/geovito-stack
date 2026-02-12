@@ -1,0 +1,41 @@
+---
+import Card from '../ui/Card.astro';
+
+interface QuickFact {
+  key: string;
+  label: string;
+  value?: string | number | null;
+}
+
+interface Props {
+  sectionId?: string;
+  title: string;
+  facts: QuickFact[];
+}
+
+const { sectionId = 'quick-facts', title, facts } = Astro.props as Props;
+
+const safeFacts = (Array.isArray(facts) ? facts : []).slice(0, 6);
+
+const formatValue = (value: string | number | null | undefined) => {
+  if (value === null || value === undefined) return '—';
+  const text = String(value).trim();
+  return text ? text : '—';
+};
+---
+
+<section id={sectionId} class="atlas-detail-section" data-atlas-quick-facts>
+  <h2 class="atlas-section-title">{title}</h2>
+  <Card class="atlas-quick-facts-card">
+    <dl class="atlas-quick-facts-grid">
+      {
+        safeFacts.map((fact) => (
+          <div>
+            <dt>{fact.label}</dt>
+            <dd title={formatValue(fact.value)}>{formatValue(fact.value)}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </Card>
+</section>

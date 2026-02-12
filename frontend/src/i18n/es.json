@@ -75,6 +75,44 @@
         "pageCurrentLabel": "Pagina actual, {page}"
       }
     },
+    "section": {
+      "overview": "Resumen",
+      "quickFacts": "Datos rapidos",
+      "hierarchy": "Jerarquia",
+      "travelEssentials": "Esenciales de viaje",
+      "relatedPosts": "Articulos relacionados",
+      "nearbyPlaces": "Lugares cercanos"
+    },
+    "quickFacts": {
+      "population": "Poblacion",
+      "coordinates": "Coordenadas",
+      "timezone": "Zona horaria",
+      "currency": "Moneda",
+      "language": "Idioma",
+      "elevation": "Altitud"
+    },
+    "toc": {
+      "title": "En esta pagina",
+      "aria": "En esta pagina"
+    },
+    "hierarchy": {
+      "noParent": "Sin lugar padre",
+      "noChildren": "Sin lugares hijos",
+      "moreChildren": "+{count} lugares hijos adicionales",
+      "badgesAria": "Estado y tipo del lugar"
+    },
+    "relatedPosts": {
+      "empty": "Aun no hay articulos relacionados"
+    },
+    "travelEssentials": {
+      "visa": "Visa",
+      "flights": "Vuelos",
+      "currency": "Moneda",
+      "helper": {
+        "noOrigin": "Selecciona un origen para estimar vuelos."
+      },
+      "comingSoon": "Proximamente"
+    },
     "meta": {
       "placeId": "place_id",
       "type": "tipo",

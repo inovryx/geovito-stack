@@ -2,6 +2,16 @@
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
 import AdSlot from '../../../components/ads/AdSlot.astro';
+import PlaceHeader from '../../../components/atlas/PlaceHeader.astro';
+import QuickFacts from '../../../components/atlas/QuickFacts.astro';
+import HierarchyNav from '../../../components/atlas/HierarchyNav.astro';
+import MiniTOC from '../../../components/atlas/MiniTOC.astro';
+import RelatedPosts from '../../../components/atlas/RelatedPosts.astro';
+import TravelEssentials from '../../../components/atlas/TravelEssentials.astro';
+import Badge from '../../../components/ui/Badge.astro';
+import BadgeGroup from '../../../components/ui/BadgeGroup.astro';
+import Card from '../../../components/ui/Card.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getAtlasPlaces, getBlogPosts, type AtlasPlace } from '../../../lib/strapi';
 import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
@@ -49,7 +59,21 @@ const runtimeMode = Astro.url.searchParams.get('translate') === '1';
 const placeMap = new Map(allPlaces.map((entry) => [entry.place_id, entry]));
 const labelMapping = place.country_profile?.label_mapping || place.country_profile?.level_labels || {};
 const levelLabel = (placeType?: string | null) =>
-  (placeType ? labelMapping[placeType] || placeType : translate(ui, 'atlas.meta.notAvailable'));
+  placeType ? labelMapping[placeType] || placeType : translate(ui, 'atlas.meta.notAvailable');
+
+const normalizeState = (state: string | null | undefined): 'complete' | 'draft' | 'missing' => {
+  if (state === 'complete' || state === 'draft' || state === 'missing') return state;
+  return 'missing';
+};
+
+const stateLabel = (state: 'complete' | 'draft' | 'missing') =>
+  translate(ui, `atlas.list.states.${state}`, {}, state);
+
+const stateVariant = (state: 'complete' | 'draft' | 'missing'): 'success' | 'warning' | 'danger' => {
+  if (state === 'complete') return 'success';
+  if (state === 'draft') return 'warning';
+  return 'danger';
+};
 
 const mapPlaceLink = (entry: AtlasPlace) => {
   const translated = resolveTranslation(entry.translations, lang, entry.canonical_language);
@@ -60,13 +84,16 @@ const mapPlaceLink = (entry: AtlasPlace) => {
 
   if (!output || !slug) return null;
 
+  const stateKey = normalizeState(requested?.status || 'missing');
+
   return {
     place_id: entry.place_id,
     place_type: entry.place_type,
     place_type_label: levelLabel(entry.place_type),
     title: output.title || entry.place_id,
     href: pathForLanguage(lang, `atlas/${slug}`),
-    state: requested?.status || 'missing',
+    stateKey,
+    stateLabel: stateLabel(stateKey),
   };
 };
 
@@ -127,7 +154,7 @@ const childPlaces = allPlaces.filter(
 );
 const childLinks = childPlaces
   .map((entry) => mapPlaceLink(entry))
-  .filter(Boolean)
+  .filter((item): item is NonNullable<ReturnType<typeof mapPlaceLink>> => Boolean(item))
   .sort((a, b) => a.title.localeCompare(b.title));
 const visibleChildLinks = childLinks.slice(0, 30);
 const hiddenChildCount = Math.max(0, childLinks.length - visibleChildLinks.length);
@@ -144,7 +171,10 @@ while (cursor && !breadcrumbSeen.has(cursor.place_id)) {
 }
 
 breadcrumbChain.reverse();
-const breadcrumbLinks = breadcrumbChain.map((entry) => mapPlaceLink(entry)).filter(Boolean);
+const breadcrumbLinks = breadcrumbChain
+  .map((entry) => mapPlaceLink(entry))
+  .filter((item): item is NonNullable<ReturnType<typeof mapPlaceLink>> => Boolean(item))
+  .map((entry) => ({ title: entry.title, href: entry.href }));
 
 const excludedRelated = new Set([
   place.place_id,
@@ -152,7 +182,7 @@ const excludedRelated = new Set([
   ...childLinks.map((entry) => entry.place_id),
 ]);
 
-const relatedLinks = allPlaces
+const nearbyLinks = allPlaces
   .filter((entry) => {
     if (excludedRelated.has(entry.place_id)) return false;
     if (entry.country_code !== place.country_code) return false;
@@ -162,7 +192,7 @@ const relatedLinks = allPlaces
     return entry.place_type === place.place_type;
   })
   .map((entry) => mapPlaceLink(entry))
-  .filter(Boolean)
+  .filter((item): item is NonNullable<ReturnType<typeof mapPlaceLink>> => Boolean(item))
   .slice(0, 12);
 
 const relatedBlogLinks = allPosts
@@ -180,16 +210,111 @@ const relatedBlogLinks = allPosts
     if (!resolved.output || !complete?.slug) return null;
 
     const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
+    const statusKey = normalizeState(requested?.status || 'missing');
     return {
       post_id: post.post_id,
       title: resolved.output.title || post.post_id,
       href: pathForLanguage(lang, `blog/${slug}`),
-      status: requested?.status || 'missing',
+      statusKey,
+      statusLabel: stateLabel(statusKey),
       published_on: post.published_on,
     };
   })
-  .filter(Boolean)
-  .slice(0, 8);
+  .filter(
+    (item): item is { post_id: string; title: string; href: string; statusKey: 'complete' | 'draft' | 'missing'; statusLabel: string; published_on?: string } =>
+      Boolean(item)
+  )
+  .slice(0, 5);
+
+const requestedStateKey = normalizeState(resolution.requested?.status || 'missing');
+const requestedStateLabel = stateLabel(requestedStateKey);
+
+const regionLabel = effectiveRegionKey || '—';
+const metaLine = `${translate(ui, 'atlas.meta.country')}: ${place.country_code} · ${translate(ui, 'atlas.meta.region')}: ${regionLabel}`;
+
+const placeAny = place as Record<string, unknown>;
+
+const valueFromKeys = (keys: string[]) => {
+  for (const key of keys) {
+    const value = placeAny[key];
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return null;
+};
+
+const populationRaw = valueFromKeys(['population', 'population_total']);
+const populationValue =
+  typeof populationRaw === 'number' ? new Intl.NumberFormat(lang).format(populationRaw) : populationRaw;
+
+const elevationRaw = valueFromKeys(['elevation_m', 'elevation']);
+const elevationValue =
+  typeof elevationRaw === 'number'
+    ? `${new Intl.NumberFormat(lang).format(elevationRaw)} m`
+    : elevationRaw;
+
+const quickFacts = [
+  {
+    key: 'population',
+    label: translate(ui, 'atlas.quickFacts.population'),
+    value: populationValue,
+  },
+  {
+    key: 'coordinates',
+    label: translate(ui, 'atlas.quickFacts.coordinates'),
+    value: coordinatesLabel,
+  },
+  {
+    key: 'timezone',
+    label: translate(ui, 'atlas.quickFacts.timezone'),
+    value: valueFromKeys(['timezone', 'timezone_name', 'time_zone']),
+  },
+  {
+    key: 'currency',
+    label: translate(ui, 'atlas.quickFacts.currency'),
+    value: valueFromKeys(['currency', 'currency_code']),
+  },
+  {
+    key: 'language',
+    label: translate(ui, 'atlas.quickFacts.language'),
+    value: valueFromKeys(['language', 'languages', 'primary_language']),
+  },
+  {
+    key: 'elevation',
+    label: translate(ui, 'atlas.quickFacts.elevation'),
+    value: elevationValue,
+  },
+];
+
+const travelCards = [
+  {
+    key: 'visa',
+    title: translate(ui, 'atlas.travelEssentials.visa'),
+    description: translate(ui, 'tools.visa.description', {}, 'Entry checklist starter'),
+    helper: translate(ui, 'atlas.travelEssentials.helper.noOrigin'),
+  },
+  {
+    key: 'flights',
+    title: translate(ui, 'atlas.travelEssentials.flights'),
+    description: translate(ui, 'tools.flights.description', {}, 'Route planning cue'),
+    helper: translate(ui, 'atlas.travelEssentials.helper.noOrigin'),
+  },
+  {
+    key: 'currency',
+    title: translate(ui, 'atlas.travelEssentials.currency'),
+    description: translate(ui, 'tools.currency.description', {}, 'Quick FX note'),
+    helper: translate(ui, 'atlas.travelEssentials.helper.noOrigin'),
+  },
+];
+
+const tocSections = [
+  { id: 'overview', label: translate(ui, 'atlas.section.overview') },
+  { id: 'quick-facts', label: translate(ui, 'atlas.section.quickFacts') },
+  { id: 'hierarchy', label: translate(ui, 'atlas.section.hierarchy') },
+  { id: 'travel-essentials', label: translate(ui, 'atlas.section.travelEssentials') },
+  { id: 'related-posts', label: translate(ui, 'atlas.section.relatedPosts') },
+  { id: 'nearby-places', label: translate(ui, 'atlas.section.nearbyPlaces') },
+];
 ---
 
 <MainLayout
@@ -220,172 +345,118 @@ const relatedBlogLinks = allPosts
     ) : null
   }
 
-  <section class="place-hero">
-    <div class="place-hero-content">
-      <p class="eyebrow">{levelLabel(place.place_type)}</p>
-      <h1>{resolution.output.title}</h1>
-      <p class="hero-lead">{resolution.output.excerpt || translate(ui, 'atlas.noBody')}</p>
-      <div class="chip-row">
-        <span class="status-pill">{resolution.requested?.status || 'missing'}</span>
-        <span class="status-pill">{place.country_code}</span>
-        {effectiveRegionKey ? <span class="status-pill">{effectiveRegionKey}</span> : null}
-      </div>
+  <PlaceHeader
+    breadcrumbLabel={translate(ui, 'atlas.links.breadcrumb')}
+    breadcrumbs={breadcrumbLinks}
+    title={resolution.output.title || place.place_id}
+    kindLabel={levelLabel(place.place_type)}
+    languageState={requestedStateLabel}
+    stateVariant={stateVariant(requestedStateKey)}
+    metaLine={metaLine}
+    badgeGroupLabel={translate(ui, 'atlas.hierarchy.badgesAria')}
+  />
+
+  <QuickFacts sectionId="quick-facts" title={translate(ui, 'atlas.section.quickFacts')} facts={quickFacts} />
+
+  <div class="atlas-detail-layout" data-atlas-detail-layout>
+    <div class="atlas-detail-main" data-atlas-detail-main>
+      <section id="overview" class="atlas-detail-section" data-atlas-overview>
+        <h2 class="atlas-section-title">{translate(ui, 'atlas.section.overview')}</h2>
+        <Card class="atlas-overview-card" as="section">
+          {resolution.output.excerpt ? <p class="atlas-overview-lead">{resolution.output.excerpt}</p> : null}
+          {resolution.output.body ? (
+            <article class="prose-body atlas-detail-prose" set:html={resolution.output.body}></article>
+          ) : (
+            <p>{translate(ui, 'atlas.noBody')}</p>
+          )}
+
+          {
+            resolution.requested?.status !== 'complete' && !runtimeMode ? (
+              <p>
+                <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
+              </p>
+            ) : null
+          }
+        </Card>
+      </section>
+
+      <HierarchyNav
+        sectionId="hierarchy"
+        title={translate(ui, 'atlas.section.hierarchy')}
+        parentTitle={translate(ui, 'atlas.links.parent')}
+        childrenTitle={translate(ui, 'atlas.links.children')}
+        parent={parentLink}
+        children={visibleChildLinks}
+        noParentTitle={translate(ui, 'atlas.hierarchy.noParent')}
+        noParentDescription={translate(ui, 'atlas.links.noParent')}
+        noChildrenTitle={translate(ui, 'atlas.hierarchy.noChildren')}
+        noChildrenDescription={translate(ui, 'atlas.links.noChildren')}
+        hiddenChildrenLabel={
+          hiddenChildCount > 0 ? translate(ui, 'atlas.hierarchy.moreChildren', { count: hiddenChildCount }) : null
+        }
+        badgeAriaLabel={translate(ui, 'atlas.hierarchy.badgesAria')}
+      />
+
+      <AdSlot {...{ slot: 'atlas_incontent' }} class="atlas-incontent-ad" testId="ad-slot-atlas-incontent" />
+
+      <TravelEssentials
+        sectionId="travel-essentials"
+        title={translate(ui, 'atlas.section.travelEssentials')}
+        cards={travelCards}
+        comingSoonLabel={translate(ui, 'atlas.travelEssentials.comingSoon')}
+      />
+
+      <RelatedPosts
+        sectionId="related-posts"
+        title={translate(ui, 'atlas.section.relatedPosts')}
+        posts={relatedBlogLinks}
+        emptyTitle={translate(ui, 'atlas.relatedPosts.empty')}
+        emptyDescription={translate(ui, 'atlas.links.noRelatedBlog')}
+      />
+
+      <section id="nearby-places" class="atlas-detail-section" data-atlas-nearby-places>
+        <h2 class="atlas-section-title">{translate(ui, 'atlas.section.nearbyPlaces')}</h2>
+
+        {
+          nearbyLinks.length ? (
+            <Card class="atlas-nearby-card">
+              <ul class="atlas-link-list atlas-nearby-list">
+                {
+                  nearbyLinks.map((entry) => (
+                    <li>
+                      <a class="atlas-link-card-title" href={entry.href} title={entry.title}>
+                        {entry.title}
+                      </a>
+                      <BadgeGroup class="atlas-link-card-badges" ariaLabel={translate(ui, 'atlas.hierarchy.badgesAria')}>
+                        <Badge variant={stateVariant(entry.stateKey)} class="atlas-state-badge">
+                          {entry.stateLabel}
+                        </Badge>
+                        <Badge variant="info" class="atlas-kind-badge">
+                          {entry.place_type_label}
+                        </Badge>
+                      </BadgeGroup>
+                    </li>
+                  ))
+                }
+              </ul>
+            </Card>
+          ) : (
+            <EmptyState
+              title={translate(ui, 'atlas.section.nearbyPlaces')}
+              description={translate(ui, 'atlas.links.noRelated')}
+              icon="MapPinOff"
+            />
+          )
+        }
+      </section>
     </div>
 
-    <aside class="card place-facts">
-      <h2>{translate(ui, 'atlas.meta.placeId')}</h2>
-      <dl class="fact-grid">
-        <div>
-          <dt>{translate(ui, 'atlas.meta.placeId')}</dt>
-          <dd>{place.place_id}</dd>
-        </div>
-        <div>
-          <dt>{translate(ui, 'atlas.meta.type')}</dt>
-          <dd>{levelLabel(place.place_type)}</dd>
-        </div>
-        <div>
-          <dt>{translate(ui, 'atlas.meta.country')}</dt>
-          <dd>{place.country_code}</dd>
-        </div>
-        <div>
-          <dt>{translate(ui, 'atlas.meta.region')}</dt>
-          <dd>{effectiveRegionKey || translate(ui, 'atlas.meta.notAvailable')}</dd>
-        </div>
-        <div>
-          <dt>{translate(ui, 'atlas.meta.coordinates')}</dt>
-          <dd>{coordinatesLabel || translate(ui, 'atlas.meta.notAvailable')}</dd>
-        </div>
-        <div>
-          <dt>{translate(ui, 'atlas.meta.languageStatus')}</dt>
-          <dd>{resolution.requested?.status || 'missing'}</dd>
-        </div>
-      </dl>
-    </aside>
-  </section>
-
-  <nav class="card breadcrumb-card" aria-label={translate(ui, 'atlas.links.breadcrumb')}>
-    <strong>{translate(ui, 'atlas.links.breadcrumb')}</strong>
-    <ol class="place-breadcrumb">
-      {
-        breadcrumbLinks.map((entry, index) => (
-          <li class={index === breadcrumbLinks.length - 1 ? 'is-current' : ''}>
-            {index === breadcrumbLinks.length - 1 ? (
-              <span class="breadcrumb-current" title={entry.title}>
-                {entry.title}
-              </span>
-            ) : (
-              <a href={entry.href}>{entry.title}</a>
-            )}
-          </li>
-        ))
-      }
-    </ol>
-  </nav>
-
-  <div class="grid two feature-grid">
-    <section class="card panel">
-      <div class="panel-head">
-        <h2>{translate(ui, 'atlas.links.parent')}</h2>
-      </div>
-      {
-        parentLink ? (
-          <p>
-            <a href={parentLink.href}>{parentLink.title}</a>
-            <span class="status-pill">{parentLink.state}</span>
-            <span class="status-pill">{parentLink.place_type_label}</span>
-          </p>
-        ) : (
-          <div class="empty-state">
-            <p>{translate(ui, 'atlas.links.noParent')}</p>
-          </div>
-        )
-      }
-    </section>
-
-    <section class="card panel">
-      <div class="panel-head">
-        <h2>{translate(ui, 'atlas.links.children')}</h2>
-      </div>
-      {
-        visibleChildLinks.length ? (
-          <ul class="place-link-list">
-            {visibleChildLinks.map((entry) => (
-              <li>
-                <a href={entry.href}>{entry.title}</a>
-                <span class="status-pill">{entry.state}</span>
-                <span class="status-pill">{entry.place_type_label}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div class="empty-state">
-            <p>{translate(ui, 'atlas.links.noChildren')}</p>
-          </div>
-        )
-      }
-      {hiddenChildCount > 0 ? <p class="small">+{hiddenChildCount} more children</p> : null}
-    </section>
+    <div class="atlas-detail-toc-rail">
+      <MiniTOC
+        title={translate(ui, 'atlas.toc.title')}
+        ariaLabel={translate(ui, 'atlas.toc.aria')}
+        sections={tocSections}
+      />
+    </div>
   </div>
-
-  <AdSlot {...{ slot: 'atlas_incontent' }} class="atlas-incontent-ad" testId="ad-slot-atlas-incontent" />
-
-  <div class="grid two feature-grid">
-    <section class="card panel">
-      <div class="panel-head">
-        <h2>{translate(ui, 'atlas.links.related')}</h2>
-      </div>
-      {
-        relatedLinks.length ? (
-          <ul class="place-link-list">
-            {relatedLinks.map((entry) => (
-              <li>
-                <a href={entry.href}>{entry.title}</a>
-                <span class="status-pill">{entry.state}</span>
-                <span class="status-pill">{entry.place_type_label}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div class="empty-state">
-            <p>{translate(ui, 'atlas.links.noRelated')}</p>
-          </div>
-        )
-      }
-    </section>
-
-    <section class="card panel">
-      <div class="panel-head">
-        <h2>{translate(ui, 'atlas.links.relatedBlog')}</h2>
-      </div>
-      {
-        relatedBlogLinks.length ? (
-          <ul class="place-link-list">
-            {relatedBlogLinks.map((entry) => (
-              <li>
-                <a href={entry.href}>{entry.title}</a>
-                <span class="status-pill">{entry.status}</span>
-                <span class="small">{entry.published_on}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div class="empty-state">
-            <p>{translate(ui, 'atlas.links.noRelatedBlog')}</p>
-          </div>
-        )
-      }
-    </section>
-  </div>
-
-  <section class="card prose-card">
-    {resolution.output.body ? <article class="prose-body" set:html={resolution.output.body}></article> : <p>{translate(ui, 'atlas.noBody')}</p>}
-
-    {
-      resolution.requested?.status !== 'complete' && !runtimeMode ? (
-        <p>
-          <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
-        </p>
-      ) : null
-    }
-  </section>
 </MainLayout>
