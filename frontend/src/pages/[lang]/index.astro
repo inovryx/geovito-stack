@@ -2,6 +2,7 @@
 import MainLayout from '../../layouts/MainLayout.astro';
 import StateBanner from '../../components/StateBanner.astro';
 import SearchBar from '../../components/SearchBar.astro';
+import AdSlot from '../../components/ads/AdSlot.astro';
 import Badge from '../../components/ui/Badge.astro';
 import EmptyState from '../../components/ui/EmptyState.astro';
 import { resolveTranslation } from '../../lib/languageState';
@@ -210,6 +211,8 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
       }
     </section>
   </div>
+
+  <AdSlot {...{ slot: 'home_mid' }} class="home-mid-ad" testId="ad-slot-home-mid" />
 
   <div class="grid two feature-grid">
     <section class="card panel">

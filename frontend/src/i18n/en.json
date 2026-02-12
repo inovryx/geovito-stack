@@ -15,6 +15,9 @@
   "language": {
     "switcherAria": "Language selector"
   },
+  "ads": {
+    "label": "Advertisement"
+  },
   "stateBanner": {
     "runtime": "Runtime translation preview is shown. This view is not indexed.",
     "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
@@ -44,7 +47,33 @@
     "list": {
       "title": "Atlas",
       "description": "Country-level entry points in the Atlas hierarchy.",
-      "empty": "No countries are available yet."
+      "empty": "No countries are available yet.",
+      "emptyTitle": "No places found",
+      "emptyDescription": "Try another filter chip to continue exploring the atlas.",
+      "emptyAction": "Reset filters",
+      "noSnippet": "No summary yet.",
+      "filterAria": "Filter atlas places",
+      "stateLegendAria": "Language state legend",
+      "metaSummary": "Showing {shown} of {total} places",
+      "filters": {
+        "all": "All",
+        "country": "Country",
+        "city": "City",
+        "region": "Region",
+        "landmark": "Landmark"
+      },
+      "states": {
+        "complete": "complete",
+        "draft": "draft",
+        "missing": "missing"
+      },
+      "pagination": {
+        "aria": "Atlas pagination",
+        "prev": "Prev",
+        "next": "Next",
+        "pageLabel": "Page {page}",
+        "pageCurrentLabel": "Current page, {page}"
+      }
     },
     "meta": {
       "placeId": "place_id",

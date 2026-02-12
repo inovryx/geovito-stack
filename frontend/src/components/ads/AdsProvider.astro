@@ -1,0 +1,7 @@
+---
+import { getAdScriptUrl } from '../../lib/ads';
+
+const scriptUrl = getAdScriptUrl();
+---
+
+{scriptUrl ? <script async src={scriptUrl}></script> : null}

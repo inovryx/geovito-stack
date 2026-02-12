@@ -15,6 +15,9 @@
   "language": {
     "switcherAria": "Selector de idioma"
   },
+  "ads": {
+    "label": "Publicidad"
+  },
   "stateBanner": {
     "runtime": "Se muestra la vista previa de traduccion en tiempo real. Esta vista no se indexa.",
     "fallback": "El contenido complete aun no esta listo en este idioma ({language}). Se muestra la version canonica complete.",
@@ -44,7 +47,33 @@
     "list": {
       "title": "Atlas",
       "description": "Puntos de entrada por pais dentro de la jerarquia Atlas.",
-      "empty": "Todavia no hay paises disponibles."
+      "empty": "Todavia no hay paises disponibles.",
+      "emptyTitle": "No se encontraron lugares",
+      "emptyDescription": "Prueba otro chip de filtro para seguir explorando el atlas.",
+      "emptyAction": "Restablecer filtros",
+      "noSnippet": "Aun no hay resumen.",
+      "filterAria": "Filtrar lugares del atlas",
+      "stateLegendAria": "Leyenda de estado de idioma",
+      "metaSummary": "Mostrando {shown} de {total} lugares",
+      "filters": {
+        "all": "Todos",
+        "country": "Pais",
+        "city": "Ciudad",
+        "region": "Region",
+        "landmark": "Lugar clave"
+      },
+      "states": {
+        "complete": "complete",
+        "draft": "draft",
+        "missing": "missing"
+      },
+      "pagination": {
+        "aria": "Paginacion de atlas",
+        "prev": "Anterior",
+        "next": "Siguiente",
+        "pageLabel": "Pagina {page}",
+        "pageCurrentLabel": "Pagina actual, {page}"
+      }
     },
     "meta": {
       "placeId": "place_id",

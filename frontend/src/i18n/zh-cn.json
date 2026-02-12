@@ -15,6 +15,9 @@
   "language": {
     "switcherAria": "Yuyan xuanze"
   },
+  "ads": {
+    "label": "广告"
+  },
   "stateBanner": {
     "runtime": "Dangqian xianshi runtime fanyi yulan, ci shitu buhui bei shoulu.",
     "fallback": "Gai yuyan de complete neirong zanwei jiuxu ({language}), xianshi canon complete banben.",
@@ -44,7 +47,33 @@
     "list": {
       "title": "Atlas",
       "description": "Atlas cengji zhong de guojia rukou yemian.",
-      "empty": "Zanwu guojia nei rong."
+      "empty": "Zanwu guojia nei rong.",
+      "emptyTitle": "Wei zhaodao didian",
+      "emptyDescription": "Qiehuan qita guolv chip jixu tansuo atlas.",
+      "emptyAction": "Chongzhi guolv",
+      "noSnippet": "Zanwu zhaiyao.",
+      "filterAria": "Guolv atlas didian",
+      "stateLegendAria": "Yuyan zhuangtai shuoming",
+      "metaSummary": "Xianshi {shown}/{total} ge didian",
+      "filters": {
+        "all": "Quanbu",
+        "country": "Guojia",
+        "city": "Chengshi",
+        "region": "QvYu",
+        "landmark": "Dibiao"
+      },
+      "states": {
+        "complete": "complete",
+        "draft": "draft",
+        "missing": "missing"
+      },
+      "pagination": {
+        "aria": "Atlas fanye",
+        "prev": "Shangyiye",
+        "next": "Xiayiye",
+        "pageLabel": "Di {page} ye",
+        "pageCurrentLabel": "Dangqian ye, {page}"
+      }
     },
     "meta": {
       "placeId": "place_id",

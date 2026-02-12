@@ -31,6 +31,8 @@ const {
   showTools = false,
   toolsContext = null,
 } = Astro.props as Props;
+
+const hasToolsSlot = Astro.slots.has('tools');
 ---
 
 <AppShell
@@ -44,7 +46,8 @@ const {
   ui={ui}
   showTools={showTools}
   toolsContext={toolsContext}
+  hasCustomTools={hasToolsSlot}
 >
   <slot />
-  <slot name="tools" slot="tools" />
+  {hasToolsSlot ? <slot name="tools" slot="tools" /> : null}
 </AppShell>

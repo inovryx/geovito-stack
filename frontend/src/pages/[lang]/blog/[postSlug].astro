@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
+import AdSlot from '../../../components/ads/AdSlot.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getBlogPosts, type BlogPost } from '../../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
@@ -95,6 +96,7 @@ const robots = isMockView ? 'noindex,nofollow' : resolution.indexable ? 'index,f
     <strong>{translate(ui, 'post.meta.languageStatus')}:</strong> {resolution.requested?.status || 'missing'}
   </p>
   {resolution.output.body ? <article set:html={resolution.output.body}></article> : <p>{translate(ui, 'post.noBody')}</p>}
+  <AdSlot {...{ slot: 'blog_incontent' }} class="blog-incontent-ad" testId="ad-slot-blog-incontent" />
 
   {
     resolution.requested?.status !== 'complete' && !runtimeMode ? (

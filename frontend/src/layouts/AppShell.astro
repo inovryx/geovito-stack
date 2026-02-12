@@ -22,6 +22,7 @@ interface Props {
   ui: Record<string, unknown>;
   showTools?: boolean;
   toolsContext?: string | null;
+  hasCustomTools?: boolean;
 }
 
 const {
@@ -35,9 +36,8 @@ const {
   ui,
   showTools = false,
   toolsContext = null,
+  hasCustomTools = false,
 } = Astro.props as Props;
-
-const hasCustomTools = Astro.slots.has('tools');
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 ---
 
@@ -54,11 +54,25 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
   <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`}>
     <aside class="left-column desktop-tablet-column" aria-label={t('layout.mainNavigation', 'Main navigation')}>
       <div class="left-nav-card">
+        <div class="left-nav-head">
+          <button
+            type="button"
+            class="icon-button sidebar-toggle-button"
+            data-sidebar-toggle
+            data-label-expand={t('layout.expandSidebar', 'Expand sidebar')}
+            data-label-collapse={t('layout.collapseSidebar', 'Collapse sidebar')}
+            aria-label={t('layout.collapseSidebar', 'Collapse sidebar')}
+            aria-pressed="false"
+          >
+            <Icon name="PanelLeftClose" size={18} />
+            <span class="sr-only" data-sidebar-toggle-label>{t('layout.collapseSidebar', 'Collapse sidebar')}</span>
+          </button>
+        </div>
         <LeftSidebar currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
       </div>
     </aside>
 
-    <main class="center-column">
+    <main id="main-content" tabindex="-1" class="center-column">
       <section class="content">
         <slot />
       </section>
@@ -114,6 +128,55 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 
   <script is:inline>
     (() => {
+      const root = document.documentElement;
+      const sidebarToggles = Array.from(document.querySelectorAll('[data-sidebar-toggle]'));
+
+      if (sidebarToggles.length > 0) {
+        const applySidebarState = (state) => {
+          const compact = state === 'compact';
+          root.classList.toggle('sidebar-compact', compact);
+          sidebarToggles.forEach((button) => {
+            const expandLabel = button.getAttribute('data-label-expand') || 'Expand sidebar';
+            const collapseLabel = button.getAttribute('data-label-collapse') || 'Collapse sidebar';
+            const label = compact ? expandLabel : collapseLabel;
+            button.setAttribute('aria-pressed', compact ? 'true' : 'false');
+            button.setAttribute('aria-label', label);
+            const labelNode = button.querySelector('[data-sidebar-toggle-label]');
+            if (labelNode) {
+              labelNode.textContent = label;
+            }
+          });
+        };
+
+        const readSidebarState = () => {
+          try {
+            return localStorage.getItem('sidebar') === 'compact' ? 'compact' : 'expanded';
+          } catch {
+            return root.classList.contains('sidebar-compact') ? 'compact' : 'expanded';
+          }
+        };
+
+        const writeSidebarState = (state) => {
+          try {
+            localStorage.setItem('sidebar', state);
+          } catch {
+            // no-op
+          }
+        };
+
+        applySidebarState(readSidebarState());
+
+        sidebarToggles.forEach((button) => {
+          if (button.getAttribute('data-sidebar-bound') === 'true') return;
+          button.setAttribute('data-sidebar-bound', 'true');
+          button.addEventListener('click', () => {
+            const nextState = root.classList.contains('sidebar-compact') ? 'expanded' : 'compact';
+            writeSidebarState(nextState);
+            applySidebarState(nextState);
+          });
+        });
+      }
+
       const drawer = document.querySelector('[data-shell-drawer]');
       const backdrop = document.querySelector('[data-shell-backdrop]');
       const openButtons = Array.from(document.querySelectorAll('[data-shell-menu-open]'));

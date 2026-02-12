@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import AdsProvider from '../components/ads/AdsProvider.astro';
 import Icon from '../components/Icon.astro';
 import SearchBar from '../components/SearchBar.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
@@ -46,22 +47,29 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
     <link rel="canonical" href={canonical} />
     {alternates.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
     <link rel="alternate" hreflang="x-default" href={languageLinks['en'] || '/en/'} />
+    <AdsProvider />
 
     <script is:inline>
       (() => {
         try {
           const theme = localStorage.getItem('theme');
           const isDark = theme === 'dark';
+          const sidebar = localStorage.getItem('sidebar');
+          const isCompactSidebar = sidebar === 'compact';
           document.documentElement.classList.toggle('dark', isDark);
+          document.documentElement.classList.toggle('sidebar-compact', isCompactSidebar);
           document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
         } catch {
           document.documentElement.classList.remove('dark');
+          document.documentElement.classList.remove('sidebar-compact');
           document.documentElement.style.colorScheme = 'light';
         }
       })();
     </script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">{t('layout.skipToContent', 'Skip to content')}</a>
+
     <script is:inline>
       try {
         const pageLanguage = document.documentElement.lang?.toLowerCase();
@@ -75,7 +83,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 
     <div class="background-layer" aria-hidden="true"></div>
 
-    <header class="site-header">
+    <header class="site-header" data-site-header>
       <div class="site-header-inner">
         <button type="button" class="icon-button shell-menu-button" data-shell-menu-open aria-label={t('layout.openMenu', 'Open menu')}>
           <Icon name="Menu" size={20} />
@@ -101,6 +109,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
         </div>
       </div>
     </header>
+    <div class="site-header-spacer" aria-hidden="true"></div>
 
     <slot />
 
@@ -114,6 +123,71 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
         </div>
       </div>
     </footer>
+
+    <script is:inline>
+      (() => {
+        const header = document.querySelector('[data-site-header]');
+        if (!header) return;
+
+        const threshold = 20;
+        let lastY = Math.max(window.scrollY || 0, 0);
+        let movement = 0;
+        let hidden = false;
+        let ticking = false;
+
+        const setHidden = (next) => {
+          if (hidden === next) return;
+          hidden = next;
+          header.classList.toggle('header-hidden', hidden);
+        };
+
+        const handleScroll = () => {
+          const currentY = Math.max(window.scrollY || 0, 0);
+          const delta = currentY - lastY;
+
+          if (currentY <= 0) {
+            movement = 0;
+            setHidden(false);
+            lastY = currentY;
+            ticking = false;
+            return;
+          }
+
+          if (Math.abs(delta) >= 2) {
+            if ((delta > 0 && hidden) || (delta < 0 && !hidden)) {
+              movement += Math.abs(delta);
+            } else {
+              movement = Math.abs(delta);
+            }
+
+            if (movement >= threshold) {
+              if (delta > 0 && currentY > 80) setHidden(true);
+              if (delta < 0) setHidden(false);
+              movement = 0;
+            }
+          }
+
+          lastY = currentY;
+          ticking = false;
+        };
+
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (ticking) return;
+            ticking = true;
+            window.requestAnimationFrame(handleScroll);
+          },
+          { passive: true }
+        );
+
+        window.addEventListener('focusin', (event) => {
+          if (header.contains(event.target)) {
+            setHidden(false);
+          }
+        });
+      })();
+    </script>
 
     <script is:inline>
       (() => {

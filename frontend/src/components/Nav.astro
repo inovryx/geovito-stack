@@ -24,14 +24,17 @@ const links = [
 <nav aria-label={t('layout.mainNavigation', 'Main navigation')} class="app-nav">
   <ul class="app-nav-list">
     {
-      links.map((entry) => (
-        <li>
-          <a class="app-nav-link" href={entry.path ? `${base}/${entry.path}/` : `${base}/`}>
-            <Icon name={entry.icon} size={20} />
-            <span class="truncate">{t(`nav.${entry.key}`, entry.fallback)}</span>
-          </a>
-        </li>
-      ))
+      links.map((entry) => {
+        const label = t(`nav.${entry.key}`, entry.fallback);
+        return (
+          <li>
+            <a class="app-nav-link" href={entry.path ? `${base}/${entry.path}/` : `${base}/`} aria-label={label} title={label}>
+              <Icon name={entry.icon} size={20} />
+              <span class="truncate nav-link-label">{label}</span>
+            </a>
+          </li>
+        );
+      })
     }
   </ul>
 </nav>

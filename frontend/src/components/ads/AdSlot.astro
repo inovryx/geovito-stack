@@ -1,0 +1,40 @@
+---
+import { isSupportedLanguage } from '../../lib/languages';
+import { ADS_ENABLED, getAdSlotConfig, getAdSlotElementId, type SlotId } from '../../lib/ads';
+import { getUiMessages, translate } from '../../lib/uiLanguage';
+
+interface Props {
+  slot: SlotId;
+  class?: string;
+  label?: boolean;
+  testId?: string;
+}
+
+const { slot, class: className = '', label = false, testId } = Astro.props as Props;
+
+const slotConfig = getAdSlotConfig(slot);
+const pathLanguage = Astro.url.pathname.split('/').filter(Boolean)[0] || 'en';
+const uiLanguage = isSupportedLanguage(pathLanguage) ? pathLanguage : 'en';
+const ui = getUiMessages(uiLanguage);
+const labelText = translate(ui, 'ads.label', {}, 'Advertisement');
+const slotElementId = getAdSlotElementId(slot);
+
+const adStyle = `--gv-ad-mobile:${slotConfig.size.mobile}px; --gv-ad-tablet:${slotConfig.size.tablet}px; --gv-ad-desktop:${slotConfig.size.desktop}px;`;
+const rootClass = ['gv-ad-slot', `gv-ad-slot-${slot}`, className].filter(Boolean).join(' ');
+---
+
+<div class={rootClass} style={adStyle} data-ad-slot={slot} data-testid={testId} aria-hidden={label ? undefined : 'true'}>
+  {label ? <p class="gv-ad-slot-label">{labelText}</p> : null}
+
+  {
+    ADS_ENABLED ? (
+      <div class="gv-ad-frame gv-ad-frame-enabled">
+        <div class="gv-ad-target" id={slotElementId} data-slot={slot}></div>
+      </div>
+    ) : (
+      <div class="gv-ad-frame gv-ad-frame-disabled">
+        <span class="gv-ad-placeholder-copy">Ad space</span>
+      </div>
+    )
+  }
+</div>

@@ -1,12 +1,57 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
+import Badge from '../../../components/ui/Badge.astro';
+import BadgeGroup from '../../../components/ui/BadgeGroup.astro';
+import Skeleton from '../../../components/ui/Skeleton.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getAtlasPlaces } from '../../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { chooseSlugForLanguage } from '../../../lib/slugResolver';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+type AtlasKind = 'all' | 'country' | 'city' | 'region' | 'landmark';
+type AtlasLanguageState = 'complete' | 'draft' | 'missing';
+
+type AtlasListItem = {
+  id: string;
+  title: string;
+  excerpt: string;
+  href: string;
+  kind: Exclude<AtlasKind, 'all'>;
+  languageState: AtlasLanguageState;
+  mock: boolean;
+};
+
+const PAGE_SIZE = 12;
+const TOP_LIST_SIZE = 6;
+
+const DEFAULT_CITY_LIKE_LEVELS = ['city', 'locality', 'admin2', 'district'];
+const REGION_LEVELS = ['admin1', 'admin2', 'admin3', 'admin_area', 'state', 'province', 'region'];
+const LANDMARK_LEVELS = ['poi', 'neighborhood', 'street', 'landmark'];
+
+const toKind = (placeType: string, cityLikeLevels: string[]): Exclude<AtlasKind, 'all'> => {
+  const normalized = String(placeType || '').toLowerCase();
+
+  if (normalized === 'country') return 'country';
+  if (cityLikeLevels.includes(normalized)) return 'city';
+  if (REGION_LEVELS.includes(normalized)) return 'region';
+  if (LANDMARK_LEVELS.includes(normalized)) return 'landmark';
+
+  return 'landmark';
+};
+
+const buildAtlasHref = (language: string, kind: AtlasKind, page: number) => {
+  const params = new URLSearchParams();
+  if (kind !== 'all') params.set('kind', kind);
+  if (page > 1) params.set('page', String(page));
+
+  const base = pathForLanguage(language as (typeof SUPPORTED_LANGUAGES)[number], 'atlas');
+  const query = params.toString();
+  return query ? `${base}?${query}` : base;
+};
 
 export async function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map((language) => ({
@@ -21,33 +66,66 @@ if (!isSupportedLanguage(lang)) {
 
 const ui = getUiMessages(lang);
 const places = await getAtlasPlaces();
-const countries = places.filter((place) => place.place_type === 'country');
-const hasMockContent = countries.some((place) => place.mock === true);
 
-const entries = countries
+const entries: AtlasListItem[] = places
   .map((place) => {
     const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
     const requested = resolved.requested;
     const complete = resolved.complete;
     const slug = chooseSlugForLanguage(place.translations, lang, place.canonical_language);
 
-    if (!slug || !resolved.output || !complete) return null;
+    if (!slug || !complete) {
+      return null;
+    }
+
+    const cityLikeLevels =
+      Array.isArray(place.country_profile?.city_like_levels) && place.country_profile?.city_like_levels.length > 0
+        ? place.country_profile.city_like_levels.map((value) => String(value || '').toLowerCase())
+        : DEFAULT_CITY_LIKE_LEVELS;
+
+    const output = resolved.output || complete;
 
     return {
-      place_id: place.place_id,
-      title: resolved.output.title || place.place_id,
-      excerpt: resolved.output.excerpt || '',
+      id: place.place_id,
+      title: output?.title || place.place_id,
+      excerpt: output?.excerpt || '',
       href: pathForLanguage(lang, `atlas/${slug}`),
-      status: requested?.status || 'missing',
-    };
+      kind: toKind(place.place_type, cityLikeLevels),
+      languageState: requested?.status || 'missing',
+      mock: Boolean(place.mock),
+    } as AtlasListItem;
   })
   .filter(Boolean)
-  .sort((left, right) => left.title.localeCompare(right.title));
+  .sort((left, right) => left.title.localeCompare(right.title)) as AtlasListItem[];
+
+const hasMockContent = entries.some((entry) => entry.mock);
+const hasDraftContent = entries.some((entry) => entry.languageState === 'draft');
+const hasMissingContent = entries.some((entry) => entry.languageState === 'missing');
+const fallbackState = hasMissingContent ? 'missing' : 'draft';
 
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'atlas')));
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage('en', 'atlas'));
 const robots = hasMockContent ? 'noindex,nofollow' : lang === 'en' && entries.length ? 'index,follow' : 'noindex,nofollow';
+
+const initialTotalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
+const serializedEntries = JSON.stringify(entries);
+const serializedUiText = JSON.stringify({
+  metaSummary: translate(ui, 'atlas.list.metaSummary', {}, 'Showing {shown} of {total} places'),
+  noSnippet: translate(ui, 'atlas.list.noSnippet', {}, 'No summary yet.'),
+  kindAll: translate(ui, 'atlas.list.filters.all', {}, 'All'),
+  kindCountry: translate(ui, 'atlas.list.filters.country', {}, 'Country'),
+  kindCity: translate(ui, 'atlas.list.filters.city', {}, 'City'),
+  kindRegion: translate(ui, 'atlas.list.filters.region', {}, 'Region'),
+  kindLandmark: translate(ui, 'atlas.list.filters.landmark', {}, 'Landmark'),
+  stateComplete: translate(ui, 'atlas.list.states.complete', {}, 'complete'),
+  stateDraft: translate(ui, 'atlas.list.states.draft', {}, 'draft'),
+  stateMissing: translate(ui, 'atlas.list.states.missing', {}, 'missing'),
+  prevLabel: translate(ui, 'atlas.list.pagination.prev', {}, 'Prev'),
+  nextLabel: translate(ui, 'atlas.list.pagination.next', {}, 'Next'),
+  pageLabel: translate(ui, 'atlas.list.pagination.pageLabel', {}, 'Page {page}'),
+  pageCurrentLabel: translate(ui, 'atlas.list.pagination.pageCurrentLabel', {}, 'Current page, {page}'),
+});
 ---
 
 <MainLayout
@@ -60,26 +138,385 @@ const robots = hasMockContent ? 'noindex,nofollow' : lang === 'en' && entries.le
   alternates={alternates}
   ui={ui}
 >
-  {hasMockContent ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
-
-  <h1>{translate(ui, 'atlas.list.title')}</h1>
-  <p class="small">{translate(ui, 'atlas.list.description')}</p>
-
   {
-    entries.length ? (
-      <div class="grid">
-        {entries.map((entry) => (
-          <article class="card">
-            <a href={entry.href}>
-              <h2>{entry.title}</h2>
-            </a>
-            <span class="status-pill">{entry.status}</span>
-            <p class="small">{entry.excerpt}</p>
-          </article>
-        ))}
-      </div>
-    ) : (
-      <p>{translate(ui, 'atlas.list.empty')}</p>
-    )
+    hasMockContent ? (
+      <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} />
+    ) : hasDraftContent || hasMissingContent ? (
+      <StateBanner status="fallback" language={lang} canonicalPath={canonical} contentStatus={fallbackState} ui={ui} />
+    ) : null
   }
+
+  <section class="card panel atlas-list-intro">
+    <h1>{translate(ui, 'atlas.list.title')}</h1>
+    <p class="small atlas-list-description">{translate(ui, 'atlas.list.description')}</p>
+
+    <div class="search-chip-row atlas-chip-row" role="navigation" aria-label={translate(ui, 'atlas.list.filterAria', {}, 'Filter atlas places')}>
+      <a href={buildAtlasHref(lang, 'all', 1)} class="search-chip is-active" data-atlas-chip data-kind="all">
+        <span class="truncate">{translate(ui, 'atlas.list.filters.all', {}, 'All')}</span>
+      </a>
+      <a href={buildAtlasHref(lang, 'country', 1)} class="search-chip" data-atlas-chip data-kind="country">
+        <span class="truncate">{translate(ui, 'atlas.list.filters.country', {}, 'Country')}</span>
+      </a>
+      <a href={buildAtlasHref(lang, 'city', 1)} class="search-chip" data-atlas-chip data-kind="city">
+        <span class="truncate">{translate(ui, 'atlas.list.filters.city', {}, 'City')}</span>
+      </a>
+      <a href={buildAtlasHref(lang, 'region', 1)} class="search-chip" data-atlas-chip data-kind="region">
+        <span class="truncate">{translate(ui, 'atlas.list.filters.region', {}, 'Region')}</span>
+      </a>
+      <a href={buildAtlasHref(lang, 'landmark', 1)} class="search-chip" data-atlas-chip data-kind="landmark">
+        <span class="truncate">{translate(ui, 'atlas.list.filters.landmark', {}, 'Landmark')}</span>
+      </a>
+    </div>
+
+    <p class="small atlas-list-meta" data-atlas-meta>
+      {translate(ui, 'atlas.list.metaSummary', { shown: Math.min(PAGE_SIZE, entries.length), total: entries.length }, 'Showing {shown} of {total} places')}
+    </p>
+
+    <BadgeGroup class="atlas-list-legend" ariaLabel={translate(ui, 'atlas.list.stateLegendAria', {}, 'Language state legend')}>
+      <Badge variant="success">{translate(ui, 'atlas.list.states.complete', {}, 'complete')}</Badge>
+      <Badge variant="warning">{translate(ui, 'atlas.list.states.draft', {}, 'draft')}</Badge>
+      <Badge variant="danger">{translate(ui, 'atlas.list.states.missing', {}, 'missing')}</Badge>
+    </BadgeGroup>
+  </section>
+
+  <section class="card panel" data-atlas-skeleton>
+    <Skeleton lines={3} />
+    <Skeleton lines={3} />
+    <Skeleton lines={2} />
+  </section>
+
+  <section class="card panel" data-atlas-empty hidden>
+    <EmptyState
+      title={translate(ui, 'atlas.list.emptyTitle', {}, 'No places found')}
+      description={translate(ui, 'atlas.list.emptyDescription', {}, 'Try another filter chip to continue exploring the atlas.')}
+      actionLabel={translate(ui, 'atlas.list.emptyAction', {}, 'Reset filters')}
+      actionHref={buildAtlasHref(lang, 'all', 1)}
+      icon="MapPinned"
+    />
+  </section>
+
+  <section class="atlas-results-wrap" data-atlas-results hidden>
+    <div class="atlas-results-top" data-atlas-results-top></div>
+    <div class="atlas-results-grid" data-atlas-results-grid></div>
+  </section>
+
+  <nav class="atlas-pagination" data-atlas-pagination aria-label={translate(ui, 'atlas.list.pagination.aria', {}, 'Atlas pagination')} tabindex="0">
+    <a
+      href={buildAtlasHref(lang, 'all', 1)}
+      class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-prev"
+      data-atlas-page-control="prev"
+    >
+      <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.prev', {}, 'Prev')}</span>
+    </a>
+    <div class="atlas-pagination-pages" data-atlas-pagination-pages>
+      {
+        Array.from({ length: initialTotalPages }).map((_, index) => {
+          const page = index + 1;
+          return (
+            <a href={buildAtlasHref(lang, 'all', page)} class={`atlas-page-link${page === 1 ? ' is-current' : ''}`} data-atlas-page-link data-page={page} aria-current={page === 1 ? 'page' : undefined}>
+              {page}
+            </a>
+          );
+        })
+      }
+    </div>
+    <a
+      href={buildAtlasHref(lang, 'all', Math.max(1, initialTotalPages))}
+      class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-next"
+      data-atlas-page-control="next"
+    >
+      <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.next', {}, 'Next')}</span>
+    </a>
+  </nav>
+
+  <script id="atlas-list-data" type="application/json" set:html={serializedEntries}></script>
+  <script id="atlas-list-ui" type="application/json" set:html={serializedUiText}></script>
+
+  <script is:inline>
+    (() => {
+      const dataNode = document.getElementById('atlas-list-data');
+      const uiNode = document.getElementById('atlas-list-ui');
+      if (!dataNode) return;
+
+      const payload = JSON.parse(dataNode.textContent || '[]');
+      const uiText = uiNode ? JSON.parse(uiNode.textContent || '{}') : {};
+
+      const resultsWrap = document.querySelector('[data-atlas-results]');
+      const topResults = document.querySelector('[data-atlas-results-top]');
+      const gridResults = document.querySelector('[data-atlas-results-grid]');
+      const emptyState = document.querySelector('[data-atlas-empty]');
+      const skeleton = document.querySelector('[data-atlas-skeleton]');
+      const meta = document.querySelector('[data-atlas-meta]');
+      const chips = Array.from(document.querySelectorAll('[data-atlas-chip]'));
+      const pagination = document.querySelector('[data-atlas-pagination]');
+      const paginationPages = document.querySelector('[data-atlas-pagination-pages]');
+      const prevControl = document.querySelector('[data-atlas-page-control="prev"]');
+      const nextControl = document.querySelector('[data-atlas-page-control="next"]');
+
+      if (!resultsWrap || !topResults || !gridResults || !emptyState || !skeleton || !meta || !pagination || !paginationPages || !prevControl || !nextControl) {
+        return;
+      }
+
+      const PAGE_SIZE = 12;
+      const TOP_LIST_SIZE = 6;
+      const VALID_KINDS = ['all', 'country', 'city', 'region', 'landmark'];
+
+      const kindLabels = {
+        all: uiText.kindAll || 'All',
+        country: uiText.kindCountry || 'Country',
+        city: uiText.kindCity || 'City',
+        region: uiText.kindRegion || 'Region',
+        landmark: uiText.kindLandmark || 'Landmark',
+      };
+
+      const stateLabels = {
+        complete: uiText.stateComplete || 'complete',
+        draft: uiText.stateDraft || 'draft',
+        missing: uiText.stateMissing || 'missing',
+      };
+
+      const stateBadgeClass = {
+        complete: 'ui-badge-success',
+        draft: 'ui-badge-warning',
+        missing: 'ui-badge-danger',
+      };
+
+      const escapeHtml = (value) =>
+        String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+      const interpolate = (template, params) =>
+        String(template || '').replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => String(params[key] ?? `{${key}}`));
+
+      const getStateFromLocation = () => {
+        const params = new URLSearchParams(window.location.search);
+        const kind = params.get('kind') || 'all';
+        const pageValue = Number.parseInt(params.get('page') || '1', 10);
+
+        return {
+          kind: VALID_KINDS.includes(kind) ? kind : 'all',
+          page: Number.isFinite(pageValue) && pageValue > 0 ? pageValue : 1,
+        };
+      };
+
+      const state = getStateFromLocation();
+
+      const buildHref = (kind, page) => {
+        const params = new URLSearchParams();
+        if (kind && kind !== 'all') params.set('kind', kind);
+        if (page > 1) params.set('page', String(page));
+        const query = params.toString();
+        return query ? `${window.location.pathname}?${query}` : window.location.pathname;
+      };
+
+      const updateChipLinks = () => {
+        chips.forEach((chip) => {
+          const kind = chip.getAttribute('data-kind') || 'all';
+          const active = state.kind === kind;
+
+          chip.setAttribute('href', buildHref(kind, 1));
+          chip.classList.toggle('is-active', active);
+          chip.setAttribute('aria-current', active ? 'page' : 'false');
+        });
+      };
+
+      const renderItem = (item) => {
+        const title = escapeHtml(item.title || item.id || 'Untitled');
+        const excerpt = escapeHtml(item.excerpt || uiText.noSnippet || 'No summary yet.');
+        const href = escapeHtml(item.href || '#');
+
+        const kindKey = VALID_KINDS.includes(item.kind) ? item.kind : 'landmark';
+        const kindLabel = escapeHtml(kindLabels[kindKey] || kindLabels.landmark || 'Landmark');
+
+        const languageState = ['complete', 'draft', 'missing'].includes(item.languageState) ? item.languageState : 'missing';
+        const stateLabel = escapeHtml(stateLabels[languageState] || stateLabels.missing || 'missing');
+        const stateClass = stateBadgeClass[languageState] || stateBadgeClass.missing;
+
+        return `
+          <article class="ui-card atlas-entry-card" data-atlas-item>
+            <div class="atlas-entry-head">
+              <a class="atlas-entry-title" href="${href}" title="${title}">${title}</a>
+              <div class="ui-badge-group atlas-entry-badges" aria-label="metadata badges">
+                <span class="ui-badge ui-badge-info atlas-entry-badge atlas-kind-badge"><span class="truncate">${kindLabel}</span></span>
+                <span class="ui-badge ${stateClass} atlas-entry-badge atlas-state-badge"><span class="truncate">${stateLabel}</span></span>
+              </div>
+            </div>
+            <p class="small atlas-entry-snippet">${excerpt}</p>
+          </article>
+        `;
+      };
+
+      const buildPageSequence = (current, total) => {
+        if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
+
+        const pages = [1];
+        if (current > 3) pages.push(null);
+
+        const start = Math.max(2, current - 1);
+        const end = Math.min(total - 1, current + 1);
+
+        for (let page = start; page <= end; page += 1) {
+          pages.push(page);
+        }
+
+        if (current < total - 2) pages.push(null);
+        pages.push(total);
+
+        return pages;
+      };
+
+      const updatePaginationControls = (totalPages) => {
+        const currentPage = state.page;
+        const prevPage = Math.max(1, currentPage - 1);
+        const nextPage = Math.min(totalPages, currentPage + 1);
+
+        const updateControl = (node, page, disabled) => {
+          const href = buildHref(state.kind, page);
+          node.setAttribute('href', href);
+          node.classList.toggle('is-disabled', disabled);
+          node.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+          node.setAttribute('tabindex', disabled ? '-1' : '0');
+        };
+
+        updateControl(prevControl, prevPage, currentPage <= 1);
+        updateControl(nextControl, nextPage, currentPage >= totalPages);
+
+        const sequence = buildPageSequence(currentPage, totalPages);
+        paginationPages.innerHTML = sequence
+          .map((page) => {
+            if (page === null) {
+              return '<span class="atlas-page-ellipsis" aria-hidden="true">…</span>';
+            }
+
+            const current = page === currentPage;
+            const ariaLabel = current
+              ? interpolate(uiText.pageCurrentLabel || 'Current page, {page}', { page })
+              : interpolate(uiText.pageLabel || 'Page {page}', { page });
+
+            return `
+              <a
+                href="${escapeHtml(buildHref(state.kind, page))}"
+                class="atlas-page-link${current ? ' is-current' : ''}"
+                data-atlas-page-link
+                data-page="${page}"
+                aria-label="${escapeHtml(ariaLabel)}"
+                ${current ? 'aria-current="page"' : ''}
+              >
+                ${page}
+              </a>
+            `;
+          })
+          .join('');
+      };
+
+      const render = () => {
+        const filtered = payload.filter((item) => {
+          if (state.kind === 'all') return true;
+          return item.kind === state.kind;
+        });
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (state.page > totalPages) {
+          state.page = totalPages;
+        }
+
+        const startIndex = (state.page - 1) * PAGE_SIZE;
+        const pageItems = filtered.slice(startIndex, startIndex + PAGE_SIZE);
+        const topItems = pageItems.slice(0, TOP_LIST_SIZE);
+        const gridItems = pageItems.slice(TOP_LIST_SIZE);
+
+        if (pageItems.length === 0) {
+          emptyState.hidden = false;
+          resultsWrap.hidden = true;
+          pagination.hidden = true;
+        } else {
+          emptyState.hidden = true;
+          resultsWrap.hidden = false;
+          pagination.hidden = false;
+
+          topResults.innerHTML = topItems.map(renderItem).join('');
+          gridResults.innerHTML = gridItems.map(renderItem).join('');
+          gridResults.hidden = gridItems.length === 0;
+        }
+
+        meta.textContent = interpolate(uiText.metaSummary || 'Showing {shown} of {total} places', {
+          shown: pageItems.length,
+          total: filtered.length,
+        });
+
+        updateChipLinks();
+        updatePaginationControls(totalPages);
+
+        const nextUrl = buildHref(state.kind, state.page);
+        if (`${window.location.pathname}${window.location.search}` !== nextUrl) {
+          window.history.replaceState({}, '', nextUrl);
+        }
+
+        skeleton.hidden = true;
+      };
+
+      const navigateFromHref = (href) => {
+        const url = new URL(href, window.location.origin);
+        const params = url.searchParams;
+
+        const nextKind = params.get('kind') || 'all';
+        const nextPage = Number.parseInt(params.get('page') || '1', 10);
+
+        state.kind = VALID_KINDS.includes(nextKind) ? nextKind : 'all';
+        state.page = Number.isFinite(nextPage) && nextPage > 0 ? nextPage : 1;
+
+        window.history.pushState({}, '', url.pathname + url.search);
+        render();
+      };
+
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+
+        const link = target.closest('a[data-atlas-chip], a[data-atlas-page-link], a[data-atlas-page-control]');
+        if (!(link instanceof HTMLAnchorElement)) return;
+
+        if (link.getAttribute('aria-disabled') === 'true') {
+          event.preventDefault();
+          return;
+        }
+
+        event.preventDefault();
+        navigateFromHref(link.href);
+      });
+
+      pagination.addEventListener('keydown', (event) => {
+        const key = event.key;
+        if (key !== 'ArrowLeft' && key !== 'ArrowRight') return;
+
+        const focusable = Array.from(pagination.querySelectorAll('a[href]:not([aria-disabled="true"])'));
+        if (!focusable.length) return;
+
+        const activeElement = document.activeElement;
+        const currentIndex = focusable.indexOf(activeElement);
+        const fallbackIndex = focusable.findIndex((item) => item.getAttribute('aria-current') === 'page');
+        const from = currentIndex >= 0 ? currentIndex : Math.max(0, fallbackIndex);
+        const step = key === 'ArrowRight' ? 1 : -1;
+        const next = focusable[from + step];
+
+        if (next) {
+          event.preventDefault();
+          next.focus();
+        }
+      });
+
+      window.addEventListener('popstate', () => {
+        const next = getStateFromLocation();
+        state.kind = next.kind;
+        state.page = next.page;
+        render();
+      });
+
+      render();
+    })();
+  </script>
 </MainLayout>

@@ -1,0 +1,13 @@
+---
+interface Props {
+  class?: string;
+  ariaLabel?: string;
+}
+
+const { class: className = '', ariaLabel } = Astro.props as Props;
+const classes = ['ui-badge-group', className].filter(Boolean).join(' ');
+---
+
+<div class={classes} role="group" aria-label={ariaLabel}>
+  <slot />
+</div>

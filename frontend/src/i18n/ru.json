@@ -15,6 +15,9 @@
   "language": {
     "switcherAria": "Vybor yazyka"
   },
+  "ads": {
+    "label": "Реклама"
+  },
   "stateBanner": {
     "runtime": "Pokazyvaetsya prevyu runtime-perevoda. Eta versiya ne indeksiruetsya.",
     "fallback": "Polnyy complete-kontent na etom yazyke poka nedostupen ({language}). Pokazyvaetsya kanonicheskaya complete-versiya.",
@@ -44,7 +47,33 @@
     "list": {
       "title": "Atlas",
       "description": "Tochki vhoda po stranam v iyerarkhii Atlas.",
-      "empty": "Stranitsy stran poka nedostupny."
+      "empty": "Stranitsy stran poka nedostupny.",
+      "emptyTitle": "Mesta ne naydeny",
+      "emptyDescription": "Poprobuyte drugoy chip-filtr, chtoby prodolzhit izuchenie atlasa.",
+      "emptyAction": "Sbrosit filtry",
+      "noSnippet": "Kratkoe opisanie poka otsutstvuet.",
+      "filterAria": "Filtr mest atlasa",
+      "stateLegendAria": "Legenda statusa yazyka",
+      "metaSummary": "Pokazano {shown} iz {total} mest",
+      "filters": {
+        "all": "Vse",
+        "country": "Strana",
+        "city": "Gorod",
+        "region": "Region",
+        "landmark": "Oriyentir"
+      },
+      "states": {
+        "complete": "complete",
+        "draft": "draft",
+        "missing": "missing"
+      },
+      "pagination": {
+        "aria": "Paginatsiya atlasa",
+        "prev": "Nazad",
+        "next": "Vpered",
+        "pageLabel": "Stranitsa {page}",
+        "pageCurrentLabel": "Tekushchaya stranitsa, {page}"
+      }
     },
     "meta": {
       "placeId": "place_id",

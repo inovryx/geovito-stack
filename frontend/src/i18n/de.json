@@ -15,6 +15,9 @@
   "language": {
     "switcherAria": "Sprachauswahl"
   },
+  "ads": {
+    "label": "Werbung"
+  },
   "stateBanner": {
     "runtime": "Runtime-Ubersetzungsvorschau wird angezeigt. Diese Ansicht wird nicht indexiert.",
     "fallback": "Vollstandiger Inhalt ist in dieser Sprache noch nicht verfugbar ({language}). Die kanonische complete-Version wird angezeigt.",
@@ -44,7 +47,33 @@
     "list": {
       "title": "Atlas",
       "description": "Lander-Einstiegspunkte in der Atlas-Hierarchie.",
-      "empty": "Es sind noch keine Lander verfugbar."
+      "empty": "Es sind noch keine Lander verfugbar.",
+      "emptyTitle": "Keine Orte gefunden",
+      "emptyDescription": "Nutze einen anderen Filter-Chip, um weiter zu erkunden.",
+      "emptyAction": "Filter zurucksetzen",
+      "noSnippet": "Noch keine Zusammenfassung vorhanden.",
+      "filterAria": "Atlas-Orte filtern",
+      "stateLegendAria": "Legende fur Sprachstatus",
+      "metaSummary": "{shown} von {total} Orten werden angezeigt",
+      "filters": {
+        "all": "Alle",
+        "country": "Land",
+        "city": "Stadt",
+        "region": "Region",
+        "landmark": "Sehenswurdigkeit"
+      },
+      "states": {
+        "complete": "complete",
+        "draft": "draft",
+        "missing": "missing"
+      },
+      "pagination": {
+        "aria": "Atlas-Paginierung",
+        "prev": "Zuruck",
+        "next": "Weiter",
+        "pageLabel": "Seite {page}",
+        "pageCurrentLabel": "Aktuelle Seite, {page}"
+      }
     },
     "meta": {
       "placeId": "place_id",

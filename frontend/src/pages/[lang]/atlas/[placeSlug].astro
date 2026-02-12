@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
+import AdSlot from '../../../components/ads/AdSlot.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getAtlasPlaces, getBlogPosts, type AtlasPlace } from '../../../lib/strapi';
 import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
@@ -325,6 +326,8 @@ const relatedBlogLinks = allPosts
       {hiddenChildCount > 0 ? <p class="small">+{hiddenChildCount} more children</p> : null}
     </section>
   </div>
+
+  <AdSlot {...{ slot: 'atlas_incontent' }} class="atlas-incontent-ad" testId="ad-slot-atlas-incontent" />
 
   <div class="grid two feature-grid">
     <section class="card panel">

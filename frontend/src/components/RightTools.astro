@@ -1,6 +1,7 @@
 ---
 import Card from './ui/Card.astro';
 import Badge from './ui/Badge.astro';
+import AdSlot from './ads/AdSlot.astro';
 import { translate } from '../lib/uiLanguage';
 
 interface Props {
@@ -36,4 +37,6 @@ const contextText = hasContext
     <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'route hints' : 'select place first'}</Badge>
     <p class="small">{translate(ui, 'tools.flights.hint', {}, 'Use this as a planning prompt, not booking engine.')}</p>
   </Card>
+
+  <AdSlot {...{ slot: 'sidebar_small' }} class="right-tools-ad" testId="ad-slot-sidebar-small" />
 </div>
