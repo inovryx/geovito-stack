@@ -16,7 +16,7 @@ type GeoVitoEvent = {
 
 declare global {
   interface Window {
-    dataLayer?: Array<Record<string, unknown>>;
+    dataLayer?: Array<unknown>;
     __gvEvents?: GeoVitoEvent[];
     __gvTrack?: (eventName: string, props?: AnalyticsProps) => void;
     __gvIdentify?: (userId?: string, traits?: AnalyticsProps) => void;
@@ -189,7 +189,11 @@ export const sanitizeProps = (eventName: EventName, props: AnalyticsProps = {}):
 const dispatchEvent = (eventName: EventName, props: SanitizedProps) => {
   if (ANALYTICS_PROVIDER === 'datalayer') {
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: eventName, ...props });
+    const payload = { event: eventName, ...props };
+    window.dataLayer.push(payload);
+    if (ANALYTICS_DEBUG) {
+      console.log('[analytics]', 'dataLayer.push', payload);
+    }
     return;
   }
 
@@ -211,6 +215,7 @@ const dispatchEvent = (eventName: EventName, props: SanitizedProps) => {
 export const track = (eventName: string, props: AnalyticsProps = {}) => {
   if (!eventName || !canUseWindow()) return;
   if (!isEventName(eventName)) return;
+  if (eventName.length > 40) return;
   if (!ANALYTICS_ENABLED) return;
   if (!hasAnalyticsConsent()) return;
 

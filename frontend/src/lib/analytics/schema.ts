@@ -1,3 +1,7 @@
+// GTM/GA4 setup note:
+// Create GA4 Event tags in GTM for:
+// search_submit, filter_chip_click, sort_change, pagination_click, tool_open,
+// nav_click, theme_toggle, sidebar_toggle, ad_slot_view (when ads tracking is enabled).
 export const EVENT_NAMES = [
   'search_submit',
   'filter_chip_click',
