@@ -1,0 +1,64 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import LegalLayout from '../../components/legal/LegalLayout.astro';
+import PrivacyDocument from '../../content/legal/en/privacy.md';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../lib/pageHelpers';
+import { getUiMessages, translate } from '../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({ params: { lang: language } }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const canonicalPath = pathForLanguage(lang, 'privacy');
+const canonical = absoluteUrl(canonicalPath);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'privacy')));
+const alternates = toAlternates(languageLinks);
+
+const title = translate(ui, 'legal.privacy.title', {}, 'Privacy Policy');
+const description = `${title} - ${translate(ui, 'site.brand', {}, 'Geovito')}`;
+const lastUpdated = '2026-02-13';
+const fallbackNotice = translate(
+  ui,
+  'legal.enFallbackNotice',
+  {},
+  'This legal page is currently published in English while localized versions are in progress.'
+);
+const tocItems = [
+  { id: 'data-we-collect', label: 'Data we collect' },
+  { id: 'purposes', label: 'Purposes' },
+  { id: 'retention', label: 'Retention' },
+  { id: 'sharing', label: 'Sharing' },
+  { id: 'user-rights', label: 'User rights' },
+  { id: 'contact', label: 'Contact' },
+];
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots="index,follow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <LegalLayout
+    title={title}
+    lastUpdated={lastUpdated}
+    lastUpdatedLabel={translate(ui, 'legal.lastUpdated', {}, 'Last updated')}
+    tocTitle={translate(ui, 'atlas.toc.title', {}, 'On this page')}
+    tocAriaLabel={translate(ui, 'atlas.toc.aria', {}, 'On this page')}
+    tocItems={tocItems}
+  >
+    {lang !== 'en' ? <p slot="notice" class="legal-fallback-note">{fallbackNotice}</p> : null}
+    <PrivacyDocument />
+  </LegalLayout>
+</MainLayout>

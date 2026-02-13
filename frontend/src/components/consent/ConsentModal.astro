@@ -1,0 +1,72 @@
+---
+import Icon from '../Icon.astro';
+import { translate } from '../../lib/uiLanguage';
+
+interface Props {
+  ui: Record<string, unknown>;
+}
+
+const { ui } = Astro.props as Props;
+
+const modalTitle = translate(ui, 'consent.modalTitle', {}, 'Customize consent');
+const closeLabel = translate(ui, 'consent.close', {}, 'Close');
+const saveLabel = translate(ui, 'consent.save', {}, 'Save preferences');
+const necessaryLabel = translate(ui, 'consent.necessary', {}, 'Necessary');
+const analyticsLabel = translate(ui, 'consent.analytics', {}, 'Analytics');
+const adsLabel = translate(ui, 'consent.ads', {}, 'Ads');
+const alwaysOn = translate(ui, 'consent.alwaysOn', {}, 'Always on');
+---
+
+<div class="consent-modal-backdrop" data-consent-backdrop hidden></div>
+
+<section
+  class="consent-modal modal-surface"
+  data-consent-modal
+  data-consent-root
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="consent-modal-title"
+  tabindex="-1"
+  hidden
+>
+  <div class="consent-modal-head">
+    <h2 id="consent-modal-title" class="consent-modal-title">
+      {modalTitle}
+    </h2>
+    <button type="button" class="icon-button consent-modal-close" data-consent-close aria-label={closeLabel}>
+      <Icon name="X" size={18} />
+      <span class="sr-only">{closeLabel}</span>
+    </button>
+  </div>
+
+  <div class="consent-modal-body">
+    <div class="consent-option">
+      <div class="consent-option-copy">
+        <span class="consent-option-title">{necessaryLabel}</span>
+        <span class="consent-option-note">{alwaysOn}</span>
+      </div>
+      <input type="checkbox" checked disabled aria-label={necessaryLabel} />
+    </div>
+
+    <label class="consent-option" for="consent-analytics">
+      <div class="consent-option-copy">
+        <span class="consent-option-title">{analyticsLabel}</span>
+      </div>
+      <input id="consent-analytics" type="checkbox" data-consent-toggle="analytics" />
+    </label>
+
+    <label class="consent-option" for="consent-ads">
+      <div class="consent-option-copy">
+        <span class="consent-option-title">{adsLabel}</span>
+      </div>
+      <input id="consent-ads" type="checkbox" data-consent-toggle="ads" />
+    </label>
+  </div>
+
+  <div class="consent-modal-actions">
+    <button type="button" class="ui-button ui-button-primary ui-button-sm" data-consent-save>
+      <span class="ui-button-label truncate">{saveLabel}</span>
+    </button>
+  </div>
+</section>
+

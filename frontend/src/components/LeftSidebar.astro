@@ -13,16 +13,16 @@ const { currentLanguage, languageLinks, ui } = Astro.props as Props;
 ---
 
 <div class="left-sidebar-stack">
-  <section class="sidebar-block">
+  <section class="sidebar-block gv-card bg-surface border-border">
     <Nav currentLanguage={currentLanguage} ui={ui} />
   </section>
 
-  <section class="sidebar-block">
+  <section class="sidebar-block gv-card bg-surface border-border">
     <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
     <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
   </section>
 
-  <section class="sidebar-block sidebar-auth-links">
+  <section class="sidebar-block sidebar-auth-links gv-card bg-surface border-border">
     <a href={`/${currentLanguage}/login/`} class="small-link">{translate(ui, 'auth.login', {}, 'Login')}</a>
     <a href={`/${currentLanguage}/register/`} class="small-link">{translate(ui, 'auth.register', {}, 'Register')}</a>
   </section>

@@ -1,0 +1,79 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import LegalLayout from '../../components/legal/LegalLayout.astro';
+import CookiesDocument from '../../content/legal/en/cookies.md';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../lib/pageHelpers';
+import { getUiMessages, translate } from '../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({ params: { lang: language } }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const canonicalPath = pathForLanguage(lang, 'cookies');
+const canonical = absoluteUrl(canonicalPath);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'cookies')));
+const alternates = toAlternates(languageLinks);
+
+const title = translate(ui, 'legal.cookies.title', {}, 'Cookie Policy');
+const description = `${title} - ${translate(ui, 'site.brand', {}, 'Geovito')}`;
+const lastUpdated = '2026-02-13';
+const fallbackNotice = translate(
+  ui,
+  'legal.enFallbackNotice',
+  {},
+  'This legal page is currently published in English while localized versions are in progress.'
+);
+const openSettingsLabel = translate(ui, 'consent.openSettings', {}, 'Open consent settings');
+const openSettingsHint = translate(
+  ui,
+  'legal.cookies.openConsentCta',
+  {},
+  'Update analytics and ads consent preferences at any time.'
+);
+const openSettingsHref = `${pathForLanguage(lang, 'cookies')}?consent=1#managing-consent`;
+const tocItems = [
+  { id: 'what-are-cookies', label: 'What are cookies' },
+  { id: 'cookie-categories', label: 'Cookie categories' },
+  { id: 'managing-consent', label: 'Managing consent' },
+  { id: 'changes', label: 'Changes' },
+  { id: 'contact', label: 'Contact' },
+];
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots="index,follow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <LegalLayout
+    title={title}
+    lastUpdated={lastUpdated}
+    lastUpdatedLabel={translate(ui, 'legal.lastUpdated', {}, 'Last updated')}
+    tocTitle={translate(ui, 'atlas.toc.title', {}, 'On this page')}
+    tocAriaLabel={translate(ui, 'atlas.toc.aria', {}, 'On this page')}
+    tocItems={tocItems}
+  >
+    {lang !== 'en' ? <p slot="notice" class="legal-fallback-note">{fallbackNotice}</p> : null}
+
+    <div slot="actions" class="legal-actions">
+      <p class="legal-consent-copy">{openSettingsHint}</p>
+      <a class="button-link button-link-secondary legal-consent-link" href={openSettingsHref} data-consent-auto-opener>
+        {openSettingsLabel}
+      </a>
+    </div>
+
+    <CookiesDocument />
+  </LegalLayout>
+</MainLayout>

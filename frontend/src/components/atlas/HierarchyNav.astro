@@ -54,10 +54,10 @@ const stateVariant = (state: string) => {
 ---
 
 <section id={sectionId} class="atlas-detail-section" data-atlas-hierarchy>
-  <h2 class="atlas-section-title">{title}</h2>
+  <h2 class="atlas-section-title gv-h2">{title}</h2>
 
   <div class="atlas-hierarchy-grid">
-    <Card class="atlas-hierarchy-card" title={parentTitle}>
+    <Card class="atlas-hierarchy-card gv-card bg-surface border-border" title={parentTitle}>
       {
         parent ? (
           <article class="atlas-link-card">
@@ -79,7 +79,7 @@ const stateVariant = (state: string) => {
       }
     </Card>
 
-    <Card class="atlas-hierarchy-card" title={childrenTitle}>
+    <Card class="atlas-hierarchy-card gv-card bg-surface border-border" title={childrenTitle}>
       {
         childItems.length ? (
           <ul class="atlas-link-list">

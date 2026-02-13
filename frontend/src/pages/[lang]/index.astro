@@ -149,12 +149,12 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
     ) : null
   }
 
-  <section class="hero">
+  <section class="hero gv-card gv-stack">
     <p class="eyebrow">{translate(ui, 'site.brand')}</p>
-    <h1>{homeContent?.title || translate(ui, 'home.defaultTitle')}</h1>
-    <p class="hero-lead">{translate(ui, 'home.microHeroLead', {}, 'Plan trips faster with country-to-city exploration in one place.')}</p>
+    <h1 class="gv-h1">{homeContent?.title || translate(ui, 'home.defaultTitle')}</h1>
+    <p class="hero-lead gv-body">{translate(ui, 'home.microHeroLead', {}, 'Plan trips faster with country-to-city exploration in one place.')}</p>
 
-    <SearchBar currentLanguage={lang} ui={ui} variant="large" />
+    <SearchBar currentLanguage={lang} ui={ui} variant="large" analyticsLocation="home" />
 
     <div class="micro-hero-chips" aria-label={translate(ui, 'home.searchScope', {}, 'Search scope')}>
       <Badge variant="info">{translate(ui, 'home.chipCountry', {}, 'Country')}</Badge>
@@ -169,9 +169,9 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
   </section>
 
   <div class="grid two feature-grid">
-    <section class="card panel">
+    <section class="card panel gv-card gv-stack">
       <div class="panel-head">
-        <h2>{translate(ui, 'home.topCountries', {}, 'Top countries')}</h2>
+        <h2 class="gv-h2">{translate(ui, 'home.topCountries', {}, 'Top countries')}</h2>
         <span class="small">{topCountries.length}/8</span>
       </div>
       {
@@ -190,9 +190,9 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
       }
     </section>
 
-    <section class="card panel">
+    <section class="card panel gv-card gv-stack">
       <div class="panel-head">
-        <h2>{translate(ui, 'home.topCities', {}, 'Top cities')}</h2>
+        <h2 class="gv-h2">{translate(ui, 'home.topCities', {}, 'Top cities')}</h2>
         <span class="small">{topCities.length}/8</span>
       </div>
       {
@@ -215,9 +215,9 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
   <AdSlot {...{ slot: 'home_mid' }} class="home-mid-ad" testId="ad-slot-home-mid" />
 
   <div class="grid two feature-grid">
-    <section class="card panel">
+    <section class="card panel gv-card gv-stack">
       <div class="panel-head">
-        <h2>{translate(ui, 'home.newThisWeek', {}, 'New this week')}</h2>
+        <h2 class="gv-h2">{translate(ui, 'home.newThisWeek', {}, 'New this week')}</h2>
         <span class="small">{newThisWeek.length}</span>
       </div>
       {
@@ -240,9 +240,9 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
       }
     </section>
 
-    <section class="card panel">
+    <section class="card panel gv-card gv-stack">
       <div class="panel-head">
-        <h2>{translate(ui, 'home.latestBlogPosts', {}, 'Latest blog posts')}</h2>
+        <h2 class="gv-h2">{translate(ui, 'home.latestBlogPosts', {}, 'Latest blog posts')}</h2>
         <span class="small">{latestPosts.length}</span>
       </div>
       {

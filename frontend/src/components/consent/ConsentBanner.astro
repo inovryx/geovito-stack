@@ -1,0 +1,62 @@
+---
+import { translate } from '../../lib/uiLanguage';
+
+interface Props {
+  ui: Record<string, unknown>;
+  learnMoreHref?: string | null;
+}
+
+const { ui, learnMoreHref = null } = Astro.props as Props;
+
+const title = translate(ui, 'consent.title', {}, 'Privacy preferences');
+const description = translate(
+  ui,
+  'consent.desc',
+  {},
+  'We use optional analytics and ads cookies/settings only with your permission. Necessary features are always on.'
+);
+const acceptAll = translate(ui, 'consent.acceptAll', {}, 'Accept all');
+const rejectAll = translate(ui, 'consent.rejectAll', {}, 'Reject all');
+const customize = translate(ui, 'consent.customize', {}, 'Customize');
+const learnMore = translate(ui, 'consent.learnMore', {}, 'Learn more');
+---
+
+<section
+  class="consent-banner modal-surface"
+  data-consent-banner
+  data-consent-root
+  role="dialog"
+  aria-label={title}
+  hidden
+>
+  <div class="consent-banner-content">
+    <div class="consent-copy">
+      <h2 class="consent-title">{title}</h2>
+      <p class="consent-desc">
+        <span>{description}</span>
+        {
+          learnMoreHref ? (
+            <a href={learnMoreHref} class="consent-inline-link">
+              {learnMore}
+            </a>
+          ) : (
+            <span class="consent-inline-link is-disabled" aria-disabled="true">
+              {learnMore}
+            </span>
+          )
+        }
+      </p>
+    </div>
+    <div class="consent-actions">
+      <button type="button" class="ui-button ui-button-primary ui-button-sm" data-consent-accept>
+        <span class="ui-button-label truncate">{acceptAll}</span>
+      </button>
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-consent-reject>
+        <span class="ui-button-label truncate">{rejectAll}</span>
+      </button>
+      <button type="button" class="ui-button ui-button-ghost ui-button-sm" data-consent-customize>
+        <span class="ui-button-label truncate">{customize}</span>
+      </button>
+    </div>
+  </div>
+</section>

@@ -22,14 +22,14 @@ const items = (Array.isArray(cards) ? cards : []).slice(0, 3);
 ---
 
 <section id={sectionId} class="atlas-detail-section" data-atlas-travel-essentials>
-  <h2 class="atlas-section-title">{title}</h2>
+  <h2 class="atlas-section-title gv-h2">{title}</h2>
 
   <div class="atlas-travel-grid">
     {
       items.map((item) => (
-        <Card class="atlas-travel-card" as="article">
+        <Card class="atlas-travel-card gv-card bg-surface border-border" as="article">
           <header class="atlas-travel-head">
-            <h3 class="atlas-travel-title">{item.title}</h3>
+            <h3 class="atlas-travel-title gv-h3">{item.title}</h3>
             <Badge variant="warning">{comingSoonLabel}</Badge>
           </header>
           <p class="small atlas-travel-description">{item.description}</p>

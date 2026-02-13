@@ -12,11 +12,48 @@
     "help": "Ayuda",
     "account": "Cuenta"
   },
+  "footer": {
+    "privacy": "Privacidad",
+    "cookies": "Cookies",
+    "terms": "Terminos"
+  },
   "language": {
     "switcherAria": "Selector de idioma"
   },
   "ads": {
     "label": "Publicidad"
+  },
+  "consent": {
+    "title": "Preferencias de privacidad",
+    "desc": "Las opciones de analitica y anuncios solo se usan con su permiso. Las funciones necesarias siempre permanecen activas.",
+    "acceptAll": "Aceptar todo",
+    "rejectAll": "Rechazar todo",
+    "customize": "Personalizar",
+    "manage": "Gestionar consentimiento",
+    "modalTitle": "Personalizar consentimiento",
+    "necessary": "Necesario",
+    "analytics": "Analitica",
+    "ads": "Anuncios",
+    "alwaysOn": "Siempre activo",
+    "save": "Guardar preferencias",
+    "close": "Cerrar",
+    "updated": "Consentimiento actualizado",
+    "learnMore": "Saber mas",
+    "openSettings": "Abrir ajustes de consentimiento"
+  },
+  "legal": {
+    "lastUpdated": "Ultima actualizacion",
+    "enFallbackNotice": "Esta pagina legal se publica por ahora en ingles; las versiones localizadas estan en preparacion.",
+    "privacy": {
+      "title": "Politica de Privacidad"
+    },
+    "cookies": {
+      "title": "Politica de Cookies",
+      "openConsentCta": "Actualiza tus preferencias de analitica y anuncios en cualquier momento."
+    },
+    "terms": {
+      "title": "Terminos de Uso"
+    }
   },
   "stateBanner": {
     "runtime": "Se muestra la vista previa de traduccion en tiempo real. Esta vista no se indexa.",

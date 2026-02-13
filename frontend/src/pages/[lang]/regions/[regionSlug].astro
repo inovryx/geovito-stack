@@ -214,7 +214,7 @@ const memberLinks = memberPlaces
   </section>
 
   <section class="card prose-card">
-    {resolution.output.body ? <article class="prose-body" set:html={resolution.output.body}></article> : <p>{translate(ui, 'regions.noBody')}</p>}
+    {resolution.output.body ? <article class="prose-body" data-ev-root="off" set:html={resolution.output.body}></article> : <p>{translate(ui, 'regions.noBody')}</p>}
   </section>
 
   {

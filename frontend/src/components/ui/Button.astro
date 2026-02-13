@@ -24,10 +24,18 @@ const {
 } = Astro.props as Props;
 
 const isDisabled = disabled || loading;
+const variantClasses = {
+  primary: 'bg-accent text-white border-accent hover:bg-accent2 hover:border-accent2',
+  secondary: 'bg-surface text-fg border-border hover:bg-surface2 hover:border-accent',
+  ghost: 'bg-transparent text-fg border-transparent hover:bg-surface2 hover:border-border',
+  danger: 'bg-danger/15 text-danger border-danger/45 hover:bg-danger/20',
+} as const;
 const classes = [
   'ui-button',
   `ui-button-${variant}`,
   `ui-button-${size}`,
+  'rounded-sm',
+  variantClasses[variant],
   isDisabled ? 'is-disabled' : '',
   loading ? 'is-loading' : '',
   className,

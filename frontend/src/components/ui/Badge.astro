@@ -5,7 +5,14 @@ interface Props {
 }
 
 const { variant = 'neutral', class: className = '' } = Astro.props as Props;
-const classes = ['ui-badge', `ui-badge-${variant}`, className].filter(Boolean).join(' ');
+const variantClasses = {
+  neutral: 'bg-surface2 text-muted border-border',
+  success: 'bg-success/15 text-success border-success/40',
+  warning: 'bg-warn/15 text-warn border-warn/40',
+  danger: 'bg-danger/15 text-danger border-danger/40',
+  info: 'bg-accent/15 text-accent2 border-accent/40',
+} as const;
+const classes = ['ui-badge', `ui-badge-${variant}`, variantClasses[variant], className].filter(Boolean).join(' ');
 ---
 
 <span class={classes}>

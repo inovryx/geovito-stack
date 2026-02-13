@@ -1,6 +1,9 @@
 ---
+import '../styles/tokens.css';
 import '../styles/global.css';
 import AdsProvider from '../components/ads/AdsProvider.astro';
+import ConsentBanner from '../components/consent/ConsentBanner.astro';
+import ConsentModal from '../components/consent/ConsentModal.astro';
 import Icon from '../components/Icon.astro';
 import SearchBar from '../components/SearchBar.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
@@ -34,6 +37,8 @@ const {
 } = Astro.props as Props;
 
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
+const legalHref = (slug: 'privacy' | 'cookies' | 'terms') => `/${currentLanguage}/${slug}/`;
+const cookiesHref = legalHref('cookies');
 ---
 
 <!doctype html>
@@ -47,6 +52,62 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
     <link rel="canonical" href={canonical} />
     {alternates.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
     <link rel="alternate" hreflang="x-default" href={languageLinks['en'] || '/en/'} />
+
+    <script is:inline>
+      (() => {
+        const applyConsentDataset = (analytics, ads) => {
+          const root = document.documentElement;
+          root.setAttribute('data-consent-necessary', '1');
+          root.setAttribute('data-consent-analytics', analytics ? '1' : '0');
+          root.setAttribute('data-consent-ads', ads ? '1' : '0');
+        };
+
+        const toBool = (value) => value === true;
+
+        try {
+          const raw = localStorage.getItem('consent.v1');
+          if (!raw) {
+            applyConsentDataset(false, false);
+            return;
+          }
+
+          const parsed = JSON.parse(raw);
+          if (!parsed || parsed.necessary !== true) {
+            applyConsentDataset(false, false);
+            return;
+          }
+
+          const isSupportedVersion = parsed.v === 1 || parsed.v === 2;
+          if (!isSupportedVersion) {
+            applyConsentDataset(false, false);
+            return;
+          }
+
+          applyConsentDataset(toBool(parsed.analytics), toBool(parsed.ads));
+        } catch {
+          applyConsentDataset(false, false);
+        }
+      })();
+    </script>
+
+    <script is:inline>
+      (() => {
+        window.dataLayer = window.dataLayer || [];
+        if (typeof window.gtag !== 'function') {
+          window.gtag = function () {
+            window.dataLayer.push(Array.from(arguments));
+          };
+        }
+
+        window.gtag('consent', 'default', {
+          analytics_storage: 'denied',
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+        });
+      })();
+    </script>
+
     <AdsProvider />
 
     <script is:inline>
@@ -83,7 +144,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 
     <div class="background-layer" aria-hidden="true"></div>
 
-    <header class="site-header" data-site-header>
+    <header class="site-header" data-site-header data-ev-root="ui">
       <div class="site-header-inner">
         <button type="button" class="icon-button shell-menu-button" data-shell-menu-open aria-label={t('layout.openMenu', 'Open menu')}>
           <Icon name="Menu" size={20} />
@@ -96,7 +157,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
         </a>
 
         <div class="header-search-wrap">
-          <SearchBar currentLanguage={currentLanguage} ui={ui} variant="small" />
+          <SearchBar currentLanguage={currentLanguage} ui={ui} variant="small" analyticsLocation="header" />
         </div>
 
         <div class="site-header-actions">
@@ -113,6 +174,9 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 
     <slot />
 
+    <ConsentBanner ui={ui} learnMoreHref={cookiesHref} />
+    <ConsentModal ui={ui} />
+
     <footer class="site-footer">
       <div class="site-footer-inner">
         <span>{t('layout.footerNote', 'GeoVito: search-first atlas and regional discovery.')}</span>
@@ -120,9 +184,465 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
           <a href={`/${currentLanguage}/about/`}>{t('nav.about', 'About')}</a>
           <a href={`/${currentLanguage}/rules/`}>{t('nav.rules', 'Rules')}</a>
           <a href={`/${currentLanguage}/help/`}>{t('nav.help', 'Help')}</a>
+          <a href={legalHref('privacy')} data-legal-footer-link>
+            {t('footer.privacy', 'Privacy')}
+          </a>
+          <a href={legalHref('cookies')} data-legal-footer-link>
+            {t('footer.cookies', 'Cookies')}
+          </a>
+          <a href={legalHref('terms')} data-legal-footer-link>
+            {t('footer.terms', 'Terms')}
+          </a>
+          <button type="button" class="site-footer-consent-link" data-consent-manage>
+            {t('consent.manage', 'Manage consent')}
+          </button>
         </div>
       </div>
     </footer>
+
+    <script>
+      import { createFocusTrap } from '../lib/a11y/focusTrap';
+      import {
+        identify,
+        track,
+        trackAdSlotView,
+        trackChipClick,
+        trackNavClick,
+        trackPaginationClick,
+        trackSearchSubmit,
+        trackSortChange,
+        trackToolOpen,
+      } from '../lib/analytics';
+      import { applyConsentToDocument, defaultConsent, getConsent, hasChoice, setConsent, subscribe } from '../lib/consent';
+      import { maybeSyncConsentFromCmp } from '../lib/consent/cmpAdapter';
+      import { initTags, updateTags } from '../lib/tags';
+
+      const readLang = () => {
+        const value = document.documentElement.lang || 'en';
+        return value.toLowerCase();
+      };
+
+      const parseJson = (value) => {
+        if (!value) return {};
+        try {
+          const parsed = JSON.parse(value);
+          return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch {
+          return {};
+        }
+      };
+
+      const isAnalyticsConsentGranted = () => document.documentElement.getAttribute('data-consent-analytics') === '1';
+      const isAdsConsentGranted = () => document.documentElement.getAttribute('data-consent-ads') === '1';
+
+      const seedConsent = () => {
+        const stored = getConsent();
+        const initial = stored || defaultConsent();
+        applyConsentToDocument(initial);
+        initTags(initial);
+        return initial;
+      };
+
+      let consentState = seedConsent();
+      let consentModalOpener = null;
+      let consentTrapCleanup = null;
+
+      const consentBanner = document.querySelector('[data-consent-banner]');
+      const consentCustomizeButton = document.querySelector('[data-consent-customize]');
+      const consentAcceptButton = document.querySelector('[data-consent-accept]');
+      const consentRejectButton = document.querySelector('[data-consent-reject]');
+      const consentManageButtons = Array.from(document.querySelectorAll('[data-consent-manage]'));
+      const consentBackdrop = document.querySelector('[data-consent-backdrop]');
+      const consentModal = document.querySelector('[data-consent-modal]');
+      const consentCloseButtons = Array.from(document.querySelectorAll('[data-consent-close]'));
+      const consentSaveButton = document.querySelector('[data-consent-save]');
+      const consentAnalyticsToggle = document.querySelector('[data-consent-toggle="analytics"]');
+      const consentAdsToggle = document.querySelector('[data-consent-toggle="ads"]');
+      const consentInertTargets = Array.from(
+        document.querySelectorAll('.site-header, .site-header-spacer, .background-layer, .shell-layout, .site-footer, [data-consent-banner]')
+      );
+
+      const syncConsentInputs = (state) => {
+        if (consentAnalyticsToggle instanceof HTMLInputElement) {
+          consentAnalyticsToggle.checked = state.analytics;
+        }
+        if (consentAdsToggle instanceof HTMLInputElement) {
+          consentAdsToggle.checked = state.ads;
+        }
+      };
+
+      const setConsentBackdropState = (open) => {
+        if (consentBackdrop instanceof HTMLElement) {
+          consentBackdrop.hidden = !open;
+        }
+
+        document.body.classList.toggle('consent-open', open);
+      };
+
+      const setConsentBackgroundInert = (open) => {
+        consentInertTargets.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          if (consentModal instanceof HTMLElement && consentModal.contains(node)) return;
+          if ('inert' in node) {
+            node.inert = open;
+          }
+          if (open) {
+            node.setAttribute('aria-hidden', 'true');
+          } else {
+            node.removeAttribute('aria-hidden');
+          }
+        });
+      };
+
+      const closeConsentModal = () => {
+        if (!(consentModal instanceof HTMLElement)) return;
+
+        consentModal.hidden = true;
+        consentModal.setAttribute('aria-hidden', 'true');
+        setConsentBackdropState(false);
+        setConsentBackgroundInert(false);
+
+        if (consentTrapCleanup) {
+          consentTrapCleanup();
+          consentTrapCleanup = null;
+        }
+
+        if (consentModalOpener instanceof HTMLElement) {
+          consentModalOpener.focus();
+        }
+      };
+
+      const openConsentModal = (opener = null) => {
+        if (!(consentModal instanceof HTMLElement)) return;
+
+        if (opener instanceof HTMLElement) {
+          consentModalOpener = opener;
+        }
+
+        syncConsentInputs(consentState);
+
+        consentModal.hidden = false;
+        consentModal.setAttribute('aria-hidden', 'false');
+        setConsentBackdropState(true);
+        setConsentBackgroundInert(true);
+
+        if (consentTrapCleanup) {
+          consentTrapCleanup();
+          consentTrapCleanup = null;
+        }
+
+        const closeTarget = consentModal.querySelector('[data-consent-close]');
+        const initialFocusEl = closeTarget instanceof HTMLElement ? closeTarget : null;
+
+        consentTrapCleanup = createFocusTrap(consentModal, {
+          onEscape: closeConsentModal,
+          initialFocusEl,
+        });
+      };
+
+      const commitConsent = (nextState) => {
+        setConsent(nextState);
+      };
+
+      if (consentBanner instanceof HTMLElement) {
+        consentBanner.hidden = hasChoice();
+      }
+
+      syncConsentInputs(consentState);
+
+      if (consentAcceptButton instanceof HTMLButtonElement) {
+        consentAcceptButton.addEventListener('click', () => {
+          commitConsent({
+            v: 2,
+            ts: Date.now(),
+            necessary: true,
+            analytics: true,
+            ads: true,
+            source: 'user',
+          });
+        });
+      }
+
+      if (consentRejectButton instanceof HTMLButtonElement) {
+        consentRejectButton.addEventListener('click', () => {
+          commitConsent({
+            v: 2,
+            ts: Date.now(),
+            necessary: true,
+            analytics: false,
+            ads: false,
+            source: 'user',
+          });
+        });
+      }
+
+      if (consentCustomizeButton instanceof HTMLButtonElement) {
+        consentCustomizeButton.addEventListener('click', () => openConsentModal(consentCustomizeButton));
+      }
+
+      consentManageButtons.forEach((button) => {
+        if (!(button instanceof HTMLElement)) return;
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          openConsentModal(button);
+        });
+      });
+
+      consentCloseButtons.forEach((button) => {
+        if (!(button instanceof HTMLElement)) return;
+        button.addEventListener('click', () => closeConsentModal());
+      });
+
+      if (consentBackdrop instanceof HTMLElement) {
+        consentBackdrop.addEventListener('click', () => closeConsentModal());
+      }
+
+      if (consentSaveButton instanceof HTMLButtonElement) {
+        consentSaveButton.addEventListener('click', () => {
+          const analytics = consentAnalyticsToggle instanceof HTMLInputElement ? consentAnalyticsToggle.checked : false;
+          const ads = consentAdsToggle instanceof HTMLInputElement ? consentAdsToggle.checked : false;
+
+          commitConsent({
+            v: 2,
+            ts: Date.now(),
+            necessary: true,
+            analytics,
+            ads,
+            source: 'user',
+          });
+          closeConsentModal();
+        });
+      }
+
+      subscribe((next) => {
+        consentState = next;
+        syncConsentInputs(next);
+        if (consentBanner instanceof HTMLElement) {
+          consentBanner.hidden = true;
+        }
+        updateTags(next);
+      });
+
+      const autoOpenOpener = document.querySelector('[data-consent-auto-opener]');
+      const shouldAutoOpenConsent = new URLSearchParams(window.location.search).get('consent') === '1';
+      if (shouldAutoOpenConsent) {
+        openConsentModal(autoOpenOpener instanceof HTMLElement ? autoOpenOpener : null);
+      }
+
+      maybeSyncConsentFromCmp();
+
+      const eventTargetElement = (target) => {
+        if (target instanceof Element) return target;
+        if (target instanceof Node) return target.parentElement;
+        return null;
+      };
+
+      const assignDataProps = (element, props) => {
+        const mappings = [
+          ['group', 'evGroup'],
+          ['value', 'evValue'],
+          ['context', 'evContext'],
+          ['action', 'evAction'],
+          ['item', 'evItem'],
+          ['tool', 'evTool'],
+          ['slotId', 'evSlotId'],
+          ['page', 'evPage'],
+          ['location', 'evLocation'],
+        ];
+
+        for (const [propName, dataKey] of mappings) {
+          const value = element.dataset[dataKey];
+          if (value !== undefined && value !== '') {
+            props[propName] = dataKey === 'evPage' ? Number(value) : value;
+          }
+        }
+      };
+
+      const nearestAnalyticsRoot = (element) => {
+        if (!(element instanceof Element)) return null;
+        return element.closest('[data-ev-root]');
+      };
+
+      const isInsideUiRoot = (element) => {
+        const root = nearestAnalyticsRoot(element);
+        return root instanceof HTMLElement && root.getAttribute('data-ev-root') === 'ui';
+      };
+
+      const isScopedUiElement = (element) => {
+        if (!(element instanceof HTMLElement)) return false;
+        if (element.getAttribute('data-ev-scope') !== 'ui') return false;
+        return isInsideUiRoot(element);
+      };
+
+      const buildElementEventProps = (element) => {
+        const props = parseJson(element.getAttribute('data-ev-props'));
+        assignDataProps(element, props);
+
+        if (element instanceof HTMLAnchorElement && props.page === undefined) {
+          const href = element.getAttribute('href');
+          if (href) {
+            const url = new URL(href, window.location.origin);
+            const page = Number.parseInt(url.searchParams.get('page') || '1', 10);
+            if (Number.isFinite(page)) {
+              props.page = page;
+            }
+          }
+        }
+
+        if (props.lang === undefined) {
+          props.lang = element.getAttribute('data-ev-lang') || readLang();
+        }
+
+        return props;
+      };
+
+      const emitTrackedEvent = (eventName, props) => {
+        if (!isAnalyticsConsentGranted()) return;
+
+        if (eventName === 'filter_chip_click') {
+          trackChipClick(props);
+          return;
+        }
+        if (eventName === 'sort_change') {
+          trackSortChange(props);
+          return;
+        }
+        if (eventName === 'pagination_click') {
+          trackPaginationClick(props);
+          return;
+        }
+        if (eventName === 'tool_open') {
+          trackToolOpen(props);
+          return;
+        }
+        if (eventName === 'nav_click') {
+          trackNavClick(props);
+          return;
+        }
+        track(eventName, props);
+      };
+
+      window.__gvTrack = track;
+      window.__gvIdentify = identify;
+
+      document.addEventListener(
+        'click',
+        (event) => {
+          const target = eventTargetElement(event.target);
+          if (!(target instanceof Element)) return;
+
+          const tracked = target.closest('[data-ev][data-ev-scope="ui"]');
+          if (!(tracked instanceof HTMLElement)) return;
+          if (!isScopedUiElement(tracked)) return;
+          if (tracked.getAttribute('aria-disabled') === 'true') return;
+
+          const eventName = tracked.getAttribute('data-ev');
+          if (!eventName) return;
+
+          emitTrackedEvent(eventName, buildElementEventProps(tracked));
+        },
+        true
+      );
+
+      document.addEventListener('change', (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        const tracked = target.closest('[data-ev-change][data-ev-scope="ui"]');
+        if (!(tracked instanceof HTMLElement)) return;
+        if (!isScopedUiElement(tracked)) return;
+
+        const eventName = tracked.getAttribute('data-ev-change');
+        if (!eventName) return;
+
+        const props = buildElementEventProps(tracked);
+
+        if (tracked instanceof HTMLInputElement || tracked instanceof HTMLSelectElement || tracked instanceof HTMLTextAreaElement) {
+          props.value = tracked.value;
+        }
+
+        emitTrackedEvent(eventName, props);
+      });
+
+      document.addEventListener(
+        'submit',
+        (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement)) return;
+          if (!isScopedUiElement(form)) return;
+
+          const eventName = form.getAttribute('data-ev-submit');
+          if (!eventName) return;
+
+          const props = parseJson(form.getAttribute('data-ev-props'));
+          assignDataProps(form, props);
+          props.lang = props.lang || readLang();
+
+          if (eventName === 'search_submit') {
+            if (!isAnalyticsConsentGranted()) return;
+
+            const formData = new FormData(form);
+            const params = new URLSearchParams(window.location.search);
+
+            props.query = String(formData.get('q') || '').trim();
+            props.type = String(formData.get('type') || form.getAttribute('data-search-type') || params.get('type') || 'all');
+            props.location = String(form.getAttribute('data-search-location') || 'header');
+            trackSearchSubmit(props);
+            return;
+          }
+
+          emitTrackedEvent(eventName, props);
+        },
+        true
+      );
+
+      if (import.meta.env.PUBLIC_ADS_ENABLED === 'true' && 'IntersectionObserver' in window) {
+        let adObserverBound = false;
+
+        const bindAdSlotObserver = () => {
+          if (adObserverBound) return;
+          // Policy: ad slot impression analytics only requires analytics consent.
+          if (!isAnalyticsConsentGranted()) return;
+
+          const sections = window.location.pathname.split('/').filter(Boolean);
+          const rawContext = sections[1] || 'home';
+          const context = rawContext === 'regions' ? 'region' : rawContext;
+          const slots = Array.from(document.querySelectorAll('[data-ad-slot][data-ev-scope="ui"]')).filter((slot) =>
+            isInsideUiRoot(slot)
+          );
+
+          if (!slots.length) return;
+          adObserverBound = true;
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const node = entry.target;
+                if (!(node instanceof HTMLElement)) return;
+                const slotId = node.dataset.adSlot;
+                if (!slotId) return;
+                trackAdSlotView({
+                  slotId,
+                  context,
+                  lang: readLang(),
+                });
+                observer.unobserve(node);
+              });
+            },
+            {
+              rootMargin: '0px 0px -12% 0px',
+              threshold: 0.35,
+            }
+          );
+
+          slots.forEach((slot) => observer.observe(slot));
+        };
+
+        bindAdSlotObserver();
+        window.addEventListener('gv:consent-change', bindAdSlotObserver);
+      }
+    </script>
 
     <script is:inline>
       (() => {
@@ -231,6 +751,10 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
               const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
               writeTheme(next);
               applyTheme(next);
+              window.__gvTrack?.('theme_toggle', {
+                to: next,
+                lang: document.documentElement.lang?.toLowerCase() || 'en',
+              });
             });
           });
         };

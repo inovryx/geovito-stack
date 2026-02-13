@@ -1,0 +1,79 @@
+---
+interface TocItem {
+  id: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  lastUpdated: string;
+  lastUpdatedLabel: string;
+  tocTitle: string;
+  tocAriaLabel?: string;
+  tocItems?: TocItem[];
+}
+
+const {
+  title,
+  lastUpdated,
+  lastUpdatedLabel,
+  tocTitle,
+  tocAriaLabel = tocTitle,
+  tocItems = [],
+} = Astro.props as Props;
+
+const items = (Array.isArray(tocItems) ? tocItems : []).filter((item) => item?.id && item?.label);
+---
+
+<section class="legal-page gv-stack">
+  <header class="legal-header gv-card gv-stack">
+    <h1 class="gv-h1">{title}</h1>
+    <p class="legal-last-updated gv-caption">
+      <span>{lastUpdatedLabel}: </span>
+      <time datetime={lastUpdated}>{lastUpdated}</time>
+    </p>
+    <slot name="notice" />
+    <slot name="actions" />
+  </header>
+
+  <div class="legal-body-layout">
+    <article class="legal-prose gv-card gv-prose" data-ev-root="off">
+      <slot />
+    </article>
+
+    {
+      items.length ? (
+        <aside class="legal-toc" aria-hidden="false">
+          <nav class="legal-toc-desktop" aria-label={tocAriaLabel}>
+            <p class="legal-toc-title">{tocTitle}</p>
+            <ol class="legal-toc-list">
+              {items.map((item) => (
+                <li>
+                  <a href={`#${item.id}`}>{item.label}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+
+          <details class="legal-toc-mobile ui-accordion">
+            <summary>
+              <span class="truncate">{tocTitle}</span>
+              <span class="accordion-chevron" aria-hidden="true">v</span>
+            </summary>
+            <div class="ui-accordion-body">
+              <nav aria-label={tocAriaLabel}>
+                <ol class="legal-toc-list">
+                  {items.map((item) => (
+                    <li>
+                      <a href={`#${item.id}`}>{item.label}</a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            </div>
+          </details>
+        </aside>
+      ) : null
+    }
+  </div>
+</section>

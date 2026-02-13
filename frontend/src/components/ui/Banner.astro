@@ -18,9 +18,19 @@ const {
 } = Astro.props as Props;
 
 const key = storageKey || `geovito.ui-banner.${variant}`;
+const variantClasses = {
+  info: 'border-accent/40 bg-accent/10 text-fg',
+  success: 'border-success/40 bg-success/10 text-fg',
+  warning: 'border-warn/45 bg-warn/14 text-fg',
+  danger: 'border-danger/45 bg-danger/12 text-fg',
+} as const;
 ---
 
-<aside class={`ui-banner ui-banner-${variant} ${className}`.trim()} data-ui-banner data-ui-banner-key={key}>
+<aside
+  class={`ui-banner ui-banner-${variant} rounded-sm border ${variantClasses[variant]} ${className}`.trim()}
+  data-ui-banner
+  data-ui-banner-key={key}
+>
   <div class="ui-banner-content">
     {title ? <strong>{title}</strong> : <Icon name="Info" size={16} />}
     <span><slot /></span>

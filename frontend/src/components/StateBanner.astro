@@ -16,7 +16,7 @@ const bannerKey = `geovito.state-banner.${status}.${encodeURIComponent(canonical
 
 {
   status === 'mock' ? (
-    <aside class="state-banner mock" data-state-banner data-state-banner-key={bannerKey}>
+    <aside class="state-banner mock gv-card" data-state-banner data-state-banner-key={bannerKey}>
       <strong class="state-badge">MOCK</strong>
       <span>{translate(ui, 'stateBanner.mock')}</span>
       <button type="button" class="state-banner-close" data-state-banner-dismiss aria-label="Dismiss banner">
@@ -24,7 +24,7 @@ const bannerKey = `geovito.state-banner.${status}.${encodeURIComponent(canonical
       </button>
     </aside>
   ) : status === 'runtime' ? (
-    <aside class="state-banner runtime" data-state-banner data-state-banner-key={bannerKey}>
+    <aside class="state-banner runtime gv-card" data-state-banner data-state-banner-key={bannerKey}>
       <strong class="state-badge">RUNTIME</strong>
       <span>{translate(ui, 'stateBanner.runtime')}</span>
       <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>
@@ -33,7 +33,7 @@ const bannerKey = `geovito.state-banner.${status}.${encodeURIComponent(canonical
       </button>
     </aside>
   ) : (
-    <aside class="state-banner fallback" data-state-banner data-state-banner-key={bannerKey}>
+    <aside class="state-banner fallback gv-card" data-state-banner data-state-banner-key={bannerKey}>
       <strong class="state-badge">FALLBACK</strong>
       <span>{translate(ui, 'stateBanner.incomplete', { language, state: contentStatus || 'missing' })}</span>
       <a href={canonicalPath}>{translate(ui, 'stateBanner.canonicalLink')}</a>

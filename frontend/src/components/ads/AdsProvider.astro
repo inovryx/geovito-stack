@@ -4,4 +4,28 @@ import { getAdScriptUrl } from '../../lib/ads';
 const scriptUrl = getAdScriptUrl();
 ---
 
-{scriptUrl ? <script async src={scriptUrl}></script> : null}
+{
+  scriptUrl ? (
+    <script is:inline define:vars={{ scriptUrl }}>
+      (() => {
+        const marker = 'data-gv-ads-script';
+
+        const canLoadAds = () => document.documentElement.getAttribute('data-consent-ads') === '1';
+
+        const ensureAdsScript = () => {
+          if (!canLoadAds()) return;
+          if (document.querySelector(`script[${marker}]`)) return;
+
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = scriptUrl;
+          script.setAttribute(marker, '1');
+          document.head.appendChild(script);
+        };
+
+        ensureAdsScript();
+        window.addEventListener('gv:consent-change', ensureAdsScript);
+      })();
+    </script>
+  ) : null
+}

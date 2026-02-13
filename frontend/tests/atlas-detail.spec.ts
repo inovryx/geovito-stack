@@ -16,6 +16,7 @@ test('atlas detail renders premium sections and keeps in-content ad slot', async
   await openAtlasDetail(page);
 
   await expect(page.locator('[data-atlas-place-header] h1')).toBeVisible();
+  await expect(page.locator('[data-atlas-place-header] .atlas-place-breadcrumb-current[aria-current="page"]')).toBeVisible();
   await expect(page.locator('[data-atlas-quick-facts]')).toBeVisible();
   await expect(page.locator('[data-atlas-hierarchy]')).toBeVisible();
   await expect(page.locator('[data-ad-slot="atlas_incontent"]')).toBeVisible();

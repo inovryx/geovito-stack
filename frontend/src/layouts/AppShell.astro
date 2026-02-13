@@ -51,7 +51,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
   alternates={alternates}
   ui={ui}
 >
-  <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`}>
+  <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`} data-ev-root="ui">
     <aside class="left-column desktop-tablet-column" aria-label={t('layout.mainNavigation', 'Main navigation')}>
       <div class="left-nav-card">
         <div class="left-nav-head">
@@ -59,6 +59,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
             type="button"
             class="icon-button sidebar-toggle-button"
             data-sidebar-toggle
+            data-ev-scope="ui"
             data-label-expand={t('layout.expandSidebar', 'Expand sidebar')}
             data-label-collapse={t('layout.collapseSidebar', 'Collapse sidebar')}
             aria-label={t('layout.collapseSidebar', 'Collapse sidebar')}
@@ -101,7 +102,16 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 
   <div class="drawer-backdrop" data-shell-backdrop hidden></div>
 
-  <aside class="mobile-drawer" data-shell-drawer aria-hidden="true">
+  <aside
+    class="mobile-drawer"
+    id="mobile-shell-drawer"
+    data-shell-drawer
+    data-ev-root="ui"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    tabindex="-1"
+  >
     <div class="mobile-drawer-head">
       <strong class="brand drawer-brand">
         <Icon name="Map" size={20} />
@@ -126,7 +136,10 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
     </div>
   </aside>
 
-  <script is:inline>
+  <script>
+    import { createFocusTrap } from '../lib/a11y/focusTrap';
+    import { trackSidebarToggle } from '../lib/analytics';
+
     (() => {
       const root = document.documentElement;
       const sidebarToggles = Array.from(document.querySelectorAll('[data-sidebar-toggle]'));
@@ -173,6 +186,10 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
             const nextState = root.classList.contains('sidebar-compact') ? 'expanded' : 'compact';
             writeSidebarState(nextState);
             applySidebarState(nextState);
+            trackSidebarToggle({
+              to: nextState,
+              lang: document.documentElement.lang?.toLowerCase() || 'en',
+            });
           });
         });
       }
@@ -186,18 +203,73 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
         return;
       }
 
-      const setOpen = (open) => {
+      const closeButton = drawer.querySelector('[data-shell-menu-close]');
+      const inertTargets = Array.from(
+        document.querySelectorAll('.site-header, .site-header-spacer, .background-layer, .shell-layout, .site-footer')
+      );
+      let trapCleanup = null;
+      let opener = null;
+
+      openButtons.forEach((button) => {
+        button.setAttribute('aria-controls', 'mobile-shell-drawer');
+        button.setAttribute('aria-expanded', 'false');
+      });
+
+      const setBackgroundInert = (open) => {
+        inertTargets.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          if ('inert' in node) {
+            node.inert = open;
+          }
+          if (open) {
+            node.setAttribute('aria-hidden', 'true');
+          } else {
+            node.removeAttribute('aria-hidden');
+          }
+        });
+      };
+
+      const setOpen = (open, trigger = null) => {
+        if (open && trigger instanceof HTMLElement) {
+          opener = trigger;
+        }
+
         drawer.classList.toggle('is-open', open);
         drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
         backdrop.hidden = !open;
         document.body.classList.toggle('drawer-open', open);
+
+        openButtons.forEach((button) => {
+          button.setAttribute('aria-controls', 'mobile-shell-drawer');
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        setBackgroundInert(open);
+
+        if (open) {
+          if (trapCleanup) trapCleanup();
+          trapCleanup = createFocusTrap(drawer, {
+            onEscape: () => setOpen(false),
+            initialFocusEl: closeButton instanceof HTMLElement ? closeButton : null,
+          });
+          return;
+        }
+
+        if (trapCleanup) {
+          trapCleanup();
+          trapCleanup = null;
+        }
+
+        if (opener instanceof HTMLElement) {
+          opener.focus();
+        }
       };
 
-      openButtons.forEach((button) => button.addEventListener('click', () => setOpen(true)));
+      openButtons.forEach((button) => button.addEventListener('click', () => setOpen(true, button)));
       closeButtons.forEach((button) => button.addEventListener('click', () => setOpen(false)));
       backdrop.addEventListener('click', () => setOpen(false));
       window.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && drawer.classList.contains('is-open')) {
           setOpen(false);
         }
       });

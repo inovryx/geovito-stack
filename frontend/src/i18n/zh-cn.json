@@ -12,11 +12,48 @@
     "help": "Bangzhu",
     "account": "Zhanghu"
   },
+  "footer": {
+    "privacy": "Yinsi",
+    "cookies": "Cookies",
+    "terms": "Tiaokuan"
+  },
   "language": {
     "switcherAria": "Yuyan xuanze"
   },
   "ads": {
     "label": "广告"
+  },
+  "consent": {
+    "title": "Yinsi xuanxiang",
+    "desc": "Kexuan de fenxi he guanggao shezhi zhiyou zai nin tongyi hou cai hui qiyong. Bixu gongneng yizhi baochi kaiqi.",
+    "acceptAll": "Quanbu tongyi",
+    "rejectAll": "Quanbu jujue",
+    "customize": "Zidingyi",
+    "manage": "Guanli tongyi",
+    "modalTitle": "Zidingyi tongyi",
+    "necessary": "Biyao",
+    "analytics": "Fenxi",
+    "ads": "Guanggao",
+    "alwaysOn": "Yizhi kaiqi",
+    "save": "Baocun xuanxiang",
+    "close": "Guanbi",
+    "updated": "Tongyi yi gengxin",
+    "learnMore": "Liaojie gengduo",
+    "openSettings": "Dakaitongyi shezhi"
+  },
+  "legal": {
+    "lastUpdated": "Zuixin gengxin",
+    "enFallbackNotice": "Gai falv yemian muqian yi yingwen fabu, duoyuyan banben zhengzaizhizuo.",
+    "privacy": {
+      "title": "Yinsi zhengce"
+    },
+    "cookies": {
+      "title": "Cookies zhengce",
+      "openConsentCta": "Nin keyi suishi gengxin fenxi he guanggao tongyi xuanxiang."
+    },
+    "terms": {
+      "title": "Shiyong tiaokuan"
+    }
   },
   "stateBanner": {
     "runtime": "Dangqian xianshi runtime fanyi yulan, ci shitu buhui bei shoulu.",

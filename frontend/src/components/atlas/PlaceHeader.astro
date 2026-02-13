@@ -41,7 +41,7 @@ const tailIndex = Math.max(0, items.length - 1);
           items.map((item, index) => (
             <li class={index === tailIndex ? 'is-current' : ''}>
               {index === tailIndex ? (
-                <span class="atlas-place-breadcrumb-current" title={item.title}>
+                <span class="atlas-place-breadcrumb-current" title={item.title} aria-current="page">
                   {item.title}
                 </span>
               ) : (
@@ -58,7 +58,7 @@ const tailIndex = Math.max(0, items.length - 1);
 
   <div class="atlas-place-heading">
     <div class="atlas-place-heading-copy">
-      <h1 class="atlas-place-title" title={title}>
+      <h1 class="atlas-place-title gv-h1" title={title}>
         {title}
       </h1>
       {metaLine ? (

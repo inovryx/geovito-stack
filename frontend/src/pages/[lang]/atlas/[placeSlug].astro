@@ -361,13 +361,13 @@ const tocSections = [
   <div class="atlas-detail-layout" data-atlas-detail-layout>
     <div class="atlas-detail-main" data-atlas-detail-main>
       <section id="overview" class="atlas-detail-section" data-atlas-overview>
-        <h2 class="atlas-section-title">{translate(ui, 'atlas.section.overview')}</h2>
-        <Card class="atlas-overview-card" as="section">
-          {resolution.output.excerpt ? <p class="atlas-overview-lead">{resolution.output.excerpt}</p> : null}
+        <h2 class="atlas-section-title gv-h2">{translate(ui, 'atlas.section.overview')}</h2>
+        <Card class="atlas-overview-card gv-card bg-surface border-border" as="section">
+          {resolution.output.excerpt ? <p class="atlas-overview-lead gv-body">{resolution.output.excerpt}</p> : null}
           {resolution.output.body ? (
-            <article class="prose-body atlas-detail-prose" set:html={resolution.output.body}></article>
+            <article class="prose-body atlas-detail-prose gv-prose" data-ev-root="off" set:html={resolution.output.body}></article>
           ) : (
-            <p>{translate(ui, 'atlas.noBody')}</p>
+            <p class="gv-body">{translate(ui, 'atlas.noBody')}</p>
           )}
 
           {
@@ -415,11 +415,11 @@ const tocSections = [
       />
 
       <section id="nearby-places" class="atlas-detail-section" data-atlas-nearby-places>
-        <h2 class="atlas-section-title">{translate(ui, 'atlas.section.nearbyPlaces')}</h2>
+        <h2 class="atlas-section-title gv-h2">{translate(ui, 'atlas.section.nearbyPlaces')}</h2>
 
         {
           nearbyLinks.length ? (
-            <Card class="atlas-nearby-card">
+            <Card class="atlas-nearby-card gv-card bg-surface border-border">
               <ul class="atlas-link-list atlas-nearby-list">
                 {
                   nearbyLinks.map((entry) => (

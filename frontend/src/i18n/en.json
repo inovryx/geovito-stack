@@ -12,11 +12,48 @@
     "help": "Help",
     "account": "Account"
   },
+  "footer": {
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "terms": "Terms"
+  },
   "language": {
     "switcherAria": "Language selector"
   },
   "ads": {
     "label": "Advertisement"
+  },
+  "consent": {
+    "title": "Privacy preferences",
+    "desc": "We use optional analytics and ads settings only with your permission. Necessary features are always on.",
+    "acceptAll": "Accept all",
+    "rejectAll": "Reject all",
+    "customize": "Customize",
+    "manage": "Manage consent",
+    "modalTitle": "Customize consent",
+    "necessary": "Necessary",
+    "analytics": "Analytics",
+    "ads": "Ads",
+    "alwaysOn": "Always on",
+    "save": "Save preferences",
+    "close": "Close",
+    "updated": "Consent updated",
+    "learnMore": "Learn more",
+    "openSettings": "Open consent settings"
+  },
+  "legal": {
+    "lastUpdated": "Last updated",
+    "enFallbackNotice": "This legal page is currently published in English while localized versions are in progress.",
+    "privacy": {
+      "title": "Privacy Policy"
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "openConsentCta": "Update analytics and ads consent preferences at any time."
+    },
+    "terms": {
+      "title": "Terms of Use"
+    }
   },
   "stateBanner": {
     "runtime": "Runtime translation preview is shown. This view is not indexed.",

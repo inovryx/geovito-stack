@@ -87,7 +87,7 @@ const robots = !hasRenderableContent
         <h1>{resolution?.output?.title}</h1>
         <p class="small">{resolution?.output?.excerpt}</p>
         {resolution?.output?.body ? (
-          <article set:html={resolution?.output?.body || ''}></article>
+          <article data-ev-root="off" set:html={resolution?.output?.body || ''}></article>
         ) : (
           <p>{translate(ui, 'uiPage.noBody')}</p>
         )}

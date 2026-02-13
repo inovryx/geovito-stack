@@ -12,11 +12,48 @@
     "help": "Help",
     "account": "Account"
   },
+  "footer": {
+    "privacy": "Gizlilik",
+    "cookies": "Cerezler",
+    "terms": "Kullanim Sartlari"
+  },
   "language": {
     "switcherAria": "Language selector"
   },
   "ads": {
     "label": "Reklam"
+  },
+  "consent": {
+    "title": "Gizlilik tercihleri",
+    "desc": "Istege bagli analiz ve reklam ayarlari sadece izninizle kullanilir. Gerekli ozellikler her zaman acik kalir.",
+    "acceptAll": "Tumunu kabul et",
+    "rejectAll": "Tumunu reddet",
+    "customize": "Ozellestir",
+    "manage": "Izinleri yonet",
+    "modalTitle": "Izinleri ozellestir",
+    "necessary": "Gerekli",
+    "analytics": "Analiz",
+    "ads": "Reklam",
+    "alwaysOn": "Her zaman acik",
+    "save": "Tercihleri kaydet",
+    "close": "Kapat",
+    "updated": "Izinler guncellendi",
+    "learnMore": "Daha fazla bilgi",
+    "openSettings": "Izin ayarlarini ac"
+  },
+  "legal": {
+    "lastUpdated": "Son guncelleme",
+    "enFallbackNotice": "Bu yasal sayfa su an Ingilizce yayinlaniyor, yerel diller hazirlaniyor.",
+    "privacy": {
+      "title": "Gizlilik Politikasi"
+    },
+    "cookies": {
+      "title": "Cerez Politikasi",
+      "openConsentCta": "Analiz ve reklam izinlerinizi istediginiz zaman guncelleyebilirsiniz."
+    },
+    "terms": {
+      "title": "Kullanim Sartlari"
+    }
   },
   "stateBanner": {
     "runtime": "Runtime translation preview is shown. This view is not indexed.",

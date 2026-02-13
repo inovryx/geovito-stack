@@ -7,6 +7,7 @@ interface Props {
   ui: Record<string, unknown>;
   variant?: 'small' | 'large';
   query?: string;
+  analyticsLocation?: 'header' | 'home';
 }
 
 const {
@@ -14,6 +15,7 @@ const {
   ui,
   variant = 'small',
   query = '',
+  analyticsLocation,
 } = Astro.props as Props;
 
 const isLarge = variant === 'large';
@@ -27,7 +29,16 @@ const placeholder = translate(
 const buttonLabel = translate(ui, 'search.button', {}, 'Search');
 ---
 
-<form class={`search-bar ${isLarge ? 'search-bar-large' : 'search-bar-small'}`} action={`/${currentLanguage}/search/`} method="get" role="search" aria-label={ariaLabel}>
+<form
+  class={`search-bar ${isLarge ? 'search-bar-large' : 'search-bar-small'}`}
+  action={`/${currentLanguage}/search/`}
+  method="get"
+  role="search"
+  aria-label={ariaLabel}
+  data-ev-submit={analyticsLocation ? 'search_submit' : undefined}
+  data-ev-scope={analyticsLocation ? 'ui' : undefined}
+  data-search-location={analyticsLocation}
+>
   <label class="sr-only" for={`search-${variant}-${currentLanguage}`}>{ariaLabel}</label>
   <Icon name="Search" size={isLarge ? 20 : 16} class="search-icon" />
   <input

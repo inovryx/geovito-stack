@@ -53,3 +53,48 @@ test('desktop sidebar can collapse to icon-only and persists after reload', asyn
   await expect(page.locator('html')).toHaveClass(/sidebar-compact/);
   await expect(page.locator('.desktop-tablet-column .app-nav-link .nav-link-label').first()).toBeHidden();
 });
+
+test('mobile drawer traps focus, closes on ESC, and restores focus to opener', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'Mobile-only scenario');
+
+  await page.goto('/en/');
+
+  const trigger = page.locator('[data-shell-menu-open]').first();
+  await expect(trigger).toBeVisible();
+  await trigger.focus();
+  await trigger.click();
+
+  const drawer = page.locator('[data-shell-drawer]');
+  await expect(drawer).toHaveClass(/is-open/);
+  await expect(drawer).toHaveAttribute('aria-hidden', 'false');
+
+  const closeButton = page.locator('[data-shell-menu-close]').first();
+  await expect(closeButton).toBeFocused();
+
+  for (let index = 0; index < 8; index += 1) {
+    await page.keyboard.press('Tab');
+    const focusInsideDrawer = await page.evaluate(() => {
+      const active = document.activeElement;
+      const drawerNode = document.querySelector('[data-shell-drawer]');
+      return Boolean(active && drawerNode?.contains(active));
+    });
+    expect(focusInsideDrawer).toBeTruthy();
+  }
+
+  await page.keyboard.press('Escape');
+  await expect(drawer).not.toHaveClass(/is-open/);
+  await expect(drawer).toHaveAttribute('aria-hidden', 'true');
+  await expect(trigger).toBeFocused();
+});
+
+test('active nav and current pagination item expose aria-current', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Desktop-only scenario');
+
+  await page.goto('/en/atlas/');
+  await expect(page.locator('[data-atlas-skeleton]')).toBeHidden();
+
+  await expect(page.locator('.desktop-tablet-column .app-nav-link[aria-current="page"]')).toHaveCount(1);
+  await expect(page.locator('.desktop-tablet-column .app-nav-link[aria-current="page"]')).toHaveAttribute('href', /\/en\/atlas\/$/);
+
+  await expect(page.locator('[data-atlas-page-link][aria-current="page"]')).toHaveCount(1);
+});

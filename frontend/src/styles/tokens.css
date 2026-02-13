@@ -1,0 +1,36 @@
+:root {
+  --gv-bg: 255 255 255;
+  --gv-surface: 248 250 252;
+  --gv-surface-2: 241 245 249;
+  --gv-fg: 15 23 42;
+  --gv-muted: 71 85 105;
+  --gv-border: 226 232 240;
+  --gv-accent: 59 130 246;
+  --gv-accent-2: 37 99 235;
+  --gv-success: 34 197 94;
+  --gv-warn: 245 158 11;
+  --gv-danger: 239 68 68;
+
+  --gv-radius-sm: 12px;
+  --gv-radius-md: 16px;
+  --gv-radius-lg: 20px;
+
+  --gv-shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
+  --gv-shadow-float: 0 8px 30px rgb(0 0 0 / 0.12);
+
+  --gv-content-max: 65ch;
+}
+
+.dark {
+  --gv-bg: 2 6 23;
+  --gv-surface: 15 23 42;
+  --gv-surface-2: 30 41 59;
+  --gv-fg: 226 232 240;
+  --gv-muted: 148 163 184;
+  --gv-border: 51 65 85;
+  --gv-accent: 59 130 246;
+  --gv-accent-2: 37 99 235;
+  --gv-success: 34 197 94;
+  --gv-warn: 245 158 11;
+  --gv-danger: 239 68 68;
+}

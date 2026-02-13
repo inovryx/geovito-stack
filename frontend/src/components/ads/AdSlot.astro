@@ -23,7 +23,7 @@ const adStyle = `--gv-ad-mobile:${slotConfig.size.mobile}px; --gv-ad-tablet:${sl
 const rootClass = ['gv-ad-slot', `gv-ad-slot-${slot}`, className].filter(Boolean).join(' ');
 ---
 
-<div class={rootClass} style={adStyle} data-ad-slot={slot} data-testid={testId} aria-hidden={label ? undefined : 'true'}>
+<div class={rootClass} style={adStyle} data-ad-slot={slot} data-ev-scope="ui" data-testid={testId} aria-hidden={label ? undefined : 'true'}>
   {label ? <p class="gv-ad-slot-label">{labelText}</p> : null}
 
   {

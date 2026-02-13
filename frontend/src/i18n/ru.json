@@ -12,11 +12,48 @@
     "help": "Pomoshch",
     "account": "Account"
   },
+  "footer": {
+    "privacy": "Konfidentsialnost",
+    "cookies": "Cookie",
+    "terms": "Usloviya"
+  },
   "language": {
     "switcherAria": "Vybor yazyka"
   },
   "ads": {
     "label": "Реклама"
+  },
+  "consent": {
+    "title": "Nastroiki konfidentsialnosti",
+    "desc": "Neobyazatelnye nastroiki analitiki i reklamy vklyuchayutsya tolko s vashego razresheniya. Neobkhodimye funktsii vsegda aktivny.",
+    "acceptAll": "Prinyat vse",
+    "rejectAll": "Otklonit vse",
+    "customize": "Nastroit",
+    "manage": "Upravlyat soglasiem",
+    "modalTitle": "Nastroit soglasie",
+    "necessary": "Neobkhodimo",
+    "analytics": "Analitika",
+    "ads": "Reklama",
+    "alwaysOn": "Vsegda vklyucheno",
+    "save": "Sokhranit nastroiki",
+    "close": "Zakryt",
+    "updated": "Soglasie obnovleno",
+    "learnMore": "Uznat bolshe",
+    "openSettings": "Otkryt nastroiki soglasiya"
+  },
+  "legal": {
+    "lastUpdated": "Poslednee obnovlenie",
+    "enFallbackNotice": "Eta yuridicheskaya stranitsa poka dostupna na angliyskom, lokalizatsii gotovyatsya.",
+    "privacy": {
+      "title": "Politika konfidentsialnosti"
+    },
+    "cookies": {
+      "title": "Politika cookie",
+      "openConsentCta": "Vy mozhete obnovit nastroiki analitiki i reklamy v lyuboy moment."
+    },
+    "terms": {
+      "title": "Usloviya ispolzovaniya"
+    }
   },
   "stateBanner": {
     "runtime": "Pokazyvaetsya prevyu runtime-perevoda. Eta versiya ne indeksiruetsya.",

@@ -9,6 +9,8 @@ interface Props {
 
 const { currentLanguage, ui } = Astro.props;
 const base = `/${currentLanguage}`;
+const normalizePath = (value: string) => (value.endsWith('/') ? value : `${value}/`);
+const currentPath = normalizePath(Astro.url.pathname || '/');
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 const links = [
   { key: 'home', icon: 'House', path: '', fallback: 'Home' },
@@ -26,9 +28,23 @@ const links = [
     {
       links.map((entry) => {
         const label = t(`nav.${entry.key}`, entry.fallback);
+        const href = entry.path ? `${base}/${entry.path}/` : `${base}/`;
+        const normalizedHref = normalizePath(href);
+        const isActive = entry.path
+          ? currentPath.startsWith(normalizedHref)
+          : currentPath === normalizedHref;
         return (
           <li>
-            <a class="app-nav-link" href={entry.path ? `${base}/${entry.path}/` : `${base}/`} aria-label={label} title={label}>
+            <a
+              class="app-nav-link text-fg hover:bg-surface2 hover:border-border rounded-sm"
+              href={href}
+              aria-label={label}
+              title={label}
+              aria-current={isActive ? 'page' : undefined}
+              data-ev="nav_click"
+              data-ev-scope="ui"
+              data-ev-item={entry.key}
+            >
               <Icon name={entry.icon} size={20} />
               <span class="truncate nav-link-label">{label}</span>
             </a>

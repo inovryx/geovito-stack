@@ -145,35 +145,101 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
   alternates={alternates}
   ui={ui}
 >
-  <section class="card panel search-intro-card">
-    <h1>{translate(ui, 'search.pageTitle', {}, 'Search results')}</h1>
-    <p class="small search-lead">{translate(ui, 'search.pageDescription', {}, 'Find countries, cities, landmarks, regions and posts from one search view.')}</p>
+  <section class="card panel search-intro-card gv-card gv-stack">
+    <h1 class="gv-h1">{translate(ui, 'search.pageTitle', {}, 'Search results')}</h1>
+    <p class="small search-lead gv-body">{translate(ui, 'search.pageDescription', {}, 'Find countries, cities, landmarks, regions and posts from one search view.')}</p>
 
     <SearchBar currentLanguage={lang} ui={ui} variant="large" query={Astro.url.searchParams.get('q') || ''} />
 
     <div class="search-controls">
       <div class="search-chip-row" role="tablist" aria-label={translate(ui, 'search.filterAria', {}, 'Filter results')}>
-        <button type="button" class="search-chip is-active" data-search-chip data-kind="all" role="tab" aria-selected="true">
+        <button
+          type="button"
+          class="search-chip is-active"
+          data-search-chip
+          data-kind="all"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="search"
+          data-ev-value="all"
+          role="tab"
+          aria-selected="true"
+        >
           <span class="truncate">{translate(ui, 'search.filterAll', {}, 'All')}</span>
           <span class="search-chip-count" data-chip-count="all">0</span>
         </button>
-        <button type="button" class="search-chip" data-search-chip data-kind="country" role="tab" aria-selected="false">
+        <button
+          type="button"
+          class="search-chip"
+          data-search-chip
+          data-kind="country"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="search"
+          data-ev-value="country"
+          role="tab"
+          aria-selected="false"
+        >
           <span class="truncate">{translate(ui, 'search.filterCountry', {}, 'Country')}</span>
           <span class="search-chip-count" data-chip-count="country">0</span>
         </button>
-        <button type="button" class="search-chip" data-search-chip data-kind="city" role="tab" aria-selected="false">
+        <button
+          type="button"
+          class="search-chip"
+          data-search-chip
+          data-kind="city"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="search"
+          data-ev-value="city"
+          role="tab"
+          aria-selected="false"
+        >
           <span class="truncate">{translate(ui, 'search.filterCity', {}, 'City')}</span>
           <span class="search-chip-count" data-chip-count="city">0</span>
         </button>
-        <button type="button" class="search-chip" data-search-chip data-kind="landmark" role="tab" aria-selected="false">
+        <button
+          type="button"
+          class="search-chip"
+          data-search-chip
+          data-kind="landmark"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="search"
+          data-ev-value="landmark"
+          role="tab"
+          aria-selected="false"
+        >
           <span class="truncate">{translate(ui, 'search.filterLandmark', {}, 'Landmark')}</span>
           <span class="search-chip-count" data-chip-count="landmark">0</span>
         </button>
-        <button type="button" class="search-chip" data-search-chip data-kind="region" role="tab" aria-selected="false">
+        <button
+          type="button"
+          class="search-chip"
+          data-search-chip
+          data-kind="region"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="search"
+          data-ev-value="region"
+          role="tab"
+          aria-selected="false"
+        >
           <span class="truncate">{translate(ui, 'search.filterRegion', {}, 'Region')}</span>
           <span class="search-chip-count" data-chip-count="region">0</span>
         </button>
-        <button type="button" class="search-chip" data-search-chip data-kind="blog" role="tab" aria-selected="false">
+        <button
+          type="button"
+          class="search-chip"
+          data-search-chip
+          data-kind="blog"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="search"
+          data-ev-value="blog"
+          role="tab"
+          aria-selected="false"
+        >
           <span class="truncate">{translate(ui, 'search.filterBlog', {}, 'Blog')}</span>
           <span class="search-chip-count" data-chip-count="blog">0</span>
         </button>
@@ -181,7 +247,7 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
 
       <label class="search-sort-control" for="search-sort">
         <span>{translate(ui, 'search.sortLabel', {}, 'Sort')}</span>
-        <select id="search-sort" data-search-sort>
+        <select id="search-sort" data-search-sort data-ev-change="sort_change" data-ev-scope="ui" data-ev-context="search">
           <option value="relevance">{translate(ui, 'search.sortRelevance', {}, 'Relevance')}</option>
           <option value="az">{translate(ui, 'search.sortAZ', {}, 'A to Z')}</option>
           <option value="newest">{translate(ui, 'search.sortNewest', {}, 'Newest')}</option>
@@ -192,13 +258,13 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
     <p class="small search-meta" data-search-meta>{translate(ui, 'search.loadingMeta', {}, 'Preparing results...')}</p>
   </section>
 
-  <section class="card panel" data-search-skeleton>
+  <section class="card panel gv-card" data-search-skeleton>
     <Skeleton lines={3} />
     <Skeleton lines={2} />
     <Skeleton lines={3} />
   </section>
 
-  <section class="card panel" data-search-empty hidden>
+  <section class="card panel gv-card" data-search-empty hidden>
     <EmptyState
       title={translate(ui, 'search.emptyTitle', {}, 'No matching results')}
       description={translate(ui, 'search.emptyBody', {}, 'Try a broader keyword or switch to another filter.')}
@@ -208,7 +274,7 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
     />
   </section>
 
-  <section class="grid search-results-list" data-search-results></section>
+  <section class="grid search-results-list gv-stack" data-search-results></section>
 
   <script id="search-data" type="application/json" set:html={serializedItems}></script>
   <script id="search-ui-text" type="application/json" set:html={serializedUiText}></script>
@@ -370,7 +436,7 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
             .map(({ item }) => {
               const dateText = item.publishedOn ? escapeHtml(item.publishedOn) : uiText.unknownDate;
               return `
-                <article class="card search-result-item">
+                <article class="card gv-card search-result-item">
                   <div class="search-result-head">
                     <span class="search-kind-badge">${escapeHtml(item.kind)}</span>
                     <span class="status-pill">${escapeHtml(item.status || 'missing')}</span>

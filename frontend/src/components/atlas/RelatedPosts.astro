@@ -33,7 +33,7 @@ const statusVariant = (state: string) => {
 ---
 
 <section id={sectionId} class="atlas-detail-section" data-atlas-related-posts>
-  <h2 class="atlas-section-title">{title}</h2>
+  <h2 class="atlas-section-title gv-h2">{title}</h2>
 
   {
     items.length ? (
@@ -41,7 +41,7 @@ const statusVariant = (state: string) => {
         {
           items.map((post) => (
             <li>
-              <Card class="atlas-related-post-card" as="article" interactive={true}>
+              <Card class="atlas-related-post-card gv-card bg-surface border-border" as="article" interactive={true}>
                 <a href={post.href} class="atlas-related-post-title" title={post.title}>
                   {post.title}
                 </a>

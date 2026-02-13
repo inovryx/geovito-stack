@@ -12,11 +12,48 @@
     "help": "Hilfe",
     "account": "Konto"
   },
+  "footer": {
+    "privacy": "Datenschutz",
+    "cookies": "Cookies",
+    "terms": "Nutzungsbedingungen"
+  },
   "language": {
     "switcherAria": "Sprachauswahl"
   },
   "ads": {
     "label": "Werbung"
+  },
+  "consent": {
+    "title": "Datenschutz Einstellungen",
+    "desc": "Optionale Analytics und Werbe Einstellungen werden nur mit Ihrer Zustimmung genutzt. Notwendige Funktionen bleiben immer aktiv.",
+    "acceptAll": "Alle akzeptieren",
+    "rejectAll": "Alle ablehnen",
+    "customize": "Anpassen",
+    "manage": "Einwilligung verwalten",
+    "modalTitle": "Einwilligung anpassen",
+    "necessary": "Notwendig",
+    "analytics": "Analytics",
+    "ads": "Werbung",
+    "alwaysOn": "Immer aktiv",
+    "save": "Einstellungen speichern",
+    "close": "Schliessen",
+    "updated": "Einwilligung aktualisiert",
+    "learnMore": "Mehr erfahren",
+    "openSettings": "Einwilligungseinstellungen offnen"
+  },
+  "legal": {
+    "lastUpdated": "Zuletzt aktualisiert",
+    "enFallbackNotice": "Diese rechtliche Seite ist aktuell auf Englisch verfugbar; lokalisierte Versionen folgen.",
+    "privacy": {
+      "title": "Datenschutzerklarung"
+    },
+    "cookies": {
+      "title": "Cookie-Richtlinie",
+      "openConsentCta": "Aktualisieren Sie Ihre Analytics- und Werbe-Einwilligung jederzeit."
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen"
+    }
   },
   "stateBanner": {
     "runtime": "Runtime-Ubersetzungsvorschau wird angezeigt. Diese Ansicht wird nicht indexiert.",

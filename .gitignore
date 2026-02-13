@@ -6,6 +6,8 @@
 **/node_modules/
 frontend/dist/
 frontend/.astro/
+frontend/test-results/
+frontend/playwright-report/
 app/build/
 artifacts/
 logs/**/*.log

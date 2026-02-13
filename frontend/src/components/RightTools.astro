@@ -15,27 +15,73 @@ const hasContext = Boolean(contextLabel && contextLabel.trim());
 const contextText = hasContext
   ? translate(ui, 'tools.contextReady', { context: contextLabel || '' }, `Context: ${contextLabel}`)
   : translate(ui, 'tools.contextMissing', {}, 'No place selected yet. Pick a country/city to activate quick helpers.');
+const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
+const routeContext = pathSegments[1] || 'home';
+const analyticsContext = routeContext === 'regions' ? 'region' : routeContext === 'atlas' ? 'atlas' : 'home';
+const openAtlasLabel = translate(ui, 'tools.openAtlas', {}, 'Open atlas to choose context');
 ---
 
-<div class="right-tools-stack">
-  <Card title={translate(ui, 'tools.currency.title', {}, 'Currency')} description={translate(ui, 'tools.currency.description', {}, 'Quick FX note')}>
+<div class="right-tools-stack gv-stack">
+  <Card
+    class="gv-card bg-surface border-border"
+    title={translate(ui, 'tools.currency.title', {}, 'Currency')}
+    description={translate(ui, 'tools.currency.description', {}, 'Quick FX note')}
+  >
     <p class="small">{contextText}</p>
     <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'context ready' : 'context needed'}</Badge>
     <p class="small">
-      <a href={`/${currentLanguage}/atlas/`}>{translate(ui, 'tools.openAtlas', {}, 'Open atlas to choose context')}</a>
+      <a
+        href={`/${currentLanguage}/atlas/`}
+        data-ev="tool_open"
+        data-ev-scope="ui"
+        data-ev-tool="currency"
+        data-ev-context={analyticsContext}
+      >
+        {openAtlasLabel}
+      </a>
     </p>
   </Card>
 
-  <Card title={translate(ui, 'tools.visa.title', {}, 'Visa')} description={translate(ui, 'tools.visa.description', {}, 'Entry checklist starter')}>
+  <Card
+    class="gv-card bg-surface border-border"
+    title={translate(ui, 'tools.visa.title', {}, 'Visa')}
+    description={translate(ui, 'tools.visa.description', {}, 'Entry checklist starter')}
+  >
     <p class="small">{contextText}</p>
     <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'draft checklist' : 'prompt only'}</Badge>
     <p class="small">{translate(ui, 'tools.visa.hint', {}, 'Regulations vary by passport and destination.')}</p>
+    <p class="small">
+      <a
+        href={`/${currentLanguage}/atlas/`}
+        data-ev="tool_open"
+        data-ev-scope="ui"
+        data-ev-tool="visa"
+        data-ev-context={analyticsContext}
+      >
+        {openAtlasLabel}
+      </a>
+    </p>
   </Card>
 
-  <Card title={translate(ui, 'tools.flights.title', {}, 'Flights')} description={translate(ui, 'tools.flights.description', {}, 'Route planning cue')}>
+  <Card
+    class="gv-card bg-surface border-border"
+    title={translate(ui, 'tools.flights.title', {}, 'Flights')}
+    description={translate(ui, 'tools.flights.description', {}, 'Route planning cue')}
+  >
     <p class="small">{contextText}</p>
     <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'route hints' : 'select place first'}</Badge>
     <p class="small">{translate(ui, 'tools.flights.hint', {}, 'Use this as a planning prompt, not booking engine.')}</p>
+    <p class="small">
+      <a
+        href={`/${currentLanguage}/atlas/`}
+        data-ev="tool_open"
+        data-ev-scope="ui"
+        data-ev-tool="flights"
+        data-ev-context={analyticsContext}
+      >
+        {openAtlasLabel}
+      </a>
+    </p>
   </Card>
 
   <AdSlot {...{ slot: 'sidebar_small' }} class="right-tools-ad" testId="ad-slot-sidebar-small" />

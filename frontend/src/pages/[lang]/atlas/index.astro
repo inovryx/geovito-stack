@@ -146,24 +146,69 @@ const serializedUiText = JSON.stringify({
     ) : null
   }
 
-  <section class="card panel atlas-list-intro">
-    <h1>{translate(ui, 'atlas.list.title')}</h1>
-    <p class="small atlas-list-description">{translate(ui, 'atlas.list.description')}</p>
+  <section class="card panel atlas-list-intro gv-card gv-stack">
+    <h1 class="gv-h1">{translate(ui, 'atlas.list.title')}</h1>
+    <p class="small atlas-list-description gv-body">{translate(ui, 'atlas.list.description')}</p>
 
     <div class="search-chip-row atlas-chip-row" role="navigation" aria-label={translate(ui, 'atlas.list.filterAria', {}, 'Filter atlas places')}>
-      <a href={buildAtlasHref(lang, 'all', 1)} class="search-chip is-active" data-atlas-chip data-kind="all">
+      <a
+        href={buildAtlasHref(lang, 'all', 1)}
+        class="search-chip is-active"
+        data-atlas-chip
+        data-kind="all"
+        data-ev="filter_chip_click"
+        data-ev-scope="ui"
+        data-ev-group="atlas"
+        data-ev-value="all"
+      >
         <span class="truncate">{translate(ui, 'atlas.list.filters.all', {}, 'All')}</span>
       </a>
-      <a href={buildAtlasHref(lang, 'country', 1)} class="search-chip" data-atlas-chip data-kind="country">
+      <a
+        href={buildAtlasHref(lang, 'country', 1)}
+        class="search-chip"
+        data-atlas-chip
+        data-kind="country"
+        data-ev="filter_chip_click"
+        data-ev-scope="ui"
+        data-ev-group="atlas"
+        data-ev-value="country"
+      >
         <span class="truncate">{translate(ui, 'atlas.list.filters.country', {}, 'Country')}</span>
       </a>
-      <a href={buildAtlasHref(lang, 'city', 1)} class="search-chip" data-atlas-chip data-kind="city">
+      <a
+        href={buildAtlasHref(lang, 'city', 1)}
+        class="search-chip"
+        data-atlas-chip
+        data-kind="city"
+        data-ev="filter_chip_click"
+        data-ev-scope="ui"
+        data-ev-group="atlas"
+        data-ev-value="city"
+      >
         <span class="truncate">{translate(ui, 'atlas.list.filters.city', {}, 'City')}</span>
       </a>
-      <a href={buildAtlasHref(lang, 'region', 1)} class="search-chip" data-atlas-chip data-kind="region">
+      <a
+        href={buildAtlasHref(lang, 'region', 1)}
+        class="search-chip"
+        data-atlas-chip
+        data-kind="region"
+        data-ev="filter_chip_click"
+        data-ev-scope="ui"
+        data-ev-group="atlas"
+        data-ev-value="region"
+      >
         <span class="truncate">{translate(ui, 'atlas.list.filters.region', {}, 'Region')}</span>
       </a>
-      <a href={buildAtlasHref(lang, 'landmark', 1)} class="search-chip" data-atlas-chip data-kind="landmark">
+      <a
+        href={buildAtlasHref(lang, 'landmark', 1)}
+        class="search-chip"
+        data-atlas-chip
+        data-kind="landmark"
+        data-ev="filter_chip_click"
+        data-ev-scope="ui"
+        data-ev-group="atlas"
+        data-ev-value="landmark"
+      >
         <span class="truncate">{translate(ui, 'atlas.list.filters.landmark', {}, 'Landmark')}</span>
       </a>
     </div>
@@ -179,13 +224,13 @@ const serializedUiText = JSON.stringify({
     </BadgeGroup>
   </section>
 
-  <section class="card panel" data-atlas-skeleton>
+  <section class="card panel gv-card" data-atlas-skeleton>
     <Skeleton lines={3} />
     <Skeleton lines={3} />
     <Skeleton lines={2} />
   </section>
 
-  <section class="card panel" data-atlas-empty hidden>
+  <section class="card panel gv-card" data-atlas-empty hidden>
     <EmptyState
       title={translate(ui, 'atlas.list.emptyTitle', {}, 'No places found')}
       description={translate(ui, 'atlas.list.emptyDescription', {}, 'Try another filter chip to continue exploring the atlas.')}
@@ -205,6 +250,11 @@ const serializedUiText = JSON.stringify({
       href={buildAtlasHref(lang, 'all', 1)}
       class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-prev"
       data-atlas-page-control="prev"
+      data-ev="pagination_click"
+      data-ev-scope="ui"
+      data-ev-context="atlas"
+      data-ev-action="prev"
+      data-ev-page="1"
     >
       <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.prev', {}, 'Prev')}</span>
     </a>
@@ -213,7 +263,18 @@ const serializedUiText = JSON.stringify({
         Array.from({ length: initialTotalPages }).map((_, index) => {
           const page = index + 1;
           return (
-            <a href={buildAtlasHref(lang, 'all', page)} class={`atlas-page-link${page === 1 ? ' is-current' : ''}`} data-atlas-page-link data-page={page} aria-current={page === 1 ? 'page' : undefined}>
+            <a
+              href={buildAtlasHref(lang, 'all', page)}
+              class={`atlas-page-link${page === 1 ? ' is-current' : ''}`}
+              data-atlas-page-link
+              data-page={page}
+              data-ev="pagination_click"
+              data-ev-scope="ui"
+              data-ev-context="atlas"
+              data-ev-action="page"
+              data-ev-page={page}
+              aria-current={page === 1 ? 'page' : undefined}
+            >
               {page}
             </a>
           );
@@ -224,6 +285,11 @@ const serializedUiText = JSON.stringify({
       href={buildAtlasHref(lang, 'all', Math.max(1, initialTotalPages))}
       class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-next"
       data-atlas-page-control="next"
+      data-ev="pagination_click"
+      data-ev-scope="ui"
+      data-ev-context="atlas"
+      data-ev-action="next"
+      data-ev-page={Math.max(1, initialTotalPages)}
     >
       <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.next', {}, 'Next')}</span>
     </a>
@@ -337,7 +403,7 @@ const serializedUiText = JSON.stringify({
         const stateClass = stateBadgeClass[languageState] || stateBadgeClass.missing;
 
         return `
-          <article class="ui-card atlas-entry-card" data-atlas-item>
+          <article class="ui-card gv-card atlas-entry-card" data-atlas-item>
             <div class="atlas-entry-head">
               <a class="atlas-entry-title" href="${href}" title="${title}">${title}</a>
               <div class="ui-badge-group atlas-entry-badges" aria-label="metadata badges">
@@ -377,6 +443,7 @@ const serializedUiText = JSON.stringify({
         const updateControl = (node, page, disabled) => {
           const href = buildHref(state.kind, page);
           node.setAttribute('href', href);
+          node.setAttribute('data-ev-page', String(page));
           node.classList.toggle('is-disabled', disabled);
           node.setAttribute('aria-disabled', disabled ? 'true' : 'false');
           node.setAttribute('tabindex', disabled ? '-1' : '0');
@@ -403,6 +470,11 @@ const serializedUiText = JSON.stringify({
                 class="atlas-page-link${current ? ' is-current' : ''}"
                 data-atlas-page-link
                 data-page="${page}"
+                data-ev="pagination_click"
+                data-ev-scope="ui"
+                data-ev-context="atlas"
+                data-ev-action="page"
+                data-ev-page="${page}"
                 aria-label="${escapeHtml(ariaLabel)}"
                 ${current ? 'aria-current="page"' : ''}
               >
@@ -474,7 +546,7 @@ const serializedUiText = JSON.stringify({
       };
 
       document.addEventListener('click', (event) => {
-        const target = event.target;
+        const target = event.target instanceof Element ? event.target : event.target instanceof Node ? event.target.parentElement : null;
         if (!(target instanceof Element)) return;
 
         const link = target.closest('a[data-atlas-chip], a[data-atlas-page-link], a[data-atlas-page-control]');
