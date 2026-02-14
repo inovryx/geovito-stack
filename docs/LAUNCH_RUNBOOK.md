@@ -123,3 +123,26 @@ Confirm:
 - Consent client state reflects current choice
 - GTM ID is redacted (not full value)
 - No secrets (DSN/tokens/keys) appear
+
+## 6) VPS without Node (Docker-first workflow)
+
+If your VPS does not have Node/Corepack installed, run frontend tests and gates via Docker wrappers:
+
+```bash
+chmod +x tools/frontend_test_docker.sh tools/frontend_gate_docker.sh
+./tools/frontend_test_docker.sh
+./tools/frontend_gate_docker.sh
+```
+
+Why `--network=host` is required:
+- Strapi is bound to host loopback (`127.0.0.1:1337`).
+- Playwright runs inside a container; with host network it can reach host loopback safely.
+
+Permissions footgun note:
+- If `frontend/node_modules` or `frontend/dist*` become root-owned, the dockerized pnpm/playwright run can fail with `EACCES`.
+- `tools/frontend_test_docker.sh` detects this and exits with a copy/paste fix command.
+
+Cloudflare Pages env reminder:
+- Always set `STRAPI_URL` to a reachable CMS origin in Production/Preview.
+- Guard behavior: in production-like mode (`CF_PAGES=1` or `NODE_ENV=production`), localhost Strapi URL is blocked by `STRAPI_URL_GUARD`.
+- `ALLOW_LOCALHOST_STRAPI=true` is only for intentional local smoke runs, not Cloudflare Pages deployments.
