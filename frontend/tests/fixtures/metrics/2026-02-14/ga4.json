@@ -1,0 +1,34 @@
+{
+  "provider": "ga4",
+  "date_range": {
+    "start": "2026-02-08",
+    "end": "2026-02-14"
+  },
+  "generated_at": "2026-02-14T08:10:25.178404Z",
+  "metrics": {
+    "sessions": 1200,
+    "activeUsers": 980,
+    "screenPageViews": 3100
+  },
+  "rows": [
+    {
+      "page": "/en/",
+      "sessions": 420,
+      "pageviews": 1100
+    },
+    {
+      "page": "/en/atlas/",
+      "sessions": 260,
+      "pageviews": 760
+    },
+    {
+      "page": "/en/search/",
+      "sessions": 180,
+      "pageviews": 420
+    }
+  ],
+  "notes": [
+    "fixture dataset"
+  ],
+  "errors": []
+}

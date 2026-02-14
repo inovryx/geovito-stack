@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-02-14T08:10:25.178404Z",
+  "date_range": {
+    "start": "2026-02-08",
+    "end": "2026-02-14"
+  },
+  "providers": [
+    {
+      "provider": "ga4",
+      "metrics": {
+        "sessions": 1200,
+        "activeUsers": 980,
+        "screenPageViews": 3100
+      },
+      "row_count": 3,
+      "errors": [],
+      "notes": []
+    },
+    {
+      "provider": "gsc",
+      "metrics": {
+        "clicks": 540,
+        "impressions": 12000,
+        "ctr": 0.045
+      },
+      "row_count": 4,
+      "errors": [],
+      "notes": []
+    },
+    {
+      "provider": "cloudflare",
+      "metrics": {
+        "requests": 45000,
+        "bandwidthBytes": 123456789,
+        "errors4xx": 580,
+        "errors5xx": 42
+      },
+      "row_count": 5,
+      "errors": [],
+      "notes": []
+    },
+    {
+      "provider": "adsense",
+      "metrics": {},
+      "row_count": 0,
+      "errors": [
+        "not configured"
+      ],
+      "notes": [
+        "fixture provider disabled"
+      ]
+    }
+  ],
+  "kpis": {
+    "sessions_7d": 1200,
+    "active_users_7d": 980,
+    "pageviews_7d": 3100,
+    "clicks_7d": 540,
+    "impressions_7d": 12000,
+    "cf_requests_7d": 45000,
+    "cf_bandwidth_bytes_7d": 123456789,
+    "cf_4xx_7d": 580,
+    "cf_5xx_7d": 42,
+    "earnings_7d": 0,
+    "ads_impressions_7d": 0,
+    "ads_rpm_avg_7d": 0
+  },
+  "warnings": [
+    "adsense: not configured"
+  ]
+}

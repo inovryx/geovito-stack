@@ -1,0 +1,16 @@
+{
+  "provider": "adsense",
+  "date_range": {
+    "start": "2026-02-08",
+    "end": "2026-02-14"
+  },
+  "generated_at": "2026-02-14T08:10:25.178404Z",
+  "metrics": {},
+  "rows": [],
+  "notes": [
+    "fixture provider disabled"
+  ],
+  "errors": [
+    "not configured"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "provider": "gsc",
+  "date_range": {
+    "start": "2026-02-08",
+    "end": "2026-02-14"
+  },
+  "generated_at": "2026-02-14T08:10:25.178404Z",
+  "metrics": {
+    "clicks": 540,
+    "impressions": 12000,
+    "ctr": 0.045,
+    "position": 12.6
+  },
+  "rows": [
+    {
+      "kind": "query",
+      "value": "rome itinerary 3 days",
+      "clicks": 110,
+      "impressions": 2200
+    },
+    {
+      "kind": "query",
+      "value": "istanbul visa guide",
+      "clicks": 95,
+      "impressions": 1700
+    },
+    {
+      "kind": "page",
+      "value": "/en/atlas/istanbul/",
+      "clicks": 88,
+      "impressions": 1900
+    },
+    {
+      "kind": "page",
+      "value": "/en/blog/plan-3-day-europe-city-break/",
+      "clicks": 72,
+      "impressions": 1400
+    }
+  ],
+  "notes": [
+    "fixture dataset"
+  ],
+  "errors": []
+}

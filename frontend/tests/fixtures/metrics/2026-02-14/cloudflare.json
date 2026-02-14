@@ -1,0 +1,48 @@
+{
+  "provider": "cloudflare",
+  "date_range": {
+    "start": "2026-02-08",
+    "end": "2026-02-14"
+  },
+  "generated_at": "2026-02-14T08:10:25.178404Z",
+  "metrics": {
+    "requests": 45000,
+    "bandwidthBytes": 123456789,
+    "errors4xx": 580,
+    "errors5xx": 42
+  },
+  "rows": [
+    {
+      "kind": "path",
+      "path": "/en/",
+      "requests": 9200,
+      "bytes": 18000000
+    },
+    {
+      "kind": "path",
+      "path": "/en/atlas/",
+      "requests": 6400,
+      "bytes": 15400000
+    },
+    {
+      "kind": "path",
+      "path": "/en/search/",
+      "requests": 5100,
+      "bytes": 8300000
+    },
+    {
+      "kind": "status_group",
+      "status_group": "2xx",
+      "requests": 43200
+    },
+    {
+      "kind": "status_group",
+      "status_group": "4xx",
+      "requests": 580
+    }
+  ],
+  "notes": [
+    "fixture dataset"
+  ],
+  "errors": []
+}
