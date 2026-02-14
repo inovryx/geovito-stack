@@ -3,6 +3,8 @@ set -euo pipefail
 
 BASE_URL="${BASE_URL:-}"
 BASE_URL="${BASE_URL%/}"
+EXPECTED_SHA7="${EXPECTED_SHA7:-}"
+EXPECTED_SHA="${EXPECTED_SHA:-}"
 
 TMP_DIR="$(mktemp -d)"
 cleanup() { rm -rf "$TMP_DIR"; }
@@ -42,6 +44,22 @@ extract_canonical() {
   echo "$link" | sed -E 's/.*href="([^"]+)".*/\1/i'
 }
 
+extract_json_string() {
+  local file="$1"
+  local key="$2"
+  tr -d '\n\r' < "$file" | sed -nE "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\"([^\"]*)\".*/\\1/p"
+}
+
+normalize_sha7() {
+  local value="$1"
+  value="$(echo "$value" | tr '[:upper:]' '[:lower:]')"
+  if [[ "$value" == "unknown" ]]; then
+    echo "unknown"
+    return
+  fi
+  echo "${value:0:7}"
+}
+
 normalize_url() {
   local value="$1"
   value="${value%/}"
@@ -57,13 +75,35 @@ if [[ -z "$BASE_URL" ]]; then
   fail "BASE_URL is required. Example: BASE_URL=https://www.geovito.com"
 fi
 
-# 1) sitemap
+# 1) build fingerprint
+fingerprint_file="$TMP_DIR/build_fingerprint.json"
+code="$(fetch "${BASE_URL}/.well-known/geovito-build.json" "$fingerprint_file")"
+[[ "$code" == "200" ]] || fail "build fingerprint status ${code}"
+
+build_sha7="$(extract_json_string "$fingerprint_file" "build_sha7")"
+[[ -n "$build_sha7" ]] || fail "build fingerprint missing build_sha7"
+
+if [[ -n "$EXPECTED_SHA7" ]]; then
+  expected7="$(normalize_sha7 "$EXPECTED_SHA7")"
+  got7="$(normalize_sha7 "$build_sha7")"
+  [[ "$got7" == "$expected7" ]] || fail "build_sha7 mismatch (expected ${expected7}, got ${got7})"
+fi
+
+if [[ -n "$EXPECTED_SHA" ]]; then
+  expected_from_full="$(normalize_sha7 "$EXPECTED_SHA")"
+  got7="$(normalize_sha7 "$build_sha7")"
+  [[ "$got7" == "$expected_from_full" ]] || fail "build_sha7 mismatch (expected ${expected_from_full}, got ${got7})"
+fi
+
+echo "PASS: /.well-known/geovito-build.json -> 200 (build_sha7=${build_sha7})"
+
+# 2) sitemap
 sitemap_file="$TMP_DIR/sitemap.xml"
 code="$(fetch "${BASE_URL}/sitemap.xml" "$sitemap_file")"
 [[ "$code" == "200" ]] || fail "sitemap.xml status ${code}"
 echo "PASS: /sitemap.xml -> 200"
 
-# 2) pilot EN indexable
+# 3) pilot EN indexable
 pilot_en="/en/atlas/italy-pilot/"
 pilot_en_file="$TMP_DIR/pilot_en.html"
 code="$(fetch "${BASE_URL}${pilot_en}" "$pilot_en_file")"
@@ -76,7 +116,7 @@ if [[ "$(normalize_url "$pilot_en_canonical")" != "$(normalize_url "${BASE_URL}$
 fi
 echo "PASS: ${pilot_en} -> indexable + canonical self"
 
-# 3) pilot non-EN fallback
+# 4) pilot non-EN fallback
 pilot_de="/de/atlas/italy-pilot/"
 pilot_de_file="$TMP_DIR/pilot_de.html"
 code="$(fetch "${BASE_URL}${pilot_de}" "$pilot_de_file")"

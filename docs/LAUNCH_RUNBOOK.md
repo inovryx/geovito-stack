@@ -60,8 +60,13 @@ Notes:
    - `/sitemap.xml` responds.
    - Confirm no mock/non-complete Atlas URLs are included.
    - Non-indexable pages keep expected robots/canonical behavior.
-5. Post-deploy script:
+5. Build Fingerprint:
+   - `/.well-known/geovito-build.json` responds with `build_sha7`, `build_branch`, `build_time_utc`.
+   - Use this endpoint to confirm the expected deploy SHA quickly.
+6. Post-deploy script:
    - `BASE_URL=https://your-deploy-url bash tools/post_deploy_smoke.sh`
+   - Optional SHA pin:
+     `BASE_URL=https://your-deploy-url EXPECTED_SHA7=xxxxxxx bash tools/post_deploy_smoke.sh`
    - Expected: all PASS lines, exit 0.
 
 ## 3) Go-Live Verification Steps
