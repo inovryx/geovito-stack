@@ -3,13 +3,17 @@
 !.env.example
 !.env.prod.example
 !.env.import.example
+.pnpm-store/
 **/node_modules/
 frontend/dist/
+frontend/dist-*/
 frontend/.astro/
 frontend/test-results/
 frontend/playwright-report/
 app/build/
 artifacts/
+data/metrics/
+tools/metrics_collector/src/*.egg-info/
 logs/**/*.log
 logs/**/*.jsonl
 !logs/**/.gitkeep
