@@ -213,8 +213,8 @@ check_page "/en/blog/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog
 check_page "/en/blog/plan-3-day-europe-city-break/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/plan-3-day-europe-city-break" "mock"
 check_page "/en/blog/reading-city-through-district-layers/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/reading-city-through-district-layers" "mock"
 
-check_page "/en/account/" "200" "noindex,nofollow" "https://www.geovito.com/en/account/" "none"
-check_page "/en/dashboard/" "200" "noindex,nofollow" "https://www.geovito.com/en/dashboard/" "none"
+check_page "/en/account/" "200" "noindex" "https://www.geovito.com/en/login/" "none"
+check_page "/en/dashboard/" "200" "noindex" "https://www.geovito.com/en/login/" "none"
 
 check_page "/de/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock,fallback"
 check_page "/tr/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock"
