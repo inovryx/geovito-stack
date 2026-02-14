@@ -5,7 +5,19 @@ const siteUrl =
   (import.meta.env.SITE as string | undefined) ||
   'https://www.geovito.com';
 
-const normalizedSite = siteUrl.replace(/\/$/, '');
+const normalizeSiteOrigin = (value: string) => {
+  try {
+    const parsed = new URL(value);
+    if (import.meta.env.PROD && parsed.hostname.startsWith('www.')) {
+      parsed.hostname = parsed.hostname.slice(4);
+    }
+    return parsed.origin;
+  } catch {
+    return value.replace(/\/$/, '');
+  }
+};
+
+const normalizedSite = normalizeSiteOrigin(siteUrl);
 
 export const absoluteUrl = (path: string) =>
   path.startsWith('http') ? path : `${normalizedSite}${path.startsWith('/') ? path : `/${path}`}`;

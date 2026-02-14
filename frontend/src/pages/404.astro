@@ -1,3 +1,6 @@
+---
+import { absoluteUrl } from '../lib/pageHelpers';
+---
 <!doctype html>
 <html lang="en">
   <head>
@@ -5,7 +8,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>404 | Geovito</title>
     <meta name="robots" content="noindex,nofollow" />
-    <link rel="canonical" href="https://www.geovito.com/404/" />
+    <link rel="canonical" href={absoluteUrl('/404/')} />
     <style>
       body {
         margin: 0;

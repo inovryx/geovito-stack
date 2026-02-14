@@ -32,6 +32,23 @@ assert_contains() {
   fi
 }
 
+extract_canonical() {
+  local file="$1"
+  local link
+  link="$(grep -Eio '<link[^>]+rel="canonical"[^>]*>' "$file" | head -n1 || true)"
+  if [[ -z "$link" ]]; then
+    echo ""
+    return
+  fi
+  echo "$link" | sed -E 's/.*href="([^"]+)".*/\1/i'
+}
+
+normalize_url() {
+  local value="$1"
+  value="${value%/}"
+  echo "$value"
+}
+
 echo "=============================================================="
 echo "GEOVITO POST-DEPLOY SMOKE"
 echo "BASE_URL=${BASE_URL}"
@@ -53,7 +70,11 @@ pilot_en_file="$TMP_DIR/pilot_en.html"
 code="$(fetch "${BASE_URL}${pilot_en}" "$pilot_en_file")"
 [[ "$code" == "200" ]] || fail "pilot EN status ${code}"
 assert_contains "$pilot_en_file" 'meta name="robots" content="index,follow"' "pilot EN robots not index,follow"
-assert_contains "$pilot_en_file" "rel=\"canonical\" href=\"${BASE_URL}${pilot_en}\"" "pilot EN canonical not self"
+pilot_en_canonical="$(extract_canonical "$pilot_en_file")"
+[[ -n "$pilot_en_canonical" ]] || fail "pilot EN canonical missing"
+if [[ "$(normalize_url "$pilot_en_canonical")" != "$(normalize_url "${BASE_URL}${pilot_en}")" ]]; then
+  fail "pilot EN canonical not self (got ${pilot_en_canonical})"
+fi
 echo "PASS: ${pilot_en} -> indexable + canonical self"
 
 # 3) pilot non-EN fallback
@@ -62,7 +83,11 @@ pilot_de_file="$TMP_DIR/pilot_de.html"
 code="$(fetch "${BASE_URL}${pilot_de}" "$pilot_de_file")"
 [[ "$code" == "200" ]] || fail "pilot DE status ${code}"
 assert_contains "$pilot_de_file" 'meta name="robots" content="noindex,nofollow"' "pilot DE robots not noindex,nofollow"
-assert_contains "$pilot_de_file" "rel=\"canonical\" href=\"${BASE_URL}${pilot_en}\"" "pilot DE canonical not EN"
+pilot_de_canonical="$(extract_canonical "$pilot_de_file")"
+[[ -n "$pilot_de_canonical" ]] || fail "pilot DE canonical missing"
+if [[ "$(normalize_url "$pilot_de_canonical")" != "$(normalize_url "${BASE_URL}${pilot_en}")" ]]; then
+  fail "pilot DE canonical not EN (got ${pilot_de_canonical})"
+fi
 echo "PASS: ${pilot_de} -> noindex + canonical EN"
 
 # 4) ops status
