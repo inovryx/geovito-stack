@@ -1,4 +1,5 @@
 import type { LocalizedContent } from './languageState';
+import { resolveStrapiBaseUrl, type StrapiEnv } from './strapiConfig';
 
 export type AtlasPlace = {
   id: number;
@@ -91,10 +92,16 @@ export type RegionGroup = {
   } | null;
 };
 
-const STRAPI_URL =
-  (import.meta.env.STRAPI_URL as string | undefined) ||
-  (import.meta.env.PUBLIC_STRAPI_URL as string | undefined) ||
-  'http://127.0.0.1:1337';
+const STRAPI_ENV: StrapiEnv = {
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+};
+
+const STRAPI_URL = resolveStrapiBaseUrl(STRAPI_ENV);
 
 const STRAPI_API_TOKEN = (import.meta.env.STRAPI_API_TOKEN as string | undefined) || '';
 let atlasPlacesCachePromise: Promise<AtlasPlace[]> | null = null;

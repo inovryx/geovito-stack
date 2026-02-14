@@ -6,6 +6,12 @@ This runbook covers safe production activation for tags, analytics, ads, consent
 
 Set the following in Cloudflare Pages project environment (Production and Preview as needed).
 
+### Cloudflare Pages Env Checklist (Required)
+- `STRAPI_URL` = public/reachable Strapi origin (example: `https://cms.example.com`)
+- `PUBLIC_SITE_URL` = canonical site origin (example: `https://www.geovito.com`)
+- Keep `STRAPI_URL` out of localhost values in production-like mode (`CF_PAGES=1` or `NODE_ENV=production`), otherwise build fails fast with `STRAPI_URL_GUARD`.
+- Optional local smoke override only: `ALLOW_LOCALHOST_STRAPI=true` (do not use on Cloudflare Pages).
+
 ### Tags / GTM
 - `PUBLIC_TAG_MANAGER` = `none` | `gtm` | `zaraz`
 - `PUBLIC_GTM_ID` = `GTM-XXXXXXX`
@@ -39,7 +45,31 @@ Notes:
 - On Cloudflare Pages, `CF_PAGES_COMMIT_SHA` and `CF_PAGES_BRANCH` are auto-read by the app and exposed as non-secret HTML dataset attributes.
 - Never place secrets into public env vars.
 
-## 2) Go-Live Verification Steps
+## 2) Post-deploy Smoke Checklist (10 min)
+
+1. Build/deploy sanity:
+   - Cloudflare Pages build must complete without `STRAPI_URL_GUARD` error.
+   - Verify `STRAPI_URL` and `PUBLIC_SITE_URL` are set in both Production and Preview.
+
+2. Home and shell:
+   - `/en/` loads and core shell renders.
+   - Theme toggle works and persists after refresh (no flash regression).
+
+3. Consent and tags gating:
+   - First visit shows consent banner.
+   - In strict mode (`PUBLIC_GTM_LOAD_BEFORE_CONSENT=false`), GTM stays blocked before consent.
+   - Reject all keeps analytics/ads blocked.
+
+4. Ops pages:
+   - With `PUBLIC_OPS_ENABLED=false`, `/en/ops/status/` redirects away (not discoverable).
+   - If temporarily enabled, `/en/ops/*` remains `noindex,nofollow`.
+
+5. Sitemap and index gate:
+   - `/sitemap.xml` responds.
+   - Confirm no mock/non-complete Atlas URLs are included.
+   - Non-indexable pages keep expected robots/canonical behavior.
+
+## 3) Go-Live Verification Steps
 
 1. First visit without stored consent:
    - Consent banner is visible.
@@ -67,7 +97,7 @@ Notes:
    - `/[lang]/error` returns `robots: noindex,nofollow`.
    - `/[lang]/ops/*` utility pages are noindex and env-gated.
 
-## 3) Rollback
+## 4) Rollback
 
 If launch quality is not acceptable:
 
@@ -83,7 +113,7 @@ If launch quality is not acceptable:
    - GTM and ads scripts blocked
    - Site core flows intact
 
-## 4) Ops Status Quick Check
+## 5) Ops Status Quick Check
 
 When temporarily enabled (`PUBLIC_OPS_ENABLED=true`), visit:
 - `/{lang}/ops/status/`

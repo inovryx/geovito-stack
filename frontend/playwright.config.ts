@@ -7,6 +7,7 @@ const GTM_STRICT_PORT = 4325;
 const GTM_LOAD_BEFORE_PORT = 4326;
 const SENTRY_PORT = 4327;
 const OPS_PORT = 4328;
+const ALLOW_LOCALHOST_STRAPI = process.env.ALLOW_LOCALHOST_STRAPI || 'true';
 
 export default defineConfig({
   testDir: './tests',
@@ -30,6 +31,7 @@ export default defineConfig({
       env: {
         ...process.env,
         STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
+        ALLOW_LOCALHOST_STRAPI,
         PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
         PUBLIC_ADS_ENABLED: process.env.PUBLIC_ADS_ENABLED || 'false',
         PUBLIC_ANALYTICS_ENABLED: 'false',
@@ -43,6 +45,7 @@ export default defineConfig({
       env: {
         ...process.env,
         STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
+        ALLOW_LOCALHOST_STRAPI,
         PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
         PUBLIC_ADS_ENABLED: process.env.PUBLIC_ADS_ENABLED || 'false',
         PUBLIC_ANALYTICS_ENABLED: 'true',
@@ -57,6 +60,7 @@ export default defineConfig({
       env: {
         ...process.env,
         STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
+        ALLOW_LOCALHOST_STRAPI,
         PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
         PUBLIC_ADS_ENABLED: 'true',
         PUBLIC_ADS_SCRIPT_URL: 'https://example.com/mock-ads.js',
@@ -72,6 +76,7 @@ export default defineConfig({
       env: {
         ...process.env,
         STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
+        ALLOW_LOCALHOST_STRAPI,
         PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
         PUBLIC_ANALYTICS_ENABLED: 'true',
         PUBLIC_ANALYTICS_PROVIDER: 'dataLayer',
@@ -89,6 +94,7 @@ export default defineConfig({
       env: {
         ...process.env,
         STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
+        ALLOW_LOCALHOST_STRAPI,
         PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
         PUBLIC_ANALYTICS_ENABLED: 'true',
         PUBLIC_ANALYTICS_PROVIDER: 'dataLayer',
@@ -106,6 +112,7 @@ export default defineConfig({
       env: {
         ...process.env,
         STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
+        ALLOW_LOCALHOST_STRAPI,
         PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
         PUBLIC_SENTRY_ENABLED: 'true',
         PUBLIC_SENTRY_DSN: 'https://examplePublicKey@o0.ingest.sentry.io/0',
@@ -122,6 +129,7 @@ export default defineConfig({
       env: {
         ...process.env,
         STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
+        ALLOW_LOCALHOST_STRAPI,
         PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
         PUBLIC_OPS_ENABLED: 'true',
         PUBLIC_OPS_MODE: 'local',
