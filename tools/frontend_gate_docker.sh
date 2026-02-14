@@ -52,4 +52,4 @@ if [[ $FAIL_COUNT -gt 0 ]]; then
 fi
 
 echo "FRONTEND GATE CHAIN: PASS"
-
+echo "NOTE: pre_design_gate_check.sh runs purge_mock; re-seed mock data before local Playwright if needed."

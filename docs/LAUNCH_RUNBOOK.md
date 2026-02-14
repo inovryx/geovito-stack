@@ -9,6 +9,7 @@ Set the following in Cloudflare Pages project environment (Production and Previe
 ### Cloudflare Pages Env Checklist (Required)
 - `STRAPI_URL` = public/reachable Strapi origin (example: `https://cms.example.com`)
 - `PUBLIC_SITE_URL` = canonical site origin (example: `https://www.geovito.com`)
+- `ALLOW_LOCALHOST_STRAPI=false` (Pages/production must not allow localhost fallback)
 - Keep `STRAPI_URL` out of localhost values in production-like mode (`CF_PAGES=1` or `NODE_ENV=production`), otherwise build fails fast with `STRAPI_URL_GUARD`.
 - Optional local smoke override only: `ALLOW_LOCALHOST_STRAPI=true` (do not use on Cloudflare Pages).
 
@@ -68,6 +69,9 @@ Notes:
    - `/sitemap.xml` responds.
    - Confirm no mock/non-complete Atlas URLs are included.
    - Non-indexable pages keep expected robots/canonical behavior.
+6. Post-deploy script:
+   - `bash tools/post_deploy_smoke.sh BASE_URL=https://your-deploy-url`
+   - Expected: all PASS lines, exit 0.
 
 ## 3) Go-Live Verification Steps
 
@@ -132,6 +136,13 @@ If your VPS does not have Node/Corepack installed, run frontend tests and gates 
 chmod +x tools/frontend_test_docker.sh tools/frontend_gate_docker.sh
 ./tools/frontend_test_docker.sh
 ./tools/frontend_gate_docker.sh
+```
+
+Post-deploy smoke (no Node required):
+
+```bash
+chmod +x tools/post_deploy_smoke.sh
+BASE_URL=https://www.geovito.com bash tools/post_deploy_smoke.sh
 ```
 
 Why `--network=host` is required:
