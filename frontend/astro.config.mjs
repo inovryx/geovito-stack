@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
 import tailwind from '@astrojs/tailwind';
 
 const normalizeSiteOrigin = (value) => {
@@ -16,6 +17,7 @@ const normalizeSiteOrigin = (value) => {
 
 export default defineConfig({
   integrations: [tailwind({ applyBaseStyles: false })],
+  adapter: cloudflare(),
   site: normalizeSiteOrigin(process.env.PUBLIC_SITE_URL || 'https://www.geovito.com'),
   output: 'static',
   trailingSlash: 'always',

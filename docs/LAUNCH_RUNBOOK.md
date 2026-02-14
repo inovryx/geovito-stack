@@ -34,10 +34,10 @@ Set the following in Cloudflare Pages project environment (Production and Previe
 - `PUBLIC_SENTRY_RELEASE` = optional; if empty, app falls back to build SHA
 - `PUBLIC_SENTRY_TRACES_SAMPLE_RATE` = `0` (start low)
 
-### Ops utility pages
-- `PUBLIC_OPS_ENABLED` = `false` in production (recommended)
-- `PUBLIC_OPS_MODE` = `local`
-- `PUBLIC_OPS_FIXTURE_PATH` = optional test-only path
+### Ops utility pages (owner-only runtime control)
+- `OPS_STRAPI_URL` = Strapi origin for ops-control reads (example: `https://cms.example.com`)
+- `OPS_STRAPI_TOKEN` = Strapi API token that can read only `ops-control`
+- Do not expose `OPS_STRAPI_TOKEN` to client/public vars.
 
 ### Optional build metadata
 - `PUBLIC_BUILD_SHA` = optional override
@@ -62,16 +62,18 @@ Notes:
    - Reject all keeps analytics/ads blocked.
 
 4. Ops pages:
-   - With `PUBLIC_OPS_ENABLED=false`, `/en/ops/status/` redirects away (not discoverable).
-   - If temporarily enabled, `/en/ops/*` remains `noindex,nofollow`.
+   - `/en/ops/status/` and `/en/ops/metrics/` always return `200` and remain `noindex,nofollow`.
+   - Without owner token header, pages show a generic placeholder (no enabled signal).
+   - When enabled + authorized, response includes `<meta name="geovito:ops" content="enabled">`.
 
 5. Sitemap and index gate:
    - `/sitemap.xml` responds.
    - Confirm no mock/non-complete Atlas URLs are included.
    - Non-indexable pages keep expected robots/canonical behavior.
 6. Post-deploy script:
-   - `bash tools/post_deploy_smoke.sh BASE_URL=https://your-deploy-url`
-   - Optional ops enforcement: `OPS_REQUIRED=1 bash tools/post_deploy_smoke.sh BASE_URL=https://your-deploy-url`
+   - `BASE_URL=https://your-deploy-url bash tools/post_deploy_smoke.sh`
+   - Optional owner-enforced ops check:
+     `OPS_VIEW_TOKEN=... OPS_REQUIRED=1 BASE_URL=https://your-deploy-url bash tools/post_deploy_smoke.sh`
    - Expected: all PASS lines, exit 0.
    - Ops detection uses `meta[name="geovito:ops"][content="enabled"]` when ops is enabled.
 
@@ -119,16 +121,28 @@ If launch quality is not acceptable:
    - GTM and ads scripts blocked
    - Site core flows intact
 
-## 5) Ops Status Quick Check
+## 5) Ops Runtime Toggle (Owner Only)
 
-When temporarily enabled (`PUBLIC_OPS_ENABLED=true`), visit:
-- `/{lang}/ops/status/`
+1. In Strapi Admin create/update single type: `Ops Control`.
+2. Set `opsEnabledUntil` to current time + 1 hour (or your desired window).
+3. Generate hash for Ali token (never store raw token in repo):
 
-Confirm:
-- Build SHA/branch are visible
-- Consent client state reflects current choice
-- GTM ID is redacted (not full value)
-- No secrets (DSN/tokens/keys) appear
+```bash
+bash tools/hash_ops_token.sh "YOUR_LONG_SECRET_TOKEN"
+```
+
+4. Paste hash into `opsViewTokenHash`.
+5. Create a Strapi API token with read access only for `ops-control`, then set it as `OPS_STRAPI_TOKEN` in runtime env.
+6. Verify with smoke:
+
+```bash
+OPS_VIEW_TOKEN=YOUR_LONG_SECRET_TOKEN OPS_REQUIRED=1 BASE_URL=https://geovito.com bash tools/post_deploy_smoke.sh
+```
+
+Security notes:
+- Raw token is sent only in `X-Geovito-Ops-Token` request header by owner checks.
+- HTML includes ops enabled signal only when both conditions hold:
+  `now < opsEnabledUntil` and token hash matches.
 
 ## 6) VPS without Node (Docker-first workflow)
 

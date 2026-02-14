@@ -1,14 +1,30 @@
 ---
+export const prerender = false;
+
 import MainLayout from '../../../layouts/MainLayout.astro';
 import EmptyState from '../../../components/ui/EmptyState.astro';
-import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
+import { resolveOpsAccess } from '../../../lib/opsControl';
 
-const OPS_ENABLED = import.meta.env.PUBLIC_OPS_ENABLED === 'true';
-const OPS_MODE = String(import.meta.env.PUBLIC_OPS_MODE || 'local')
-  .trim()
-  .toLowerCase();
+const requestedLang = Astro.params.lang || DEFAULT_LANGUAGE;
+const lang = isSupportedLanguage(requestedLang) ? requestedLang : DEFAULT_LANGUAGE;
+const ui = getUiMessages(lang);
+const t = (key: string, fallback: string, params: Record<string, string | number> = {}) =>
+  translate(ui, key, params, fallback);
+
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'ops/status')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage(lang, 'ops/status'));
+
+const runtimeEnv = (Astro.locals as Record<string, any> | undefined)?.runtime?.env;
+const opsAccess = await resolveOpsAccess(Astro.request, runtimeEnv);
+const canViewOps = opsAccess.canView;
+
+Astro.response.status = 200;
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+Astro.response.headers.set('Vary', 'X-Geovito-Ops-Token');
 
 const redactGtmId = (value: string) => {
   const normalized = value.trim();
@@ -19,28 +35,6 @@ const redactGtmId = (value: string) => {
 
 const boolText = (value: boolean) => (value ? 'true' : 'false');
 const safeValue = (value: string) => (value.trim() ? value.trim() : '—');
-
-export async function getStaticPaths() {
-  return SUPPORTED_LANGUAGES.map((language) => ({
-    params: { lang: language },
-  }));
-}
-
-const lang = Astro.params.lang || '';
-if (!isSupportedLanguage(lang)) {
-  throw new Error(`Unsupported language: ${lang}`);
-}
-
-if (!OPS_ENABLED) {
-  return Astro.redirect(pathForLanguage(lang));
-}
-
-const ui = getUiMessages(lang);
-const t = (key: string, fallback: string, params: Record<string, string | number> = {}) => translate(ui, key, params, fallback);
-
-const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'ops/status')));
-const alternates = toAlternates(languageLinks);
-const canonical = absoluteUrl(pathForLanguage(lang, 'ops/status'));
 
 const cfBuildSha = String(process.env.CF_PAGES_COMMIT_SHA || '').trim();
 const cfBuildBranch = String(process.env.CF_PAGES_BRANCH || '').trim();
@@ -66,7 +60,7 @@ const sentryReleaseUsed = sentryReleaseEnv || buildSha || 'dev';
 
 <MainLayout
   title={`${t('ops.title', 'Ops Metrics')} - Status`}
-  description="Internal system status checks for launch readiness."
+  description="Owner-only system status checks."
   canonical={canonical}
   robots="noindex,nofollow"
   currentLanguage={lang}
@@ -74,172 +68,159 @@ const sentryReleaseUsed = sentryReleaseEnv || buildSha || 'dev';
   alternates={alternates}
   ui={ui}
 >
-  {OPS_ENABLED ? <meta slot="head" name="geovito:ops" content="enabled" /> : null}
-  <section class="card panel gv-card ops-status-header" data-ops-status-root>
-    <h1 class="gv-h1" data-ops-status-title>System Status</h1>
-    <p class="gv-body">Launch readiness checks for build, consent, analytics, ads, tags and observability.</p>
-    <p class="gv-caption">Admin-only, noindex utility page.</p>
-  </section>
+  {canViewOps ? <meta slot="head" name="geovito:ops" content="enabled" /> : null}
 
-  <section class="ops-status-grid">
-    <article class="card gv-card ops-status-card">
-      <h2 class="gv-h3">Build</h2>
-      <dl class="ops-status-list">
-        <div>
-          <dt>SHA</dt>
-          <dd data-build-sha-short>{buildShaShort}</dd>
-        </div>
-        <div>
-          <dt>Branch</dt>
-          <dd data-build-branch>{safeValue(buildBranch)}</dd>
-        </div>
-        <div>
-          <dt>CF Pages</dt>
-          <dd data-cf-pages-flag>{boolText(isCfPages)}</dd>
-        </div>
-        <div>
-          <dt>Client SHA</dt>
-          <dd data-build-sha-client>client-only</dd>
-        </div>
-      </dl>
-    </article>
+  {
+    canViewOps ? (
+      <>
+        <section class="card panel gv-card ops-status-header" data-ops-status-root>
+          <h1 class="gv-h1" data-ops-status-title>System Status</h1>
+          <p class="gv-body">Owner-only launch readiness checks for build, consent, analytics, ads, tags and observability.</p>
+          <p class="gv-caption">Noindex utility page.</p>
+        </section>
 
-    <article class="card gv-card ops-status-card">
-      <h2 class="gv-h3">Consent (client)</h2>
-      <dl class="ops-status-list">
-        <div>
-          <dt>Analytics</dt>
-          <dd data-consent-analytics-client>client-only</dd>
-        </div>
-        <div>
-          <dt>Ads</dt>
-          <dd data-consent-ads-client>client-only</dd>
-        </div>
-      </dl>
-    </article>
+        <section class="ops-status-grid">
+          <article class="card gv-card ops-status-card">
+            <h2 class="gv-h3">Build</h2>
+            <dl class="ops-status-list">
+              <div>
+                <dt>SHA</dt>
+                <dd data-build-sha-short>{buildShaShort}</dd>
+              </div>
+              <div>
+                <dt>Branch</dt>
+                <dd data-build-branch>{safeValue(buildBranch)}</dd>
+              </div>
+              <div>
+                <dt>CF Pages</dt>
+                <dd data-cf-pages-flag>{boolText(isCfPages)}</dd>
+              </div>
+              <div>
+                <dt>Client SHA</dt>
+                <dd data-build-sha-client>client-only</dd>
+              </div>
+            </dl>
+          </article>
 
-    <article class="card gv-card ops-status-card">
-      <h2 class="gv-h3">Tags</h2>
-      <dl class="ops-status-list">
-        <div>
-          <dt>Tag manager</dt>
-          <dd data-tag-manager>{safeValue(tagManager)}</dd>
-        </div>
-        <div>
-          <dt>GTM ID</dt>
-          <dd data-gtm-id-redacted>{gtmIdRedacted}</dd>
-        </div>
-        <div>
-          <dt>Load before consent</dt>
-          <dd data-gtm-load-before>{boolText(gtmLoadBefore)}</dd>
-        </div>
-      </dl>
-    </article>
+          <article class="card gv-card ops-status-card">
+            <h2 class="gv-h3">Tags</h2>
+            <dl class="ops-status-list">
+              <div>
+                <dt>Tag manager</dt>
+                <dd data-tag-manager>{safeValue(tagManager)}</dd>
+              </div>
+              <div>
+                <dt>GTM ID</dt>
+                <dd data-gtm-id-redacted>{gtmIdRedacted}</dd>
+              </div>
+              <div>
+                <dt>Load before consent</dt>
+                <dd data-gtm-load-before>{boolText(gtmLoadBefore)}</dd>
+              </div>
+            </dl>
+          </article>
 
-    <article class="card gv-card ops-status-card">
-      <h2 class="gv-h3">Analytics</h2>
-      <dl class="ops-status-list">
-        <div>
-          <dt>Enabled</dt>
-          <dd data-analytics-enabled>{boolText(analyticsEnabled)}</dd>
-        </div>
-        <div>
-          <dt>Provider</dt>
-          <dd data-analytics-provider>{safeValue(analyticsProvider)}</dd>
-        </div>
-        <div>
-          <dt>Event buffer</dt>
-          <dd data-analytics-buffer-len>0</dd>
-        </div>
-      </dl>
-    </article>
+          <article class="card gv-card ops-status-card">
+            <h2 class="gv-h3">Analytics</h2>
+            <dl class="ops-status-list">
+              <div>
+                <dt>Enabled</dt>
+                <dd data-analytics-enabled>{boolText(analyticsEnabled)}</dd>
+              </div>
+              <div>
+                <dt>Provider</dt>
+                <dd data-analytics-provider>{safeValue(analyticsProvider)}</dd>
+              </div>
+              <div>
+                <dt>Event buffer</dt>
+                <dd data-analytics-buffer-len>0</dd>
+              </div>
+            </dl>
+          </article>
 
-    <article class="card gv-card ops-status-card">
-      <h2 class="gv-h3">Ads</h2>
-      <dl class="ops-status-list">
-        <div>
-          <dt>Enabled</dt>
-          <dd data-ads-enabled>{boolText(adsEnabled)}</dd>
-        </div>
-        <div>
-          <dt>Consent ads</dt>
-          <dd data-ads-consent-client>client-only</dd>
-        </div>
-      </dl>
-    </article>
+          <article class="card gv-card ops-status-card">
+            <h2 class="gv-h3">Ads</h2>
+            <dl class="ops-status-list">
+              <div>
+                <dt>Enabled</dt>
+                <dd data-ads-enabled>{boolText(adsEnabled)}</dd>
+              </div>
+              <div>
+                <dt>Consent ads</dt>
+                <dd data-ads-consent-client>client-only</dd>
+              </div>
+            </dl>
+          </article>
 
-    <article class="card gv-card ops-status-card">
-      <h2 class="gv-h3">Sentry</h2>
-      <dl class="ops-status-list">
-        <div>
-          <dt>Enabled</dt>
-          <dd data-sentry-enabled>{boolText(sentryEnabled)}</dd>
-        </div>
-        <div>
-          <dt>Release</dt>
-          <dd data-sentry-release>{safeValue(sentryReleaseUsed)}</dd>
-        </div>
-        <div>
-          <dt>Consent analytics</dt>
-          <dd data-sentry-consent-client>client-only</dd>
-        </div>
-      </dl>
-    </article>
+          <article class="card gv-card ops-status-card">
+            <h2 class="gv-h3">Sentry</h2>
+            <dl class="ops-status-list">
+              <div>
+                <dt>Enabled</dt>
+                <dd data-sentry-enabled>{boolText(sentryEnabled)}</dd>
+              </div>
+              <div>
+                <dt>Release</dt>
+                <dd data-sentry-release>{safeValue(sentryReleaseUsed)}</dd>
+              </div>
+              <div>
+                <dt>Consent analytics</dt>
+                <dd data-sentry-consent-client>client-only</dd>
+              </div>
+            </dl>
+          </article>
+        </section>
 
-    <article class="card gv-card ops-status-card">
-      <h2 class="gv-h3">Ops</h2>
-      <dl class="ops-status-list">
-        <div>
-          <dt>Mode</dt>
-          <dd data-ops-mode>{safeValue(OPS_MODE)}</dd>
-        </div>
-      </dl>
-    </article>
-  </section>
+        <section class="card panel gv-card">
+          <EmptyState
+            title={t('ops.empty.title', 'No metrics collected yet')}
+            description={t('ops.empty.desc', 'Run the metrics collector locally, then refresh this page.')}
+            icon="ShieldCheck"
+          />
+        </section>
 
-  <section class="card panel gv-card">
-    <EmptyState
-      title={t('ops.empty.title', 'No metrics collected yet')}
-      description={t('ops.empty.desc', 'Run the metrics collector locally, then refresh this page.')}
-      icon="ShieldCheck"
-    />
-  </section>
+        <script>
+          import { BUILD_BRANCH, BUILD_SHA, IS_CF_PAGES } from '../../../lib/buildInfo';
+          import { getConsent } from '../../../lib/consent';
 
-  <script>
-    import { BUILD_BRANCH, BUILD_SHA, IS_CF_PAGES } from '../../../lib/buildInfo';
-    import { getConsent } from '../../../lib/consent';
+          (() => {
+            const statusRoot = document.querySelector('[data-ops-status-root]');
 
-    (() => {
-      const statusRoot = document.querySelector('[data-ops-status-root]');
+            const setText = (selector, value) => {
+              if (!(statusRoot instanceof HTMLElement)) return;
+              const node = statusRoot.querySelector(selector);
+              if (!(node instanceof HTMLElement)) return;
+              node.textContent = String(value);
+            };
 
-      const setText = (selector, value) => {
-        if (!(statusRoot instanceof HTMLElement)) return;
-        const node = statusRoot.querySelector(selector);
-        if (!(node instanceof HTMLElement)) return;
-        node.textContent = String(value);
-      };
+            const html = document.documentElement;
+            const consent = getConsent();
+            const analyticsGranted = consent?.analytics === true || html.getAttribute('data-consent-analytics') === '1';
+            const adsGranted = consent?.ads === true || html.getAttribute('data-consent-ads') === '1';
 
-      const html = document.documentElement;
-      const consent = getConsent();
-      const analyticsGranted = consent?.analytics === true || html.getAttribute('data-consent-analytics') === '1';
-      const adsGranted = consent?.ads === true || html.getAttribute('data-consent-ads') === '1';
+            setText('[data-consent-analytics-client]', analyticsGranted ? 'granted' : 'denied');
+            setText('[data-consent-ads-client]', adsGranted ? 'granted' : 'denied');
+            setText('[data-ads-consent-client]', adsGranted ? 'granted' : 'denied');
+            setText('[data-sentry-consent-client]', analyticsGranted ? 'granted' : 'denied');
 
-      setText('[data-consent-analytics-client]', analyticsGranted ? 'granted' : 'denied');
-      setText('[data-consent-ads-client]', adsGranted ? 'granted' : 'denied');
-      setText('[data-ads-consent-client]', adsGranted ? 'granted' : 'denied');
-      setText('[data-sentry-consent-client]', analyticsGranted ? 'granted' : 'denied');
+            const bufferLength = Array.isArray(window.__gvEvents) ? window.__gvEvents.length : 0;
+            setText('[data-analytics-buffer-len]', bufferLength);
 
-      const bufferLength = Array.isArray(window.__gvEvents) ? window.__gvEvents.length : 0;
-      setText('[data-analytics-buffer-len]', bufferLength);
-
-      const shortSha = BUILD_SHA ? BUILD_SHA.slice(0, 8) : '—';
-      setText('[data-build-sha-client]', shortSha);
-      if (BUILD_BRANCH) {
-        setText('[data-build-branch]', BUILD_BRANCH);
-      }
-      setText('[data-cf-pages-flag]', IS_CF_PAGES ? 'true' : 'false');
-    })();
-  </script>
+            const shortSha = BUILD_SHA ? BUILD_SHA.slice(0, 8) : '—';
+            setText('[data-build-sha-client]', shortSha);
+            if (BUILD_BRANCH) {
+              setText('[data-build-branch]', BUILD_BRANCH);
+            }
+            setText('[data-cf-pages-flag]', IS_CF_PAGES ? 'true' : 'false');
+          })();
+        </script>
+      </>
+    ) : (
+      <section class="card panel gv-card" data-ops-placeholder>
+        <EmptyState title="Not available" description="This page is not available." icon="ShieldOff" />
+      </section>
+    )
+  }
 </MainLayout>
 
 <style>

@@ -4,7 +4,7 @@ set -euo pipefail
 BASE_URL="${BASE_URL:-}"
 BASE_URL="${BASE_URL%/}"
 OPS_REQUIRED="${OPS_REQUIRED:-0}"
-PUBLIC_OPS_ENABLED="${PUBLIC_OPS_ENABLED:-}"
+OPS_VIEW_TOKEN="${OPS_VIEW_TOKEN:-}"
 
 TMP_DIR="$(mktemp -d)"
 cleanup() { rm -rf "$TMP_DIR"; }
@@ -18,8 +18,9 @@ fail() {
 fetch() {
   local url="$1"
   local out="$2"
+  shift 2
   local code
-  code="$(curl -sS -L --max-time 15 -o "$out" -w '%{http_code}' "$url" || true)"
+  code="$(curl -sS -L --max-time 15 -o "$out" -w '%{http_code}' "$@" "$url" || true)"
   echo "$code"
 }
 
@@ -93,35 +94,31 @@ echo "PASS: ${pilot_de} -> noindex + canonical EN"
 # 4) ops status
 ops_status="/en/ops/status/"
 ops_file="$TMP_DIR/ops_status.html"
-code="$(fetch "${BASE_URL}${ops_status}" "$ops_file")"
 ops_enabled_signal='meta name="geovito:ops" content="enabled"'
-ops_enabled_hint="disabled"
-if [[ -n "$PUBLIC_OPS_ENABLED" ]]; then
-  case "${PUBLIC_OPS_ENABLED,,}" in
-    1|true|yes|on) ops_enabled_hint="enabled" ;;
-    0|false|no|off) ops_enabled_hint="disabled" ;;
-  esac
+ops_header=()
+
+if [[ -n "$OPS_VIEW_TOKEN" ]]; then
+  ops_header=(-H "X-Geovito-Ops-Token: ${OPS_VIEW_TOKEN}")
 fi
 
+code="$(fetch "${BASE_URL}${ops_status}" "$ops_file" "${ops_header[@]}")"
+
 if [[ "$OPS_REQUIRED" == "1" ]]; then
+  [[ -n "$OPS_VIEW_TOKEN" ]] || fail "OPS_REQUIRED=1 requires OPS_VIEW_TOKEN"
   [[ "$code" == "200" ]] || fail "ops status ${code}"
   assert_contains "$ops_file" "$ops_enabled_signal" "ops enabled signal missing"
   assert_contains "$ops_file" 'meta name="robots" content="noindex,nofollow"' "ops status robots not noindex,nofollow"
   assert_contains "$ops_file" 'System Status' "ops status title not found"
   echo "PASS: ops check (required + enabled)"
 else
-  if [[ "$code" == "200" ]] && grep -Eqi "$ops_enabled_signal" "$ops_file"; then
+  [[ "$code" == "200" ]] || fail "ops status unexpected ${code}"
+
+  if grep -Eqi "$ops_enabled_signal" "$ops_file"; then
     assert_contains "$ops_file" 'meta name="robots" content="noindex,nofollow"' "ops status robots not noindex,nofollow"
+    assert_contains "$ops_file" 'System Status' "ops status title not found"
     echo "PASS: ops check (enabled)"
   else
-    case "$code" in
-      200|302|301|404)
-        echo "PASS: ops check (disabled -> skipped) status=${code} hint=${ops_enabled_hint}"
-        ;;
-      *)
-        fail "ops status unexpected ${code}"
-        ;;
-    esac
+    echo "PASS: ops check (disabled -> skipped) status=${code} hint=disabled"
   fi
 fi
 

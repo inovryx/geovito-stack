@@ -11,6 +11,7 @@
     "i18n:export": "node scripts/i18n_workflow.mjs export"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.6",
     "@sentry/browser": "^8.55.0",
     "astro": "^5.2.0",
     "lucide": "^0.563.0"

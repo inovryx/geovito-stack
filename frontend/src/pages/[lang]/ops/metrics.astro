@@ -1,184 +1,35 @@
 ---
+export const prerender = false;
+
 import MainLayout from '../../../layouts/MainLayout.astro';
-import Accordion from '../../../components/ui/Accordion.astro';
-import Badge from '../../../components/ui/Badge.astro';
 import EmptyState from '../../../components/ui/EmptyState.astro';
-import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
-import {
-  findLatestMetricsDir,
-  loadProviderFile,
-  loadSummaryFile,
-  resolveMetricsBasePath,
-  type MetricsProvider,
-  type SummaryProviderSliceShape,
-} from '../../../lib/ops/metricsLoader';
+import { resolveOpsAccess } from '../../../lib/opsControl';
 
-type ProviderStatus = 'ok' | 'notConfigured' | 'error';
-
-type RowShape = Record<string, unknown>;
-
-const OPS_ENABLED = import.meta.env.PUBLIC_OPS_ENABLED === 'true';
-const OPS_MODE = String(import.meta.env.PUBLIC_OPS_MODE || 'local')
-  .trim()
-  .toLowerCase();
-const OPS_FIXTURE_PATH = String(import.meta.env.PUBLIC_OPS_FIXTURE_PATH || '').trim();
-
-export async function getStaticPaths() {
-  return SUPPORTED_LANGUAGES.map((language) => ({
-    params: { lang: language },
-  }));
-}
-
-const lang = Astro.params.lang || '';
-if (!isSupportedLanguage(lang)) {
-  throw new Error(`Unsupported language: ${lang}`);
-}
-
-if (!OPS_ENABLED) {
-  return Astro.redirect(pathForLanguage(lang));
-}
-
+const requestedLang = Astro.params.lang || DEFAULT_LANGUAGE;
+const lang = isSupportedLanguage(requestedLang) ? requestedLang : DEFAULT_LANGUAGE;
 const ui = getUiMessages(lang);
-const t = (key: string, fallback: string, params: Record<string, string | number> = {}) => translate(ui, key, params, fallback);
+const t = (key: string, fallback: string, params: Record<string, string | number> = {}) =>
+  translate(ui, key, params, fallback);
 
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'ops/metrics')));
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage(lang, 'ops/metrics'));
 
-const canReadLocalFiles = OPS_MODE === 'local';
-const metricsBasePath = resolveMetricsBasePath(OPS_FIXTURE_PATH || '../data/metrics');
+const runtimeEnv = (Astro.locals as Record<string, any> | undefined)?.runtime?.env;
+const opsAccess = await resolveOpsAccess(Astro.request, runtimeEnv);
+const canViewOps = opsAccess.canView;
 
-const latestDir = canReadLocalFiles ? findLatestMetricsDir(metricsBasePath) : null;
-const summary = canReadLocalFiles && latestDir ? loadSummaryFile(metricsBasePath, latestDir) : null;
-
-const providerOrder: Array<{ id: MetricsProvider; label: string }> = [
-  { id: 'ga4', label: 'GA4' },
-  { id: 'gsc', label: 'GSC' },
-  { id: 'cloudflare', label: 'Cloudflare' },
-  { id: 'adsense', label: 'AdSense' },
-];
-
-const providerSlices = new Map<MetricsProvider, SummaryProviderSliceShape>();
-for (const slice of summary?.providers || []) {
-  if (!slice?.provider) continue;
-  providerSlices.set(slice.provider, slice);
-}
-
-const hasMetrics = Boolean(summary && latestDir);
-
-const isRowShape = (value: unknown): value is RowShape => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-
-const normalizeRows = (rows: unknown): RowShape[] => {
-  if (!Array.isArray(rows)) return [];
-  return rows.filter((row) => isRowShape(row));
-};
-
-const getProviderRows = (provider: MetricsProvider) => {
-  if (!latestDir) return [] as RowShape[];
-  const data = loadProviderFile(metricsBasePath, latestDir, provider);
-  return normalizeRows(data?.rows || []);
-};
-
-const ga4Rows = hasMetrics ? getProviderRows('ga4') : [];
-const gscRows = hasMetrics ? getProviderRows('gsc') : [];
-const cloudflareRows = hasMetrics ? getProviderRows('cloudflare') : [];
-const adsenseRows = hasMetrics ? getProviderRows('adsense') : [];
-
-const ga4TopPages = ga4Rows.filter((row) => typeof row.page === 'string').slice(0, 20);
-const gscTopQueries = gscRows.filter((row) => String(row.kind || '').toLowerCase() === 'query').slice(0, 20);
-const gscTopPages = gscRows.filter((row) => String(row.kind || '').toLowerCase() === 'page').slice(0, 20);
-const cfTopPaths = cloudflareRows.filter((row) => String(row.kind || '').toLowerCase() === 'path').slice(0, 20);
-const cfStatusGroups = cloudflareRows.filter((row) => String(row.kind || '').toLowerCase() === 'status_group').slice(0, 20);
-const adsenseDaily = adsenseRows.filter((row) => String(row.kind || '').toLowerCase() === 'daily').slice(0, 20);
-
-const toNumber = (value: unknown) => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
-};
-
-const formatNumber = (value: unknown, opts: Intl.NumberFormatOptions = {}) => {
-  const numericValue = toNumber(value);
-  if (numericValue === null) return '—';
-
-  try {
-    return new Intl.NumberFormat(lang, {
-      maximumFractionDigits: 2,
-      ...opts,
-    }).format(numericValue);
-  } catch {
-    return numericValue.toFixed(0);
-  }
-};
-
-const formatDateTime = (value: unknown) => {
-  if (typeof value !== 'string' || !value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-
-  try {
-    return new Intl.DateTimeFormat(lang, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(date);
-  } catch {
-    return value;
-  }
-};
-
-const toText = (value: unknown) => {
-  if (typeof value === 'string' && value.trim()) return value.trim();
-  if (typeof value === 'number') return String(value);
-  return '—';
-};
-
-const kpiCards = [
-  { key: 'sessions_7d', label: t('ops.kpi.sessions', 'Sessions (7d)') },
-  { key: 'pageviews_7d', label: t('ops.kpi.pageviews', 'Pageviews (7d)') },
-  { key: 'clicks_7d', label: t('ops.kpi.clicks', 'Clicks (7d)') },
-  { key: 'impressions_7d', label: t('ops.kpi.impressions', 'Impressions (7d)') },
-  { key: 'cf_requests_7d', label: t('ops.kpi.requests', 'Cloudflare requests (7d)') },
-  { key: 'earnings_7d', label: t('ops.kpi.earnings', 'Earnings (7d)') },
-];
-
-const providerStatus = (provider: MetricsProvider): ProviderStatus => {
-  const slice = providerSlices.get(provider);
-  if (!slice) return 'notConfigured';
-  const errors = Array.isArray(slice.errors) ? slice.errors : [];
-
-  if (errors.length === 0) return 'ok';
-  if (errors.some((entry) => String(entry || '').toLowerCase().includes('not configured'))) {
-    return 'notConfigured';
-  }
-  return 'error';
-};
-
-const statusLabel = (status: ProviderStatus) => {
-  if (status === 'ok') return t('ops.providers.ok', 'OK');
-  if (status === 'error') return t('ops.providers.error', 'Error');
-  return t('ops.providers.notConfigured', 'Not configured');
-};
-
-const statusVariant = (status: ProviderStatus): 'success' | 'danger' | 'neutral' => {
-  if (status === 'ok') return 'success';
-  if (status === 'error') return 'danger';
-  return 'neutral';
-};
-
-const summaryStart = summary?.date_range?.start || '—';
-const summaryEnd = summary?.date_range?.end || '—';
-const summaryGeneratedAt = formatDateTime(summary?.generated_at);
-const refreshCommand = 'python -m geovito_metrics_collector run --days 7 --out ../../data/metrics';
+Astro.response.status = 200;
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+Astro.response.headers.set('Vary', 'X-Geovito-Ops-Token');
 ---
 
 <MainLayout
   title={t('ops.title', 'Ops Metrics')}
-  description={t('ops.subtitle', 'Internal aggregated metrics dashboard for local operations.')}
+  description={t('ops.subtitle', 'Owner-only aggregated metrics workspace.')}
   canonical={canonical}
   robots="noindex,nofollow"
   currentLanguage={lang}
@@ -186,258 +37,46 @@ const refreshCommand = 'python -m geovito_metrics_collector run --days 7 --out .
   alternates={alternates}
   ui={ui}
 >
-  {OPS_ENABLED ? <meta slot="head" name="geovito:ops" content="enabled" /> : null}
-  <section class="card panel gv-card ops-header" data-ops-root>
-    <h1 class="gv-h1" data-ops-title>{t('ops.title', 'Ops Metrics')}</h1>
-    <p class="gv-body">{t('ops.subtitle', 'Internal aggregated metrics dashboard for local operations.')}</p>
-    <p class="gv-caption">
-      {summaryStart} - {summaryEnd} | {summaryGeneratedAt}
-    </p>
-  </section>
+  {canViewOps ? <meta slot="head" name="geovito:ops" content="enabled" /> : null}
 
   {
-    !canReadLocalFiles ? (
-      <section class="card panel gv-card">
-        <EmptyState
-          title={t('ops.disabled.title', 'Ops metrics viewer is disabled in this mode')}
-          description={t('ops.disabled.desc', 'Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.')}
-          icon="ShieldOff"
-        />
-      </section>
-    ) : !hasMetrics ? (
-      <section class="card panel gv-card">
-        <EmptyState
-          title={t('ops.empty.title', 'No metrics collected yet')}
-          description={t('ops.empty.desc', 'Run the metrics collector locally, then refresh this page.')}
-          icon="Database"
-        />
-      </section>
-    ) : (
+    canViewOps ? (
       <>
+        <section class="card panel gv-card ops-header" data-ops-root>
+          <h1 class="gv-h1" data-ops-title>{t('ops.title', 'Ops Metrics')}</h1>
+          <p class="gv-body">Owner-only metrics area. Data connectors can be reviewed here without exposing public details.</p>
+          <p class="gv-caption">Noindex utility page.</p>
+        </section>
+
         <section class="ops-kpi-grid" aria-label={t('ops.title', 'Ops Metrics')}>
-          {
-            kpiCards.map((kpi) => (
-              <article class="card gv-card ops-kpi-card" data-ops-kpi={kpi.key}>
-                <p class="gv-caption ops-kpi-label">{kpi.label}</p>
-                <p class="ops-kpi-value">{kpi.key === 'earnings_7d' ? formatNumber(summary?.kpis?.[kpi.key], { minimumFractionDigits: 2 }) : formatNumber(summary?.kpis?.[kpi.key])}</p>
-              </article>
-            ))
-          }
+          <article class="card gv-card ops-kpi-card">
+            <p class="gv-caption ops-kpi-label">Metrics feed</p>
+            <p class="ops-kpi-value">ready</p>
+          </article>
+          <article class="card gv-card ops-kpi-card">
+            <p class="gv-caption ops-kpi-label">Refresh mode</p>
+            <p class="ops-kpi-value">manual</p>
+          </article>
+          <article class="card gv-card ops-kpi-card">
+            <p class="gv-caption ops-kpi-label">Visibility</p>
+            <p class="ops-kpi-value">owner-only</p>
+          </article>
         </section>
 
         <section class="card panel gv-card">
-          <h2 class="gv-h2">{t('ops.providers.title', 'Provider status')}</h2>
-          <div class="ops-provider-grid">
-            {
-              providerOrder.map((provider) => {
-                const status = providerStatus(provider.id);
-                return (
-                  <article class="ops-provider-item" data-ops-provider={provider.id}>
-                    <strong>{provider.label}</strong>
-                    <Badge variant={statusVariant(status)}>{statusLabel(status)}</Badge>
-                  </article>
-                );
-              })
-            }
-          </div>
-        </section>
-
-        <section class="card panel gv-card gv-stack">
-          <Accordion title="GA4 - Top pages" open={true}>
-            <div class="ui-table-wrap is-compact">
-              <table class="ui-table">
-                <thead>
-                  <tr>
-                    <th>Path</th>
-                    <th>Sessions</th>
-                    <th>Pageviews</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    ga4TopPages.length ? (
-                      ga4TopPages.map((row) => (
-                        <tr>
-                          <td class="ops-path-cell">{toText(row.page)}</td>
-                          <td>{formatNumber(row.sessions)}</td>
-                          <td>{formatNumber(row.pageviews)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colspan="3" class="ops-table-empty">—</td>
-                      </tr>
-                    )
-                  }
-                </tbody>
-              </table>
-            </div>
-          </Accordion>
-
-          <Accordion title="GSC - Top queries">
-            <div class="ui-table-wrap is-compact">
-              <table class="ui-table">
-                <thead>
-                  <tr>
-                    <th>Query</th>
-                    <th>Clicks</th>
-                    <th>Impressions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    gscTopQueries.length ? (
-                      gscTopQueries.map((row) => (
-                        <tr>
-                          <td>{toText(row.value)}</td>
-                          <td>{formatNumber(row.clicks)}</td>
-                          <td>{formatNumber(row.impressions)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colspan="3" class="ops-table-empty">—</td>
-                      </tr>
-                    )
-                  }
-                </tbody>
-              </table>
-            </div>
-          </Accordion>
-
-          <Accordion title="GSC - Top pages">
-            <div class="ui-table-wrap is-compact">
-              <table class="ui-table">
-                <thead>
-                  <tr>
-                    <th>Path</th>
-                    <th>Clicks</th>
-                    <th>Impressions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    gscTopPages.length ? (
-                      gscTopPages.map((row) => (
-                        <tr>
-                          <td class="ops-path-cell">{toText(row.value)}</td>
-                          <td>{formatNumber(row.clicks)}</td>
-                          <td>{formatNumber(row.impressions)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colspan="3" class="ops-table-empty">—</td>
-                      </tr>
-                    )
-                  }
-                </tbody>
-              </table>
-            </div>
-          </Accordion>
-
-          <Accordion title="Cloudflare - Top paths">
-            <div class="ui-table-wrap is-compact">
-              <table class="ui-table">
-                <thead>
-                  <tr>
-                    <th>Path</th>
-                    <th>Requests</th>
-                    <th>Bytes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    cfTopPaths.length ? (
-                      cfTopPaths.map((row) => (
-                        <tr>
-                          <td class="ops-path-cell">{toText(row.path)}</td>
-                          <td>{formatNumber(row.requests)}</td>
-                          <td>{formatNumber(row.bytes)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colspan="3" class="ops-table-empty">—</td>
-                      </tr>
-                    )
-                  }
-                </tbody>
-              </table>
-            </div>
-          </Accordion>
-
-          <Accordion title="Cloudflare - Status groups">
-            <div class="ui-table-wrap is-compact">
-              <table class="ui-table">
-                <thead>
-                  <tr>
-                    <th>Status</th>
-                    <th>Requests</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    cfStatusGroups.length ? (
-                      cfStatusGroups.map((row) => (
-                        <tr>
-                          <td>{toText(row.status_group)}</td>
-                          <td>{formatNumber(row.requests)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colspan="2" class="ops-table-empty">—</td>
-                      </tr>
-                    )
-                  }
-                </tbody>
-              </table>
-            </div>
-          </Accordion>
-
-          <Accordion title="AdSense - Daily breakdown">
-            <div class="ui-table-wrap is-compact">
-              <table class="ui-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Earnings</th>
-                    <th>Impressions</th>
-                    <th>RPM</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    adsenseDaily.length ? (
-                      adsenseDaily.map((row) => (
-                        <tr>
-                          <td>{toText(row.date)}</td>
-                          <td>{formatNumber(row.estimatedEarnings, { minimumFractionDigits: 2 })}</td>
-                          <td>{formatNumber(row.impressions)}</td>
-                          <td>{formatNumber(row.pageViewsRpm, { minimumFractionDigits: 2 })}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colspan="4" class="ops-table-empty">—</td>
-                      </tr>
-                    )
-                  }
-                </tbody>
-              </table>
-            </div>
-          </Accordion>
+          <EmptyState
+            title={t('ops.empty.title', 'No metrics collected yet')}
+            description={t('ops.empty.desc', 'Run the metrics collector locally, then refresh this page.')}
+            icon="Database"
+          />
         </section>
       </>
+    ) : (
+      <section class="card panel gv-card" data-ops-placeholder>
+        <EmptyState title="Not available" description="This page is not available." icon="ShieldOff" />
+      </section>
     )
   }
-
-  <section class="card panel gv-card ops-refresh-box">
-    <h2 class="gv-h3">Refresh instructions</h2>
-    <p class="gv-caption">Run collector to refresh.</p>
-    <pre><code>{refreshCommand}</code></pre>
-  </section>
 </MainLayout>
 
 <style>
@@ -447,14 +86,14 @@ const refreshCommand = 'python -m geovito_metrics_collector run --days 7 --out .
 
   .ops-kpi-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.68rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.72rem;
     margin-bottom: 0.86rem;
   }
 
   .ops-kpi-card {
     display: grid;
-    gap: 0.22rem;
+    gap: 0.3rem;
   }
 
   .ops-kpi-label {
@@ -463,71 +102,14 @@ const refreshCommand = 'python -m geovito_metrics_collector run --days 7 --out .
 
   .ops-kpi-value {
     margin: 0;
-    font-size: 1.22rem;
+    font-size: 1.12rem;
     line-height: 1.25;
     font-weight: 700;
-    letter-spacing: -0.014em;
     color: var(--ink);
   }
 
-  .ops-provider-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.58rem;
-  }
-
-  .ops-provider-item {
-    border: 1px solid var(--border);
-    border-radius: var(--gv-radius-sm);
-    padding: 0.58rem 0.62rem;
-    background: var(--surface-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
-  .ops-provider-item strong {
-    font-size: 0.87rem;
-    line-height: 1.2;
-    color: var(--ink);
-  }
-
-  .ops-path-cell {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.76rem;
-  }
-
-  .ops-table-empty {
-    text-align: center;
-    color: var(--ink-muted);
-  }
-
-  .ops-refresh-box pre {
-    margin: 0;
-    padding: 0.66rem 0.72rem;
-    border: 1px solid var(--border);
-    border-radius: var(--gv-radius-sm);
-    background: var(--surface-subtle);
-    overflow-x: auto;
-  }
-
-  .ops-refresh-box code {
-    display: block;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.8rem;
-    color: var(--ink);
-  }
-
-  @media (max-width: 1024px) {
-    .ops-provider-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 720px) {
-    .ops-kpi-grid,
-    .ops-provider-grid {
+  @media (max-width: 900px) {
+    .ops-kpi-grid {
       grid-template-columns: minmax(0, 1fr);
     }
   }
