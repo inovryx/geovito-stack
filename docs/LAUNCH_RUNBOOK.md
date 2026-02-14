@@ -73,6 +73,7 @@ Notes:
    - `bash tools/post_deploy_smoke.sh BASE_URL=https://your-deploy-url`
    - Optional ops enforcement: `OPS_REQUIRED=1 bash tools/post_deploy_smoke.sh BASE_URL=https://your-deploy-url`
    - Expected: all PASS lines, exit 0.
+   - Ops detection uses `meta[name="geovito:ops"][content="enabled"]` when ops is enabled.
 
 ## 3) Go-Live Verification Steps
 

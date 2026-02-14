@@ -55,6 +55,7 @@ const isCfPages = process.env.CF_PAGES ? '1' : '0';
     <link rel="canonical" href={canonical} />
     {alternates.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
     <link rel="alternate" hreflang="x-default" href={languageLinks['en'] || '/en/'} />
+    <slot name="head" />
 
     <script is:inline>
       (() => {

@@ -186,6 +186,7 @@ const refreshCommand = 'python -m geovito_metrics_collector run --days 7 --out .
   alternates={alternates}
   ui={ui}
 >
+  {OPS_ENABLED ? <meta slot="head" name="geovito:ops" content="enabled" /> : null}
   <section class="card panel gv-card ops-header" data-ops-root>
     <h1 class="gv-h1" data-ops-title>{t('ops.title', 'Ops Metrics')}</h1>
     <p class="gv-body">{t('ops.subtitle', 'Internal aggregated metrics dashboard for local operations.')}</p>

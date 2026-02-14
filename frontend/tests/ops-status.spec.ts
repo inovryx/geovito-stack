@@ -13,6 +13,7 @@ test('ops status route redirects away when feature is disabled', async ({ page }
 test('ops status is noindex and GTM ID is redacted when enabled', async ({ page }) => {
   await page.goto(`${OPS_ENABLED_BASE_URL}/en/ops/status/`);
 
+  await expect(page.locator('meta[name="geovito:ops"]')).toHaveAttribute('content', 'enabled');
   await expect(page.locator('[data-ops-status-title]')).toHaveText('System Status');
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,nofollow');
 

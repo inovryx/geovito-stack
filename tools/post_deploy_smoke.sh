@@ -94,7 +94,8 @@ echo "PASS: ${pilot_de} -> noindex + canonical EN"
 ops_status="/en/ops/status/"
 ops_file="$TMP_DIR/ops_status.html"
 code="$(fetch "${BASE_URL}${ops_status}" "$ops_file")"
-ops_enabled_hint="unknown"
+ops_enabled_signal='meta name="geovito:ops" content="enabled"'
+ops_enabled_hint="disabled"
 if [[ -n "$PUBLIC_OPS_ENABLED" ]]; then
   case "${PUBLIC_OPS_ENABLED,,}" in
     1|true|yes|on) ops_enabled_hint="enabled" ;;
@@ -104,11 +105,12 @@ fi
 
 if [[ "$OPS_REQUIRED" == "1" ]]; then
   [[ "$code" == "200" ]] || fail "ops status ${code}"
+  assert_contains "$ops_file" "$ops_enabled_signal" "ops enabled signal missing"
   assert_contains "$ops_file" 'meta name="robots" content="noindex,nofollow"' "ops status robots not noindex,nofollow"
   assert_contains "$ops_file" 'System Status' "ops status title not found"
   echo "PASS: ops check (required + enabled)"
 else
-  if [[ "$code" == "200" ]] && grep -Eqi 'System Status|data-ops-status-title' "$ops_file"; then
+  if [[ "$code" == "200" ]] && grep -Eqi "$ops_enabled_signal" "$ops_file"; then
     assert_contains "$ops_file" 'meta name="robots" content="noindex,nofollow"' "ops status robots not noindex,nofollow"
     echo "PASS: ops check (enabled)"
   else

@@ -74,6 +74,7 @@ const sentryReleaseUsed = sentryReleaseEnv || buildSha || 'dev';
   alternates={alternates}
   ui={ui}
 >
+  {OPS_ENABLED ? <meta slot="head" name="geovito:ops" content="enabled" /> : null}
   <section class="card panel gv-card ops-status-header" data-ops-status-root>
     <h1 class="gv-h1" data-ops-status-title>System Status</h1>
     <p class="gv-body">Launch readiness checks for build, consent, analytics, ads, tags and observability.</p>

@@ -48,6 +48,7 @@ const hasToolsSlot = Astro.slots.has('tools');
   toolsContext={toolsContext}
   hasCustomTools={hasToolsSlot}
 >
+  {Astro.slots.has('head') ? <slot name="head" slot="head" /> : null}
   <slot />
   {hasToolsSlot ? <slot name="tools" slot="tools" /> : null}
 </AppShell>

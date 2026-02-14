@@ -51,6 +51,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
   alternates={alternates}
   ui={ui}
 >
+  {Astro.slots.has('head') ? <slot name="head" slot="head" /> : null}
   <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`} data-ev-root="ui">
     <aside class="left-column desktop-tablet-column" aria-label={t('layout.mainNavigation', 'Main navigation')}>
       <div class="left-nav-card">
