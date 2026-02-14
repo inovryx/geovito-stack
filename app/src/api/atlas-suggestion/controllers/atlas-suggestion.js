@@ -7,6 +7,25 @@ const { log } = require('../../../modules/domain-logging');
 const { resolveActor } = require('../../../modules/domain-logging/context');
 
 module.exports = createCoreController('api::atlas-suggestion.atlas-suggestion', ({ strapi }) => ({
+  async health(ctx) {
+    try {
+      await strapi.db.connection.raw('select 1 as ok');
+
+      ctx.status = 200;
+      ctx.body = {
+        ok: true,
+        db: true,
+      };
+      return;
+    } catch (error) {
+      ctx.status = 503;
+      ctx.body = {
+        ok: false,
+        db: false,
+      };
+    }
+  },
+
   async submit(ctx) {
     const clientIp = getClientIp(ctx);
     const requestId = ctx.state?.requestId || null;

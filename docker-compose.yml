@@ -32,6 +32,7 @@ services:
       HOST: ${HOST:-0.0.0.0}
       PORT: ${PORT:-1337}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      HEALTH_TOKEN: ${HEALTH_TOKEN:-}
       SEED_ON_BOOT: ${SEED_ON_BOOT:-false}
       SEED_MOCK_ON_BOOT: ${SEED_MOCK_ON_BOOT:-false}
       TRANSLATION_BUNDLE_ENABLED: ${TRANSLATION_BUNDLE_ENABLED:-false}

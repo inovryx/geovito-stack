@@ -3,8 +3,6 @@ set -euo pipefail
 
 BASE_URL="${BASE_URL:-}"
 BASE_URL="${BASE_URL%/}"
-OPS_REQUIRED="${OPS_REQUIRED:-0}"
-OPS_VIEW_TOKEN="${OPS_VIEW_TOKEN:-}"
 
 TMP_DIR="$(mktemp -d)"
 cleanup() { rm -rf "$TMP_DIR"; }
@@ -90,37 +88,6 @@ if [[ "$(normalize_url "$pilot_de_canonical")" != "$(normalize_url "${BASE_URL}$
   fail "pilot DE canonical not EN (got ${pilot_de_canonical})"
 fi
 echo "PASS: ${pilot_de} -> noindex + canonical EN"
-
-# 4) ops status
-ops_status="/en/ops/status/"
-ops_file="$TMP_DIR/ops_status.html"
-ops_enabled_signal='meta name="geovito:ops" content="enabled"'
-ops_header=()
-
-if [[ -n "$OPS_VIEW_TOKEN" ]]; then
-  ops_header=(-H "X-Geovito-Ops-Token: ${OPS_VIEW_TOKEN}")
-fi
-
-code="$(fetch "${BASE_URL}${ops_status}" "$ops_file" "${ops_header[@]}")"
-
-if [[ "$OPS_REQUIRED" == "1" ]]; then
-  [[ -n "$OPS_VIEW_TOKEN" ]] || fail "OPS_REQUIRED=1 requires OPS_VIEW_TOKEN"
-  [[ "$code" == "200" ]] || fail "ops status ${code}"
-  assert_contains "$ops_file" "$ops_enabled_signal" "ops enabled signal missing"
-  assert_contains "$ops_file" 'meta name="robots" content="noindex,nofollow"' "ops status robots not noindex,nofollow"
-  assert_contains "$ops_file" 'System Status' "ops status title not found"
-  echo "PASS: ops check (required + enabled)"
-else
-  [[ "$code" == "200" ]] || fail "ops status unexpected ${code}"
-
-  if grep -Eqi "$ops_enabled_signal" "$ops_file"; then
-    assert_contains "$ops_file" 'meta name="robots" content="noindex,nofollow"' "ops status robots not noindex,nofollow"
-    assert_contains "$ops_file" 'System Status' "ops status title not found"
-    echo "PASS: ops check (enabled)"
-  else
-    echo "PASS: ops check (disabled -> skipped) status=${code} hint=disabled"
-  fi
-fi
 
 echo "=============================================================="
 echo "PASS: Post-deploy smoke checks completed."

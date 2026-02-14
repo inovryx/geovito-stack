@@ -6,7 +6,6 @@ const CONSENT_PORT = 4324;
 const GTM_STRICT_PORT = 4325;
 const GTM_LOAD_BEFORE_PORT = 4326;
 const SENTRY_PORT = 4327;
-const OPS_PORT = 4328;
 const ALLOW_LOCALHOST_STRAPI = process.env.ALLOW_LOCALHOST_STRAPI || 'true';
 
 export default defineConfig({
@@ -121,46 +120,25 @@ export default defineConfig({
         PUBLIC_SENTRY_TRACES_SAMPLE_RATE: '0',
       },
     },
-    {
-      command: `PUBLIC_OPS_ENABLED=true PUBLIC_OPS_MODE=local PUBLIC_OPS_FIXTURE_PATH=tests/fixtures/metrics PUBLIC_TAG_MANAGER=gtm PUBLIC_GTM_ID=GTM-ABCD1234 PUBLIC_GTM_LOAD_BEFORE_CONSENT=false CF_PAGES=1 CF_PAGES_COMMIT_SHA=deadbeefdeadbeefdeadbeefdeadbeefdeadbeef CF_PAGES_BRANCH=main npm run build -- --outDir dist-ops && node scripts/static_preview.mjs --dir dist-ops --port ${OPS_PORT}`,
-      port: OPS_PORT,
-      reuseExistingServer: false,
-      timeout: 180_000,
-      env: {
-        ...process.env,
-        STRAPI_URL: process.env.STRAPI_URL || 'http://127.0.0.1:1337',
-        ALLOW_LOCALHOST_STRAPI,
-        PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL || 'https://www.geovito.com',
-        PUBLIC_OPS_ENABLED: 'true',
-        PUBLIC_OPS_MODE: 'local',
-        PUBLIC_OPS_FIXTURE_PATH: 'tests/fixtures/metrics',
-        PUBLIC_TAG_MANAGER: 'gtm',
-        PUBLIC_GTM_ID: 'GTM-ABCD1234',
-        PUBLIC_GTM_LOAD_BEFORE_CONSENT: 'false',
-        CF_PAGES: '1',
-        CF_PAGES_COMMIT_SHA: 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
-        CF_PAGES_BRANCH: 'main',
-      },
-    },
   ],
   projects: [
     {
       name: 'desktop',
-      testIgnore: /(analytics|consent|gtm-ga4|sentry|ops-metrics|ops-status)\.spec\.ts/,
+      testIgnore: /(analytics|consent|gtm-ga4|sentry)\.spec\.ts/,
       use: {
         viewport: { width: 1280, height: 900 },
       },
     },
     {
       name: 'tablet',
-      testIgnore: /(analytics|consent|gtm-ga4|sentry|ops-metrics|ops-status)\.spec\.ts/,
+      testIgnore: /(analytics|consent|gtm-ga4|sentry)\.spec\.ts/,
       use: {
         viewport: { width: 768, height: 1024 },
       },
     },
     {
       name: 'mobile',
-      testIgnore: /(analytics|consent|gtm-ga4|sentry|ops-metrics|ops-status)\.spec\.ts/,
+      testIgnore: /(analytics|consent|gtm-ga4|sentry)\.spec\.ts/,
       use: {
         ...devices['iPhone 12'],
       },
@@ -194,14 +172,6 @@ export default defineConfig({
       testMatch: /sentry\.spec\.ts/,
       use: {
         baseURL: `http://localhost:${SENTRY_PORT}`,
-        viewport: { width: 1280, height: 900 },
-      },
-    },
-    {
-      name: 'ops-desktop',
-      testMatch: /ops-(metrics|status)\.spec\.ts/,
-      use: {
-        baseURL: `http://localhost:${PORT}`,
         viewport: { width: 1280, height: 900 },
       },
     },
