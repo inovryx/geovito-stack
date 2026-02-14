@@ -55,6 +55,17 @@
       "title": "Nutzungsbedingungen"
     }
   },
+  "errorPage": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Auf dieser Seite ist ein unerwartetes Problem aufgetreten. Sie konnen zur Startseite zuruckkehren oder Ihre Einwilligungseinstellungen anpassen.",
+    "homeCta": "Zur Startseite",
+    "consentCta": "Einwilligungseinstellungen offnen",
+    "reportCta": "Problem melden",
+    "reportDisabled": "Aktivieren Sie die Analytics-Einwilligung, um einen Fehlerbericht zu senden.",
+    "reportReady": "Sie konnen dieses Problem melden.",
+    "reportSent": "Fehlerbericht wurde gesendet.",
+    "inlineFallback": "Einige interaktive Steuerelemente sind vorubergehend nicht verfugbar."
+  },
   "stateBanner": {
     "runtime": "Runtime-Ubersetzungsvorschau wird angezeigt. Diese Ansicht wird nicht indexiert.",
     "fallback": "Vollstandiger Inhalt ist in dieser Sprache noch nicht verfugbar ({language}). Die kanonische complete-Version wird angezeigt.",
@@ -225,6 +236,32 @@
       "savedPlaces": "Gespeicherte Orte/Watchlist (spater)"
     },
     "loginCta": "Zur Konto-Shell"
+  },
+  "ops": {
+    "title": "Ops Metrics",
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "kpi": {
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "clicks": "Clicks (7d)",
+      "impressions": "Impressions (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "earnings": "Earnings (7d)"
+    },
+    "providers": {
+      "title": "Provider status",
+      "ok": "OK",
+      "notConfigured": "Not configured",
+      "error": "Error"
+    },
+    "empty": {
+      "title": "No metrics collected yet",
+      "desc": "Run the metrics collector locally, then refresh this page."
+    },
+    "disabled": {
+      "title": "Ops metrics viewer is disabled in this mode",
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
+    }
   },
   "actions": {
     "previewOnDemand": "On-demand-Ubersetzungsvorschau offnen (noindex)"

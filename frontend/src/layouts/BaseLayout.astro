@@ -39,10 +39,13 @@ const {
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 const legalHref = (slug: 'privacy' | 'cookies' | 'terms') => `/${currentLanguage}/${slug}/`;
 const cookiesHref = legalHref('cookies');
+const cfBuildSha = String(process.env.CF_PAGES_COMMIT_SHA || '').trim();
+const cfBuildBranch = String(process.env.CF_PAGES_BRANCH || '').trim();
+const isCfPages = process.env.CF_PAGES ? '1' : '0';
 ---
 
 <!doctype html>
-<html lang={currentLanguage}>
+<html lang={currentLanguage} data-build-sha={cfBuildSha} data-build-branch={cfBuildBranch} data-cf-pages={isCfPages}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -201,6 +204,7 @@ const cookiesHref = legalHref('cookies');
     </footer>
 
     <script>
+      import { BUILD_SHA } from '../lib/buildInfo';
       import { createFocusTrap } from '../lib/a11y/focusTrap';
       import {
         identify,
@@ -215,6 +219,7 @@ const cookiesHref = legalHref('cookies');
       } from '../lib/analytics';
       import { applyConsentToDocument, defaultConsent, getConsent, hasChoice, setConsent, subscribe } from '../lib/consent';
       import { maybeSyncConsentFromCmp } from '../lib/consent/cmpAdapter';
+      import { captureException, initSentry, isSentryRuntimeEnabled } from '../lib/observability/sentry';
       import { initTags, updateTags } from '../lib/tags';
 
       const readLang = () => {
@@ -244,6 +249,16 @@ const cookiesHref = legalHref('cookies');
       };
 
       let consentState = seedConsent();
+      const sentryRuntime = {
+        release: BUILD_SHA || undefined,
+        env: import.meta.env.PUBLIC_SENTRY_ENV || undefined,
+      };
+
+      initSentry({
+        consent: consentState,
+        release: sentryRuntime.release,
+        env: sentryRuntime.env,
+      });
       let consentModalOpener = null;
       let consentTrapCleanup = null;
 
@@ -414,12 +429,46 @@ const cookiesHref = legalHref('cookies');
         });
       }
 
+      if (isSentryRuntimeEnabled()) {
+        window.__gvCaptureException = captureException;
+
+        const normalizeError = (value, fallback) => {
+          if (value instanceof Error) return value;
+          if (typeof value === 'string' && value.trim()) return new Error(value.trim());
+          return new Error(fallback);
+        };
+
+        window.addEventListener('error', (event) => {
+          captureException(normalizeError(event.error || event.message, 'window_error'), {
+            tags: { source: 'window_error' },
+            extra: {
+              filename: event.filename || '',
+              lineno: typeof event.lineno === 'number' ? event.lineno : -1,
+              colno: typeof event.colno === 'number' ? event.colno : -1,
+            },
+            request: { url: window.location.href },
+          });
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+          captureException(normalizeError(event.reason, 'unhandled_rejection'), {
+            tags: { source: 'unhandled_rejection' },
+            request: { url: window.location.href },
+          });
+        });
+      }
+
       subscribe((next) => {
         consentState = next;
         syncConsentInputs(next);
         if (consentBanner instanceof HTMLElement) {
           consentBanner.hidden = true;
         }
+        initSentry({
+          consent: next,
+          release: sentryRuntime.release,
+          env: sentryRuntime.env,
+        });
         updateTags(next);
       });
 

@@ -55,6 +55,17 @@
       "title": "Terminos de Uso"
     }
   },
+  "errorPage": {
+    "title": "Algo salio mal",
+    "description": "La pagina encontro un problema inesperado. Puedes volver al inicio o ajustar tus preferencias de consentimiento.",
+    "homeCta": "Volver al inicio",
+    "consentCta": "Abrir ajustes de consentimiento",
+    "reportCta": "Reportar problema",
+    "reportDisabled": "Activa el consentimiento de analitica para enviar un reporte de error.",
+    "reportReady": "Puedes reportar este problema.",
+    "reportSent": "Reporte enviado.",
+    "inlineFallback": "Algunos controles interactivos no estan disponibles temporalmente."
+  },
   "stateBanner": {
     "runtime": "Se muestra la vista previa de traduccion en tiempo real. Esta vista no se indexa.",
     "fallback": "El contenido complete aun no esta listo en este idioma ({language}). Se muestra la version canonica complete.",
@@ -225,6 +236,32 @@
       "savedPlaces": "Lugares guardados/lista (futuro)"
     },
     "loginCta": "Ir al shell de cuenta"
+  },
+  "ops": {
+    "title": "Ops Metrics",
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "kpi": {
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "clicks": "Clicks (7d)",
+      "impressions": "Impressions (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "earnings": "Earnings (7d)"
+    },
+    "providers": {
+      "title": "Provider status",
+      "ok": "OK",
+      "notConfigured": "Not configured",
+      "error": "Error"
+    },
+    "empty": {
+      "title": "No metrics collected yet",
+      "desc": "Run the metrics collector locally, then refresh this page."
+    },
+    "disabled": {
+      "title": "Ops metrics viewer is disabled in this mode",
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
+    }
   },
   "actions": {
     "previewOnDemand": "Abrir vista previa de traduccion bajo demanda (noindex)"

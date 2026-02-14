@@ -55,6 +55,17 @@
       "title": "Shiyong tiaokuan"
     }
   },
+  "errorPage": {
+    "title": "Chuxian wenti",
+    "description": "Dangqian yemian fasheng le yige yiwai wenti. Nin keyi fanhui shouye huo tiaozheng tongyi shezhi.",
+    "homeCta": "Fanhui shouye",
+    "consentCta": "Dakaitongyi shezhi",
+    "reportCta": "Baogao wenti",
+    "reportDisabled": "Qing xian qiyong fenxi tongyi, zai fasong cuowu baogao.",
+    "reportReady": "Nin keyi baogao ci wenti.",
+    "reportSent": "Wenti baogao yi fasong.",
+    "inlineFallback": "Bufen jiaohu kongjian zan shi buke yong."
+  },
   "stateBanner": {
     "runtime": "Dangqian xianshi runtime fanyi yulan, ci shitu buhui bei shoulu.",
     "fallback": "Gai yuyan de complete neirong zanwei jiuxu ({language}), xianshi canon complete banben.",
@@ -225,6 +236,32 @@
       "savedPlaces": "shoucang didian/watchlist (future)"
     },
     "loginCta": "qianwang zhanghu shell"
+  },
+  "ops": {
+    "title": "Ops Metrics",
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "kpi": {
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "clicks": "Clicks (7d)",
+      "impressions": "Impressions (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "earnings": "Earnings (7d)"
+    },
+    "providers": {
+      "title": "Provider status",
+      "ok": "OK",
+      "notConfigured": "Not configured",
+      "error": "Error"
+    },
+    "empty": {
+      "title": "No metrics collected yet",
+      "desc": "Run the metrics collector locally, then refresh this page."
+    },
+    "disabled": {
+      "title": "Ops metrics viewer is disabled in this mode",
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
+    }
   },
   "actions": {
     "previewOnDemand": "Dakai anxu fanyi yulan (noindex)"

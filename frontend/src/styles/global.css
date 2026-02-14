@@ -306,6 +306,17 @@ p {
   color: var(--brand);
 }
 
+.app-shell-fallback {
+  margin: 0 auto;
+  max-width: 1480px;
+  border: 1px solid color-mix(in srgb, var(--warning) 56%, var(--border));
+  border-radius: var(--gv-radius-sm);
+  background: color-mix(in srgb, var(--warning) 13%, var(--surface-strong));
+  color: color-mix(in srgb, var(--ink) 84%, var(--warning));
+  padding: 0.58rem 0.72rem;
+  font-size: 0.83rem;
+}
+
 .legal-page {
   display: grid;
   gap: 0.92rem;
@@ -420,6 +431,32 @@ p {
 
 .legal-toc-mobile {
   display: none;
+}
+
+.error-page-wrap {
+  max-width: min(860px, 100%);
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.error-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.62rem;
+}
+
+.error-report-box {
+  border: 1px dashed var(--border);
+  border-radius: var(--gv-radius-sm);
+  background: var(--surface-subtle);
+  padding: 0.72rem;
+  display: grid;
+  gap: 0.42rem;
+  justify-items: start;
+}
+
+.error-report-status {
+  margin: 0;
 }
 
 .search-bar {
@@ -2673,6 +2710,10 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
     align-items: flex-start;
   }
 
+  .app-shell-fallback {
+    margin-inline: 0.25rem;
+  }
+
   .legal-prose {
     padding: 0.9rem;
   }
@@ -2683,6 +2724,10 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
 
   .legal-consent-link {
     width: 100%;
+  }
+
+  .error-page-wrap {
+    padding: 0.9rem;
   }
 }
 

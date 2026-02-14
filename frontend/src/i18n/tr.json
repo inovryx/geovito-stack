@@ -55,6 +55,17 @@
       "title": "Kullanim Sartlari"
     }
   },
+  "errorPage": {
+    "title": "Bir seyler ters gitti",
+    "description": "Sayfada beklenmedik bir sorun olustu. Ana sayfaya donebilir veya izin ayarlarinizi guncelleyebilirsiniz.",
+    "homeCta": "Ana sayfaya don",
+    "consentCta": "Izin ayarlarini ac",
+    "reportCta": "Sorunu bildir",
+    "reportDisabled": "Hata raporu gondermek icin analiz iznini etkinlestirin.",
+    "reportReady": "Bu sorunu raporlayabilirsiniz.",
+    "reportSent": "Sorun raporu gonderildi.",
+    "inlineFallback": "Bazi etkilesimli kontroller gecici olarak kullanilamiyor."
+  },
   "stateBanner": {
     "runtime": "Runtime translation preview is shown. This view is not indexed.",
     "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
@@ -225,6 +236,32 @@
       "savedPlaces": "Saved places/watchlist (future)"
     },
     "loginCta": "Go to account shell"
+  },
+  "ops": {
+    "title": "Ops Metrics",
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "kpi": {
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "clicks": "Clicks (7d)",
+      "impressions": "Impressions (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "earnings": "Earnings (7d)"
+    },
+    "providers": {
+      "title": "Provider status",
+      "ok": "OK",
+      "notConfigured": "Not configured",
+      "error": "Error"
+    },
+    "empty": {
+      "title": "No metrics collected yet",
+      "desc": "Run the metrics collector locally, then refresh this page."
+    },
+    "disabled": {
+      "title": "Ops metrics viewer is disabled in this mode",
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
+    }
   },
   "actions": {
     "previewOnDemand": "Open on-demand translation preview (noindex)"

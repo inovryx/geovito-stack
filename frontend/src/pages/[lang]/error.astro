@@ -1,0 +1,114 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../lib/pageHelpers';
+import { getUiMessages, translate } from '../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({ params: { lang: language } }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const canonicalPath = pathForLanguage(lang, 'error');
+const canonical = absoluteUrl(canonicalPath);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'error')));
+const alternates = toAlternates(languageLinks);
+
+const title = translate(ui, 'errorPage.title', {}, 'Something went wrong');
+const description = translate(
+  ui,
+  'errorPage.description',
+  {},
+  'The page hit an unexpected problem. You can go back home or adjust consent settings.'
+);
+const homeHref = pathForLanguage(lang);
+const consentHref = `${canonicalPath}?consent=1`;
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <section class="error-page-wrap gv-card gv-stack">
+    <h1 class="gv-h1">{title}</h1>
+    <p class="gv-body">{description}</p>
+
+    <div class="error-page-actions">
+      <a class="button-link" href={homeHref}>
+        {translate(ui, 'errorPage.homeCta', {}, 'Back to home')}
+      </a>
+      <a class="button-link button-link-secondary" href={consentHref} data-consent-auto-opener>
+        {translate(ui, 'errorPage.consentCta', {}, 'Open consent settings')}
+      </a>
+    </div>
+
+    <div
+      class="error-report-box"
+      data-report-disabled={translate(ui, 'errorPage.reportDisabled', {}, 'Enable analytics consent to send an error report.')}
+      data-report-ready={translate(ui, 'errorPage.reportReady', {}, 'You can report this issue.')}
+      data-report-sent={translate(ui, 'errorPage.reportSent', {}, 'Issue report sent.')}
+    >
+      <button type="button" class="ui-button ui-button-secondary" data-error-report>
+        {translate(ui, 'errorPage.reportCta', {}, 'Report issue')}
+      </button>
+      <p class="error-report-status gv-caption" data-error-report-status>
+        {translate(ui, 'errorPage.reportDisabled', {}, 'Enable analytics consent to send an error report.')}
+      </p>
+    </div>
+  </section>
+
+  <script>
+    import { captureException } from '../../lib/observability/sentry';
+
+    (() => {
+      const reportBox = document.querySelector('[data-report-disabled]');
+      const reportButton = document.querySelector('[data-error-report]');
+      const reportStatus = document.querySelector('[data-error-report-status]');
+
+      if (!(reportBox instanceof HTMLElement) || !(reportButton instanceof HTMLButtonElement) || !(reportStatus instanceof HTMLElement)) return;
+
+      const disabledText = reportBox.dataset.reportDisabled || 'Enable analytics consent to send an error report.';
+      const readyText = reportBox.dataset.reportReady || 'You can report this issue.';
+      const sentText = reportBox.dataset.reportSent || 'Issue report sent.';
+
+      const hasAnalyticsConsent = () => document.documentElement.getAttribute('data-consent-analytics') === '1';
+
+      const syncState = () => {
+        const enabled = hasAnalyticsConsent();
+        reportButton.disabled = !enabled;
+        reportStatus.textContent = enabled ? readyText : disabledText;
+      };
+
+      syncState();
+      window.addEventListener('gv:consent-change', syncState);
+
+      reportButton.addEventListener('click', () => {
+        if (!hasAnalyticsConsent()) {
+          syncState();
+          return;
+        }
+
+        captureException(new Error('manual_error_report'), {
+          tags: { source: 'error_page_report' },
+          extra: {
+            marker: 'manual_error_report',
+          },
+          request: { url: window.location.href },
+        });
+
+        reportStatus.textContent = sentText;
+      });
+    })();
+  </script>
+</MainLayout>

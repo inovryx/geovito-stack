@@ -100,6 +100,10 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
     }
   </div>
 
+  <p class="app-shell-fallback" data-client-fallback="app-shell" aria-live="polite" aria-hidden="true" hidden>
+    {t('errorPage.inlineFallback', 'Some interactive controls are temporarily unavailable.')}
+  </p>
+
   <div class="drawer-backdrop" data-shell-backdrop hidden></div>
 
   <aside
@@ -139,8 +143,11 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
   <script>
     import { createFocusTrap } from '../lib/a11y/focusTrap';
     import { trackSidebarToggle } from '../lib/analytics';
+    import { runWithClientBoundary } from '../lib/observability/clientBoundary';
 
-    (() => {
+    runWithClientBoundary(
+      'app_shell',
+      () => {
       const root = document.documentElement;
       const sidebarToggles = Array.from(document.querySelectorAll('[data-sidebar-toggle]'));
 
@@ -273,6 +280,8 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
           setOpen(false);
         }
       });
-    })();
+      },
+      { fallbackSelector: '[data-client-fallback="app-shell"]' }
+    );
   </script>
 </BaseLayout>

@@ -55,6 +55,17 @@
       "title": "Usloviya ispolzovaniya"
     }
   },
+  "errorPage": {
+    "title": "Chto-to poshlo ne tak",
+    "description": "Na stranitse voznikla nepredvidennaya oshibka. Vy mozhete vernutsya na glavnuyu ili izmenit nastroiki soglasiya.",
+    "homeCta": "Na glavnuyu",
+    "consentCta": "Otkryt nastroiki soglasiya",
+    "reportCta": "Soobshit o probleme",
+    "reportDisabled": "Vklyuchite soglasie na analitiku, chtoby otpravit otchet ob oshibke.",
+    "reportReady": "Vy mozhete soobshit ob etoy probleme.",
+    "reportSent": "Otchet ob oshibke otpravlen.",
+    "inlineFallback": "Chast interaktivnykh elementov vremenno nedostupna."
+  },
   "stateBanner": {
     "runtime": "Pokazyvaetsya prevyu runtime-perevoda. Eta versiya ne indeksiruetsya.",
     "fallback": "Polnyy complete-kontent na etom yazyke poka nedostupen ({language}). Pokazyvaetsya kanonicheskaya complete-versiya.",
@@ -225,6 +236,32 @@
       "savedPlaces": "Sokhranennye mesta/watchlist (future)"
     },
     "loginCta": "Pereyti v account-shell"
+  },
+  "ops": {
+    "title": "Ops Metrics",
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "kpi": {
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "clicks": "Clicks (7d)",
+      "impressions": "Impressions (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "earnings": "Earnings (7d)"
+    },
+    "providers": {
+      "title": "Provider status",
+      "ok": "OK",
+      "notConfigured": "Not configured",
+      "error": "Error"
+    },
+    "empty": {
+      "title": "No metrics collected yet",
+      "desc": "Run the metrics collector locally, then refresh this page."
+    },
+    "disabled": {
+      "title": "Ops metrics viewer is disabled in this mode",
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
+    }
   },
   "actions": {
     "previewOnDemand": "Otkryt prevyu perevoda po zaprosu (noindex)"
