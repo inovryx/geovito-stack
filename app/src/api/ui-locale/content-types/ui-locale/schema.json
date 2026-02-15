@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ui_locales",
+  "info": {
+    "singularName": "ui-locale",
+    "pluralName": "ui-locales",
+    "displayName": "UI Locale",
+    "description": "UI language bundle imported/exported as JSON for build-time usage"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ui_locale": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["missing", "draft", "complete"],
+      "default": "draft",
+      "required": true
+    },
+    "strings": {
+      "type": "json",
+      "required": true
+    },
+    "deploy_required": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_imported_at": {
+      "type": "datetime"
+    },
+    "last_exported_at": {
+      "type": "datetime"
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}

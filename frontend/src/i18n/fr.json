@@ -1,0 +1,278 @@
+{
+  "site": {
+    "brand": "Geovito"
+  },
+  "nav": {
+    "home": "Home",
+    "atlas": "Atlas",
+    "regions": "Regions",
+    "blog": "Blog",
+    "about": "About",
+    "rules": "Rules",
+    "help": "Help",
+    "account": "Account"
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "terms": "Terms"
+  },
+  "language": {
+    "switcherAria": "Language selector"
+  },
+  "ads": {
+    "label": "Advertisement"
+  },
+  "consent": {
+    "title": "Privacy preferences",
+    "desc": "We use optional analytics and ads settings only with your permission. Necessary features are always on.",
+    "acceptAll": "Accept all",
+    "rejectAll": "Reject all",
+    "customize": "Customize",
+    "manage": "Manage consent",
+    "modalTitle": "Customize consent",
+    "necessary": "Necessary",
+    "analytics": "Analytics",
+    "ads": "Ads",
+    "alwaysOn": "Always on",
+    "save": "Save preferences",
+    "close": "Close",
+    "updated": "Consent updated",
+    "learnMore": "Learn more",
+    "openSettings": "Open consent settings"
+  },
+  "legal": {
+    "lastUpdated": "Last updated",
+    "enFallbackNotice": "This legal page is currently published in English while localized versions are in progress.",
+    "privacy": {
+      "title": "Privacy Policy"
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "openConsentCta": "Update analytics and ads consent preferences at any time."
+    },
+    "terms": {
+      "title": "Terms of Use"
+    }
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "description": "The page hit an unexpected problem. You can go back home or adjust consent settings.",
+    "homeCta": "Back to home",
+    "consentCta": "Open consent settings",
+    "reportCta": "Report issue",
+    "reportDisabled": "Enable analytics consent to send an error report.",
+    "reportReady": "You can report this issue.",
+    "reportSent": "Issue report sent.",
+    "inlineFallback": "Some interactive controls are temporarily unavailable."
+  },
+  "auth": {
+    "registerDisabledTitle": "Registration is disabled",
+    "registerDisabledBody": "Account creation is paused in this environment.",
+    "registerDisabledHint": "Registration is currently disabled."
+  },
+  "stateBanner": {
+    "runtime": "Runtime translation preview is shown. This view is not indexed.",
+    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
+    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
+    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
+    "canonicalLink": "Go to canonical complete version"
+  },
+  "home": {
+    "defaultTitle": "Geovito Atlas",
+    "defaultExcerpt": "Strapi-driven homepage.",
+    "defaultBody": "No body content yet.",
+    "atlasCountries": "Atlas (Countries)",
+    "blogSection": "Blog",
+    "noCountryDescription": "No description yet.",
+    "noPostSummary": "No summary yet.",
+    "trendingTitle": "Trending places",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noTrending": "No trending places yet."
+  },
+  "blog": {
+    "listTitle": "Blog",
+    "listDescription": "Geovito blog list",
+    "listHint": "Posts are visible even when translation is not complete; incomplete variants are not indexable.",
+    "noBody": "No content body yet."
+  },
+  "atlas": {
+    "list": {
+      "title": "Atlas",
+      "description": "Country-level entry points in the Atlas hierarchy.",
+      "empty": "No countries are available yet.",
+      "emptyTitle": "No places found",
+      "emptyDescription": "Try another filter chip to continue exploring the atlas.",
+      "emptyAction": "Reset filters",
+      "noSnippet": "No summary yet.",
+      "filterAria": "Filter atlas places",
+      "stateLegendAria": "Language state legend",
+      "metaSummary": "Showing {shown} of {total} places",
+      "filters": {
+        "all": "All",
+        "country": "Country",
+        "city": "City",
+        "region": "Region",
+        "landmark": "Landmark"
+      },
+      "states": {
+        "complete": "complete",
+        "draft": "draft",
+        "missing": "missing"
+      },
+      "pagination": {
+        "aria": "Atlas pagination",
+        "prev": "Prev",
+        "next": "Next",
+        "pageLabel": "Page {page}",
+        "pageCurrentLabel": "Current page, {page}"
+      }
+    },
+    "section": {
+      "overview": "Overview",
+      "quickFacts": "Quick Facts",
+      "hierarchy": "Hierarchy",
+      "travelEssentials": "Travel Essentials",
+      "relatedPosts": "Related Posts",
+      "nearbyPlaces": "Nearby Places"
+    },
+    "quickFacts": {
+      "population": "Population",
+      "coordinates": "Coordinates",
+      "timezone": "Timezone",
+      "currency": "Currency",
+      "language": "Language",
+      "elevation": "Elevation"
+    },
+    "toc": {
+      "title": "On this page",
+      "aria": "On this page"
+    },
+    "hierarchy": {
+      "noParent": "No parent place",
+      "noChildren": "No child places",
+      "moreChildren": "+{count} more children",
+      "badgesAria": "Place state and type"
+    },
+    "relatedPosts": {
+      "empty": "No related posts yet"
+    },
+    "travelEssentials": {
+      "visa": "Visa",
+      "flights": "Flights",
+      "currency": "Currency",
+      "helper": {
+        "noOrigin": "Select an origin to estimate flights."
+      },
+      "comingSoon": "Coming soon"
+    },
+    "meta": {
+      "placeId": "place_id",
+      "type": "type",
+      "country": "country",
+      "region": "region",
+      "coordinates": "coordinates",
+      "notAvailable": "not available",
+      "languageStatus": "language status"
+    },
+    "links": {
+      "breadcrumb": "Hierarchy",
+      "parent": "Parent place",
+      "children": "Child places",
+      "related": "Related places",
+      "relatedBlog": "Related blog posts",
+      "noParent": "No parent place.",
+      "noChildren": "No child places found.",
+      "noRelated": "No related places found.",
+      "noRelatedBlog": "No related blog posts found."
+    },
+    "noBody": "No content body yet."
+  },
+  "regions": {
+    "list": {
+      "title": "Regions",
+      "description": "Country-specific regional group pages without changing core parent chains.",
+      "empty": "No region groups are available yet."
+    },
+    "meta": {
+      "title": "Region metadata",
+      "regionKey": "region key",
+      "country": "country",
+      "memberCount": "member count"
+    },
+    "members": "Member places",
+    "noMembers": "No member places found.",
+    "noBody": "No content body yet."
+  },
+  "post": {
+    "meta": {
+      "postId": "post_id",
+      "languageStatus": "language status"
+    },
+    "noBody": "No content body yet."
+  },
+  "uiPage": {
+    "noBody": "No content body yet.",
+    "notFoundTitle": "Page not available",
+    "notFoundDescription": "This system page does not exist in Strapi yet."
+  },
+  "account": {
+    "title": "Account",
+    "description": "User account shell is active in read-only mode for now.",
+    "authStateTitle": "Authentication status",
+    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
+    "loginCta": "Open admin login",
+    "rolesTitle": "Role boundaries",
+    "roles": {
+      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions.",
+      "user": "Authenticated user: reserved for future blog submissions and profile features.",
+      "editor": "Editor/Admin: review and publish Atlas and Blog content."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Editorial-safe user dashboard shell.",
+    "readOnlyTitle": "Read-only mode",
+    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
+    "dataTitle": "Planned modules",
+    "items": {
+      "blogDrafts": "My blog drafts (future)",
+      "submissions": "My Atlas suggestions (future self-view)",
+      "savedPlaces": "Saved places/watchlist (future)"
+    },
+    "loginCta": "Go to account shell"
+  },
+  "ops": {
+    "title": "Ops Metrics",
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "kpi": {
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "clicks": "Clicks (7d)",
+      "impressions": "Impressions (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "earnings": "Earnings (7d)"
+    },
+    "providers": {
+      "title": "Provider status",
+      "ok": "OK",
+      "notConfigured": "Not configured",
+      "error": "Error"
+    },
+    "empty": {
+      "title": "No metrics collected yet",
+      "desc": "Run the metrics collector locally, then refresh this page."
+    },
+    "disabled": {
+      "title": "Ops metrics viewer is disabled in this mode",
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
+    }
+  },
+  "embed": {
+    "sectionTitle": "Videos",
+    "openSource": "Open source video"
+  },
+  "actions": {
+    "previewOnDemand": "Open on-demand translation preview (noindex)"
+  }
+}

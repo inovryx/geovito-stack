@@ -5,6 +5,9 @@
 - Astro frontend (Cloudflare Pages target)
 - Import execution: disabled (dormant contract mode)
 - Repo mode: PROD-FIRST (single live standard)
+- Ops routes intentionally removed (`/[lang]/ops/*` not part of active baseline)
+- Build fingerprint endpoint active: `/.well-known/geovito-build.json`
+- Media policy active: `webp-first` content + `jpeg` OG fallback (`MEDIA_SYSTEM.md`)
 
 ## Start / Stop
 ```bash
@@ -25,7 +28,21 @@ cd /home/ali/geovito-stack
 docker compose ps
 curl -I http://127.0.0.1:1337/admin
 bash tools/prod_health.sh
+bash tools/stack_health.sh
 ```
+
+`tools/stack_health.sh` checks:
+- docker `db` and `strapi` runtime/health
+- `GET /api/_health` response contract (`ok=true`, `db=true`)
+
+## Media Upload Smoke (Optional)
+Requires an admin-level Strapi API token with upload permissions.
+```bash
+cd /home/ali/geovito-stack
+STRAPI_API_TOKEN=... bash tools/media_upload_smoke.sh
+```
+
+This uploads a tiny fixture image and verifies it is converted to WebP.
 
 ## Shell Readiness (One Command)
 ```bash
@@ -42,6 +59,11 @@ What it verifies:
 - unknown slug 404 behavior
 - writes URL-level report to `artifacts/shell_smoke_report.tsv`
 
+## Account Language Preference (Authenticated)
+- Endpoint: `GET /api/user-preferences/me`, `PUT /api/user-preferences/me`
+- Purpose: persist preferred site UI language per user profile.
+- Atlas content language remains independent; if requested UI locale is missing in Atlas translations, frontend falls back to EN content.
+
 ## Cloudflare Pages Build Gate
 ```bash
 cd /home/ali/geovito-stack
@@ -56,6 +78,45 @@ Root directory: `frontend`
 Output: `dist`
 Node: `20`
 
+## UI Language Import/Export (Build-time)
+Import UI locale JSON into Strapi:
+```bash
+STRAPI_API_TOKEN=... bash tools/import_ui_locales.sh
+```
+
+Export UI locale JSON from Strapi into frontend files:
+```bash
+STRAPI_API_TOKEN=... bash tools/export_ui_locales.sh
+```
+
+Notes:
+- `ui-locale.deploy_required=true` means a deploy is needed.
+- Export clears `deploy_required` and updates `last_exported_at`.
+- For one-command publish, keep token in local non-repo file:
+  - `~/.config/geovito/secrets.env`
+  - content: `STRAPI_API_TOKEN=your_real_token_here`
+- Then run:
+```bash
+bash tools/ui_locale_publish.sh
+```
+- Optional: skip build check with `bash tools/ui_locale_publish.sh --no-build-check`
+- UI language and Atlas language are separated:
+  - UI can be `fr` (or other added locales)
+  - Atlas content keeps its own supported set and falls back to `en` if requested locale is missing
+
+## Post-Deploy Smoke (Domain-Level)
+```bash
+cd /home/ali/geovito-stack
+BASE_URL=https://geovito.com bash tools/post_deploy_smoke.sh
+EXPECTED_SHA7=$(git rev-parse --short=7 HEAD) BASE_URL=https://geovito.com bash tools/post_deploy_smoke.sh
+```
+
+What it verifies:
+- `/.well-known/geovito-build.json` returns 200 and exposes `build_sha7`
+- `/sitemap.xml` returns 200
+- `/en/atlas/italy-pilot/` stays indexable + canonical self
+- `/de/atlas/italy-pilot/` stays noindex + canonical EN
+
 ## Pre-Design Gate (All Critical Checks)
 ```bash
 cd /home/ali/geovito-stack
@@ -64,6 +125,9 @@ bash tools/pre_design_gate_check.sh
 
 Includes:
 - `tools/prod_health.sh`
+- `tools/media_policy_check.sh`
+- `tools/auth_flow_check.sh`
+- `tools/oauth_config_check.sh`
 - `tools/import_dormant_check.sh`
 - `tools/translation_bundle_dormant_check.sh`
 - `tools/import_log_sanity_check.sh`
@@ -159,6 +223,125 @@ Current auth mode:
 - Email/password auth is the baseline.
 - Public self-service account features are intentionally limited in this phase.
 - `/[lang]/account/` and `/[lang]/dashboard/` always render safely (no build/runtime crash).
+
+Auth runtime guards:
+- `AUTH_LOCAL_REGISTER_ENABLED=true|false`:
+  - `false` => `POST /api/auth/local/register` returns `403`
+- `AUTH_GOOGLE_ENABLED=true|false`:
+  - `false` => `/api/connect/google` and callback routes return `403`
+- `AUTH_FACEBOOK_ENABLED=true|false`:
+  - `false` => `/api/connect/facebook` and callback routes return `403`
+- `AUTH_RATE_LIMIT_WINDOW_MS` + `AUTH_RATE_LIMIT_MAX`:
+  - applies request throttling on login/register/social connect endpoints
+
+Frontend provider buttons:
+- `PUBLIC_AUTH_LOCAL_REGISTER_ENABLED=false` hides the register form in the frontend.
+- `PUBLIC_AUTH_GOOGLE_ENABLED=true` and/or `PUBLIC_AUTH_FACEBOOK_ENABLED=true` are only UI toggles.
+- Backend guard flags above must match, otherwise endpoint returns `403`.
+
+Auth verification command:
+```bash
+cd /home/ali/geovito-stack
+bash tools/auth_flow_check.sh
+```
+
+Expected:
+- register endpoint follows `AUTH_LOCAL_REGISTER_ENABLED`
+- `/api/connect/google` follows `AUTH_GOOGLE_ENABLED`
+- `/api/connect/facebook` follows `AUTH_FACEBOOK_ENABLED`
+- login endpoint is not hard-blocked (`403/429` unexpected on first attempt)
+
+OAuth provider configuration check:
+```bash
+cd /home/ali/geovito-stack
+PUBLIC_SITE_URL=https://geovito.com bash tools/oauth_config_check.sh
+```
+
+Expected:
+- Provider OFF ise check `skipped` yazar ve PASS verir.
+- Provider ON ise `/api/connect/{provider}` redirect vermeli.
+- Redirect `Location` provider hostuna gitmeli ve callback URL olarak
+  `${PUBLIC_SITE_URL}/api/connect/{provider}/callback` veya
+  `${PUBLIC_SITE_URL}/api/auth/{provider}/callback` icermelidir.
+- Local `API_BASE=http://127.0.0.1:1337` testinde secure-cookie limiti nedeniyle 500 alinabilir;
+  script bu durumda Strapi loglarinda `302` redirecti dogrulayip PASS verir.
+
+OAuth provider apply (Strapi users-permissions store):
+```bash
+cd /home/ali/geovito-stack
+bash tools/oauth_provider_apply.sh --dry-run
+bash tools/oauth_provider_apply.sh
+```
+
+Required env vars when provider is enabled:
+- `AUTH_GOOGLE_ENABLED=true` ise `AUTH_GOOGLE_CLIENT_ID` + `AUTH_GOOGLE_CLIENT_SECRET`
+- `AUTH_FACEBOOK_ENABLED=true` ise `AUTH_FACEBOOK_CLIENT_ID` + `AUTH_FACEBOOK_CLIENT_SECRET`
+- Optional callback path overrides:
+  - `AUTH_GOOGLE_CALLBACK_PATH` (default `api/connect/google/callback`)
+  - `AUTH_FACEBOOK_CALLBACK_PATH` (default `api/connect/facebook/callback`)
+- Optional scope overrides:
+  - `AUTH_GOOGLE_SCOPE` (default `email`)
+  - `AUTH_FACEBOOK_SCOPE` (default `email`)
+
+If `.env` changed and container env refresh is needed:
+```bash
+REFRESH_STRAPI_ENV=1 bash tools/oauth_provider_apply.sh --dry-run
+```
+
+## Media Upload Pipeline (Images)
+Upload policy:
+- Source formats allowed by content types: image media fields (jpg/png/webp/etc).
+- Conversion middleware converts new JPG/PNG uploads to WebP.
+- Active policy: `webp-first` (AVIF is not enabled in current baseline).
+- OG/social preview fallback remains JPEG for broad crawler compatibility.
+
+Runtime env knobs:
+- `MEDIA_IMAGE_CONVERT_ENABLED=true|false`
+- `MEDIA_IMAGE_TARGET_FORMAT=webp`
+- `MEDIA_IMAGE_QUALITY=35..95`
+- `MEDIA_IMAGE_MAX_INPUT_BYTES` (conversion input cap)
+- `MEDIA_IMAGE_CONVERT_STRICT=true|false` (`true` -> oversize conversion hard-fail)
+
+Quick check:
+```bash
+cd /home/ali/geovito-stack
+bash tools/media_policy_check.sh
+```
+
+## Content Embeds (YouTube/Facebook)
+Embed contract:
+- translation-level repeatable component (`provider`, `source_url`, optional `title/caption/start_seconds`)
+- providers: `youtube`, `facebook`
+- max 8 embed items per translation
+
+Safety:
+- backend whitelist/validation: `app/src/modules/content-embeds/index.js`
+- frontend safe resolver: `frontend/src/lib/embed.ts`
+- renderer: `frontend/src/components/content/EmbedGallery.astro`
+
+Smoke verification:
+```bash
+cd /home/ali/geovito-stack
+bash tools/shell_smoke_test.sh
+```
+
+See:
+- `EMBED_SYSTEM.md`
+- `UPLOAD_MAX_FILE_SIZE_BYTES` (upload request cap)
+
+Operational notes:
+- Conversion only runs on upload routes (`/api/upload` / `/upload`) and only for `POST`/`PUT`.
+- SVG/GIF gibi formatlar oldugu gibi birakilir (pipeline sadece JPG/PNG cevirir).
+- Public role upload yetkisi acik degildir; medya yukleme editor/admin akisindadir.
+- Social/share metadata fallback image remains JPEG:
+  - `frontend/public/og-default.jpg`
+  - Base layout emits `og:image` + `twitter:image` from this JPEG by default.
+
+Policy guard:
+```bash
+cd /home/ali/geovito-stack
+bash tools/media_policy_check.sh
+```
 
 ## Blog Model + Permissions
 - Model fields (active):

@@ -1,4 +1,4 @@
-import { SUPPORTED_LANGUAGES } from './languages';
+import { ATLAS_CONTENT_LANGUAGES } from './languages';
 import { buildIndexableLanguagePathMap } from './indexGate';
 import { absoluteUrl } from './pageHelpers';
 import { getAtlasPlaces, getRegionGroups } from './strapi';
@@ -38,7 +38,7 @@ export const buildAtlasSitemapChunks = async () => {
   const [places, regionGroups] = await Promise.all([getAtlasPlaces(), getRegionGroups()]);
   const byLanguage = new Map<string, Set<string>>();
 
-  for (const language of SUPPORTED_LANGUAGES) {
+  for (const language of ATLAS_CONTENT_LANGUAGES) {
     byLanguage.set(language, new Set());
   }
 
@@ -68,7 +68,7 @@ export const buildAtlasSitemapChunks = async () => {
 
   const chunks: SitemapChunk[] = [];
 
-  for (const language of SUPPORTED_LANGUAGES) {
+  for (const language of ATLAS_CONTENT_LANGUAGES) {
     const urlSet = byLanguage.get(language);
     if (!urlSet || urlSet.size === 0) continue;
 

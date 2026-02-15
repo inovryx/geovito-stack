@@ -1,4 +1,4 @@
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, pathForLanguage, type SiteLanguage } from './languages';
+import { ATLAS_CONTENT_LANGUAGES, DEFAULT_LANGUAGE, pathForLanguage, type SiteLanguage } from './languages';
 import type { LocalizedContent, TranslationResolution } from './languageState';
 
 export type IndexGateDecision = {
@@ -37,7 +37,7 @@ export const buildIndexableLanguagePathMap = (
 
   for (const translation of translations) {
     const language = String(translation?.language || '').trim().toLowerCase() as SiteLanguage;
-    if (!SUPPORTED_LANGUAGES.includes(language)) continue;
+    if (!ATLAS_CONTENT_LANGUAGES.includes(language)) continue;
     if (language !== DEFAULT_LANGUAGE) continue;
     if (translation.status !== 'complete') continue;
     if (translation.runtime_translation) continue;

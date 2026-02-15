@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_preferences",
+  "info": {
+    "singularName": "user-preference",
+    "pluralName": "user-preferences",
+    "displayName": "User Preference",
+    "description": "Per-user UI preferences such as preferred site language"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "owner_user_id": {
+      "type": "integer",
+      "required": true,
+      "unique": true
+    },
+    "preferred_ui_language": {
+      "type": "string",
+      "required": true,
+      "default": "en"
+    },
+    "updated_from_ip": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}

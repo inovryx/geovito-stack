@@ -4,7 +4,8 @@ import de from '../i18n/de.json';
 import es from '../i18n/es.json';
 import ru from '../i18n/ru.json';
 import zhCn from '../i18n/zh-cn.json';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SiteLanguage } from './languages';
+import fr from '../i18n/fr.json';
+import { DEFAULT_LANGUAGE, SITE_UI_LANGUAGES, type SiteLanguage } from './languages';
 
 type Dictionary = Record<string, unknown>;
 
@@ -15,6 +16,7 @@ const dictionaries: Record<SiteLanguage, Dictionary> = {
   es,
   ru,
   'zh-cn': zhCn,
+  fr,
 };
 
 const getByPath = (dictionary: Dictionary, path: string): unknown => {
@@ -64,7 +66,7 @@ const normalizeLanguageCode = (value: string | null | undefined): SiteLanguage |
   if (!value) return null;
   const normalized = value.trim().toLowerCase();
 
-  if (SUPPORTED_LANGUAGES.includes(normalized as SiteLanguage)) {
+  if (SITE_UI_LANGUAGES.includes(normalized as SiteLanguage)) {
     return normalized as SiteLanguage;
   }
 
@@ -73,7 +75,7 @@ const normalizeLanguageCode = (value: string | null | undefined): SiteLanguage |
   }
 
   const primary = normalized.split('-')[0];
-  if (SUPPORTED_LANGUAGES.includes(primary as SiteLanguage)) {
+  if (SITE_UI_LANGUAGES.includes(primary as SiteLanguage)) {
     return primary as SiteLanguage;
   }
 

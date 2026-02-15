@@ -1,5 +1,9 @@
 ---
+import MainLayout from '../../../layouts/MainLayout.astro';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export async function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map((language) => ({
@@ -12,5 +16,221 @@ if (!isSupportedLanguage(lang)) {
   throw new Error(`Unsupported language: ${lang}`);
 }
 
-return Astro.redirect(pathForLanguage(lang, 'login'));
+const ui = getUiMessages(lang);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'account')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage('en', 'account'));
+const authBaseUrl = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+const availableLanguages = SUPPORTED_LANGUAGES;
 ---
+
+<MainLayout
+  title={translate(ui, 'account.title', {}, 'Account')}
+  description={translate(ui, 'account.description', {}, 'Manage your account and UI language preferences.')}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <h1>{translate(ui, 'account.title', {}, 'Account')}</h1>
+  <p class="small">{translate(ui, 'account.description', {}, 'Manage your account and UI language preferences.')}</p>
+
+  <section class="card panel gv-stack" data-account-logged-out hidden>
+    <h2>{translate(ui, 'auth.login', {}, 'Login')}</h2>
+    <p class="small">You need to login before managing account preferences.</p>
+    <a class="ui-button ui-button-primary ui-button-md" href={pathForLanguage(lang, 'login')}>Go to login</a>
+  </section>
+
+  <section class="card panel gv-stack" data-account-settings hidden>
+    <h2>Site language preference</h2>
+    <p class="small">This preference is saved to your account profile and overrides browser language.</p>
+
+    <form class="gv-stack account-form" data-account-language-form data-auth-base={authBaseUrl} novalidate>
+      <label class="account-field">
+        <span>Preferred site language</span>
+        <select name="preferred_ui_language" data-account-language-select>
+          {
+            availableLanguages.map((language) => (
+              <option value={language}>{language.toUpperCase()}</option>
+            ))
+          }
+        </select>
+      </label>
+
+      <button type="submit" class="ui-button ui-button-primary ui-button-md">
+        <span class="ui-button-label">Save preference</span>
+      </button>
+      <p class="small account-feedback" data-account-feedback aria-live="polite"></p>
+    </form>
+  </section>
+
+  <script is:inline define:vars={{ lang, availableLanguages }}>
+    (() => {
+      const settingsPanel = document.querySelector('[data-account-settings]');
+      const loggedOutPanel = document.querySelector('[data-account-logged-out]');
+      const form = document.querySelector('[data-account-language-form]');
+      const feedback = document.querySelector('[data-account-feedback]');
+      const select = document.querySelector('[data-account-language-select]');
+
+      if (!(settingsPanel instanceof HTMLElement) || !(loggedOutPanel instanceof HTMLElement)) return;
+      if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement) || !(select instanceof HTMLSelectElement)) return;
+
+      const authBase = form.getAttribute('data-auth-base');
+      if (!authBase) return;
+
+      const normalizedLanguages = Array.isArray(availableLanguages) ? availableLanguages : [];
+      const isAllowedLanguage = (value) => normalizedLanguages.includes(value);
+      const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
+
+      const setFeedback = (message, isError = false) => {
+        feedback.textContent = message;
+        feedback.classList.toggle('is-error', isError);
+      };
+
+      const readSession = () => {
+        try {
+          const raw = sessionStorage.getItem('geovito_auth_session');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          if (!parsed.jwt || typeof parsed.jwt !== 'string') return null;
+          return parsed;
+        } catch {
+          return null;
+        }
+      };
+
+      const session = readSession();
+      if (!session) {
+        settingsPanel.hidden = true;
+        loggedOutPanel.hidden = false;
+        return;
+      }
+
+      settingsPanel.hidden = false;
+      loggedOutPanel.hidden = true;
+
+      const applyPreferredLanguage = (language) => {
+        const normalized = normalizeLanguage(language);
+        if (!isAllowedLanguage(normalized)) return false;
+        select.value = normalized;
+        try {
+          localStorage.setItem('geovito.ui_lang', normalized);
+        } catch {
+          // no-op
+        }
+        return true;
+      };
+
+      const loadPreference = async () => {
+        const localPreferred = normalizeLanguage(localStorage.getItem('geovito.ui_lang') || '');
+        if (isAllowedLanguage(localPreferred)) {
+          select.value = localPreferred;
+        }
+
+        try {
+          const response = await fetch(`${authBase}/api/user-preferences/me`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+          });
+          if (!response.ok) return;
+          const payload = await response.json().catch(() => null);
+          const language = normalizeLanguage(payload?.data?.preferred_ui_language);
+          if (applyPreferredLanguage(language)) {
+            setFeedback('Loaded your saved preference.');
+          }
+        } catch {
+          // no-op
+        }
+      };
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const selected = normalizeLanguage(select.value);
+        if (!isAllowedLanguage(selected)) {
+          setFeedback('Please choose a supported language.', true);
+          return;
+        }
+
+        setFeedback('Saving preference...');
+        try {
+          const response = await fetch(`${authBase}/api/user-preferences/me`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+            body: JSON.stringify({
+              data: {
+                preferred_ui_language: selected,
+              },
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || 'Failed to save preference.';
+            setFeedback(message, true);
+            return;
+          }
+
+          applyPreferredLanguage(selected);
+          setFeedback('Preference saved. Redirecting...');
+          window.setTimeout(() => {
+            window.location.assign(`/${selected}/`);
+          }, 400);
+        } catch {
+          setFeedback('Network error while saving preference.', true);
+        }
+      });
+
+      loadPreference();
+    })();
+  </script>
+</MainLayout>
+
+<style>
+  .account-form {
+    gap: 0.75rem;
+    max-width: 520px;
+  }
+
+  .account-field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .account-field select {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .account-field select:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+
+  .account-feedback {
+    margin: 0;
+    min-height: 1.25rem;
+  }
+
+  .account-feedback.is-error {
+    color: var(--danger);
+  }
+</style>

@@ -7,12 +7,21 @@ Geovito keeps two independent language layers:
 
 These layers are intentionally separate and cannot override each other.
 
-## 2) UI Language Layer (File-based)
-Source of truth:
-- `frontend/src/i18n/en.json`
+Practical rule:
+- UI language can be broader than Atlas content language.
+- Example: UI is `fr`, Atlas content is missing in `fr` -> Atlas falls back to `en`.
+
+## 2) UI Language Layer (Build-time, Strapi-managed)
+Source of truth (build-time):
+- Strapi `ui-locale` collection (one record per locale, field `ui_locale`)
+
+Frontend build outputs:
+- `frontend/src/i18n/*.json` are generated from Strapi by export tool.
+- `frontend/src/i18n/en.json` remains the key contract.
 
 Supported UI locales:
-- `en`, `tr`, `de`, `es`, `ru`, `zh-cn`
+- build-time locale files under `frontend/src/i18n/*.json`
+- default baseline includes `en`, `tr`, `de`, `es`, `ru`, `zh-cn`, `fr`
 
 Files:
 - `frontend/src/i18n/en.json`
@@ -30,6 +39,32 @@ Rules:
 - no runtime UI translation
 - no hardcoded UI copy outside i18n files
 - EN key-set defines the contract
+- New UI locale onboarding:
+  1) add `<locale>.json` in `artifacts/ui-locales/`
+  2) run `tools/import_ui_locales.sh`
+  3) edit in Strapi `ui-locale` if needed
+  4) run `tools/ui_locale_publish.sh` (export + build check)
+
+## 2.1) UI Locale Import/Export (Strapi)
+Import (offline -> Strapi):
+```bash
+STRAPI_API_TOKEN=... bash tools/import_ui_locales.sh
+```
+
+Export (Strapi -> frontend i18n):
+```bash
+STRAPI_API_TOKEN=... bash tools/export_ui_locales.sh
+```
+
+Deploy reminder:
+- `ui-locale.deploy_required` is set to `true` on any edit/import.
+- `export_ui_locales` sets `deploy_required=false` and updates `last_exported_at`.
+- After export, run build/deploy to apply UI changes.
+- One-command flow:
+```bash
+bash tools/ui_locale_publish.sh
+```
+  This reads `STRAPI_API_TOKEN` from `~/.config/geovito/secrets.env` (or `UI_LOCALE_SECRET_FILE`).
 
 ## 3) Atlas Content Languages (Authoring + SEO)
 Atlas locales:

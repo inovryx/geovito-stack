@@ -1,11 +1,13 @@
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = process.cwd();
 const I18N_DIR = join(ROOT, 'src', 'i18n');
 const OUTPUT_DIR = join(ROOT, 'i18n-export');
 
-const localeFiles = ['en.json', 'tr.json', 'de.json', 'es.json', 'ru.json', 'zh-cn.json'];
+const localeFiles = readdirSync(I18N_DIR)
+  .filter((file) => file.endsWith('.json'))
+  .sort((left, right) => left.localeCompare(right));
 
 const loadJson = (file) => JSON.parse(readFileSync(join(I18N_DIR, file), 'utf8'));
 
@@ -27,13 +29,14 @@ const flatten = (object, prefix = '') => {
 const base = loadJson('en.json');
 const baseFlat = flatten(base);
 const baseKeys = Object.keys(baseFlat).sort();
+const nonBaseLocaleFiles = localeFiles.filter((file) => file !== 'en.json');
 
 const mode = process.argv[2] || 'check';
 
 if (mode === 'check') {
   let hasError = false;
 
-  for (const file of localeFiles) {
+  for (const file of nonBaseLocaleFiles) {
     const locale = file.replace('.json', '');
     const flat = flatten(loadJson(file));
     const keys = Object.keys(flat);

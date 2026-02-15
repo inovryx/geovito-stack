@@ -3,6 +3,7 @@ import MainLayout from '../../../layouts/MainLayout.astro';
 import EmptyState from '../../../components/ui/EmptyState.astro';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export async function getStaticPaths() {
@@ -20,6 +21,22 @@ const ui = getUiMessages(lang);
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'login')));
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage('en', 'login'));
+const authBaseUrl = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+const isTruthy = (value: string | undefined) =>
+  ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+const localRegisterEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_LOCAL_REGISTER_ENABLED as string | undefined || 'true');
+const googleEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_GOOGLE_ENABLED as string | undefined);
+const facebookEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_FACEBOOK_ENABLED as string | undefined);
+const googleUrl = `${authBaseUrl}/api/connect/google`;
+const facebookUrl = `${authBaseUrl}/api/connect/facebook`;
+const availableLanguages = SUPPORTED_LANGUAGES;
 ---
 
 <MainLayout
@@ -33,17 +50,72 @@ const canonical = absoluteUrl(pathForLanguage('en', 'login'));
   ui={ui}
 >
   <h1>{translate(ui, 'auth.login', {}, 'Login')}</h1>
-  <p class="small">{translate(ui, 'auth.loginDescription', {}, 'Sign in placeholder for future account features.')}</p>
+  <p class="small">{translate(ui, 'auth.loginDescription', {}, 'Continue with email/password or a social provider if enabled.')}</p>
 
-  <section class="card panel">
-    <p>
-      <a href="/admin">{translate(ui, 'auth.loginCta', {}, 'Continue to admin login')}</a>
-    </p>
-    <p class="small">
-      {translate(ui, 'auth.noAccount', {}, 'No account yet?')}
-      {' '}
-      <a href={pathForLanguage(lang, 'register')}>{translate(ui, 'auth.register', {}, 'Register')}</a>
-    </p>
+  <section class="card panel auth-panel gv-stack">
+    <form class="gv-stack auth-form" data-auth-form="login" data-auth-base={authBaseUrl} novalidate>
+      <label class="auth-field">
+        <span>{translate(ui, 'auth.email', {}, 'Email')}</span>
+        <input
+          type="email"
+          name="identifier"
+          autocomplete="email username"
+          required
+          inputmode="email"
+          placeholder={translate(ui, 'auth.emailPlaceholder', {}, 'you@example.com')}
+        />
+      </label>
+
+      <label class="auth-field">
+        <span>{translate(ui, 'auth.password', {}, 'Password')}</span>
+        <input
+          type="password"
+          name="password"
+          autocomplete="current-password"
+          required
+          minlength="8"
+          placeholder={translate(ui, 'auth.passwordPlaceholder', {}, 'Your password')}
+        />
+      </label>
+
+      <button type="submit" class="ui-button ui-button-primary ui-button-md">
+        <span class="ui-button-label">{translate(ui, 'auth.login', {}, 'Login')}</span>
+      </button>
+      <p class="small auth-feedback" data-auth-feedback aria-live="polite"></p>
+    </form>
+
+    <div class="auth-divider" aria-hidden="true">{translate(ui, 'auth.or', {}, 'or')}</div>
+
+    <div class="auth-providers gv-stack">
+      {
+        googleEnabled ? (
+          <a class="ui-button ui-button-secondary ui-button-md" href={googleUrl}>
+            <span class="ui-button-label">{translate(ui, 'auth.continueWithGoogle', {}, 'Continue with Google')}</span>
+          </a>
+        ) : null
+      }
+      {
+        facebookEnabled ? (
+          <a class="ui-button ui-button-secondary ui-button-md" href={facebookUrl}>
+            <span class="ui-button-label">{translate(ui, 'auth.continueWithFacebook', {}, 'Continue with Facebook')}</span>
+          </a>
+        ) : null
+      }
+      {
+        !googleEnabled && !facebookEnabled ? (
+          <p class="small">{translate(ui, 'auth.socialDisabled', {}, 'Google/Facebook login will appear when enabled in environment settings.')}</p>
+        ) : null
+      }
+    </div>
+
+    {localRegisterEnabled ? (
+      <p class="small">
+        {translate(ui, 'auth.noAccount', {}, 'No account yet?')}{' '}
+        <a href={pathForLanguage(lang, 'register')}>{translate(ui, 'auth.register', {}, 'Register')}</a>
+      </p>
+    ) : (
+      <p class="small">{translate(ui, 'auth.registerDisabledHint', {}, 'Registration is currently disabled.')}</p>
+    )}
   </section>
 
   <section class="card panel">
@@ -53,4 +125,140 @@ const canonical = absoluteUrl(pathForLanguage('en', 'login'));
       icon="Bookmark"
     />
   </section>
+
+  <script is:inline define:vars={{ lang, availableLanguages }}>
+    (() => {
+      const form = document.querySelector('[data-auth-form="login"]');
+      const feedback = document.querySelector('[data-auth-feedback]');
+      if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement)) return;
+
+      const authBase = form.getAttribute('data-auth-base');
+      if (!authBase) return;
+
+      const setFeedback = (message, isError = false) => {
+        feedback.textContent = message;
+        feedback.classList.toggle('is-error', isError);
+      };
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const identifier = String(formData.get('identifier') || '').trim();
+        const password = String(formData.get('password') || '');
+
+        if (!identifier || !password) {
+          setFeedback('Email ve sifre zorunludur.', true);
+          return;
+        }
+
+        setFeedback('Giris deneniyor...');
+        try {
+          const response = await fetch(`${authBase}/api/auth/local`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({ identifier, password }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message =
+              payload?.error?.message ||
+              payload?.message ||
+              'Giris basarisiz. Bilgilerinizi kontrol edip tekrar deneyin.';
+            setFeedback(message, true);
+            return;
+          }
+
+          const session = {
+            email: payload?.user?.email || identifier,
+            username: payload?.user?.username || '',
+            jwt: payload?.jwt || '',
+            loginAt: new Date().toISOString(),
+          };
+          sessionStorage.setItem('geovito_auth_session', JSON.stringify(session));
+
+          const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
+          const isAllowedLanguage = (value) =>
+            Array.isArray(availableLanguages) && availableLanguages.includes(value);
+
+          let redirectLanguage = normalizeLanguage(lang);
+          try {
+            const preferenceResponse = await fetch(`${authBase}/api/user-preferences/me`, {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${session.jwt}`,
+              },
+            });
+            if (preferenceResponse.ok) {
+              const preferencePayload = await preferenceResponse.json().catch(() => null);
+              const preferred = normalizeLanguage(preferencePayload?.data?.preferred_ui_language);
+              if (isAllowedLanguage(preferred)) {
+                redirectLanguage = preferred;
+              }
+            }
+          } catch {
+            // no-op, keep current language
+          }
+
+          if (isAllowedLanguage(redirectLanguage)) {
+            localStorage.setItem('geovito.ui_lang', redirectLanguage);
+          }
+
+          setFeedback('Giris basarili. Yonlendiriliyorsunuz...');
+          window.setTimeout(() => {
+            window.location.assign(`/${redirectLanguage}/`);
+          }, 500);
+        } catch (error) {
+          setFeedback('Baglanti hatasi olustu. Lutfen tekrar deneyin.', true);
+        }
+      });
+    })();
+  </script>
 </MainLayout>
+
+<style>
+  .auth-panel {
+    max-width: 560px;
+  }
+
+  .auth-form {
+    gap: 0.75rem;
+  }
+
+  .auth-field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .auth-field input {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .auth-field input:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+
+  .auth-divider {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .auth-feedback {
+    margin: 0;
+    min-height: 1.25rem;
+  }
+
+  .auth-feedback.is-error {
+    color: var(--danger);
+  }
+</style>

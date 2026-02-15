@@ -1,6 +1,11 @@
-export const SUPPORTED_LANGUAGES = ['en', 'tr', 'de', 'es', 'ru', 'zh-cn'] as const;
+export const SITE_UI_LANGUAGES = ['en', 'tr', 'de', 'es', 'ru', 'zh-cn', 'fr'] as const;
+export const ATLAS_CONTENT_LANGUAGES = ['en', 'tr', 'de', 'es', 'ru', 'zh-cn'] as const;
 
-export type SiteLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+// Backward-compatible alias for existing route/UI usage.
+export const SUPPORTED_LANGUAGES = SITE_UI_LANGUAGES;
+
+export type SiteLanguage = (typeof SITE_UI_LANGUAGES)[number];
+export type AtlasLanguage = (typeof ATLAS_CONTENT_LANGUAGES)[number];
 
 export const DEFAULT_LANGUAGE: SiteLanguage = 'en';
 
@@ -11,10 +16,14 @@ const HREFLANG_MAP: Record<SiteLanguage, string> = {
   es: 'es',
   ru: 'ru',
   'zh-cn': 'zh-CN',
+  fr: 'fr',
 };
 
 export const isSupportedLanguage = (value: string): value is SiteLanguage =>
-  SUPPORTED_LANGUAGES.includes(value as SiteLanguage);
+  SITE_UI_LANGUAGES.includes(value as SiteLanguage);
+
+export const isAtlasLanguage = (value: string): value is AtlasLanguage =>
+  ATLAS_CONTENT_LANGUAGES.includes(value as AtlasLanguage);
 
 export const toHreflang = (language: SiteLanguage) => HREFLANG_MAP[language];
 
