@@ -312,14 +312,16 @@ REFRESH_STRAPI_ENV=1 bash tools/oauth_provider_apply.sh --dry-run
 
 ## Media Upload Pipeline (Images)
 Upload policy:
-- Source formats allowed by content types: image media fields (jpg/png/webp/etc).
-- Conversion middleware converts new JPG/PNG uploads to WebP.
+- Allowed image inputs: `jpg`, `jpeg`, `png`, `webp`.
+- Conversion middleware converts new JPG/JPEG/PNG uploads to WebP.
+- WebP uploads stay WebP (no second conversion).
 - Active policy: `webp-first` (AVIF is not enabled in current baseline).
 - OG/social preview fallback remains JPEG for broad crawler compatibility.
 
 Runtime env knobs:
 - `MEDIA_IMAGE_CONVERT_ENABLED=true|false`
 - `MEDIA_IMAGE_TARGET_FORMAT=webp`
+- `MEDIA_IMAGE_ALLOWED_INPUT_MIME=jpg,jpeg,png,webp`
 - `MEDIA_IMAGE_QUALITY=35..95`
 - `MEDIA_IMAGE_MAX_INPUT_BYTES` (conversion input cap)
 - `MEDIA_IMAGE_CONVERT_STRICT=true|false` (`true` -> oversize conversion hard-fail)
@@ -353,7 +355,7 @@ See:
 
 Operational notes:
 - Conversion only runs on upload routes (`/api/upload` / `/upload`) and only for `POST`/`PUT`.
-- SVG/GIF gibi formatlar oldugu gibi birakilir (pipeline sadece JPG/PNG cevirir).
+- Unsupported image formats return `415` with clear allowed-format message.
 - Public role upload yetkisi acik degildir; medya yukleme editor/admin akisindadir.
 - Social/share metadata fallback image remains JPEG:
   - `frontend/public/og-default.jpg`

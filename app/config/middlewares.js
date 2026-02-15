@@ -2,6 +2,7 @@ module.exports = ({ env }) => [
   'strapi::logger',
   'global::requestid',
   'global::accesslog',
+  'global::authguard',
   'strapi::errors',
   'strapi::security',
   {
@@ -27,6 +28,7 @@ module.exports = ({ env }) => [
   'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
+  'global::mediapipeline',
   'strapi::session',
   'strapi::favicon',
   'strapi::public',

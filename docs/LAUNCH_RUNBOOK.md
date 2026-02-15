@@ -36,6 +36,7 @@ Strapi runtime email flags (VPS/docker):
 Strapi runtime media flags (VPS/docker):
 - `MEDIA_IMAGE_CONVERT_ENABLED=true`
 - `MEDIA_IMAGE_TARGET_FORMAT=webp` (policy)
+- `MEDIA_IMAGE_ALLOWED_INPUT_MIME=jpg,jpeg,png,webp`
 - `MEDIA_IMAGE_QUALITY` (suggested `80-85`)
 - `MEDIA_IMAGE_MAX_INPUT_BYTES`, `UPLOAD_MAX_FILE_SIZE_BYTES`
 
