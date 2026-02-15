@@ -3,6 +3,7 @@ import MainLayout from '../../../layouts/MainLayout.astro';
 import EmptyState from '../../../components/ui/EmptyState.astro';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export async function getStaticPaths() {
@@ -20,6 +21,21 @@ const ui = getUiMessages(lang);
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'register')));
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage('en', 'register'));
+const authBaseUrl = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+const isTruthy = (value: string | undefined) =>
+  ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+const localRegisterEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_LOCAL_REGISTER_ENABLED as string | undefined || 'true');
+const googleEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_GOOGLE_ENABLED as string | undefined);
+const facebookEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_FACEBOOK_ENABLED as string | undefined);
+const googleUrl = `${authBaseUrl}/api/connect/google`;
+const facebookUrl = `${authBaseUrl}/api/connect/facebook`;
 ---
 
 <MainLayout
@@ -33,15 +49,196 @@ const canonical = absoluteUrl(pathForLanguage('en', 'register'));
   ui={ui}
 >
   <h1>{translate(ui, 'auth.register', {}, 'Register')}</h1>
-  <p class="small">{translate(ui, 'auth.registerDescription', {}, 'Registration is not open yet; this is a placeholder.')}</p>
+  <p class="small">{translate(ui, 'auth.registerDescription', {}, 'Create an account with email/password or a social provider if enabled.')}</p>
+
+  <section class="card panel auth-panel gv-stack">
+    {localRegisterEnabled ? (
+      <form class="gv-stack auth-form" data-auth-form="register" data-auth-base={authBaseUrl} novalidate>
+        <label class="auth-field">
+          <span>{translate(ui, 'auth.username', {}, 'Username')}</span>
+          <input
+            type="text"
+            name="username"
+            autocomplete="username"
+            minlength="3"
+            maxlength="40"
+            required
+            placeholder={translate(ui, 'auth.usernamePlaceholder', {}, 'yourname')}
+          />
+        </label>
+
+        <label class="auth-field">
+          <span>{translate(ui, 'auth.email', {}, 'Email')}</span>
+          <input
+            type="email"
+            name="email"
+            autocomplete="email"
+            required
+            inputmode="email"
+            placeholder={translate(ui, 'auth.emailPlaceholder', {}, 'you@example.com')}
+          />
+        </label>
+
+        <label class="auth-field">
+          <span>{translate(ui, 'auth.password', {}, 'Password')}</span>
+          <input
+            type="password"
+            name="password"
+            autocomplete="new-password"
+            required
+            minlength="8"
+            placeholder={translate(ui, 'auth.passwordPlaceholder', {}, 'Min 8 characters')}
+          />
+        </label>
+
+        <button type="submit" class="ui-button ui-button-primary ui-button-md">
+          <span class="ui-button-label">{translate(ui, 'auth.register', {}, 'Register')}</span>
+        </button>
+        <p class="small auth-feedback" data-auth-feedback aria-live="polite"></p>
+      </form>
+    ) : (
+      <EmptyState
+        title={translate(ui, 'auth.registerDisabledTitle', {}, 'Registration is disabled')}
+        description={translate(ui, 'auth.registerDisabledBody', {}, 'Account creation is paused in this environment.')}
+        icon="ShieldAlert"
+      />
+    )}
+
+    <div class="auth-divider" aria-hidden="true">{translate(ui, 'auth.or', {}, 'or')}</div>
+
+    <div class="auth-providers gv-stack">
+      {
+        googleEnabled ? (
+          <a class="ui-button ui-button-secondary ui-button-md" href={googleUrl}>
+            <span class="ui-button-label">{translate(ui, 'auth.continueWithGoogle', {}, 'Continue with Google')}</span>
+          </a>
+        ) : null
+      }
+      {
+        facebookEnabled ? (
+          <a class="ui-button ui-button-secondary ui-button-md" href={facebookUrl}>
+            <span class="ui-button-label">{translate(ui, 'auth.continueWithFacebook', {}, 'Continue with Facebook')}</span>
+          </a>
+        ) : null
+      }
+      {
+        !googleEnabled && !facebookEnabled ? (
+          <p class="small">{translate(ui, 'auth.socialDisabled', {}, 'Google/Facebook login will appear when enabled in environment settings.')}</p>
+        ) : null
+      }
+    </div>
+
+    <p class="small">
+      {translate(ui, 'auth.hasAccount', {}, 'Already have an account?')}{' '}
+      <a href={pathForLanguage(lang, 'login')}>{translate(ui, 'auth.backToLogin', {}, 'Back to login')}</a>
+    </p>
+  </section>
 
   <section class="card panel">
     <EmptyState
-      title={translate(ui, 'auth.registerSoon', {}, 'Registration will open soon')}
-      description={translate(ui, 'auth.registerHint', {}, 'For now, editorial access is managed manually.')}
+      title={translate(ui, 'auth.registerSoon', {}, 'Editorial moderation remains active')}
+      description={translate(ui, 'auth.registerHint', {}, 'User-facing dashboard features will open gradually after moderation workflows are finalized.')}
       icon="UserPlus"
-      actionLabel={translate(ui, 'auth.backToLogin', {}, 'Back to login')}
-      actionHref={pathForLanguage(lang, 'login')}
     />
   </section>
+
+  <script is:inline>
+    (() => {
+      const form = document.querySelector('[data-auth-form="register"]');
+      const feedback = document.querySelector('[data-auth-feedback]');
+      if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement)) return;
+
+      const authBase = form.getAttribute('data-auth-base');
+      if (!authBase) return;
+
+      const setFeedback = (message, isError = false) => {
+        feedback.textContent = message;
+        feedback.classList.toggle('is-error', isError);
+      };
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const username = String(formData.get('username') || '').trim();
+        const email = String(formData.get('email') || '').trim();
+        const password = String(formData.get('password') || '');
+
+        if (!username || !email || !password) {
+          setFeedback('Kullanici adi, email ve sifre zorunludur.', true);
+          return;
+        }
+
+        setFeedback('Kayit olusturuluyor...');
+        try {
+          const response = await fetch(`${authBase}/api/auth/local/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({ username, email, password }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message =
+              payload?.error?.message ||
+              payload?.message ||
+              'Kayit basarisiz. Farkli bir email veya kullanici adi deneyin.';
+            setFeedback(message, true);
+            return;
+          }
+
+          setFeedback('Kayit basarili. Simdi giris yapabilirsiniz.');
+          form.reset();
+        } catch (error) {
+          setFeedback('Baglanti hatasi olustu. Lutfen tekrar deneyin.', true);
+        }
+      });
+    })();
+  </script>
 </MainLayout>
+
+<style>
+  .auth-panel {
+    max-width: 560px;
+  }
+
+  .auth-form {
+    gap: 0.75rem;
+  }
+
+  .auth-field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .auth-field input {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .auth-field input:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+
+  .auth-divider {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .auth-feedback {
+    margin: 0;
+    min-height: 1.25rem;
+  }
+
+  .auth-feedback.is-error {
+    color: var(--danger);
+  }
+</style>
