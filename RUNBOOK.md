@@ -43,6 +43,7 @@ STRAPI_API_TOKEN=... bash tools/media_upload_smoke.sh
 ```
 
 This uploads a tiny fixture image and verifies it is converted to WebP.
+If token is missing, `tools/pre_design_gate_check.sh` marks this step as `SKIP` and continues.
 
 ## Shell Readiness (One Command)
 ```bash
@@ -250,6 +251,27 @@ Expected:
 - `/api/connect/google` follows `AUTH_GOOGLE_ENABLED`
 - `/api/connect/facebook` follows `AUTH_FACEBOOK_ENABLED`
 - login endpoint is not hard-blocked (`403/429` unexpected on first attempt)
+- forgot-password endpoint returns `200`
+- reset-password invalid token check returns `400`
+
+SMTP runtime (Strapi email provider):
+- `EMAIL_PROVIDER=sendmail|nodemailer` (real SMTP icin `nodemailer`)
+- `EMAIL_DEFAULT_FROM`, `EMAIL_DEFAULT_REPLY_TO`
+- `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`
+- `EMAIL_SMTP_USER`, `EMAIL_SMTP_PASS`
+- `EMAIL_SMTP_SECURE`, `EMAIL_SMTP_REQUIRE_TLS`, `EMAIL_SMTP_IGNORE_TLS`
+
+SMTP verification:
+```bash
+cd /home/ali/geovito-stack
+bash tools/smtp_config_check.sh
+```
+
+Password reset e2e smoke:
+```bash
+cd /home/ali/geovito-stack
+RESET_SMOKE_EMAIL=you@example.com bash tools/password_reset_smoke.sh
+```
 
 OAuth provider configuration check:
 ```bash

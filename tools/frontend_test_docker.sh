@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 PLAYWRIGHT_IMAGE="mcr.microsoft.com/playwright:v1.49.1-jammy"
+STRAPI_HTTP_BASE="${STRAPI_HTTP_BASE:-http://127.0.0.1:1337}"
 
 echo "=============================================================="
 echo "GEOVITO FRONTEND TEST (DOCKER PLAYWRIGHT)"
@@ -62,12 +63,49 @@ check_permission_footguns() {
 
 check_permission_footguns
 
+read_data_count() {
+  docker run --rm -i node:20-alpine node -e 'const fs=require("fs");const input=fs.readFileSync(0,"utf8");let payload={};try{payload=JSON.parse(input);}catch{process.stdout.write("0");process.exit(0);}const count=Array.isArray(payload.data)?payload.data.length:0;process.stdout.write(String(count));'
+}
+
+assert_place_slug_exists() {
+  local slug="$1"
+  local response
+  response="$(curl -sS --fail --get "${STRAPI_HTTP_BASE}/api/atlas-places" \
+    --data-urlencode "filters[slug][\$eq]=${slug}" \
+    --data-urlencode "pagination[pageSize]=1")"
+
+  local count
+  count="$(printf '%s' "$response" | read_data_count)"
+  if [[ "$count" -lt 1 ]]; then
+    echo "FAIL: required search fixture missing (slug=${slug})"
+    echo "Fix: ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed"
+    exit 3
+  fi
+}
+
+prepare_search_fixture() {
+  if [[ "${SKIP_MOCK_SEED:-0}" == "1" ]]; then
+    echo "INFO: SKIP_MOCK_SEED=1 oldugu icin mock seed adimi atlandi."
+  else
+    echo "INFO: Search fixture icin mock veri yeniden yukleniyor."
+    bash tools/mock_data.sh clear >/dev/null || true
+    ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed >/dev/null
+  fi
+
+  echo "INFO: Search fixture dogrulamasi (US/NYC/Berlin)."
+  assert_place_slug_exists "united-states"
+  assert_place_slug_exists "new-york-city"
+  assert_place_slug_exists "berlin"
+}
+
 if [[ "${SKIP_STRAPI:-0}" != "1" ]]; then
   echo "INFO: Strapi ayaga kaldiriliyor (SKIP_STRAPI=1 degil)."
   docker compose up -d strapi
 else
   echo "INFO: SKIP_STRAPI=1 oldugu icin Strapi baslatma adimi atlandi."
 fi
+
+prepare_search_fixture
 
 docker run --rm \
   --network=host \
@@ -80,4 +118,3 @@ docker run --rm \
 echo "=============================================================="
 echo "PASS: Docker Playwright full frontend suite basariyla tamamlandi."
 echo "=============================================================="
-

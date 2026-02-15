@@ -38,6 +38,15 @@ echo "=============================================================="
 run_gate "Prepare Strapi Runtime" docker compose up -d --build strapi
 
 run_gate "Production Health" bash tools/prod_health.sh
+run_gate "Media Policy Guard" bash tools/media_policy_check.sh
+if [[ -n "${STRAPI_API_TOKEN:-}" ]]; then
+  run_gate "Media Upload Smoke" bash tools/media_upload_smoke.sh
+else
+  echo "RESULT: SKIP (Media Upload Smoke) token missing: export STRAPI_API_TOKEN=..."
+  SUMMARY_LINES+=("SKIP | Media Upload Smoke | token_missing")
+fi
+run_gate "Auth Flow Guard" bash tools/auth_flow_check.sh
+run_gate "OAuth Config Guard" bash tools/oauth_config_check.sh
 run_gate "Import Dormant Guard" bash tools/import_dormant_check.sh
 run_gate "Translation Bundle Dormant Guard" bash tools/translation_bundle_dormant_check.sh
 run_gate "Import Log Domain Sanity" bash tools/import_log_sanity_check.sh

@@ -10,8 +10,48 @@ Set the following in Cloudflare Pages project environment (Production and Previe
 - `STRAPI_URL` = public/reachable Strapi origin (example: `https://cms.example.com`)
 - `PUBLIC_SITE_URL` = canonical site origin (example: `https://www.geovito.com`)
 - `ALLOW_LOCALHOST_STRAPI=false` (Pages/production must not allow localhost fallback)
+- `PUBLIC_AUTH_LOCAL_REGISTER_ENABLED=true|false` (default true)
+- `PUBLIC_AUTH_GOOGLE_ENABLED=false` (default)
+- `PUBLIC_AUTH_FACEBOOK_ENABLED=false` (default)
 - Keep `STRAPI_URL` out of localhost values in production-like mode (`CF_PAGES=1` or `NODE_ENV=production`), otherwise build fails fast with `STRAPI_URL_GUARD`.
 - Optional local smoke override only: `ALLOW_LOCALHOST_STRAPI=true` (do not use on Cloudflare Pages).
+
+Strapi runtime auth flags (VPS/docker):
+- `AUTH_LOCAL_REGISTER_ENABLED=true|false`
+- `AUTH_GOOGLE_ENABLED=true|false`
+- `AUTH_FACEBOOK_ENABLED=true|false`
+- `AUTH_GOOGLE_CLIENT_ID`, `AUTH_GOOGLE_CLIENT_SECRET` (required if Google enabled)
+- `AUTH_FACEBOOK_CLIENT_ID`, `AUTH_FACEBOOK_CLIENT_SECRET` (required if Facebook enabled)
+- `AUTH_GOOGLE_CALLBACK_PATH`, `AUTH_FACEBOOK_CALLBACK_PATH` (optional override)
+- `AUTH_GOOGLE_SCOPE`, `AUTH_FACEBOOK_SCOPE` (optional, comma-separated)
+- `AUTH_RATE_LIMIT_WINDOW_MS`, `AUTH_RATE_LIMIT_MAX`
+
+Strapi runtime email flags (VPS/docker):
+- `EMAIL_PROVIDER=sendmail|nodemailer` (production SMTP icin `nodemailer`)
+- `EMAIL_DEFAULT_FROM`, `EMAIL_DEFAULT_REPLY_TO`
+- `EMAIL_SMTP_HOST`, `EMAIL_SMTP_PORT`
+- `EMAIL_SMTP_USER`, `EMAIL_SMTP_PASS`
+- `EMAIL_SMTP_SECURE`, `EMAIL_SMTP_REQUIRE_TLS`, `EMAIL_SMTP_IGNORE_TLS`
+
+Strapi runtime media flags (VPS/docker):
+- `MEDIA_IMAGE_CONVERT_ENABLED=true`
+- `MEDIA_IMAGE_TARGET_FORMAT=webp` (policy)
+- `MEDIA_IMAGE_QUALITY` (suggested `80-85`)
+- `MEDIA_IMAGE_MAX_INPUT_BYTES`, `UPLOAD_MAX_FILE_SIZE_BYTES`
+
+UI locale build-time export:
+- `ui-locale` edits require export + deploy.
+- `deploy_required=true` indicates pending deploy.
+
+If social login is enabled:
+- Apply provider configuration from env to Strapi store:
+  - `bash tools/oauth_provider_apply.sh --dry-run`
+  - `bash tools/oauth_provider_apply.sh`
+  - `.env` degistirdiysen: `REFRESH_STRAPI_ENV=1 bash tools/oauth_provider_apply.sh --dry-run`
+- Set exact callback URLs for your domain:
+  - `https://geovito.com/api/connect/google/callback`
+  - `https://geovito.com/api/connect/facebook/callback`
+  - include `https://www.geovito.com/...` variant only if you still serve `www`.
 
 ### Tags / GTM
 - `PUBLIC_TAG_MANAGER` = `none` | `gtm` | `zaraz`
@@ -88,6 +128,28 @@ Not:
    - Optional SHA pin:
      `BASE_URL=https://your-deploy-url EXPECTED_SHA7=xxxxxxx bash tools/post_deploy_smoke.sh`
    - Expected: all PASS lines, exit 0.
+7. Media policy guard:
+   - `bash tools/media_policy_check.sh`
+   - Expected: WebP conversion policy PASS + default OG JPEG exists.
+8. Auth flow guard:
+   - `bash tools/auth_flow_check.sh`
+   - Expected: PASS for register/login/forgot(200)/reset-invalid(400)/provider checks according to active env flags.
+9. OAuth config guard (when enabling social login):
+   - `PUBLIC_SITE_URL=https://geovito.com bash tools/oauth_config_check.sh`
+   - Expected:
+     - Provider OFF -> skipped + PASS
+     - Provider ON -> `/api/connect/{provider}` returns redirect with correct provider host + callback URL
+10. SMTP config guard (when enabling password reset emails):
+    - `bash tools/smtp_config_check.sh`
+    - Expected:
+      - `EMAIL_PROVIDER=sendmail` -> PASS with warning (SMTP disabled).
+      - `EMAIL_PROVIDER=nodemailer` -> required SMTP vars + TCP reachability PASS.
+11. Password reset smoke:
+    - `RESET_SMOKE_EMAIL=you@example.com bash tools/password_reset_smoke.sh`
+    - Expected:
+      - forgot-password -> `200`
+      - reset-password invalid token -> `400`
+      - inbox/spam receives reset mail when SMTP is correctly configured.
 
 ## 3) Go-Live Verification Steps
 
@@ -141,6 +203,16 @@ chmod +x tools/frontend_test_docker.sh tools/frontend_gate_docker.sh
 ./tools/frontend_test_docker.sh
 ./tools/frontend_gate_docker.sh
 ```
+
+`tools/frontend_test_docker.sh` now prepares deterministic search fixtures before Playwright:
+- clears and re-seeds mock dataset (`ALLOW_MOCK_SEED=true` internally)
+- verifies required slugs: `united-states`, `new-york-city`, `berlin`
+
+Optional override:
+```bash
+SKIP_MOCK_SEED=1 ./tools/frontend_test_docker.sh
+```
+Use this only when you intentionally want to keep current runtime data.
 
 Post-deploy smoke (no Node required):
 
