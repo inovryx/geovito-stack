@@ -10,6 +10,14 @@ interface Props {
 }
 
 const { currentLanguage, languageLinks, ui } = Astro.props as Props;
+const loginPath = `/${currentLanguage}/login/`;
+const registerPath = `/${currentLanguage}/register/`;
+const accountPath = `/${currentLanguage}/account/`;
+const loginLabel = translate(ui, 'auth.login', {}, 'Login');
+const registerLabel = translate(ui, 'auth.register', {}, 'Register');
+const accountLabel = translate(ui, 'nav.account', {}, 'Account');
+const logoutLabel = translate(ui, 'auth.logout', {}, 'Logout');
+const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
 ---
 
 <div class="left-sidebar-stack">
@@ -22,8 +30,104 @@ const { currentLanguage, languageLinks, ui } = Astro.props as Props;
     <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
   </section>
 
-  <section class="sidebar-block sidebar-auth-links gv-card bg-surface border-border">
-    <a href={`/${currentLanguage}/login/`} class="small-link">{translate(ui, 'auth.login', {}, 'Login')}</a>
-    <a href={`/${currentLanguage}/register/`} class="small-link">{translate(ui, 'auth.register', {}, 'Register')}</a>
+  <section class="sidebar-block sidebar-auth-links gv-card bg-surface border-border" data-auth-shell data-signed-in-label={signedInLabel}>
+    <p class="small sidebar-auth-user" data-auth-user hidden></p>
+
+    <div class="sidebar-auth-row" data-auth-logged-out>
+      <a href={loginPath} class="small-link">{loginLabel}</a>
+      <a href={registerPath} class="small-link">{registerLabel}</a>
+    </div>
+
+    <div class="sidebar-auth-row" data-auth-logged-in hidden>
+      <a href={accountPath} class="small-link">{accountLabel}</a>
+      <button type="button" class="small-link sidebar-auth-logout" data-auth-logout>{logoutLabel}</button>
+    </div>
   </section>
 </div>
+
+<script>
+  (() => {
+    if (window.__geovitoAuthSidebarBound) return;
+    window.__geovitoAuthSidebarBound = true;
+
+    const readSession = () => {
+      try {
+        const raw = sessionStorage.getItem('geovito_auth_session');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return null;
+        const jwt = typeof parsed.jwt === 'string' ? parsed.jwt.trim() : '';
+        if (!jwt) return null;
+        const username = typeof parsed.username === 'string' ? parsed.username.trim() : '';
+        const email = typeof parsed.email === 'string' ? parsed.email.trim() : '';
+        return { username, email };
+      } catch {
+        return null;
+      }
+    };
+
+    const applyAuthState = () => {
+      const session = readSession();
+      document.querySelectorAll('[data-auth-shell]').forEach((shell) => {
+        if (!(shell instanceof HTMLElement)) return;
+
+        const loggedOut = shell.querySelector('[data-auth-logged-out]');
+        const loggedIn = shell.querySelector('[data-auth-logged-in]');
+        const userLine = shell.querySelector('[data-auth-user]');
+        const signedInPrefix = shell.getAttribute('data-signed-in-label') || 'Signed in';
+        const identity = session ? (session.username || session.email) : '';
+
+        if (loggedOut instanceof HTMLElement) {
+          loggedOut.hidden = Boolean(session);
+        }
+
+        if (loggedIn instanceof HTMLElement) {
+          loggedIn.hidden = !session;
+        }
+
+        if (userLine instanceof HTMLElement) {
+          if (session && identity) {
+            userLine.hidden = false;
+            userLine.textContent = `${signedInPrefix}: ${identity}`;
+          } else {
+            userLine.hidden = true;
+            userLine.textContent = '';
+          }
+        }
+      });
+    };
+
+    const bindLogout = () => {
+      document.querySelectorAll('[data-auth-logout]').forEach((button) => {
+        if (!(button instanceof HTMLButtonElement)) return;
+        if (button.dataset.authLogoutBound === '1') return;
+        button.dataset.authLogoutBound = '1';
+
+        button.addEventListener('click', () => {
+          try {
+            sessionStorage.removeItem('geovito_auth_session');
+          } catch {
+            // no-op
+          }
+
+          applyAuthState();
+
+          const language = document.documentElement.lang?.toLowerCase() || 'en';
+          window.location.assign(`/${language}/login/`);
+        });
+      });
+    };
+
+    const init = () => {
+      bindLogout();
+      applyAuthState();
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init, { once: true });
+      return;
+    }
+
+    init();
+  })();
+</script>

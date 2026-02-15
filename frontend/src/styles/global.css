@@ -610,6 +610,18 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
 }
 
 .sidebar-auth-links {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.sidebar-auth-user {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.sidebar-auth-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
@@ -617,6 +629,18 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
 
 .small-link {
   font-size: 0.88rem;
+}
+
+.sidebar-auth-logout {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--link);
+  cursor: pointer;
+}
+
+.sidebar-auth-logout:hover {
+  text-decoration: underline;
 }
 
 .app-nav,
