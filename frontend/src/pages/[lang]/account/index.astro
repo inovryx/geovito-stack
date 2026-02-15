@@ -64,6 +64,25 @@ const accountCopy = {
   preferenceSaveFailed: translate(ui, 'account.preferenceSaveFailed', {}, 'Failed to save preference.'),
   preferenceSavedRedirect: translate(ui, 'account.preferenceSavedRedirect', {}, 'Preference saved. Redirecting...'),
   preferenceNetworkError: translate(ui, 'account.preferenceNetworkError', {}, 'Network error while saving preference.'),
+  passwordTitle: translate(ui, 'account.passwordTitle', {}, 'Change password'),
+  passwordDescription: translate(
+    ui,
+    'account.passwordDescription',
+    {},
+    'Update your account password. Use a strong password with at least 8 characters.'
+  ),
+  currentPassword: translate(ui, 'account.currentPassword', {}, 'Current password'),
+  newPassword: translate(ui, 'account.newPassword', {}, 'New password'),
+  passwordConfirm: translate(ui, 'account.passwordConfirm', {}, 'Confirm new password'),
+  changePassword: translate(ui, 'account.changePassword', {}, 'Change password'),
+  passwordRequired: translate(ui, 'account.passwordRequired', {}, 'All password fields are required.'),
+  passwordLength: translate(ui, 'account.passwordLength', {}, 'New password must be at least 8 characters.'),
+  passwordMismatch: translate(ui, 'account.passwordMismatch', {}, 'Password confirmation does not match.'),
+  passwordSameAsCurrent: translate(ui, 'account.passwordSameAsCurrent', {}, 'New password must be different from current password.'),
+  passwordSaving: translate(ui, 'account.passwordSaving', {}, 'Updating password...'),
+  passwordSaveFailed: translate(ui, 'account.passwordSaveFailed', {}, 'Could not update password. Please verify your current password.'),
+  passwordSaved: translate(ui, 'account.passwordSaved', {}, 'Password updated successfully.'),
+  passwordNetworkError: translate(ui, 'account.passwordNetworkError', {}, 'Network error while updating password.'),
 };
 ---
 
@@ -134,9 +153,37 @@ const accountCopy = {
     </form>
   </section>
 
+  <section class="card panel gv-stack" data-account-password hidden>
+    <h2>{accountCopy.passwordTitle}</h2>
+    <p class="small">{accountCopy.passwordDescription}</p>
+
+    <form class="gv-stack account-form" data-account-password-form data-auth-base={authBaseUrl} novalidate>
+      <label class="account-field">
+        <span>{accountCopy.currentPassword}</span>
+        <input type="password" name="currentPassword" autocomplete="current-password" minlength="8" required />
+      </label>
+
+      <label class="account-field">
+        <span>{accountCopy.newPassword}</span>
+        <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+      </label>
+
+      <label class="account-field">
+        <span>{accountCopy.passwordConfirm}</span>
+        <input type="password" name="passwordConfirmation" autocomplete="new-password" minlength="8" required />
+      </label>
+
+      <button type="submit" class="ui-button ui-button-primary ui-button-md">
+        <span class="ui-button-label">{accountCopy.changePassword}</span>
+      </button>
+      <p class="small account-feedback" data-account-password-feedback aria-live="polite"></p>
+    </form>
+  </section>
+
   <script is:inline define:vars={{ lang, availableLanguages, accountCopy }}>
     (() => {
       const settingsPanel = document.querySelector('[data-account-settings]');
+      const passwordPanel = document.querySelector('[data-account-password]');
       const loggedOutPanel = document.querySelector('[data-account-logged-out]');
       const profilePanel = document.querySelector('[data-account-profile]');
       const profileUsername = document.querySelector('[data-account-profile-username]');
@@ -147,9 +194,19 @@ const accountCopy = {
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
+      const passwordForm = document.querySelector('[data-account-password-form]');
+      const passwordFeedback = document.querySelector('[data-account-password-feedback]');
 
-      if (!(settingsPanel instanceof HTMLElement) || !(loggedOutPanel instanceof HTMLElement) || !(profilePanel instanceof HTMLElement)) return;
+      if (
+        !(settingsPanel instanceof HTMLElement) ||
+        !(passwordPanel instanceof HTMLElement) ||
+        !(loggedOutPanel instanceof HTMLElement) ||
+        !(profilePanel instanceof HTMLElement)
+      ) {
+        return;
+      }
       if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement) || !(select instanceof HTMLSelectElement)) return;
+      if (!(passwordForm instanceof HTMLFormElement) || !(passwordFeedback instanceof HTMLElement)) return;
       if (
         !(profileUsername instanceof HTMLElement) ||
         !(profileEmail instanceof HTMLElement) ||
@@ -175,6 +232,11 @@ const accountCopy = {
         if (!(profileFeedback instanceof HTMLElement)) return;
         profileFeedback.textContent = message;
         profileFeedback.classList.toggle('is-error', isError);
+      };
+
+      const setPasswordFeedback = (message, isError = false) => {
+        passwordFeedback.textContent = message;
+        passwordFeedback.classList.toggle('is-error', isError);
       };
 
       const formatDate = (value) => {
@@ -237,12 +299,14 @@ const accountCopy = {
       const session = readSession();
       if (!session) {
         settingsPanel.hidden = true;
+        passwordPanel.hidden = true;
         profilePanel.hidden = true;
         loggedOutPanel.hidden = false;
         return;
       }
 
       settingsPanel.hidden = false;
+      passwordPanel.hidden = false;
       profilePanel.hidden = false;
       loggedOutPanel.hidden = true;
       renderProfile(session);
@@ -348,6 +412,63 @@ const accountCopy = {
         }
       });
 
+      passwordForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(passwordForm);
+        const currentPassword = String(formData.get('currentPassword') || '');
+        const password = String(formData.get('password') || '');
+        const passwordConfirmation = String(formData.get('passwordConfirmation') || '');
+
+        if (!currentPassword || !password || !passwordConfirmation) {
+          setPasswordFeedback(accountCopy.passwordRequired, true);
+          return;
+        }
+
+        if (password.length < 8) {
+          setPasswordFeedback(accountCopy.passwordLength, true);
+          return;
+        }
+
+        if (password !== passwordConfirmation) {
+          setPasswordFeedback(accountCopy.passwordMismatch, true);
+          return;
+        }
+
+        if (password === currentPassword) {
+          setPasswordFeedback(accountCopy.passwordSameAsCurrent, true);
+          return;
+        }
+
+        setPasswordFeedback(accountCopy.passwordSaving);
+        try {
+          const response = await fetch(`${authBase}/api/auth/change-password`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+            body: JSON.stringify({
+              currentPassword,
+              password,
+              passwordConfirmation,
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || payload?.message || accountCopy.passwordSaveFailed;
+            setPasswordFeedback(message, true);
+            return;
+          }
+
+          setPasswordFeedback(accountCopy.passwordSaved);
+          passwordForm.reset();
+        } catch {
+          setPasswordFeedback(accountCopy.passwordNetworkError, true);
+        }
+      });
+
       loadPreference();
       loadProfile();
     })();
@@ -373,7 +494,16 @@ const accountCopy = {
     color: var(--text);
   }
 
-  .account-field select:focus-visible {
+  .account-field input {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .account-field select:focus-visible,
+  .account-field input:focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 1px;
   }
