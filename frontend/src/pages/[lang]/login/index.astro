@@ -78,6 +78,10 @@ const availableLanguages = SUPPORTED_LANGUAGES;
         />
       </label>
 
+      <p class="small auth-inline-link">
+        <a href={pathForLanguage(lang, 'forgot-password')}>{translate(ui, 'auth.forgotPassword', {}, 'Forgot password?')}</a>
+      </p>
+
       <button type="submit" class="ui-button ui-button-primary ui-button-md">
         <span class="ui-button-label">{translate(ui, 'auth.login', {}, 'Login')}</span>
       </button>
@@ -251,6 +255,10 @@ const availableLanguages = SUPPORTED_LANGUAGES;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-muted);
+  }
+
+  .auth-inline-link {
+    margin: 0;
   }
 
   .auth-feedback {

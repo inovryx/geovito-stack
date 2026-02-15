@@ -1,0 +1,163 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
+
+export async function getStaticPaths() {
+  return SUPPORTED_LANGUAGES.map((language) => ({
+    params: { lang: language },
+  }));
+}
+
+const lang = Astro.params.lang || '';
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
+}
+
+const ui = getUiMessages(lang);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'forgot-password')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage('en', 'forgot-password'));
+const authBaseUrl = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+---
+
+<MainLayout
+  title={translate(ui, 'auth.forgotPasswordTitle', {}, 'Forgot password')}
+  description={translate(ui, 'auth.forgotPasswordDescription', {}, 'Request a password reset link for your account email.')}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <h1>{translate(ui, 'auth.forgotPasswordTitle', {}, 'Forgot password')}</h1>
+  <p class="small">{translate(ui, 'auth.forgotPasswordDescription', {}, 'Request a password reset link for your account email.')}</p>
+
+  <section class="card panel auth-panel gv-stack">
+    <form class="gv-stack auth-form" data-auth-form="forgot-password" data-auth-base={authBaseUrl} novalidate>
+      <label class="auth-field">
+        <span>{translate(ui, 'auth.email', {}, 'Email')}</span>
+        <input
+          type="email"
+          name="email"
+          autocomplete="email"
+          required
+          inputmode="email"
+          placeholder={translate(ui, 'auth.emailPlaceholder', {}, 'you@example.com')}
+        />
+      </label>
+
+      <button type="submit" class="ui-button ui-button-primary ui-button-md">
+        <span class="ui-button-label">{translate(ui, 'auth.sendResetLink', {}, 'Send reset link')}</span>
+      </button>
+      <p class="small auth-feedback" data-auth-feedback aria-live="polite"></p>
+    </form>
+
+    <p class="small">
+      <a href={pathForLanguage(lang, 'login')}>{translate(ui, 'auth.backToLogin', {}, 'Back to login')}</a>
+      {' · '}
+      <a href={pathForLanguage(lang, 'register')}>{translate(ui, 'auth.register', {}, 'Register')}</a>
+    </p>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const form = document.querySelector('[data-auth-form="forgot-password"]');
+      const feedback = document.querySelector('[data-auth-feedback]');
+      if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement)) return;
+
+      const authBase = form.getAttribute('data-auth-base');
+      if (!authBase) return;
+
+      const setFeedback = (message, isError = false) => {
+        feedback.textContent = message;
+        feedback.classList.toggle('is-error', isError);
+      };
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const email = String(formData.get('email') || '').trim();
+
+        if (!email) {
+          setFeedback('Email is required.', true);
+          return;
+        }
+
+        setFeedback('Sending reset instructions...');
+        try {
+          const response = await fetch(`${authBase}/api/auth/forgot-password`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({ email }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message =
+              payload?.error?.message ||
+              payload?.message ||
+              'Could not process your request right now. Please try again.';
+            setFeedback(message, true);
+            return;
+          }
+
+          setFeedback('If this email exists, reset instructions were sent.');
+          form.reset();
+        } catch {
+          setFeedback('Network error. Please try again.', true);
+        }
+      });
+    })();
+  </script>
+</MainLayout>
+
+<style>
+  .auth-panel {
+    max-width: 560px;
+  }
+
+  .auth-form {
+    gap: 0.75rem;
+  }
+
+  .auth-field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .auth-field input {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .auth-field input:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+
+  .auth-feedback {
+    margin: 0;
+    min-height: 1.25rem;
+  }
+
+  .auth-feedback.is-error {
+    color: var(--danger);
+  }
+</style>
