@@ -28,6 +28,24 @@ const authBaseUrl = resolveStrapiBaseUrl({
   ALLOW_LOCALHOST_STRAPI:
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
+const loginPath = pathForLanguage(lang, 'login');
+const forgotPasswordMessages = {
+  emailRequired: translate(ui, 'auth.forgotPasswordEmailRequired', {}, 'Email is required.'),
+  sending: translate(ui, 'auth.forgotPasswordSending', {}, 'Sending reset instructions...'),
+  requestFailed: translate(
+    ui,
+    'auth.forgotPasswordRequestFailed',
+    {},
+    'Could not process your request right now. Please try again.'
+  ),
+  successRedirect: translate(
+    ui,
+    'auth.forgotPasswordSuccessRedirect',
+    {},
+    'If this email exists, reset instructions were sent. Redirecting to login...'
+  ),
+  networkError: translate(ui, 'auth.networkError', {}, 'Network error. Please try again.'),
+};
 ---
 
 <MainLayout
@@ -70,7 +88,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
     </p>
   </section>
 
-  <script is:inline>
+  <script is:inline define:vars={{ loginPath, forgotPasswordMessages }}>
     (() => {
       const form = document.querySelector('[data-auth-form="forgot-password"]');
       const feedback = document.querySelector('[data-auth-feedback]');
@@ -90,11 +108,11 @@ const authBaseUrl = resolveStrapiBaseUrl({
         const email = String(formData.get('email') || '').trim();
 
         if (!email) {
-          setFeedback('Email is required.', true);
+          setFeedback(forgotPasswordMessages.emailRequired, true);
           return;
         }
 
-        setFeedback('Sending reset instructions...');
+        setFeedback(forgotPasswordMessages.sending);
         try {
           const response = await fetch(`${authBase}/api/auth/forgot-password`, {
             method: 'POST',
@@ -110,15 +128,18 @@ const authBaseUrl = resolveStrapiBaseUrl({
             const message =
               payload?.error?.message ||
               payload?.message ||
-              'Could not process your request right now. Please try again.';
+              forgotPasswordMessages.requestFailed;
             setFeedback(message, true);
             return;
           }
 
-          setFeedback('If this email exists, reset instructions were sent.');
+          setFeedback(forgotPasswordMessages.successRedirect);
           form.reset();
+          window.setTimeout(() => {
+            window.location.assign(loginPath);
+          }, 1100);
         } catch {
-          setFeedback('Network error. Please try again.', true);
+          setFeedback(forgotPasswordMessages.networkError, true);
         }
       });
     })();

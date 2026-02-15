@@ -30,6 +30,16 @@ const authBaseUrl = resolveStrapiBaseUrl({
 });
 const loginPath = pathForLanguage(lang, 'login');
 const forgotPath = pathForLanguage(lang, 'forgot-password');
+const resetPasswordMessages = {
+  tokenMissing: translate(ui, 'auth.resetTokenMissing', {}, 'Reset token is missing. Please request a new reset link.'),
+  required: translate(ui, 'auth.resetPasswordRequired', {}, 'Password and confirmation are required.'),
+  minLength: translate(ui, 'auth.resetPasswordLength', {}, 'Password must be at least 8 characters.'),
+  mismatch: translate(ui, 'auth.resetPasswordMismatch', {}, 'Password confirmation does not match.'),
+  updating: translate(ui, 'auth.resetPasswordUpdating', {}, 'Updating password...'),
+  failed: translate(ui, 'auth.resetPasswordFailed', {}, 'Password reset failed. Please request a new link.'),
+  successRedirect: translate(ui, 'auth.resetPasswordSuccessRedirect', {}, 'Password updated. Redirecting to login...'),
+  networkError: translate(ui, 'auth.networkError', {}, 'Network error. Please try again.'),
+};
 ---
 
 <MainLayout
@@ -84,7 +94,7 @@ const forgotPath = pathForLanguage(lang, 'forgot-password');
     </p>
   </section>
 
-  <script is:inline define:vars={{ loginPath }}>
+  <script is:inline define:vars={{ loginPath, resetPasswordMessages }}>
     (() => {
       const form = document.querySelector('[data-auth-form="reset-password"]');
       const feedback = document.querySelector('[data-auth-feedback]');
@@ -111,7 +121,7 @@ const forgotPath = pathForLanguage(lang, 'forgot-password');
       const code = String(params.get('code') || '').trim();
       if (!code) {
         disableForm();
-        setFeedback('Reset token is missing. Please request a new reset link.', true);
+        setFeedback(resetPasswordMessages.tokenMissing, true);
         return;
       }
 
@@ -122,19 +132,19 @@ const forgotPath = pathForLanguage(lang, 'forgot-password');
         const passwordConfirmation = String(formData.get('passwordConfirmation') || '');
 
         if (!password || !passwordConfirmation) {
-          setFeedback('Password and confirmation are required.', true);
+          setFeedback(resetPasswordMessages.required, true);
           return;
         }
         if (password.length < 8) {
-          setFeedback('Password must be at least 8 characters.', true);
+          setFeedback(resetPasswordMessages.minLength, true);
           return;
         }
         if (password !== passwordConfirmation) {
-          setFeedback('Password confirmation does not match.', true);
+          setFeedback(resetPasswordMessages.mismatch, true);
           return;
         }
 
-        setFeedback('Updating password...');
+        setFeedback(resetPasswordMessages.updating);
         submit.disabled = true;
         try {
           const response = await fetch(`${authBase}/api/auth/reset-password`, {
@@ -155,18 +165,18 @@ const forgotPath = pathForLanguage(lang, 'forgot-password');
             const message =
               payload?.error?.message ||
               payload?.message ||
-              'Password reset failed. Please request a new link.';
+              resetPasswordMessages.failed;
             setFeedback(message, true);
             submit.disabled = false;
             return;
           }
 
-          setFeedback('Password updated. Redirecting to login...');
+          setFeedback(resetPasswordMessages.successRedirect);
           window.setTimeout(() => {
             window.location.assign(loginPath);
-          }, 700);
+          }, 1100);
         } catch {
-          setFeedback('Network error. Please try again.', true);
+          setFeedback(resetPasswordMessages.networkError, true);
           submit.disabled = false;
         }
       });
