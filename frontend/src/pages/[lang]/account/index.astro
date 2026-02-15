@@ -29,6 +29,42 @@ const authBaseUrl = resolveStrapiBaseUrl({
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
 const availableLanguages = SUPPORTED_LANGUAGES;
+const accountCopy = {
+  loginRequiredTitle: translate(ui, 'account.loginRequiredTitle', {}, 'Login required'),
+  loginRequiredBody: translate(ui, 'account.loginRequiredBody', {}, 'You need to login before managing account preferences.'),
+  loginCta: translate(ui, 'account.loginCta', {}, 'Go to login'),
+  profileTitle: translate(ui, 'account.profileTitle', {}, 'Profile overview'),
+  profileDescription: translate(ui, 'account.profileDescription', {}, 'Basic account identity pulled from your authenticated session.'),
+  profileUsername: translate(ui, 'account.profileUsername', {}, 'Username'),
+  profileEmail: translate(ui, 'account.profileEmail', {}, 'Email'),
+  profileCreatedAt: translate(ui, 'account.profileCreatedAt', {}, 'Member since'),
+  profileStatus: translate(ui, 'account.profileStatus', {}, 'Status'),
+  profileStatusActive: translate(ui, 'account.profileStatusActive', {}, 'Active'),
+  profileStatusPending: translate(ui, 'account.profileStatusPending', {}, 'Pending confirmation'),
+  profileStatusBlocked: translate(ui, 'account.profileStatusBlocked', {}, 'Blocked'),
+  profileUnknown: translate(ui, 'account.profileUnknown', {}, 'Unknown'),
+  profileSyncFallback: translate(
+    ui,
+    'account.profileSyncFallback',
+    {},
+    'Could not refresh profile from API. Showing local session snapshot.'
+  ),
+  languageTitle: translate(ui, 'account.languageTitle', {}, 'Site language preference'),
+  languageDescription: translate(
+    ui,
+    'account.languageDescription',
+    {},
+    'This preference is saved to your account profile and overrides browser language.'
+  ),
+  preferredLanguage: translate(ui, 'account.preferredLanguage', {}, 'Preferred site language'),
+  savePreference: translate(ui, 'account.savePreference', {}, 'Save preference'),
+  loadedPreference: translate(ui, 'account.loadedPreference', {}, 'Loaded your saved preference.'),
+  chooseSupportedLanguage: translate(ui, 'account.chooseSupportedLanguage', {}, 'Please choose a supported language.'),
+  savingPreference: translate(ui, 'account.savingPreference', {}, 'Saving preference...'),
+  preferenceSaveFailed: translate(ui, 'account.preferenceSaveFailed', {}, 'Failed to save preference.'),
+  preferenceSavedRedirect: translate(ui, 'account.preferenceSavedRedirect', {}, 'Preference saved. Redirecting...'),
+  preferenceNetworkError: translate(ui, 'account.preferenceNetworkError', {}, 'Network error while saving preference.'),
+};
 ---
 
 <MainLayout
@@ -45,18 +81,43 @@ const availableLanguages = SUPPORTED_LANGUAGES;
   <p class="small">{translate(ui, 'account.description', {}, 'Manage your account and UI language preferences.')}</p>
 
   <section class="card panel gv-stack" data-account-logged-out hidden>
-    <h2>{translate(ui, 'auth.login', {}, 'Login')}</h2>
-    <p class="small">You need to login before managing account preferences.</p>
-    <a class="ui-button ui-button-primary ui-button-md" href={pathForLanguage(lang, 'login')}>Go to login</a>
+    <h2>{accountCopy.loginRequiredTitle}</h2>
+    <p class="small">{accountCopy.loginRequiredBody}</p>
+    <a class="ui-button ui-button-primary ui-button-md" href={pathForLanguage(lang, 'login')}>{accountCopy.loginCta}</a>
+  </section>
+
+  <section class="card panel gv-stack" data-account-profile hidden>
+    <h2>{accountCopy.profileTitle}</h2>
+    <p class="small">{accountCopy.profileDescription}</p>
+
+    <dl class="account-profile-grid">
+      <div>
+        <dt>{accountCopy.profileUsername}</dt>
+        <dd data-account-profile-username>{accountCopy.profileUnknown}</dd>
+      </div>
+      <div>
+        <dt>{accountCopy.profileEmail}</dt>
+        <dd data-account-profile-email>{accountCopy.profileUnknown}</dd>
+      </div>
+      <div>
+        <dt>{accountCopy.profileCreatedAt}</dt>
+        <dd data-account-profile-created>{accountCopy.profileUnknown}</dd>
+      </div>
+      <div>
+        <dt>{accountCopy.profileStatus}</dt>
+        <dd data-account-profile-status>{accountCopy.profileUnknown}</dd>
+      </div>
+    </dl>
+    <p class="small account-feedback" data-account-profile-feedback aria-live="polite"></p>
   </section>
 
   <section class="card panel gv-stack" data-account-settings hidden>
-    <h2>Site language preference</h2>
-    <p class="small">This preference is saved to your account profile and overrides browser language.</p>
+    <h2>{accountCopy.languageTitle}</h2>
+    <p class="small">{accountCopy.languageDescription}</p>
 
     <form class="gv-stack account-form" data-account-language-form data-auth-base={authBaseUrl} novalidate>
       <label class="account-field">
-        <span>Preferred site language</span>
+        <span>{accountCopy.preferredLanguage}</span>
         <select name="preferred_ui_language" data-account-language-select>
           {
             availableLanguages.map((language) => (
@@ -67,22 +128,36 @@ const availableLanguages = SUPPORTED_LANGUAGES;
       </label>
 
       <button type="submit" class="ui-button ui-button-primary ui-button-md">
-        <span class="ui-button-label">Save preference</span>
+        <span class="ui-button-label">{accountCopy.savePreference}</span>
       </button>
       <p class="small account-feedback" data-account-feedback aria-live="polite"></p>
     </form>
   </section>
 
-  <script is:inline define:vars={{ lang, availableLanguages }}>
+  <script is:inline define:vars={{ lang, availableLanguages, accountCopy }}>
     (() => {
       const settingsPanel = document.querySelector('[data-account-settings]');
       const loggedOutPanel = document.querySelector('[data-account-logged-out]');
+      const profilePanel = document.querySelector('[data-account-profile]');
+      const profileUsername = document.querySelector('[data-account-profile-username]');
+      const profileEmail = document.querySelector('[data-account-profile-email]');
+      const profileCreated = document.querySelector('[data-account-profile-created]');
+      const profileStatus = document.querySelector('[data-account-profile-status]');
+      const profileFeedback = document.querySelector('[data-account-profile-feedback]');
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
 
-      if (!(settingsPanel instanceof HTMLElement) || !(loggedOutPanel instanceof HTMLElement)) return;
+      if (!(settingsPanel instanceof HTMLElement) || !(loggedOutPanel instanceof HTMLElement) || !(profilePanel instanceof HTMLElement)) return;
       if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement) || !(select instanceof HTMLSelectElement)) return;
+      if (
+        !(profileUsername instanceof HTMLElement) ||
+        !(profileEmail instanceof HTMLElement) ||
+        !(profileCreated instanceof HTMLElement) ||
+        !(profileStatus instanceof HTMLElement)
+      ) {
+        return;
+      }
 
       const authBase = form.getAttribute('data-auth-base');
       if (!authBase) return;
@@ -94,6 +169,46 @@ const availableLanguages = SUPPORTED_LANGUAGES;
       const setFeedback = (message, isError = false) => {
         feedback.textContent = message;
         feedback.classList.toggle('is-error', isError);
+      };
+
+      const setProfileFeedback = (message, isError = false) => {
+        if (!(profileFeedback instanceof HTMLElement)) return;
+        profileFeedback.textContent = message;
+        profileFeedback.classList.toggle('is-error', isError);
+      };
+
+      const formatDate = (value) => {
+        if (!value) return accountCopy.profileUnknown;
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return accountCopy.profileUnknown;
+        try {
+          return new Intl.DateTimeFormat(document.documentElement.lang || 'en', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          }).format(date);
+        } catch {
+          return date.toISOString();
+        }
+      };
+
+      const renderProfile = (payload) => {
+        const username = String(payload?.username || '').trim();
+        const email = String(payload?.email || '').trim();
+        const createdAt = payload?.createdAt || payload?.loginAt;
+        const blocked = payload?.blocked === true;
+        const confirmed = payload?.confirmed !== false;
+
+        profileUsername.textContent = username || accountCopy.profileUnknown;
+        profileEmail.textContent = email || accountCopy.profileUnknown;
+        profileCreated.textContent = formatDate(createdAt);
+
+        if (blocked) {
+          profileStatus.textContent = accountCopy.profileStatusBlocked;
+        } else if (!confirmed) {
+          profileStatus.textContent = accountCopy.profileStatusPending;
+        } else {
+          profileStatus.textContent = accountCopy.profileStatusActive;
+        }
       };
 
       const readSession = () => {
@@ -122,12 +237,15 @@ const availableLanguages = SUPPORTED_LANGUAGES;
       const session = readSession();
       if (!session) {
         settingsPanel.hidden = true;
+        profilePanel.hidden = true;
         loggedOutPanel.hidden = false;
         return;
       }
 
       settingsPanel.hidden = false;
+      profilePanel.hidden = false;
       loggedOutPanel.hidden = true;
+      renderProfile(session);
 
       const applyPreferredLanguage = (language) => {
         const normalized = normalizeLanguage(language);
@@ -158,10 +276,34 @@ const availableLanguages = SUPPORTED_LANGUAGES;
           const payload = await response.json().catch(() => null);
           const language = normalizeLanguage(payload?.data?.preferred_ui_language);
           if (applyPreferredLanguage(language)) {
-            setFeedback('Loaded your saved preference.');
+            setFeedback(accountCopy.loadedPreference);
           }
         } catch {
           // no-op
+        }
+      };
+
+      const loadProfile = async () => {
+        try {
+          const response = await fetch(`${authBase}/api/users/me`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+          });
+          if (!response.ok) {
+            setProfileFeedback(accountCopy.profileSyncFallback, true);
+            return;
+          }
+          const payload = await response.json().catch(() => null);
+          if (!payload || typeof payload !== 'object') {
+            setProfileFeedback(accountCopy.profileSyncFallback, true);
+            return;
+          }
+          renderProfile(payload);
+          setProfileFeedback('');
+        } catch {
+          setProfileFeedback(accountCopy.profileSyncFallback, true);
         }
       };
 
@@ -169,11 +311,11 @@ const availableLanguages = SUPPORTED_LANGUAGES;
         event.preventDefault();
         const selected = normalizeLanguage(select.value);
         if (!isAllowedLanguage(selected)) {
-          setFeedback('Please choose a supported language.', true);
+          setFeedback(accountCopy.chooseSupportedLanguage, true);
           return;
         }
 
-        setFeedback('Saving preference...');
+        setFeedback(accountCopy.savingPreference);
         try {
           const response = await fetch(`${authBase}/api/user-preferences/me`, {
             method: 'PUT',
@@ -191,22 +333,23 @@ const availableLanguages = SUPPORTED_LANGUAGES;
 
           const payload = await response.json().catch(() => ({}));
           if (!response.ok) {
-            const message = payload?.error?.message || 'Failed to save preference.';
+            const message = payload?.error?.message || accountCopy.preferenceSaveFailed;
             setFeedback(message, true);
             return;
           }
 
           applyPreferredLanguage(selected);
-          setFeedback('Preference saved. Redirecting...');
+          setFeedback(accountCopy.preferenceSavedRedirect);
           window.setTimeout(() => {
             window.location.assign(`/${selected}/`);
           }, 400);
         } catch {
-          setFeedback('Network error while saving preference.', true);
+          setFeedback(accountCopy.preferenceNetworkError, true);
         }
       });
 
       loadPreference();
+      loadProfile();
     })();
   </script>
 </MainLayout>
@@ -238,6 +381,32 @@ const availableLanguages = SUPPORTED_LANGUAGES;
   .account-feedback {
     margin: 0;
     min-height: 1.25rem;
+  }
+
+  .account-profile-grid {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .account-profile-grid div {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    background: var(--surface);
+  }
+
+  .account-profile-grid dt {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .account-profile-grid dd {
+    margin: 0.22rem 0 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
   }
 
   .account-feedback.is-error {
