@@ -41,6 +41,26 @@ Notes:
 - On Cloudflare Pages, `CF_PAGES_COMMIT_SHA` and `CF_PAGES_BRANCH` are auto-read by the app and exposed as non-secret HTML dataset attributes.
 - Never place secrets into public env vars.
 
+## Cloudflare Pages Preflight
+
+Cloudflare tarafina gitmeden once VPS/yerel ortamda tek komutla ayni sinif build hatalarini yakalamak icin:
+
+```bash
+bash tools/update_lockfile.sh
+bash tools/pages_preflight.sh
+```
+
+Dependency degisikligi varsa sira her zaman su olmali:
+1. `bash tools/update_lockfile.sh`
+2. `bash tools/pages_preflight.sh`
+3. commit + push
+
+Not:
+- Cloudflare Pages build tarafinda `--no-frozen-lockfile` gibi hatayi gizleyen bayraklar kullanma.
+- Lockfile disiplini korunmali (`frontend/pnpm-lock.yaml` source of truth).
+- Yerelde localhost Strapi ile test gerekiyorsa:
+  `ALLOW_LOCALHOST_STRAPI=true STRAPI_URL=http://127.0.0.1:1337 bash tools/pages_preflight.sh`
+
 ## 2) Post-deploy Smoke Checklist (10 min)
 
 1. Build/deploy sanity:
