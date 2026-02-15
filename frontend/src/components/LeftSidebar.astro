@@ -52,8 +52,15 @@ const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
 
     const readSession = () => {
       try {
-        const raw = sessionStorage.getItem('geovito_auth_session');
+        const fromLocal = localStorage.getItem('geovito_auth_session');
+        const fromSession = sessionStorage.getItem('geovito_auth_session');
+        const raw = fromLocal || fromSession;
         if (!raw) return null;
+
+        if (!fromLocal && fromSession) {
+          localStorage.setItem('geovito_auth_session', fromSession);
+        }
+
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object') return null;
         const jwt = typeof parsed.jwt === 'string' ? parsed.jwt.trim() : '';
@@ -105,6 +112,7 @@ const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
 
         button.addEventListener('click', () => {
           try {
+            localStorage.removeItem('geovito_auth_session');
             sessionStorage.removeItem('geovito_auth_session');
           } catch {
             // no-op
@@ -122,6 +130,12 @@ const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
       bindLogout();
       applyAuthState();
     };
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'geovito_auth_session') {
+        applyAuthState();
+      }
+    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init, { once: true });

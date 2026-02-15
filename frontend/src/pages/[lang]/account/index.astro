@@ -98,7 +98,17 @@ const availableLanguages = SUPPORTED_LANGUAGES;
 
       const readSession = () => {
         try {
-          const raw = sessionStorage.getItem('geovito_auth_session');
+          const readRaw = () => {
+            const fromLocal = localStorage.getItem('geovito_auth_session');
+            if (fromLocal) return fromLocal;
+            const fromSession = sessionStorage.getItem('geovito_auth_session');
+            if (fromSession) {
+              localStorage.setItem('geovito_auth_session', fromSession);
+            }
+            return fromSession;
+          };
+
+          const raw = readRaw();
           if (!raw) return null;
           const parsed = JSON.parse(raw);
           if (!parsed || typeof parsed !== 'object') return null;

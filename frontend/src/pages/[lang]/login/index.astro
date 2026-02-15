@@ -182,7 +182,15 @@ const availableLanguages = SUPPORTED_LANGUAGES;
             jwt: payload?.jwt || '',
             loginAt: new Date().toISOString(),
           };
-          sessionStorage.setItem('geovito_auth_session', JSON.stringify(session));
+          const rawSession = JSON.stringify(session);
+          try {
+            localStorage.setItem('geovito_auth_session', rawSession);
+            // Backward compatibility for any legacy reads during transition.
+            sessionStorage.setItem('geovito_auth_session', rawSession);
+          } catch {
+            setFeedback('Oturum kaydedilemedi. Tarayici depolama ayarlarini kontrol edin.', true);
+            return;
+          }
 
           const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
           const isAllowedLanguage = (value) =>
