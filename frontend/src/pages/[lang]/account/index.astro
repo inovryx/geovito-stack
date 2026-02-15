@@ -20,6 +20,7 @@ const ui = getUiMessages(lang);
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'account')));
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage('en', 'account'));
+const loginPath = pathForLanguage(lang, 'login');
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
   PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
@@ -82,6 +83,12 @@ const accountCopy = {
   passwordSaving: translate(ui, 'account.passwordSaving', {}, 'Updating password...'),
   passwordSaveFailed: translate(ui, 'account.passwordSaveFailed', {}, 'Could not update password. Please verify your current password.'),
   passwordSaved: translate(ui, 'account.passwordSaved', {}, 'Password updated successfully.'),
+  passwordSavedReauth: translate(
+    ui,
+    'account.passwordSavedReauth',
+    {},
+    'Password updated. Please login again. Redirecting...'
+  ),
   passwordNetworkError: translate(ui, 'account.passwordNetworkError', {}, 'Network error while updating password.'),
 };
 ---
@@ -102,7 +109,7 @@ const accountCopy = {
   <section class="card panel gv-stack" data-account-logged-out hidden>
     <h2>{accountCopy.loginRequiredTitle}</h2>
     <p class="small">{accountCopy.loginRequiredBody}</p>
-    <a class="ui-button ui-button-primary ui-button-md" href={pathForLanguage(lang, 'login')}>{accountCopy.loginCta}</a>
+    <a class="ui-button ui-button-primary ui-button-md" href={loginPath}>{accountCopy.loginCta}</a>
   </section>
 
   <section class="card panel gv-stack" data-account-profile hidden>
@@ -180,7 +187,7 @@ const accountCopy = {
     </form>
   </section>
 
-  <script is:inline define:vars={{ lang, availableLanguages, accountCopy }}>
+  <script is:inline define:vars={{ lang, loginPath, availableLanguages, accountCopy }}>
     (() => {
       const settingsPanel = document.querySelector('[data-account-settings]');
       const passwordPanel = document.querySelector('[data-account-password]');
@@ -237,6 +244,15 @@ const accountCopy = {
       const setPasswordFeedback = (message, isError = false) => {
         passwordFeedback.textContent = message;
         passwordFeedback.classList.toggle('is-error', isError);
+      };
+
+      const clearAuthSession = () => {
+        try {
+          localStorage.removeItem('geovito_auth_session');
+          sessionStorage.removeItem('geovito_auth_session');
+        } catch {
+          // no-op
+        }
       };
 
       const formatDate = (value) => {
@@ -462,8 +478,12 @@ const accountCopy = {
             return;
           }
 
-          setPasswordFeedback(accountCopy.passwordSaved);
+          setPasswordFeedback(accountCopy.passwordSavedReauth);
           passwordForm.reset();
+          clearAuthSession();
+          window.setTimeout(() => {
+            window.location.assign(loginPath);
+          }, 1100);
         } catch {
           setPasswordFeedback(accountCopy.passwordNetworkError, true);
         }
