@@ -37,6 +37,7 @@ const facebookEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_FACEBOOK_ENABLED as
 const googleUrl = `${authBaseUrl}/api/connect/google`;
 const facebookUrl = `${authBaseUrl}/api/connect/facebook`;
 const availableLanguages = SUPPORTED_LANGUAGES;
+const accountPath = pathForLanguage(lang, 'account');
 ---
 
 <MainLayout
@@ -130,8 +131,21 @@ const availableLanguages = SUPPORTED_LANGUAGES;
     />
   </section>
 
-  <script is:inline define:vars={{ lang, availableLanguages }}>
+  <script is:inline define:vars={{ lang, availableLanguages, accountPath }}>
     (() => {
+      try {
+        const raw = localStorage.getItem('geovito_auth_session') || sessionStorage.getItem('geovito_auth_session');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.jwt === 'string' && parsed.jwt.trim()) {
+            window.location.replace(accountPath);
+            return;
+          }
+        }
+      } catch {
+        // no-op
+      }
+
       const form = document.querySelector('[data-auth-form="login"]');
       const feedback = document.querySelector('[data-auth-feedback]');
       if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement)) return;
