@@ -66,6 +66,11 @@
     "reportSent": "Sorun raporu gonderildi.",
     "inlineFallback": "Bazi etkilesimli kontroller gecici olarak kullanilamiyor."
   },
+  "auth": {
+    "registerDisabledTitle": "Registration is disabled",
+    "registerDisabledBody": "Account creation is paused in this environment.",
+    "registerDisabledHint": "Registration is currently disabled."
+  },
   "stateBanner": {
     "runtime": "Runtime translation preview is shown. This view is not indexed.",
     "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
@@ -262,6 +267,10 @@
       "title": "Ops metrics viewer is disabled in this mode",
       "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
     }
+  },
+  "embed": {
+    "sectionTitle": "Videolar",
+    "openSource": "Kaynak videoyu ac"
   },
   "actions": {
     "previewOnDemand": "Open on-demand translation preview (noindex)"

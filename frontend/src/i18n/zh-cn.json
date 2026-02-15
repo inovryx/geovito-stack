@@ -66,6 +66,11 @@
     "reportSent": "Wenti baogao yi fasong.",
     "inlineFallback": "Bufen jiaohu kongjian zan shi buke yong."
   },
+  "auth": {
+    "registerDisabledTitle": "Registration is disabled",
+    "registerDisabledBody": "Account creation is paused in this environment.",
+    "registerDisabledHint": "Registration is currently disabled."
+  },
   "stateBanner": {
     "runtime": "Dangqian xianshi runtime fanyi yulan, ci shitu buhui bei shoulu.",
     "fallback": "Gai yuyan de complete neirong zanwei jiuxu ({language}), xianshi canon complete banben.",
@@ -262,6 +267,10 @@
       "title": "Ops metrics viewer is disabled in this mode",
       "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
     }
+  },
+  "embed": {
+    "sectionTitle": "Shipin",
+    "openSource": "Dakai yuanshi shipin"
   },
   "actions": {
     "previewOnDemand": "Dakai anxu fanyi yulan (noindex)"

@@ -66,6 +66,11 @@
     "reportSent": "Fehlerbericht wurde gesendet.",
     "inlineFallback": "Einige interaktive Steuerelemente sind vorubergehend nicht verfugbar."
   },
+  "auth": {
+    "registerDisabledTitle": "Registration is disabled",
+    "registerDisabledBody": "Account creation is paused in this environment.",
+    "registerDisabledHint": "Registration is currently disabled."
+  },
   "stateBanner": {
     "runtime": "Runtime-Ubersetzungsvorschau wird angezeigt. Diese Ansicht wird nicht indexiert.",
     "fallback": "Vollstandiger Inhalt ist in dieser Sprache noch nicht verfugbar ({language}). Die kanonische complete-Version wird angezeigt.",
@@ -262,6 +267,10 @@
       "title": "Ops metrics viewer is disabled in this mode",
       "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
     }
+  },
+  "embed": {
+    "sectionTitle": "Videos",
+    "openSource": "Quellvideo offnen"
   },
   "actions": {
     "previewOnDemand": "On-demand-Ubersetzungsvorschau offnen (noindex)"

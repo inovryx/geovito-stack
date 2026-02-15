@@ -66,6 +66,11 @@
     "reportSent": "Reporte enviado.",
     "inlineFallback": "Algunos controles interactivos no estan disponibles temporalmente."
   },
+  "auth": {
+    "registerDisabledTitle": "Registration is disabled",
+    "registerDisabledBody": "Account creation is paused in this environment.",
+    "registerDisabledHint": "Registration is currently disabled."
+  },
   "stateBanner": {
     "runtime": "Se muestra la vista previa de traduccion en tiempo real. Esta vista no se indexa.",
     "fallback": "El contenido complete aun no esta listo en este idioma ({language}). Se muestra la version canonica complete.",
@@ -262,6 +267,10 @@
       "title": "Ops metrics viewer is disabled in this mode",
       "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
     }
+  },
+  "embed": {
+    "sectionTitle": "Videos",
+    "openSource": "Abrir video fuente"
   },
   "actions": {
     "previewOnDemand": "Abrir vista previa de traduccion bajo demanda (noindex)"
