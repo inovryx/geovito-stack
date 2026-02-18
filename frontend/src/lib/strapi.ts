@@ -191,9 +191,10 @@ export const getAtlasPlaces = async () => {
     atlasPlacesCachePromise = (async () => {
       const payload = await fetchJson('/api/atlas-places', {
         'populate[0]': 'translations',
-        'populate[1]': 'parent',
-        'populate[2]': 'country_profile',
-        'populate[3]': 'region_groups',
+        'populate[1]': 'translations.embeds',
+        'populate[2]': 'parent',
+        'populate[3]': 'country_profile',
+        'populate[4]': 'region_groups',
         'pagination[pageSize]': '400',
       });
 
@@ -209,11 +210,13 @@ export const getRegionGroups = async () => {
     regionGroupsCachePromise = (async () => {
       const payload = await fetchJson('/api/region-groups', {
         'populate[0]': 'translations',
-        'populate[1]': 'members',
-        'populate[2]': 'members.translations',
-        'populate[3]': 'members.parent',
-        'populate[4]': 'members.country_profile',
-        'populate[5]': 'country_profile',
+        'populate[1]': 'translations.embeds',
+        'populate[2]': 'members',
+        'populate[3]': 'members.translations',
+        'populate[4]': 'members.translations.embeds',
+        'populate[5]': 'members.parent',
+        'populate[6]': 'members.country_profile',
+        'populate[7]': 'country_profile',
         'pagination[pageSize]': '200',
       });
 
@@ -227,7 +230,8 @@ export const getRegionGroups = async () => {
 export const getBlogPosts = async () => {
   const payload = await fetchJson('/api/blog-posts', {
     'populate[0]': 'translations',
-    'populate[1]': 'related_places',
+    'populate[1]': 'translations.embeds',
+    'populate[2]': 'related_places',
     'pagination[pageSize]': '200',
     'filters[publishedAt][$notNull]': 'true',
     sort: 'published_on:desc',
@@ -239,6 +243,7 @@ export const getBlogPosts = async () => {
 export const getUiPage = async (pageKey: string) => {
   const payload = await fetchJson('/api/ui-pages', {
     'populate[0]': 'translations',
+    'populate[1]': 'translations.embeds',
     'filters[page_key][$eq]': pageKey,
     'pagination[pageSize]': '1',
   });
