@@ -50,7 +50,7 @@ echo "=============================================================="
 check_permission_footguns
 
 docker_env=()
-for var_name in STRAPI_URL PUBLIC_STRAPI_URL ALLOW_LOCALHOST_STRAPI PUBLIC_SITE_URL CF_PAGES CF_PAGES_BRANCH CF_PAGES_COMMIT_SHA NODE_ENV; do
+for var_name in STRAPI_URL PUBLIC_STRAPI_URL ALLOW_LOCALHOST_STRAPI PUBLIC_SITE_URL CF_PAGES CF_PAGES_BRANCH CF_PAGES_COMMIT_SHA NODE_ENV CF_ACCESS_CLIENT_ID CF_ACCESS_CLIENT_SECRET; do
   if [[ -n "${!var_name:-}" ]]; then
     docker_env+=(-e "${var_name}=${!var_name}")
   fi

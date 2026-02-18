@@ -1,6 +1,7 @@
 export type StrapiEnv = {
   STRAPI_URL?: string;
   PUBLIC_STRAPI_URL?: string;
+  PUBLIC_SITE_URL?: string;
   CF_PAGES?: string;
   NODE_ENV?: string;
   ALLOW_LOCALHOST_STRAPI?: string;
@@ -24,6 +25,14 @@ const toHostname = (value: string) => {
   }
 };
 
+const toOrigin = (value: string) => {
+  try {
+    return new URL(value).origin.replace(/\/$/, '').toLowerCase();
+  } catch {
+    return '';
+  }
+};
+
 export const isProductionLikeStrapiEnv = (env: StrapiEnv) =>
   isTruthy(env.CF_PAGES) || String(env.NODE_ENV || '').trim().toLowerCase() === 'production';
 
@@ -36,6 +45,8 @@ export const resolveStrapiBaseUrl = (env: StrapiEnv) => {
     DEFAULT_STRAPI_URL;
 
   const resolved = configured.replace(/\/$/, '');
+  const resolvedOrigin = toOrigin(resolved);
+  const siteOrigin = toOrigin(String(env.PUBLIC_SITE_URL || '').trim());
   const allowLocalhost = isTruthy(env.ALLOW_LOCALHOST_STRAPI);
 
   if (isProductionLikeStrapiEnv(env) && !allowLocalhost && isLocalhostStrapiUrl(resolved)) {
@@ -45,6 +56,15 @@ export const resolveStrapiBaseUrl = (env: StrapiEnv) => {
         'Set STRAPI_URL (and optionally PUBLIC_STRAPI_URL) to your reachable Strapi API origin, ' +
         'for example https://cms.example.com. ' +
         'For intentional local smoke only, set ALLOW_LOCALHOST_STRAPI=true.'
+    );
+  }
+
+  if (isProductionLikeStrapiEnv(env) && siteOrigin && resolvedOrigin && resolvedOrigin === siteOrigin) {
+    throw new Error(
+      '[STRAPI_URL_GUARD] STRAPI_URL points to PUBLIC_SITE_URL origin in production-like mode. ' +
+        `Resolved STRAPI origin="${resolvedOrigin}", site origin="${siteOrigin}". ` +
+        'Point STRAPI_URL/PUBLIC_STRAPI_URL to your CMS origin (for example https://cms.example.com), ' +
+        'not the public frontend domain.'
     );
   }
 

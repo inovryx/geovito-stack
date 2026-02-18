@@ -95,6 +95,7 @@ export type RegionGroup = {
 const STRAPI_ENV: StrapiEnv = {
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
   PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  PUBLIC_SITE_URL: (import.meta.env.PUBLIC_SITE_URL as string | undefined) || process.env.PUBLIC_SITE_URL,
   CF_PAGES: process.env.CF_PAGES,
   NODE_ENV: process.env.NODE_ENV,
   ALLOW_LOCALHOST_STRAPI:
@@ -104,6 +105,11 @@ const STRAPI_ENV: StrapiEnv = {
 const STRAPI_URL = resolveStrapiBaseUrl(STRAPI_ENV);
 
 const STRAPI_API_TOKEN = (import.meta.env.STRAPI_API_TOKEN as string | undefined) || '';
+const CF_ACCESS_CLIENT_ID =
+  process.env.CF_ACCESS_CLIENT_ID || (import.meta.env.CF_ACCESS_CLIENT_ID as string | undefined) || '';
+const CF_ACCESS_CLIENT_SECRET =
+  process.env.CF_ACCESS_CLIENT_SECRET || (import.meta.env.CF_ACCESS_CLIENT_SECRET as string | undefined) || '';
+const CF_ACCESS_HEADERS_ENABLED = Boolean(CF_ACCESS_CLIENT_ID && CF_ACCESS_CLIENT_SECRET);
 let atlasPlacesCachePromise: Promise<AtlasPlace[]> | null = null;
 let regionGroupsCachePromise: Promise<RegionGroup[]> | null = null;
 
@@ -150,10 +156,31 @@ const fetchJson = async (path: string, params: Record<string, string> = {}) => {
     headers.Authorization = `Bearer ${STRAPI_API_TOKEN}`;
   }
 
+  if (CF_ACCESS_HEADERS_ENABLED) {
+    headers['CF-Access-Client-Id'] = CF_ACCESS_CLIENT_ID;
+    headers['CF-Access-Client-Secret'] = CF_ACCESS_CLIENT_SECRET;
+  }
+
   const response = await fetch(url, { headers });
 
   if (!response.ok) {
-    throw new Error(`Strapi request failed (${response.status}): ${url.toString()}`);
+    const bodySnippet = (await response.text().catch(() => '')).slice(0, 200).replace(/\s+/g, ' ').trim();
+    throw new Error(
+      `Strapi request failed (${response.status}): ${url.toString()} ` +
+        `${bodySnippet ? `body="${bodySnippet}"` : ''}`.trim() +
+        ` access_headers=${CF_ACCESS_HEADERS_ENABLED ? 'on' : 'off'}`
+    );
+  }
+
+  const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+  if (!contentType.includes('application/json')) {
+    const bodySnippet = (await response.text().catch(() => '')).slice(0, 200).replace(/\s+/g, ' ').trim();
+    throw new Error(
+      `Strapi response is not JSON (${contentType || 'unknown'}): ${url.toString()} ` +
+        `${bodySnippet ? `body="${bodySnippet}"` : ''} ` +
+        `access_headers=${CF_ACCESS_HEADERS_ENABLED ? 'on' : 'off'} ` +
+        'If Cloudflare Access protects STRAPI_URL, set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET in Pages env.'
+    );
   }
 
   return response.json();
