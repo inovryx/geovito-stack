@@ -136,12 +136,14 @@ fi
 
 if [[ -z "${COMMENT_IP_HASH_SALT_VAL}" ]]; then
   warn "BLOG_COMMENT_IP_HASH_SALT is empty; fallback salt will be used"
+  warn "Run: bash tools/blog_engagement_salt_apply.sh && docker compose up -d --force-recreate strapi"
 else
   pass "comment IP hash salt is set"
 fi
 
 if [[ -z "${LIKE_IP_HASH_SALT_VAL}" ]]; then
   warn "BLOG_LIKE_IP_HASH_SALT is empty; fallback salt will be used"
+  warn "Run: bash tools/blog_engagement_salt_apply.sh && docker compose up -d --force-recreate strapi"
 else
   pass "like IP hash salt is set"
 fi
