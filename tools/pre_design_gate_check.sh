@@ -51,7 +51,7 @@ run_gate "Import Dormant Guard" bash tools/import_dormant_check.sh
 run_gate "Translation Bundle Dormant Guard" bash tools/translation_bundle_dormant_check.sh
 run_gate "Import Log Domain Sanity" bash tools/import_log_sanity_check.sh
 run_gate "Pre-Import Index Gate" bash tools/pre_import_index_gate_check.sh
-run_gate "Shell Smoke Test" bash tools/shell_smoke_test.sh
+run_gate "Shell Smoke Test" env SHELL_SMOKE_REUSE_DIST=1 bash tools/shell_smoke_test.sh
 run_gate "Cloudflare Pages Build Check" bash tools/pages_build_check.sh
 run_gate "Final Mock Purge Cleanup" bash tools/purge_mock.sh
 

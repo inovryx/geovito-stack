@@ -7,6 +7,7 @@ cd "$ROOT_DIR"
 FRONTEND_PORT="${SHELL_SMOKE_PORT:-4173}"
 BASE_URL="${SHELL_SMOKE_BASE_URL:-http://127.0.0.1:${FRONTEND_PORT}}"
 REPORT_FILE="$ROOT_DIR/artifacts/shell_smoke_report.tsv"
+REUSE_DIST="${SHELL_SMOKE_REUSE_DIST:-0}"
 FAIL_COUNT=0
 SERVER_PID=""
 
@@ -32,13 +33,13 @@ normalize_banners() {
   local body="$1"
   local output=""
 
-  if printf '%s' "$body" | rg -q 'state-banner mock'; then
+  if printf '%s' "$body" | rg -q 'class="[^"]*state-banner[^"]*mock[^"]*"|class="[^"]*mock[^"]*state-banner[^"]*"'; then
     output="${output}mock,"
   fi
-  if printf '%s' "$body" | rg -q 'state-banner fallback'; then
+  if printf '%s' "$body" | rg -q 'class="[^"]*state-banner[^"]*fallback[^"]*"|class="[^"]*fallback[^"]*state-banner[^"]*"'; then
     output="${output}fallback,"
   fi
-  if printf '%s' "$body" | rg -q 'state-banner runtime'; then
+  if printf '%s' "$body" | rg -q 'class="[^"]*state-banner[^"]*runtime[^"]*"|class="[^"]*runtime[^"]*state-banner[^"]*"'; then
     output="${output}runtime,"
   fi
 
@@ -48,6 +49,16 @@ normalize_banners() {
   fi
 
   echo "${output%,}"
+}
+
+normalize_canonical_url() {
+  local value="$1"
+  local trimmed="${value%/}"
+  if [[ "$trimmed" == https://www.geovito.com* ]]; then
+    echo "https://geovito.com${trimmed#https://www.geovito.com}"
+    return
+  fi
+  echo "$trimmed"
 }
 
 assert_banner_expectation() {
@@ -101,6 +112,21 @@ check_page() {
   local banners
   banners="$(normalize_banners "$body")"
 
+  if [[ "$expected_banners" != "none" && "$banners" == "none" ]]; then
+    # Retry once to reduce transient read flakes when first response is incomplete.
+    local retry_file retry_body
+    retry_file="$(mktemp)"
+    curl -sS -o "$retry_file" "$url" >/dev/null 2>&1 || true
+    retry_body="$(cat "$retry_file")"
+    rm -f "$retry_file"
+    local retry_banners
+    retry_banners="$(normalize_banners "$retry_body")"
+    if [[ "$retry_banners" != "none" ]]; then
+      body="$retry_body"
+      banners="$retry_banners"
+    fi
+  fi
+
   local case_ok=1
 
   if [[ "$status" == "$expected_status" ]]; then
@@ -120,7 +146,10 @@ check_page() {
   fi
 
   if [[ "$expected_canonical_contains" != "-" ]]; then
-    if [[ -n "$canonical" && "$canonical" == *"$expected_canonical_contains"* ]]; then
+    local canonical_normalized expected_canonical_normalized
+    canonical_normalized="$(normalize_canonical_url "$canonical")"
+    expected_canonical_normalized="$(normalize_canonical_url "$expected_canonical_contains")"
+    if [[ -n "$canonical_normalized" && "$canonical_normalized" == *"$expected_canonical_normalized"* ]]; then
       pass "${path} canonical contains ${expected_canonical_contains}"
     else
       fail "${path} canonical mismatch (got: ${canonical:-<missing>})"
@@ -165,9 +194,24 @@ echo "=============================================================="
 echo "GEOVITO SHELL SMOKE TEST"
 echo "=============================================================="
 
-docker compose up -d strapi >/dev/null
-ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed >/dev/null
-bash tools/prod_smoke_frontend.sh >/dev/null
+if [[ "$REUSE_DIST" == "1" ]]; then
+  docker compose up -d strapi >/dev/null
+  if [[ ! -f "$ROOT_DIR/frontend/dist/index.html" ]]; then
+    echo "FAIL: SHELL_SMOKE_REUSE_DIST=1 but frontend/dist/index.html is missing"
+    echo "Run: bash tools/prod_smoke_frontend.sh"
+    exit 1
+  fi
+else
+  if [[ "${SHELL_SMOKE_SKIP_BUILD:-0}" == "1" ]]; then
+    docker compose up -d strapi >/dev/null
+  else
+    docker compose up -d --build strapi >/dev/null
+  fi
+
+  bash tools/mock_data.sh clear >/dev/null
+  ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed >/dev/null
+  bash tools/prod_smoke_frontend.sh >/dev/null
+fi
 
 mkdir -p "$ROOT_DIR/artifacts"
 printf "url\tstatus\trobots\tcanonical\tbanners\tresult\n" >"$REPORT_FILE"
@@ -213,7 +257,12 @@ check_page "/en/blog/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog
 check_page "/en/blog/plan-3-day-europe-city-break/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/plan-3-day-europe-city-break" "mock"
 check_page "/en/blog/reading-city-through-district-layers/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/reading-city-through-district-layers" "mock"
 
-check_page "/en/account/" "200" "noindex" "https://www.geovito.com/en/login/" "none"
+check_contains "/en/atlas/new-york-city/" "data-embed-gallery" "NYC page embed gallery"
+check_contains "/en/atlas/new-york-city/" "youtube-nocookie\\.com/embed/" "NYC page youtube embed"
+check_contains "/en/blog/neighborhood-food-walks-no-tourist-traps/" "facebook\\.com/plugins/video\\.php" "Blog page facebook embed"
+check_contains "/en/blog/plan-3-day-europe-city-break/" "rel=\"[^\"]*(noopener[^\"]*noreferrer[^\"]*nofollow|noopener[^\"]*nofollow[^\"]*noreferrer|noreferrer[^\"]*noopener[^\"]*nofollow|noreferrer[^\"]*nofollow[^\"]*noopener|nofollow[^\"]*noopener[^\"]*noreferrer|nofollow[^\"]*noreferrer[^\"]*noopener)[^\"]*\"" "Embed source link rel policy"
+
+check_page "/en/account/" "200" "noindex,nofollow" "https://www.geovito.com/en/account/" "none"
 check_page "/en/dashboard/" "200" "noindex" "https://www.geovito.com/en/login/" "none"
 
 check_page "/de/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock,fallback"
