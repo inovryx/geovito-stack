@@ -4,11 +4,21 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STRAPI_BASE_URL="${STRAPI_BASE_URL:-http://127.0.0.1:1337}"
 STRAPI_API_TOKEN="${STRAPI_API_TOKEN:-}"
+MEDIA_SMOKE_ENV_FILE="${MEDIA_SMOKE_ENV_FILE:-$HOME/.config/geovito/media_smoke.env}"
 FIXTURE_PATH="${FIXTURE_PATH:-$ROOT_DIR/tools/fixtures/media-smoke.png}"
 CLEANUP="${MEDIA_SMOKE_CLEANUP:-true}"
 
+if [[ -z "$STRAPI_API_TOKEN" && -f "$MEDIA_SMOKE_ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$MEDIA_SMOKE_ENV_FILE"
+  STRAPI_API_TOKEN="${STRAPI_API_TOKEN:-}"
+fi
+
 if [[ -z "$STRAPI_API_TOKEN" ]]; then
   echo "ERROR: STRAPI_API_TOKEN is required for upload smoke test."
+  echo "Hint:"
+  echo "  1) export STRAPI_API_TOKEN=..."
+  echo "  2) or create secret file: bash tools/media_smoke_env_init.sh"
   exit 1
 fi
 

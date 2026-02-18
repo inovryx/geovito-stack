@@ -39,10 +39,11 @@ run_gate "Prepare Strapi Runtime" docker compose up -d --build strapi
 
 run_gate "Production Health" bash tools/prod_health.sh
 run_gate "Media Policy Guard" bash tools/media_policy_check.sh
-if [[ -n "${STRAPI_API_TOKEN:-}" ]]; then
-  run_gate "Media Upload Smoke" bash tools/media_upload_smoke.sh
+if [[ -n "${STRAPI_API_TOKEN:-}" || -f "${MEDIA_SMOKE_ENV_FILE:-$HOME/.config/geovito/media_smoke.env}" ]]; then
+  run_gate "Media Upload Smoke" bash tools/media_smoke.sh
 else
   echo "RESULT: SKIP (Media Upload Smoke) token missing: export STRAPI_API_TOKEN=..."
+  echo "  or create ~/.config/geovito/media_smoke.env via: bash tools/media_smoke_env_init.sh"
   SUMMARY_LINES+=("SKIP | Media Upload Smoke | token_missing")
 fi
 run_gate "Auth Flow Guard" bash tools/auth_flow_check.sh
