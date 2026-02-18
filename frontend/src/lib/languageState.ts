@@ -2,6 +2,14 @@ import { DEFAULT_LANGUAGE, type SiteLanguage } from './languages';
 
 export type TranslationStatus = 'missing' | 'draft' | 'complete';
 
+export type LocalizedEmbedItem = {
+  provider: 'youtube' | 'facebook';
+  source_url: string;
+  title?: string;
+  caption?: string;
+  start_seconds?: number;
+};
+
 export type LocalizedContent = {
   language: SiteLanguage;
   status: TranslationStatus;
@@ -9,6 +17,7 @@ export type LocalizedContent = {
   slug?: string;
   excerpt?: string;
   body?: string;
+  embeds?: LocalizedEmbedItem[];
   last_reviewed_at?: string | null;
   canonical_path?: string;
   runtime_translation?: boolean;

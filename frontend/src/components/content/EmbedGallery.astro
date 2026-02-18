@@ -1,0 +1,87 @@
+---
+import type { LocalizedEmbedItem } from '../../lib/languageState';
+import { resolveEmbeds } from '../../lib/embed';
+import { translate } from '../../lib/uiLanguage';
+
+interface Props {
+  embeds?: LocalizedEmbedItem[] | null;
+  ui: Record<string, unknown>;
+}
+
+const { embeds = [], ui } = Astro.props as Props;
+const resolvedEmbeds = resolveEmbeds(Array.isArray(embeds) ? embeds : []);
+---
+
+{
+  resolvedEmbeds.length > 0 ? (
+    <section class="embed-gallery gv-stack" data-embed-gallery>
+      <h2 class="gv-h3">{translate(ui, 'embed.sectionTitle', {}, 'Videos')}</h2>
+      <div class="embed-grid">
+        {resolvedEmbeds.map((embed) => (
+          <figure class="embed-card gv-card bg-surface border-border" data-embed-provider={embed.provider}>
+            <div class="embed-frame-wrap">
+              <iframe
+                src={embed.embedUrl}
+                title={embed.title}
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              />
+            </div>
+            <figcaption class="small">
+              {embed.caption ? <span>{embed.caption}</span> : null}
+              <a href={embed.sourceUrl} target="_blank" rel="noopener noreferrer nofollow">
+                {translate(ui, 'embed.openSource', {}, 'Open source video')}
+              </a>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  ) : null
+}
+
+<style>
+  .embed-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .embed-card {
+    padding: 0.75rem;
+  }
+
+  .embed-frame-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .embed-frame-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .embed-card figcaption {
+    margin-top: 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .embed-card figcaption a {
+    color: var(--color-accent-600, #2563eb);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+</style>
