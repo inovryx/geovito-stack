@@ -2,11 +2,13 @@
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
 import AdSlot from '../../../components/ads/AdSlot.astro';
+import EmbedGallery from '../../../components/content/EmbedGallery.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getBlogPosts, type BlogPost } from '../../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../lib/pageHelpers';
 import { chooseSlugForLanguage } from '../../../lib/slugResolver';
+import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export async function getStaticPaths() {
@@ -65,6 +67,48 @@ const languageLinks = buildLanguageLinks(languagePathMap);
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(canonicalPath);
 const robots = isMockView ? 'noindex,nofollow' : resolution.indexable ? 'index,follow' : 'noindex,nofollow';
+const loginPath = pathForLanguage(lang, 'login');
+const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim();
+const turnstileEnabled = turnstileSiteKey.length > 0;
+const strapiPublicBase = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+const blogEngagementCopy = {
+  title: translate(ui, 'blog.engagementTitle', {}, 'Community'),
+  subtitle: translate(ui, 'blog.engagementSubtitle', {}, 'Comments and likes are moderated for quality.'),
+  like: translate(ui, 'blog.like', {}, 'Like'),
+  unlike: translate(ui, 'blog.unlike', {}, 'Unlike'),
+  likes: translate(ui, 'blog.likes', {}, 'Likes'),
+  comments: translate(ui, 'blog.comments', {}, 'Comments'),
+  noComments: translate(ui, 'blog.noComments', {}, 'No approved comments yet.'),
+  leaveComment: translate(ui, 'blog.leaveComment', {}, 'Leave a comment'),
+  commentBody: translate(ui, 'blog.commentBody', {}, 'Comment'),
+  commentBodyPlaceholder: translate(ui, 'blog.commentBodyPlaceholder', {}, 'Share your thoughts...'),
+  displayName: translate(ui, 'blog.displayName', {}, 'Display name'),
+  displayNamePlaceholder: translate(ui, 'blog.displayNamePlaceholder', {}, 'How should your name appear?'),
+  email: translate(ui, 'blog.email', {}, 'Email'),
+  emailPlaceholder: translate(ui, 'blog.emailPlaceholder', {}, 'you@example.com'),
+  submitComment: translate(ui, 'blog.submitComment', {}, 'Submit comment'),
+  submitting: translate(ui, 'blog.submitting', {}, 'Submitting...'),
+  commentPending: translate(ui, 'blog.commentPending', {}, 'Your comment was received and is pending moderation.'),
+  commentApproved: translate(ui, 'blog.commentApproved', {}, 'Your comment is now visible.'),
+  commentFailed: translate(ui, 'blog.commentFailed', {}, 'Comment could not be submitted.'),
+  likeAuthRequired: translate(ui, 'blog.likeAuthRequired', {}, 'Please login to like this post.'),
+  likeForbidden: translate(ui, 'blog.likeForbidden', {}, 'Like action is currently unavailable for this account role.'),
+  likeFailed: translate(ui, 'blog.likeFailed', {}, 'Like action failed. Please try again.'),
+  turnstileRequired: translate(ui, 'auth.turnstileRequired', {}, 'Please complete the captcha challenge.'),
+  commentAuthHint: translate(
+    ui,
+    'blog.commentAuthHint',
+    {},
+    'Logged-in users can comment without email; guest comments require moderation.'
+  ),
+};
 ---
 
 <MainLayout
@@ -97,8 +141,77 @@ const robots = isMockView ? 'noindex,nofollow' : resolution.indexable ? 'index,f
     <strong>{translate(ui, 'post.meta.languageStatus')}:</strong> {resolution.requested?.status || 'missing'}
   </p>
   {resolution.output.body ? <article class="gv-prose gv-body" data-ev-root="off" set:html={resolution.output.body}></article> : <p class="gv-body">{translate(ui, 'post.noBody')}</p>}
+  <EmbedGallery embeds={resolution.output.embeds} ui={ui} />
   </section>
   <AdSlot {...{ slot: 'blog_incontent' }} class="blog-incontent-ad" testId="ad-slot-blog-incontent" />
+
+  <section
+    class="card panel gv-card blog-engagement"
+    data-blog-engagement
+    data-post-id={post.post_id}
+    data-language={lang}
+    data-auth-base={strapiPublicBase}
+    data-login-path={loginPath}
+    data-turnstile-enabled={turnstileEnabled ? 'true' : 'false'}
+    data-copy={JSON.stringify(blogEngagementCopy)}
+  >
+    <header class="blog-engagement-header">
+      <div>
+        <h2 class="gv-h2">{blogEngagementCopy.title}</h2>
+        <p class="small">{blogEngagementCopy.subtitle}</p>
+      </div>
+      <div class="blog-engagement-stats">
+        <span class="blog-engagement-chip" data-like-count-chip>{blogEngagementCopy.likes}: <strong data-like-count>0</strong></span>
+        <span class="blog-engagement-chip" data-comment-count-chip>{blogEngagementCopy.comments}: <strong data-comment-count>0</strong></span>
+      </div>
+    </header>
+
+    <div class="blog-like-row">
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-like-toggle>
+        <span class="ui-button-label">{blogEngagementCopy.like}</span>
+      </button>
+      <p class="small blog-like-feedback" data-like-feedback aria-live="polite"></p>
+    </div>
+
+    <div class="blog-comments-wrap">
+      <h3 class="gv-h3">{blogEngagementCopy.comments}</h3>
+      <ul class="blog-comment-list gv-stack" data-comment-list></ul>
+      <p class="small" data-comment-empty>{blogEngagementCopy.noComments}</p>
+    </div>
+
+    <form class="blog-comment-form gv-stack" data-comment-form novalidate>
+      <h3 class="gv-h3">{blogEngagementCopy.leaveComment}</h3>
+      <p class="small">{blogEngagementCopy.commentAuthHint}</p>
+
+      <label class="blog-comment-field" data-comment-display-wrap>
+        <span>{blogEngagementCopy.displayName}</span>
+        <input type="text" name="display_name" maxlength="120" placeholder={blogEngagementCopy.displayNamePlaceholder} />
+      </label>
+
+      <label class="blog-comment-field" data-comment-email-wrap>
+        <span>{blogEngagementCopy.email}</span>
+        <input type="email" name="email" maxlength="320" placeholder={blogEngagementCopy.emailPlaceholder} />
+      </label>
+
+      {
+        turnstileEnabled ? (
+          <div class="blog-comment-turnstile" data-comment-turnstile-wrap>
+            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto"></div>
+          </div>
+        ) : null
+      }
+
+      <label class="blog-comment-field">
+        <span>{blogEngagementCopy.commentBody}</span>
+        <textarea name="body" rows={4} maxlength={4000} required placeholder={blogEngagementCopy.commentBodyPlaceholder}></textarea>
+      </label>
+
+      <button type="submit" class="ui-button ui-button-primary ui-button-sm" data-comment-submit>
+        <span class="ui-button-label">{blogEngagementCopy.submitComment}</span>
+      </button>
+      <p class="small blog-comment-feedback" data-comment-feedback aria-live="polite"></p>
+    </form>
+  </section>
 
   {
     resolution.requested?.status !== 'complete' && !runtimeMode ? (
@@ -107,4 +220,415 @@ const robots = isMockView ? 'noindex,nofollow' : resolution.indexable ? 'index,f
       </p>
     ) : null
   }
+
+  <script is:inline>
+    (() => {
+      const root = document.querySelector('[data-blog-engagement]');
+      if (!(root instanceof HTMLElement)) return;
+
+      const postId = String(root.dataset.postId || '').trim();
+      const language = String(root.dataset.language || 'en').trim().toLowerCase();
+      const authBase = String(root.dataset.authBase || '').trim().replace(/\/$/, '');
+      const loginPath = String(root.dataset.loginPath || '/en/login/');
+      if (!postId || !authBase) return;
+
+      const copy = (() => {
+        try {
+          return JSON.parse(String(root.dataset.copy || '{}'));
+        } catch {
+          return {};
+        }
+      })();
+
+      const t = (key, fallback) => {
+        const value = copy?.[key];
+        return typeof value === 'string' && value.trim() ? value : fallback;
+      };
+
+      const commentList = root.querySelector('[data-comment-list]');
+      const commentEmpty = root.querySelector('[data-comment-empty]');
+      const likeCountEl = root.querySelector('[data-like-count]');
+      const commentCountEl = root.querySelector('[data-comment-count]');
+      const likeButton = root.querySelector('[data-like-toggle]');
+      const likeFeedback = root.querySelector('[data-like-feedback]');
+      const commentForm = root.querySelector('[data-comment-form]');
+      const commentSubmitButton = root.querySelector('[data-comment-submit]');
+      const commentFeedback = root.querySelector('[data-comment-feedback]');
+      const commentEmailWrap = root.querySelector('[data-comment-email-wrap]');
+      const commentTurnstileWrap = root.querySelector('[data-comment-turnstile-wrap]');
+      const turnstileEnabled = root.dataset.turnstileEnabled === 'true';
+
+      if (!(commentList instanceof HTMLElement) || !(commentEmpty instanceof HTMLElement)) return;
+      if (!(likeCountEl instanceof HTMLElement) || !(commentCountEl instanceof HTMLElement)) return;
+      if (!(likeButton instanceof HTMLButtonElement) || !(likeFeedback instanceof HTMLElement)) return;
+      if (!(commentForm instanceof HTMLFormElement) || !(commentSubmitButton instanceof HTMLButtonElement) || !(commentFeedback instanceof HTMLElement)) return;
+
+      const readSession = () => {
+        try {
+          const raw = localStorage.getItem('geovito_auth_session') || sessionStorage.getItem('geovito_auth_session');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          const jwt = typeof parsed.jwt === 'string' ? parsed.jwt.trim() : '';
+          if (!jwt) return null;
+          const username = typeof parsed.username === 'string' ? parsed.username.trim() : '';
+          const email = typeof parsed.email === 'string' ? parsed.email.trim() : '';
+          return { jwt, username, email };
+        } catch {
+          return null;
+        }
+      };
+
+      const setLikeFeedback = (message, isError = false) => {
+        likeFeedback.textContent = message;
+        likeFeedback.classList.toggle('is-error', isError);
+      };
+
+      const setCommentFeedback = (message, isError = false) => {
+        commentFeedback.textContent = message;
+        commentFeedback.classList.toggle('is-error', isError);
+      };
+
+      const setLikeCount = (value) => {
+        const count = Number.parseInt(String(value || '0'), 10);
+        likeCountEl.textContent = String(Number.isFinite(count) && count >= 0 ? count : 0);
+      };
+
+      const setCommentCount = (value) => {
+        const count = Number.parseInt(String(value || '0'), 10);
+        commentCountEl.textContent = String(Number.isFinite(count) && count >= 0 ? count : 0);
+      };
+
+      const escapeHtml = (value) =>
+        String(value || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+
+      const renderComments = (items) => {
+        commentList.innerHTML = '';
+        const rows = Array.isArray(items) ? items : [];
+        if (rows.length === 0) {
+          commentEmpty.hidden = false;
+          return;
+        }
+
+        commentEmpty.hidden = true;
+        const fragment = document.createDocumentFragment();
+        for (const item of rows) {
+          const li = document.createElement('li');
+          li.className = 'blog-comment-item';
+
+          const name = escapeHtml(item?.display_name || 'Guest');
+          const body = escapeHtml(item?.body || '');
+          const created = item?.created_at ? new Date(String(item.created_at)) : null;
+          const when = created && !Number.isNaN(created.getTime()) ? created.toLocaleString() : '';
+
+          li.innerHTML = `
+            <p class="blog-comment-meta"><strong>${name}</strong>${when ? ` · <span>${escapeHtml(when)}</span>` : ''}</p>
+            <p class="blog-comment-body">${body}</p>
+          `;
+          fragment.appendChild(li);
+        }
+        commentList.appendChild(fragment);
+      };
+
+      const fetchJson = async (url, options = {}) => {
+        const response = await fetch(url, options);
+        const payload = await response.json().catch(() => ({}));
+        return { response, payload };
+      };
+
+      const refreshCounts = async () => {
+        try {
+          const [likeRes, commentRes] = await Promise.all([
+            fetchJson(`${authBase}/api/blog-likes/count/${encodeURIComponent(postId)}`, {
+              headers: { Accept: 'application/json' },
+            }),
+            fetchJson(`${authBase}/api/blog-comments/count/${encodeURIComponent(postId)}`, {
+              headers: { Accept: 'application/json' },
+            }),
+          ]);
+
+          if (likeRes.response.ok) {
+            setLikeCount(likeRes.payload?.data?.like_count ?? 0);
+          }
+          if (commentRes.response.ok) {
+            setCommentCount(commentRes.payload?.data?.approved_count ?? 0);
+          }
+        } catch {
+          // no-op
+        }
+      };
+
+      const refreshComments = async () => {
+        try {
+          const { response, payload } = await fetchJson(
+            `${authBase}/api/blog-comments?post_id=${encodeURIComponent(postId)}&limit=20`,
+            {
+              headers: { Accept: 'application/json' },
+            }
+          );
+          if (!response.ok) return;
+          renderComments(payload?.data || []);
+        } catch {
+          // no-op
+        }
+      };
+
+      const applySessionUI = () => {
+        const session = readSession();
+        if (commentEmailWrap instanceof HTMLElement) {
+          commentEmailWrap.hidden = Boolean(session?.jwt);
+        }
+        if (commentTurnstileWrap instanceof HTMLElement) {
+          commentTurnstileWrap.hidden = Boolean(session?.jwt);
+        }
+      };
+
+      const readTurnstileToken = () => {
+        if (!turnstileEnabled) return '';
+        const tokenInput = commentForm.querySelector('input[name="cf-turnstile-response"]');
+        if (tokenInput instanceof HTMLInputElement && tokenInput.value.trim()) {
+          return tokenInput.value.trim();
+        }
+        return '';
+      };
+
+      likeButton.addEventListener('click', async () => {
+        const session = readSession();
+        if (!session?.jwt) {
+          setLikeFeedback(t('likeAuthRequired', 'Please login to like this post.'), true);
+          window.setTimeout(() => {
+            window.location.assign(loginPath);
+          }, 350);
+          return;
+        }
+
+        likeButton.disabled = true;
+        setLikeFeedback('');
+
+        try {
+          const { response, payload } = await fetchJson(`${authBase}/api/blog-likes/toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+            body: JSON.stringify({ post_id: postId }),
+          });
+
+          if (response.ok) {
+            setLikeCount(payload?.like_count ?? 0);
+            const liked = payload?.liked === true;
+            const label = likeButton.querySelector('.ui-button-label');
+            if (label instanceof HTMLElement) {
+              label.textContent = liked ? t('unlike', 'Unlike') : t('like', 'Like');
+            }
+            return;
+          }
+
+          if (response.status === 401 || response.status === 403) {
+            setLikeFeedback(t('likeForbidden', 'Like action is currently unavailable for this account role.'), true);
+          } else {
+            setLikeFeedback(payload?.error?.message || t('likeFailed', 'Like action failed. Please try again.'), true);
+          }
+        } catch {
+          setLikeFeedback(t('likeFailed', 'Like action failed. Please try again.'), true);
+        } finally {
+          likeButton.disabled = false;
+        }
+      });
+
+      commentForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const session = readSession();
+        const formData = new FormData(commentForm);
+
+        const body = String(formData.get('body') || '').trim();
+        const displayName = String(formData.get('display_name') || '').trim();
+        const email = String(formData.get('email') || '').trim();
+        const turnstileToken = readTurnstileToken();
+
+        if (!body) {
+          setCommentFeedback(t('commentBodyPlaceholder', 'Share your thoughts...'), true);
+          return;
+        }
+
+        if (!session?.jwt && !email) {
+          setCommentFeedback(t('emailPlaceholder', 'Please enter email'), true);
+          return;
+        }
+        if (!session?.jwt && turnstileEnabled && !turnstileToken) {
+          setCommentFeedback(t('turnstileRequired', 'Please complete the captcha challenge.'), true);
+          return;
+        }
+
+        commentSubmitButton.disabled = true;
+        const submitLabel = commentSubmitButton.querySelector('.ui-button-label');
+        if (submitLabel instanceof HTMLElement) {
+          submitLabel.textContent = t('submitting', 'Submitting...');
+        }
+        setCommentFeedback('');
+
+        const payload = {
+          post_id: postId,
+          body,
+          language: language || 'en',
+          display_name: displayName || session?.username || '',
+          email: session?.jwt ? undefined : email,
+          'cf-turnstile-response': session?.jwt ? undefined : turnstileToken,
+        };
+
+        try {
+          const headers = {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          };
+          if (session?.jwt) {
+            headers.Authorization = `Bearer ${session.jwt}`;
+          }
+
+          const { response, payload: responsePayload } = await fetchJson(`${authBase}/api/blog-comments/submit`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) {
+            setCommentFeedback(responsePayload?.error?.message || t('commentFailed', 'Comment could not be submitted.'), true);
+            return;
+          }
+
+          const moderationStatus = String(responsePayload?.moderation_status || '').toLowerCase();
+          setCommentFeedback(
+            moderationStatus === 'approved'
+              ? t('commentApproved', 'Your comment is now visible.')
+              : t('commentPending', 'Your comment was received and is pending moderation.')
+          );
+
+          commentForm.reset();
+          applySessionUI();
+          await Promise.all([refreshCounts(), refreshComments()]);
+        } catch {
+          setCommentFeedback(t('commentFailed', 'Comment could not be submitted.'), true);
+        } finally {
+          commentSubmitButton.disabled = false;
+          if (submitLabel instanceof HTMLElement) {
+            submitLabel.textContent = t('submitComment', 'Submit comment');
+          }
+        }
+      });
+
+      applySessionUI();
+      refreshCounts();
+      refreshComments();
+    })();
+  </script>
+  {turnstileEnabled ? <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> : null}
 </MainLayout>
+
+<style>
+  .blog-engagement {
+    margin-top: 1rem;
+  }
+
+  .blog-engagement-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .blog-engagement-stats {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .blog-engagement-chip {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    background: rgb(var(--gv-surface-2));
+  }
+
+  .blog-like-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .blog-like-feedback,
+  .blog-comment-feedback {
+    margin: 0;
+    min-height: 1.1rem;
+  }
+
+  .blog-like-feedback.is-error,
+  .blog-comment-feedback.is-error {
+    color: rgb(var(--gv-danger));
+  }
+
+  .blog-comments-wrap {
+    border-top: 1px dashed var(--border);
+    padding-top: 0.9rem;
+  }
+
+  .blog-comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .blog-comment-item {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgb(var(--gv-surface-2));
+    padding: 0.7rem 0.8rem;
+  }
+
+  .blog-comment-meta {
+    margin: 0 0 0.35rem;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+  }
+
+  .blog-comment-body {
+    margin: 0;
+    white-space: pre-wrap;
+    line-height: 1.55;
+  }
+
+  .blog-comment-form {
+    border-top: 1px dashed var(--border);
+    padding-top: 0.9rem;
+  }
+
+  .blog-comment-field {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .blog-comment-field input,
+  .blog-comment-field textarea {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  .blog-comment-field input:focus-visible,
+  .blog-comment-field textarea:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+</style>
