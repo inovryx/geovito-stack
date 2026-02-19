@@ -6,16 +6,18 @@ cd "$ROOT_DIR"
 
 RUN_DEPLOY="true"
 RUN_SMOKE="true"
+RUN_MODERATION="false"
 
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation]
 
 Purpose:
   Single command release verification:
   1) Force Cloudflare Pages deploy to current HEAD SHA
   2) Run domain smoke check via Access token
+  3) (Optional) Run blog moderation stale-pending guard
 
 Notes:
   - pages deploy hook must be configured:
@@ -27,7 +29,8 @@ Notes:
 
 Env passthrough:
   EXPECTED_SHA7, BASE_URL, FINGERPRINT_BASE_URL, DEPLOY_TIMEOUT_SECONDS,
-  DEPLOY_POLL_INTERVAL_SECONDS, PAGES_DEPLOY_ENV_FILE, SMOKE_ACCESS_ENV_FILE
+  DEPLOY_POLL_INTERVAL_SECONDS, PAGES_DEPLOY_ENV_FILE, SMOKE_ACCESS_ENV_FILE,
+  SMOKE_BLOG_MODERATION_ARGS
 USAGE
 }
 
@@ -39,6 +42,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-smoke)
       RUN_SMOKE="false"
+      shift
+      ;;
+    --with-moderation)
+      RUN_MODERATION="true"
       shift
       ;;
     -h|--help)
@@ -58,7 +65,7 @@ EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
 echo "expected_sha7=${EXPECTED_SHA7}"
-echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION}"
 echo "=============================================================="
 
 if [[ "$RUN_DEPLOY" == "true" ]]; then
@@ -68,7 +75,13 @@ else
 fi
 
 if [[ "$RUN_SMOKE" == "true" ]]; then
-  EXPECTED_SHA7="$EXPECTED_SHA7" bash tools/smoke_access.sh
+  if [[ "$RUN_MODERATION" == "true" ]]; then
+    SMOKE_RUN_BLOG_MODERATION_REPORT="true" \
+    EXPECTED_SHA7="$EXPECTED_SHA7" \
+    bash tools/smoke_access.sh
+  else
+    EXPECTED_SHA7="$EXPECTED_SHA7" bash tools/smoke_access.sh
+  fi
 else
   echo "INFO: skipped smoke stage (--skip-smoke)"
 fi

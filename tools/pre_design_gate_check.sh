@@ -48,6 +48,7 @@ else
 fi
 run_gate "Auth Flow Guard" bash tools/auth_flow_check.sh
 run_gate "OAuth Config Guard" bash tools/oauth_config_check.sh
+run_gate "Blog Comment State Contract" bash tools/blog_comment_state_contract_check.sh
 run_gate "Blog Engagement Policy Guard" bash tools/blog_engagement_policy_check.sh
 run_gate "Blog Engagement Smoke" bash tools/blog_engagement_smoke.sh
 run_gate "Import Dormant Guard" bash tools/import_dormant_check.sh
