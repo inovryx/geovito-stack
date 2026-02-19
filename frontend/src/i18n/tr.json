@@ -101,7 +101,17 @@
     "resetPasswordUpdating": "Sifre guncelleniyor...",
     "resetPasswordFailed": "Sifre sifirlama basarisiz. Lutfen yeni bir baglanti isteyin.",
     "resetPasswordSuccessRedirect": "Sifre guncellendi. Giris sayfasina yonlendiriliyorsunuz...",
-    "networkError": "Ag hatasi olustu. Lutfen tekrar deneyin."
+    "networkError": "Ag hatasi olustu. Lutfen tekrar deneyin.",
+    "turnstileRequired": "Lutfen captcha dogrulamasini tamamlayin.",
+    "loginRequired": "Email ve sifre zorunludur.",
+    "loginTrying": "Giris deneniyor...",
+    "loginFailed": "Giris basarisiz. Bilgilerinizi kontrol edip tekrar deneyin.",
+    "loginStorageError": "Oturum tarayicida kaydedilemedi.",
+    "loginSuccessRedirect": "Giris basarili. Yonlendiriliyorsunuz...",
+    "registerRequired": "Kullanici adi, email ve sifre zorunludur.",
+    "registerCreating": "Kayit olusturuluyor...",
+    "registerFailed": "Kayit basarisiz. Farkli bir email veya kullanici adi deneyin.",
+    "registerSuccess": "Kayit basarili. Simdi giris yapabilirsiniz."
   },
   "stateBanner": {
     "runtime": "Runtime translation preview is shown. This view is not indexed.",
@@ -296,7 +306,20 @@
     "passwordSaving": "Sifre guncelleniyor...",
     "passwordSaveFailed": "Sifre guncellenemedi. Mevcut sifrenizi kontrol edin.",
     "passwordSaved": "Sifre basariyla guncellendi.",
-    "passwordNetworkError": "Sifre guncellenirken ag hatasi olustu."
+    "passwordNetworkError": "Sifre guncellenirken ag hatasi olustu.",
+    "commentsTitle": "Yorum kuyrugum",
+    "commentsDescription": "Son blog yorumlarinizin moderasyon durumunu takip edin.",
+    "commentsPending": "Beklemede",
+    "commentsApproved": "Onaylandi",
+    "commentsRejected": "Reddedildi",
+    "commentsSpam": "Spam",
+    "commentsNone": "Henuz yorum yok.",
+    "commentsRefresh": "Yorumlari yenile",
+    "commentsLoading": "Yorumlar yukleniyor...",
+    "commentsLoadFailed": "Yorumlar su anda yuklenemedi.",
+    "commentsPostRef": "Yazi",
+    "commentsStatus": "Durum",
+    "commentsModerationNote": "Moderasyon notu"
   },
   "dashboard": {
     "title": "Dashboard",

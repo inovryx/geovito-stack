@@ -101,7 +101,17 @@
     "resetPasswordUpdating": "Updating password...",
     "resetPasswordFailed": "Password reset failed. Please request a new link.",
     "resetPasswordSuccessRedirect": "Password updated. Redirecting to login...",
-    "networkError": "Network error. Please try again."
+    "networkError": "Network error. Please try again.",
+    "turnstileRequired": "Please complete the captcha challenge.",
+    "loginRequired": "Email and password are required.",
+    "loginTrying": "Trying to sign in...",
+    "loginFailed": "Login failed. Please check your credentials and try again.",
+    "loginStorageError": "Session could not be saved in your browser.",
+    "loginSuccessRedirect": "Login successful. Redirecting...",
+    "registerRequired": "Username, email and password are required.",
+    "registerCreating": "Creating account...",
+    "registerFailed": "Registration failed. Please try another email or username.",
+    "registerSuccess": "Registration successful. You can now log in."
   },
   "stateBanner": {
     "runtime": "Runtime translation preview is shown. This view is not indexed.",
@@ -296,7 +306,20 @@
     "passwordSaving": "Updating password...",
     "passwordSaveFailed": "Could not update password. Please verify your current password.",
     "passwordSaved": "Password updated successfully.",
-    "passwordNetworkError": "Network error while updating password."
+    "passwordNetworkError": "Network error while updating password.",
+    "commentsTitle": "My comment queue",
+    "commentsDescription": "Track moderation status of your recent blog comments.",
+    "commentsPending": "Pending",
+    "commentsApproved": "Approved",
+    "commentsRejected": "Rejected",
+    "commentsSpam": "Spam",
+    "commentsNone": "No comments yet.",
+    "commentsRefresh": "Refresh comments",
+    "commentsLoading": "Loading comments...",
+    "commentsLoadFailed": "Could not load comments right now.",
+    "commentsPostRef": "Post",
+    "commentsStatus": "Status",
+    "commentsModerationNote": "Moderation note"
   },
   "dashboard": {
     "title": "Dashboard",
