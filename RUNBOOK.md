@@ -37,6 +37,21 @@ bash tools/stack_health.sh
 
 ## Media Upload Smoke (Optional)
 Requires an admin-level Strapi API token with upload permissions.
+
+First-time secret setup:
+```bash
+cd /home/ali/geovito-stack
+bash tools/media_smoke_env_init.sh
+nano ~/.config/geovito/media_smoke.env
+```
+
+Run with saved secret:
+```bash
+cd /home/ali/geovito-stack
+bash tools/media_smoke.sh
+```
+
+Alternative one-shot:
 ```bash
 cd /home/ali/geovito-stack
 STRAPI_API_TOKEN=... bash tools/media_upload_smoke.sh
@@ -80,30 +95,86 @@ Output: `dist`
 Node: `20`
 
 ## UI Language Import/Export (Build-time)
-Import UI locale JSON into Strapi:
+First-time setup (one-time):
 ```bash
-STRAPI_API_TOKEN=... bash tools/import_ui_locales.sh
+bash tools/ui_locale_secret_init.sh
+nano ~/.config/geovito/ui_locale.env
 ```
 
-Export UI locale JSON from Strapi into frontend files:
+`~/.config/geovito/ui_locale.env` content:
 ```bash
-STRAPI_API_TOKEN=... bash tools/export_ui_locales.sh
+STRAPI_API_TOKEN='your_real_token_here'
+```
+
+Main flows:
+```bash
+# only import artifacts/ui-locales/*.json -> Strapi
+bash tools/import_ui_locales.sh
+
+# only export Strapi -> frontend/src/i18n + clear deploy_required
+# also writes artifacts/ui-locale-progress.json
+bash tools/export_ui_locales.sh
+
+# print translation gap summary (missing/untranslated per locale)
+bash tools/ui_locale_progress_report.sh
+
+# export + Cloudflare-compatible build check
+bash tools/ui_locale_publish.sh
+# optional: skip ui-page progress report
+bash tools/ui_locale_publish.sh --no-ui-page-report
+
+# import + export + build check (one command)
+bash tools/ui_locale_sync.sh
 ```
 
 Notes:
 - `ui-locale.deploy_required=true` means a deploy is needed.
 - Export clears `deploy_required` and updates `last_exported_at`.
-- For one-command publish, keep token in local non-repo file:
-  - `~/.config/geovito/secrets.env`
-  - content: `STRAPI_API_TOKEN=your_real_token_here`
-- Then run:
-```bash
-bash tools/ui_locale_publish.sh
-```
-- Optional: skip build check with `bash tools/ui_locale_publish.sh --no-build-check`
+- Import/export recomputes per-locale progress:
+  - `total_keys`, `translated_keys`, `missing_keys`, `untranslated_keys`, `coverage_percent`
+  - `missing_examples`, `untranslated_examples`
+- `ui_locale_publish.sh` now prints a locale-by-locale gap table after export.
+- `ui_locale_publish.sh` also prints ui-page translation progress.
+- Optional strict mode to block publish when translation gaps exist:
+  - `UI_LOCALE_PROGRESS_STRICT=true bash tools/ui_locale_publish.sh`
+  - `UI_PAGE_PROGRESS_STRICT=true bash tools/ui_locale_publish.sh`
+- `ui_locale_publish.sh` / `ui_locale_sync.sh` secret file yoksa template olusturur ve durur.
+- Optional: skip build check with:
+  - `bash tools/ui_locale_publish.sh --no-build-check`
+  - `bash tools/ui_locale_sync.sh --no-build-check`
+- Progress API (admin token/auth):
+  - `GET /api/ui-locales/meta/progress`
+  - `GET /api/ui-locales/meta/<locale>/reference-preview?state=missing`
 - UI language and Atlas language are separated:
-  - UI can be `fr` (or other added locales)
+  - UI can be `fr` (or any added locale)
   - Atlas content keeps its own supported set and falls back to `en` if requested locale is missing
+
+## UI Page Translation Progress (About/Rules/Help)
+`ui-page` pages are content pages with fixed keys:
+- `about`, `rules`, `help`
+
+Stable URL pattern:
+- `/:lang/:page_key` (example: `/tr/about`)
+
+Admin/auth endpoints:
+```bash
+# overall translation status by page and locale
+curl -H "Authorization: Bearer <TOKEN>" \
+  http://127.0.0.1:1337/api/ui-pages/meta/progress
+
+# side-by-side reference preview for one page+locale
+curl -H "Authorization: Bearer <TOKEN>" \
+  "http://127.0.0.1:1337/api/ui-pages/meta/about/reference-preview?locale=tr"
+
+# one-command summary report (reads STRAPI_API_TOKEN from ui_locale secret file)
+bash tools/ui_page_progress_report.sh
+# strict mode (fails if any page has missing/draft locales)
+UI_PAGE_PROGRESS_STRICT=true bash tools/ui_page_progress_report.sh
+```
+
+Notes:
+- `reference-preview` is intended for editor UI/forms (EN reference vs target locale fields).
+- If target locale is missing/draft, frontend falls back to EN and sets noindex.
 
 ## Post-Deploy Smoke (Domain-Level)
 ```bash
@@ -117,6 +188,30 @@ What it verifies:
 - `/sitemap.xml` returns 200
 - `/en/atlas/italy-pilot/` stays indexable + canonical self
 - `/de/atlas/italy-pilot/` stays noindex + canonical EN
+
+## Release Standard (One Command)
+This is the default release verification command:
+```bash
+cd /home/ali/geovito-stack
+bash tools/release_deploy_smoke.sh --with-moderation
+```
+
+What it does:
+- forces Cloudflare Pages deploy to current `HEAD` SHA (`tools/pages_deploy_force.sh`)
+- runs domain smoke checks with Access token (`tools/smoke_access.sh`)
+- runs moderation queue stale-pending guard (`tools/blog_moderation_report.sh --fail-on-stale-pending`)
+
+First-time setup (one-time):
+```bash
+cd /home/ali/geovito-stack
+bash tools/pages_deploy_env_init.sh
+bash tools/smoke_access_env_init.sh
+```
+
+Optional tuning:
+- pending age threshold: `BLOG_MOD_PENDING_ALERT_HOURS` (default `24`)
+- custom moderation args passthrough:
+  - `SMOKE_BLOG_MODERATION_ARGS="--fail-on-stale-pending --json" bash tools/release_deploy_smoke.sh --with-moderation`
 
 ## Pre-Design Gate (All Critical Checks)
 ```bash
@@ -233,12 +328,24 @@ Auth runtime guards:
 - `AUTH_FACEBOOK_ENABLED=true|false`:
   - `false` => `/api/connect/facebook` and callback routes return `403`
 - `AUTH_RATE_LIMIT_WINDOW_MS` + `AUTH_RATE_LIMIT_MAX`:
-  - applies request throttling on login/register/social connect endpoints
+  - applies request throttling on login/register/forgot/reset/upload/social connect endpoints
+- `TURNSTILE_ENABLED=true|false`:
+  - `false` => captcha verification disabled (default)
+  - `true` => login/register/forgot/reset/upload requests require valid Turnstile token
+- `BLOG_COMMENT_GUEST_TURNSTILE_REQUIRED=true|false`:
+  - only applies when `TURNSTILE_ENABLED=true`
+  - `true` => guest blog comments require valid Turnstile token
+  - registered comments remain token-free
+- `TURNSTILE_SECRET_KEY`:
+  - required when `TURNSTILE_ENABLED=true`
+  - missing secret returns `503 TurnstileMisconfigured` on protected routes
 
 Frontend provider buttons:
 - `PUBLIC_AUTH_LOCAL_REGISTER_ENABLED=false` hides the register form in the frontend.
 - `PUBLIC_AUTH_GOOGLE_ENABLED=true` and/or `PUBLIC_AUTH_FACEBOOK_ENABLED=true` are only UI toggles.
 - Backend guard flags above must match, otherwise endpoint returns `403`.
+- `PUBLIC_TURNSTILE_SITE_KEY`:
+  - when set, auth forms render Cloudflare Turnstile widget and send `cf-turnstile-response`
 
 Auth verification command:
 ```bash
@@ -253,6 +360,7 @@ Expected:
 - login endpoint is not hard-blocked (`403/429` unexpected on first attempt)
 - forgot-password endpoint returns `200`
 - reset-password invalid token check returns `400`
+- if `TURNSTILE_ENABLED=true`, auth endpoints can return `403` until captcha token is provided
 
 SMTP runtime (Strapi email provider):
 - `EMAIL_PROVIDER=sendmail|nodemailer` (real SMTP icin `nodemailer`)
@@ -379,6 +487,89 @@ bash tools/media_policy_check.sh
 - Authenticated users:
   - no direct Atlas mutation
   - blog submission workflow is reserved for a later phase
+
+## Blog Engagement (Comments + Likes)
+Active endpoints:
+- `POST /api/blog-comments/submit` (public/guest + registered)
+- `GET /api/blog-comments?post_id=<post_id>&limit=50` (approved-only list)
+- `GET /api/blog-comments/count/<post_id>` (approved count)
+- `POST /api/blog-likes/toggle` (authenticated only)
+- `GET /api/blog-likes/count/<post_id>` (public count)
+
+Comment moderation states:
+- `pending`, `approved`, `rejected`, `spam`, `deleted`
+- Guest comments are created as `pending`.
+- Registered user comments can auto-approve after configured threshold:
+  - `BLOG_COMMENT_REGISTERED_AUTO_APPROVE_AFTER` (default `2`)
+- Lifecycle guard enforces status transitions and blocks illegal jumps:
+  - `pending -> approved|rejected|spam|deleted`
+  - `approved -> rejected|spam|deleted`
+  - `rejected -> approved|deleted`
+  - `spam -> rejected|deleted`
+  - `deleted` is terminal
+- `moderation_notes` is required when status becomes `rejected|spam|deleted`.
+- `reviewed_at` and `reviewed_by` are auto-stamped on moderation transitions.
+
+Engagement runtime env knobs:
+- `BLOG_COMMENT_REGISTERED_AUTO_APPROVE_AFTER`
+- `BLOG_COMMENT_GUEST_TURNSTILE_REQUIRED`
+- `BLOG_COMMENT_GUEST_MAX_LINKS` (default `1`)
+- `BLOG_COMMENT_GUEST_SPAM_LINKS` (default `3`)
+- `BLOG_COMMENT_IP_HASH_SALT`
+- `BLOG_LIKE_IP_HASH_SALT`
+- `BLOG_LIKE_RATE_WINDOW_MS`
+- `BLOG_LIKE_RATE_MAX`
+
+Security notes:
+- Guest comment endpoint supports optional Turnstile:
+  - enable both `TURNSTILE_ENABLED=true` and `BLOG_COMMENT_GUEST_TURNSTILE_REQUIRED=true`
+  - missing/invalid token => `403` on guest submit
+- Guest comments are auto-flagged by link policy:
+  - `url_count > BLOG_COMMENT_GUEST_MAX_LINKS` => forced `pending` + moderation note
+  - `url_count >= BLOG_COMMENT_GUEST_SPAM_LINKS` => forced `spam` + moderation note
+- Like toggle endpoint accepts route-level public access but enforces Bearer JWT in controller:
+  - no token or invalid token => `401 Authentication is required`
+  - this avoids runtime dependency on manual Authenticated role permission toggles.
+
+Quick smoke:
+```bash
+cd /home/ali/geovito-stack
+bash tools/blog_engagement_smoke.sh
+# Optional authenticated like toggle check:
+# BLOG_AUTH_JWT=<user_jwt> bash tools/blog_engagement_smoke.sh
+```
+
+State-machine contract check:
+```bash
+cd /home/ali/geovito-stack
+bash tools/blog_comment_state_contract_check.sh
+```
+
+Moderation queue report (operator-friendly):
+```bash
+cd /home/ali/geovito-stack
+bash tools/blog_moderation_report.sh
+# JSON output:
+# bash tools/blog_moderation_report.sh --json
+# Fail if oldest pending comment is older than BLOG_MOD_PENDING_ALERT_HOURS:
+# bash tools/blog_moderation_report.sh --fail-on-stale-pending
+```
+
+Strapi admin moderation flow:
+1. Open `Content Manager -> Blog Comment`.
+2. Filter by `status = pending`.
+3. For each comment, set one of:
+   - `approved`
+   - `rejected` (requires `moderation_notes`)
+   - `spam` (requires `moderation_notes`)
+   - `deleted` (requires `moderation_notes`)
+4. Save; lifecycle auto-fills `reviewed_at` and `reviewed_by`.
+
+Optional release smoke extension:
+```bash
+cd /home/ali/geovito-stack
+SMOKE_RUN_BLOG_MODERATION_REPORT=true bash tools/smoke_access.sh
+```
 
 ## Atlas Editorial Workflow (Manual)
 1. Create `Atlas Place` in Strapi admin.
