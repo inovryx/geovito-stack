@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+RUN_DEPLOY="true"
+RUN_SMOKE="true"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke]
+
+Purpose:
+  Single command release verification:
+  1) Force Cloudflare Pages deploy to current HEAD SHA
+  2) Run domain smoke check via Access token
+
+Notes:
+  - pages deploy hook must be configured:
+      bash tools/pages_deploy_env_init.sh
+      nano ~/.config/geovito/pages_deploy.env
+  - smoke access secrets must be configured:
+      bash tools/smoke_access_env_init.sh
+      nano ~/.config/geovito/smoke_access.env
+
+Env passthrough:
+  EXPECTED_SHA7, BASE_URL, FINGERPRINT_BASE_URL, DEPLOY_TIMEOUT_SECONDS,
+  DEPLOY_POLL_INTERVAL_SECONDS, PAGES_DEPLOY_ENV_FILE, SMOKE_ACCESS_ENV_FILE
+USAGE
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skip-deploy)
+      RUN_DEPLOY="false"
+      shift
+      ;;
+    --skip-smoke)
+      RUN_SMOKE="false"
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "ERROR: unknown argument: $1"
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
+
+echo "=============================================================="
+echo "GEOVITO RELEASE DEPLOY+SMOKE"
+echo "expected_sha7=${EXPECTED_SHA7}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE}"
+echo "=============================================================="
+
+if [[ "$RUN_DEPLOY" == "true" ]]; then
+  EXPECTED_SHA7="$EXPECTED_SHA7" bash tools/pages_deploy_force.sh
+else
+  echo "INFO: skipped deploy stage (--skip-deploy)"
+fi
+
+if [[ "$RUN_SMOKE" == "true" ]]; then
+  EXPECTED_SHA7="$EXPECTED_SHA7" bash tools/smoke_access.sh
+else
+  echo "INFO: skipped smoke stage (--skip-smoke)"
+fi
+
+echo "=============================================================="
+echo "RELEASE DEPLOY+SMOKE: PASS"
+echo "=============================================================="
