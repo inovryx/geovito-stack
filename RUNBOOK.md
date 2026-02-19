@@ -565,6 +565,17 @@ Strapi admin moderation flow:
    - `deleted` (requires `moderation_notes`)
 4. Save; lifecycle auto-fills `reviewed_at` and `reviewed_by`.
 
+CLI moderation helper:
+```bash
+cd /home/ali/geovito-stack
+# list pending queue
+bash tools/blog_comment_moderate.sh list --status pending --limit 20
+
+# set status (notes required for rejected/spam/deleted)
+bash tools/blog_comment_moderate.sh set <comment_id> approved
+bash tools/blog_comment_moderate.sh set <comment_id> rejected --notes "policy reason"
+```
+
 Optional release smoke extension:
 ```bash
 cd /home/ali/geovito-stack
