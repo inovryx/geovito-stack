@@ -10,11 +10,18 @@ Set the following in Cloudflare Pages project environment (Production and Previe
 - `STRAPI_URL` = public/reachable Strapi origin (example: `https://cms.example.com`)
 - `PUBLIC_SITE_URL` = canonical site origin (example: `https://www.geovito.com`)
 - `ALLOW_LOCALHOST_STRAPI=false` (Pages/production must not allow localhost fallback)
+- `PUBLIC_SITE_LOCKDOWN_ENABLED=false` (test-only private mode icin `true`)
+- `PUBLIC_SITE_LOCKDOWN_NOTICE` = optional test-mode warning text
 - `PUBLIC_AUTH_LOCAL_REGISTER_ENABLED=true|false` (default true)
 - `PUBLIC_AUTH_GOOGLE_ENABLED=false` (default)
 - `PUBLIC_AUTH_FACEBOOK_ENABLED=false` (default)
+- `PUBLIC_TURNSTILE_SITE_KEY` (optional; set to enable captcha widget on auth forms)
+- If `STRAPI_URL` is protected by Cloudflare Access, also set:
+  - `CF_ACCESS_CLIENT_ID`
+  - `CF_ACCESS_CLIENT_SECRET`
 - Keep `STRAPI_URL` out of localhost values in production-like mode (`CF_PAGES=1` or `NODE_ENV=production`), otherwise build fails fast with `STRAPI_URL_GUARD`.
 - Optional local smoke override only: `ALLOW_LOCALHOST_STRAPI=true` (do not use on Cloudflare Pages).
+- If build logs show `Unexpected token '<' ... not valid JSON`, `STRAPI_URL` is likely returning an HTML Access/login page; configure the two `CF_ACCESS_*` variables above.
 
 Strapi runtime auth flags (VPS/docker):
 - `AUTH_LOCAL_REGISTER_ENABLED=true|false`
@@ -25,6 +32,8 @@ Strapi runtime auth flags (VPS/docker):
 - `AUTH_GOOGLE_CALLBACK_PATH`, `AUTH_FACEBOOK_CALLBACK_PATH` (optional override)
 - `AUTH_GOOGLE_SCOPE`, `AUTH_FACEBOOK_SCOPE` (optional, comma-separated)
 - `AUTH_RATE_LIMIT_WINDOW_MS`, `AUTH_RATE_LIMIT_MAX`
+- `TURNSTILE_ENABLED=true|false` (default false)
+- `TURNSTILE_SECRET_KEY` (required only when `TURNSTILE_ENABLED=true`)
 
 Strapi runtime email flags (VPS/docker):
 - `EMAIL_PROVIDER=sendmail|nodemailer` (production SMTP icin `nodemailer`)
@@ -43,6 +52,13 @@ Strapi runtime media flags (VPS/docker):
 UI locale build-time export:
 - `ui-locale` edits require export + deploy.
 - `deploy_required=true` indicates pending deploy.
+- Local token file (repo disi):
+  - `bash tools/ui_locale_secret_init.sh`
+  - `~/.config/geovito/ui_locale.env` icine `STRAPI_API_TOKEN` yaz
+  - Not: `ui_locale_publish.sh` ve `ui_locale_sync.sh` bu dosya yoksa template olusturup durur.
+- Operational commands:
+  - `bash tools/ui_locale_publish.sh` (export + build check)
+  - `bash tools/ui_locale_sync.sh` (import + export + build check)
 
 If social login is enabled:
 - Apply provider configuration from env to Strapi store:
@@ -128,6 +144,8 @@ Not:
    - `BASE_URL=https://your-deploy-url bash tools/post_deploy_smoke.sh`
    - Optional SHA pin:
      `BASE_URL=https://your-deploy-url EXPECTED_SHA7=xxxxxxx bash tools/post_deploy_smoke.sh`
+   - If Cloudflare Access is enabled:
+     `CF_ACCESS_CLIENT_ID=... CF_ACCESS_CLIENT_SECRET=... BASE_URL=https://your-deploy-url bash tools/post_deploy_smoke.sh`
    - Expected: all PASS lines, exit 0.
 7. Media policy guard:
    - `bash tools/media_policy_check.sh`
@@ -152,7 +170,41 @@ Not:
       - reset-password invalid token -> `400`
       - inbox/spam receives reset mail when SMTP is correctly configured.
 
-## 3) Go-Live Verification Steps
+## 2.1) One-command Release (deploy + smoke + optional checks)
+
+- Standard:
+  - `bash tools/release_deploy_smoke.sh`
+- Include moderation stale-pending guard:
+  - `bash tools/release_deploy_smoke.sh --with-moderation`
+- Include account comment queue Playwright smoke:
+  - `bash tools/release_deploy_smoke.sh --with-account-test`
+- Include both optional checks:
+  - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test`
+
+Notes:
+- `--with-account-test` runs `bash tools/account_comment_queue_test.sh`.
+- The account test uses Docker Playwright and requires writable `frontend/node_modules` ownership.
+
+## 3) Test Mode Protection (Recommended for closed testing)
+
+If you want to avoid accidental public usage during test phase:
+
+1. Set Pages env:
+   - `PUBLIC_SITE_LOCKDOWN_ENABLED=true`
+   - optional: `PUBLIC_SITE_LOCKDOWN_NOTICE=Private QA mode is active`
+2. Redeploy Pages.
+3. Result:
+   - All pages force `robots=noindex,nofollow`
+   - Visible test-mode banner appears
+   - Register/social auth entry points are hidden in UI
+4. For strict access control, also enable Cloudflare Access (email allowlist/OTP) in front of the site.
+
+When Access is active, use Service Token headers for automation scripts:
+- `CF_ACCESS_CLIENT_ID`
+- `CF_ACCESS_CLIENT_SECRET`
+- These values are secret. Keep them only in VPS shell env, never commit to repo.
+
+## 4) Go-Live Verification Steps
 
 1. First visit without stored consent:
    - Consent banner is visible.
@@ -179,7 +231,7 @@ Not:
 6. Noindex checks:
    - `/[lang]/error` returns `robots: noindex,nofollow`.
 
-## 4) Rollback
+## 5) Rollback
 
 If launch quality is not acceptable:
 
@@ -195,7 +247,7 @@ If launch quality is not acceptable:
    - GTM and ads scripts blocked
    - Site core flows intact
 
-## 5) VPS without Node (Docker-first workflow)
+## 6) VPS without Node (Docker-first workflow)
 
 If your VPS does not have Node/Corepack installed, run frontend tests and gates via Docker wrappers:
 
@@ -222,6 +274,29 @@ chmod +x tools/post_deploy_smoke.sh
 BASE_URL=https://www.geovito.com bash tools/post_deploy_smoke.sh
 ```
 
+Cloudflare Access acikken gunluk smoke (onerilen tek komut):
+
+```bash
+chmod +x tools/smoke_access.sh
+CF_ACCESS_CLIENT_ID=... CF_ACCESS_CLIENT_SECRET=... bash tools/smoke_access.sh
+```
+
+Tokenlari her seferinde yazmamak icin (onerilen):
+
+```bash
+bash tools/smoke_access_env_init.sh
+nano ~/.config/geovito/smoke_access.env
+bash tools/smoke_access.sh
+```
+
+Not:
+- `~/.config/geovito/smoke_access.env` dosyasi local kalir, repoya girmez.
+- Dosya izinleri `600` olmalidir.
+
+Opsiyonel:
+- Farkli domain icin: `BASE_URL=https://geovito-stack.pages.dev bash tools/smoke_access.sh`
+- SHA override icin: `EXPECTED_SHA7=abcdef1 bash tools/smoke_access.sh`
+
 Why `--network=host` is required:
 - Strapi is bound to host loopback (`127.0.0.1:1337`).
 - Playwright runs inside a container; with host network it can reach host loopback safely.
@@ -235,7 +310,7 @@ Cloudflare Pages env reminder:
 - Guard behavior: in production-like mode (`CF_PAGES=1` or `NODE_ENV=production`), localhost Strapi URL is blocked by `STRAPI_URL_GUARD`.
 - `ALLOW_LOCALHOST_STRAPI=true` is only for intentional local smoke runs, not Cloudflare Pages deployments.
 
-## 6) Operations / Health Checks
+## 7) Operations / Health Checks
 
 Backend health endpoint:
 - Route: `GET /api/_health`
