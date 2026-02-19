@@ -50,6 +50,24 @@ const accountCopy = {
     {},
     'Could not refresh profile from API. Showing local session snapshot.'
   ),
+  commentsTitle: translate(ui, 'account.commentsTitle', {}, 'My comment queue'),
+  commentsDescription: translate(
+    ui,
+    'account.commentsDescription',
+    {},
+    'Track moderation status of your recent blog comments.'
+  ),
+  commentsPending: translate(ui, 'account.commentsPending', {}, 'Pending'),
+  commentsApproved: translate(ui, 'account.commentsApproved', {}, 'Approved'),
+  commentsRejected: translate(ui, 'account.commentsRejected', {}, 'Rejected'),
+  commentsSpam: translate(ui, 'account.commentsSpam', {}, 'Spam'),
+  commentsNone: translate(ui, 'account.commentsNone', {}, 'No comments yet.'),
+  commentsRefresh: translate(ui, 'account.commentsRefresh', {}, 'Refresh comments'),
+  commentsLoading: translate(ui, 'account.commentsLoading', {}, 'Loading comments...'),
+  commentsLoadFailed: translate(ui, 'account.commentsLoadFailed', {}, 'Could not load comments right now.'),
+  commentsPostRef: translate(ui, 'account.commentsPostRef', {}, 'Post'),
+  commentsStatus: translate(ui, 'account.commentsStatus', {}, 'Status'),
+  commentsModerationNote: translate(ui, 'account.commentsModerationNote', {}, 'Moderation note'),
   languageTitle: translate(ui, 'account.languageTitle', {}, 'Site language preference'),
   languageDescription: translate(
     ui,
@@ -137,6 +155,37 @@ const accountCopy = {
     <p class="small account-feedback" data-account-profile-feedback aria-live="polite"></p>
   </section>
 
+  <section class="card panel gv-stack" data-account-comments hidden>
+    <div class="account-comments-head">
+      <div>
+        <h2>{accountCopy.commentsTitle}</h2>
+        <p class="small">{accountCopy.commentsDescription}</p>
+      </div>
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-comments-refresh>
+        <span class="ui-button-label">{accountCopy.commentsRefresh}</span>
+      </button>
+    </div>
+
+    <div class="account-comments-stats" data-account-comments-stats>
+      <span>
+        {accountCopy.commentsPending}: <strong data-account-comments-pending>0</strong>
+      </span>
+      <span>
+        {accountCopy.commentsApproved}: <strong data-account-comments-approved>0</strong>
+      </span>
+      <span>
+        {accountCopy.commentsRejected}: <strong data-account-comments-rejected>0</strong>
+      </span>
+      <span>
+        {accountCopy.commentsSpam}: <strong data-account-comments-spam>0</strong>
+      </span>
+    </div>
+
+    <ul class="account-comments-list gv-stack" data-account-comments-list></ul>
+    <p class="small" data-account-comments-empty>{accountCopy.commentsNone}</p>
+    <p class="small account-feedback" data-account-comments-feedback aria-live="polite"></p>
+  </section>
+
   <section class="card panel gv-stack" data-account-settings hidden>
     <h2>{accountCopy.languageTitle}</h2>
     <p class="small">{accountCopy.languageDescription}</p>
@@ -193,11 +242,20 @@ const accountCopy = {
       const passwordPanel = document.querySelector('[data-account-password]');
       const loggedOutPanel = document.querySelector('[data-account-logged-out]');
       const profilePanel = document.querySelector('[data-account-profile]');
+      const commentsPanel = document.querySelector('[data-account-comments]');
       const profileUsername = document.querySelector('[data-account-profile-username]');
       const profileEmail = document.querySelector('[data-account-profile-email]');
       const profileCreated = document.querySelector('[data-account-profile-created]');
       const profileStatus = document.querySelector('[data-account-profile-status]');
       const profileFeedback = document.querySelector('[data-account-profile-feedback]');
+      const commentsList = document.querySelector('[data-account-comments-list]');
+      const commentsEmpty = document.querySelector('[data-account-comments-empty]');
+      const commentsFeedback = document.querySelector('[data-account-comments-feedback]');
+      const commentsRefreshButton = document.querySelector('[data-account-comments-refresh]');
+      const commentsCountPending = document.querySelector('[data-account-comments-pending]');
+      const commentsCountApproved = document.querySelector('[data-account-comments-approved]');
+      const commentsCountRejected = document.querySelector('[data-account-comments-rejected]');
+      const commentsCountSpam = document.querySelector('[data-account-comments-spam]');
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
@@ -208,7 +266,8 @@ const accountCopy = {
         !(settingsPanel instanceof HTMLElement) ||
         !(passwordPanel instanceof HTMLElement) ||
         !(loggedOutPanel instanceof HTMLElement) ||
-        !(profilePanel instanceof HTMLElement)
+        !(profilePanel instanceof HTMLElement) ||
+        !(commentsPanel instanceof HTMLElement)
       ) {
         return;
       }
@@ -218,7 +277,15 @@ const accountCopy = {
         !(profileUsername instanceof HTMLElement) ||
         !(profileEmail instanceof HTMLElement) ||
         !(profileCreated instanceof HTMLElement) ||
-        !(profileStatus instanceof HTMLElement)
+        !(profileStatus instanceof HTMLElement) ||
+        !(commentsList instanceof HTMLElement) ||
+        !(commentsEmpty instanceof HTMLElement) ||
+        !(commentsFeedback instanceof HTMLElement) ||
+        !(commentsRefreshButton instanceof HTMLButtonElement) ||
+        !(commentsCountPending instanceof HTMLElement) ||
+        !(commentsCountApproved instanceof HTMLElement) ||
+        !(commentsCountRejected instanceof HTMLElement) ||
+        !(commentsCountSpam instanceof HTMLElement)
       ) {
         return;
       }
@@ -245,6 +312,27 @@ const accountCopy = {
         passwordFeedback.textContent = message;
         passwordFeedback.classList.toggle('is-error', isError);
       };
+
+      const setCommentsFeedback = (message, isError = false) => {
+        commentsFeedback.textContent = message;
+        commentsFeedback.classList.toggle('is-error', isError);
+      };
+
+      const setCommentsCounts = (meta) => {
+        const counts = meta && typeof meta === 'object' ? meta.counts || {} : {};
+        commentsCountPending.textContent = String(Number(counts.pending) || 0);
+        commentsCountApproved.textContent = String(Number(counts.approved) || 0);
+        commentsCountRejected.textContent = String(Number(counts.rejected) || 0);
+        commentsCountSpam.textContent = String(Number(counts.spam) || 0);
+      };
+
+      const escapeHtml = (value) =>
+        String(value || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
 
       const clearAuthSession = () => {
         try {
@@ -317,6 +405,7 @@ const accountCopy = {
         settingsPanel.hidden = true;
         passwordPanel.hidden = true;
         profilePanel.hidden = true;
+        commentsPanel.hidden = true;
         loggedOutPanel.hidden = false;
         return;
       }
@@ -324,6 +413,7 @@ const accountCopy = {
       settingsPanel.hidden = false;
       passwordPanel.hidden = false;
       profilePanel.hidden = false;
+      commentsPanel.hidden = false;
       loggedOutPanel.hidden = true;
       renderProfile(session);
 
@@ -384,6 +474,66 @@ const accountCopy = {
           setProfileFeedback('');
         } catch {
           setProfileFeedback(accountCopy.profileSyncFallback, true);
+        }
+      };
+
+      const renderComments = (items) => {
+        commentsList.innerHTML = '';
+        const list = Array.isArray(items) ? items : [];
+        commentsEmpty.hidden = list.length > 0;
+        if (list.length === 0) return;
+
+        const fragment = document.createDocumentFragment();
+        for (const item of list) {
+          const li = document.createElement('li');
+          li.className = 'account-comment-item';
+          const postRef = escapeHtml(item?.blog_post_ref || '-');
+          const status = escapeHtml(item?.status || '-');
+          const note = escapeHtml(item?.moderation_notes || '');
+          const body = escapeHtml(item?.body || '');
+          const created = formatDate(item?.created_at);
+
+          li.innerHTML = `
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(accountCopy.commentsPostRef)}:</strong> ${postRef}
+              · <strong>${escapeHtml(accountCopy.commentsStatus)}:</strong> ${status}
+              · <span>${escapeHtml(created)}</span>
+            </p>
+            <p class="account-comment-body">${body}</p>
+            ${note ? `<p class="account-comment-note"><strong>${escapeHtml(accountCopy.commentsModerationNote)}:</strong> ${note}</p>` : ''}
+          `;
+          fragment.appendChild(li);
+        }
+        commentsList.appendChild(fragment);
+      };
+
+      const loadComments = async () => {
+        setCommentsFeedback(accountCopy.commentsLoading);
+        try {
+          const response = await fetch(`${authBase}/api/blog-comments/me/list?limit=30`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.commentsLoadFailed;
+            renderComments([]);
+            setCommentsCounts(null);
+            setCommentsFeedback(message, true);
+            return;
+          }
+
+          const items = Array.isArray(payload?.data) ? payload.data : [];
+          renderComments(items);
+          setCommentsCounts(payload?.meta);
+          setCommentsFeedback('');
+        } catch {
+          renderComments([]);
+          setCommentsCounts(null);
+          setCommentsFeedback(accountCopy.commentsLoadFailed, true);
         }
       };
 
@@ -489,8 +639,13 @@ const accountCopy = {
         }
       });
 
+      commentsRefreshButton.addEventListener('click', () => {
+        loadComments();
+      });
+
       loadPreference();
       loadProfile();
+      loadComments();
     })();
   </script>
 </MainLayout>
@@ -557,6 +712,63 @@ const accountCopy = {
     margin: 0.22rem 0 0;
     font-weight: 600;
     overflow-wrap: anywhere;
+  }
+
+  .account-comments-head {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .account-comments-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .account-comments-stats span {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.62rem;
+    background: var(--surface);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .account-comments-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .account-comment-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.65rem 0.78rem;
+    background: var(--surface);
+  }
+
+  .account-comment-meta {
+    margin: 0 0 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .account-comment-body {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .account-comment-note {
+    margin: 0.48rem 0 0;
+    font-size: 0.82rem;
+    color: var(--text-muted);
   }
 
   .account-feedback.is-error {
