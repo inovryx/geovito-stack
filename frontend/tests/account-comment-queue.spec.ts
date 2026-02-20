@@ -104,6 +104,60 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
     });
   });
 
+  await page.route(/\/api\/ui-locales\/meta\/progress/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 3,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_missing: 1,
+            locales_with_untranslated: 1,
+            deploy_required_count: 1,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+            {
+              ui_locale: 'tr',
+              status: 'draft',
+              reference_locale: 'en',
+              deploy_required: true,
+              total_keys: 200,
+              translated_keys: 188,
+              missing_keys: 8,
+              untranslated_keys: 4,
+              coverage_percent: 94,
+            },
+            {
+              ui_locale: 'de',
+              status: 'draft',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
   await page.addInitScript(([jwt]) => {
     const payload = {
       jwt,
@@ -121,15 +175,19 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-comments]')).toBeVisible();
   await expect(page.locator('[data-account-comments-pending]')).toHaveText('1');
   await expect(page.locator('[data-account-comments-approved]')).toHaveText('0');
-  await expect(page.locator('.account-comment-item')).toHaveCount(1);
-  await expect(page.locator('.account-comment-item')).toContainText('post-europe-city-breaks');
-  await expect(page.locator('.account-comment-item')).toContainText('pending');
+  await expect(page.locator('[data-account-comments-list] .account-comment-item')).toHaveCount(1);
+  await expect(page.locator('[data-account-comments-list] .account-comment-item')).toContainText('post-europe-city-breaks');
+  await expect(page.locator('[data-account-comments-list] .account-comment-item')).toContainText('pending');
 
   await page.click('[data-account-comments-refresh]');
   await expect.poll(() => queueRequestCount).toBeGreaterThanOrEqual(2);
 
   await expect(page.locator('[data-account-comments-pending]')).toHaveText('0');
   await expect(page.locator('[data-account-comments-approved]')).toHaveText('1');
-  await expect(page.locator('.account-comment-item')).toContainText('approved');
-  await expect(page.locator('.account-comment-item')).toContainText('Approved by moderator');
+  await expect(page.locator('[data-account-comments-list] .account-comment-item')).toContainText('approved');
+  await expect(page.locator('[data-account-comments-list] .account-comment-item')).toContainText('Approved by moderator');
+
+  await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
+  await page.selectOption('[data-account-language-select]', 'tr');
+  await expect(page.locator('[data-account-language-health]')).toContainText('12');
 });

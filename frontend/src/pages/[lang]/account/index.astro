@@ -97,6 +97,14 @@ const accountCopy = {
     'Locales with untranslated'
   ),
   localeProgressDeployCount: translate(ui, 'account.localeProgressDeployCount', {}, 'Locales pending deploy'),
+  languageHealthWarning: translate(
+    ui,
+    'account.languageHealthWarning',
+    {},
+    'This locale still has {count} missing/untranslated UI keys.'
+  ),
+  languageHealthComplete: translate(ui, 'account.languageHealthComplete', {}, 'This locale is fully translated.'),
+  languageHealthUnknown: translate(ui, 'account.languageHealthUnknown', {}, 'No translation progress row found for this locale.'),
   languageTitle: translate(ui, 'account.languageTitle', {}, 'Site language preference'),
   languageDescription: translate(
     ui,
@@ -253,11 +261,14 @@ const accountCopy = {
         <select name="preferred_ui_language" data-account-language-select>
           {
             availableLanguages.map((language) => (
-              <option value={language}>{language.toUpperCase()}</option>
+              <option value={language} data-default-label={language.toUpperCase()}>
+                {language.toUpperCase()}
+              </option>
             ))
           }
         </select>
       </label>
+      <p class="small account-feedback" data-account-language-health></p>
 
       <button type="submit" class="ui-button ui-button-primary ui-button-md">
         <span class="ui-button-label">{accountCopy.savePreference}</span>
@@ -324,6 +335,7 @@ const accountCopy = {
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
+      const languageHealth = document.querySelector('[data-account-language-health]');
       const passwordForm = document.querySelector('[data-account-password-form]');
       const passwordFeedback = document.querySelector('[data-account-password-feedback]');
 
@@ -337,7 +349,13 @@ const accountCopy = {
       ) {
         return;
       }
-      if (!(form instanceof HTMLFormElement) || !(feedback instanceof HTMLElement) || !(select instanceof HTMLSelectElement)) return;
+      if (
+        !(form instanceof HTMLFormElement) ||
+        !(feedback instanceof HTMLElement) ||
+        !(select instanceof HTMLSelectElement) ||
+        !(languageHealth instanceof HTMLElement)
+      )
+        return;
       if (!(passwordForm instanceof HTMLFormElement) || !(passwordFeedback instanceof HTMLElement)) return;
       if (
         !(profileUsername instanceof HTMLElement) ||
@@ -369,6 +387,7 @@ const accountCopy = {
       const normalizedLanguages = Array.isArray(availableLanguages) ? availableLanguages : [];
       const isAllowedLanguage = (value) => normalizedLanguages.includes(value);
       const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
+      const localeProgressByLocale = new Map();
 
       const setFeedback = (message, isError = false) => {
         feedback.textContent = message;
@@ -409,6 +428,54 @@ const accountCopy = {
         localeProgressMissingLocales.textContent = String(Number(source.locales_with_missing) || 0);
         localeProgressUntranslatedLocales.textContent = String(Number(source.locales_with_untranslated) || 0);
         localeProgressDeployCount.textContent = String(Number(source.deploy_required_count) || 0);
+      };
+
+      const getLocaleWorkCount = (localeCode) => {
+        const normalized = normalizeLanguage(localeCode);
+        if (!normalized || !localeProgressByLocale.has(normalized)) return null;
+        const row = localeProgressByLocale.get(normalized);
+        const missing = Number(row?.missing_keys || 0);
+        const untranslated = Number(row?.untranslated_keys || 0);
+        return missing + untranslated;
+      };
+
+      const updateSelectOptionLabels = () => {
+        const options = Array.from(select.options);
+        for (const option of options) {
+          const localeCode = normalizeLanguage(option.value);
+          const defaultLabel = option.dataset.defaultLabel || option.value.toUpperCase();
+          const workCount = getLocaleWorkCount(localeCode);
+          if (workCount === null) {
+            option.textContent = defaultLabel;
+            continue;
+          }
+          option.textContent = workCount > 0 ? `${defaultLabel} · ${workCount}` : defaultLabel;
+        }
+      };
+
+      const updateLanguageHealth = () => {
+        const selectedLocale = normalizeLanguage(select.value);
+        if (!selectedLocale || !isAllowedLanguage(selectedLocale)) {
+          languageHealth.textContent = '';
+          languageHealth.classList.remove('is-error');
+          return;
+        }
+
+        const workCount = getLocaleWorkCount(selectedLocale);
+        if (workCount === null) {
+          languageHealth.textContent = accountCopy.languageHealthUnknown;
+          languageHealth.classList.add('is-error');
+          return;
+        }
+
+        if (workCount > 0) {
+          languageHealth.textContent = String(accountCopy.languageHealthWarning || '').replace('{count}', String(workCount));
+          languageHealth.classList.add('is-error');
+          return;
+        }
+
+        languageHealth.textContent = accountCopy.languageHealthComplete;
+        languageHealth.classList.remove('is-error');
       };
 
       const escapeHtml = (value) =>
@@ -508,6 +575,7 @@ const accountCopy = {
         const normalized = normalizeLanguage(language);
         if (!isAllowedLanguage(normalized)) return false;
         select.value = normalized;
+        updateLanguageHealth();
         try {
           localStorage.setItem('geovito.ui_lang', normalized);
         } catch {
@@ -520,6 +588,7 @@ const accountCopy = {
         const localPreferred = normalizeLanguage(localStorage.getItem('geovito.ui_lang') || '');
         if (isAllowedLanguage(localPreferred)) {
           select.value = localPreferred;
+          updateLanguageHealth();
         }
 
         try {
@@ -685,8 +754,11 @@ const accountCopy = {
           const payload = await response.json().catch(() => ({}));
           if (!response.ok) {
             const message = payload?.error?.message || accountCopy.localeProgressLoadFailed;
+            localeProgressByLocale.clear();
             renderLocaleProgress([], 'en');
             setLocaleProgressSummary(null);
+            updateSelectOptionLabels();
+            updateLanguageHealth();
             setLocaleProgressFeedback(message, true);
             return;
           }
@@ -696,12 +768,24 @@ const accountCopy = {
           const summary = data.summary && typeof data.summary === 'object' ? data.summary : {};
           const referenceLocale = normalizeLanguage(summary.reference_locale || 'en');
 
+          localeProgressByLocale.clear();
+          for (const row of rows) {
+            const localeCode = normalizeLanguage(row?.ui_locale);
+            if (!localeCode) continue;
+            localeProgressByLocale.set(localeCode, row);
+          }
+
           renderLocaleProgress(rows, referenceLocale);
           setLocaleProgressSummary(summary);
+          updateSelectOptionLabels();
+          updateLanguageHealth();
           setLocaleProgressFeedback('');
         } catch {
+          localeProgressByLocale.clear();
           renderLocaleProgress([], 'en');
           setLocaleProgressSummary(null);
+          updateSelectOptionLabels();
+          updateLanguageHealth();
           setLocaleProgressFeedback(accountCopy.localeProgressLoadFailed, true);
         }
       };
@@ -745,6 +829,10 @@ const accountCopy = {
         } catch {
           setFeedback(accountCopy.preferenceNetworkError, true);
         }
+      });
+
+      select.addEventListener('change', () => {
+        updateLanguageHealth();
       });
 
       passwordForm.addEventListener('submit', async (event) => {
@@ -816,6 +904,8 @@ const accountCopy = {
         loadLocaleProgress();
       });
 
+      updateSelectOptionLabels();
+      updateLanguageHealth();
       loadPreference();
       loadProfile();
       loadComments();
