@@ -110,6 +110,8 @@ const accountCopy = {
     {},
     'Untranslated only'
   ),
+  localeProgressActiveFilter: translate(ui, 'account.localeProgressActiveFilter', {}, 'Active filter'),
+  localeProgressFilteredKeys: translate(ui, 'account.localeProgressFilteredKeys', {}, 'Filtered keys'),
   localeProgressMissingLocales: translate(ui, 'account.localeProgressMissingLocales', {}, 'Locales with missing'),
   localeProgressUntranslatedLocales: translate(
     ui,
@@ -273,6 +275,12 @@ const accountCopy = {
       <span>
         {accountCopy.localeProgressDeployCount}: <strong data-account-locale-progress-deploy-count>0</strong>
       </span>
+      <span>
+        {accountCopy.localeProgressActiveFilter}: <strong data-account-locale-progress-active-filter>{accountCopy.localeProgressFilterAll}</strong>
+      </span>
+      <span>
+        {accountCopy.localeProgressFilteredKeys}: <strong data-account-locale-progress-filtered-total>0</strong>
+      </span>
     </div>
 
     <ul class="account-comments-list gv-stack" data-account-locale-progress-list></ul>
@@ -362,6 +370,8 @@ const accountCopy = {
       const localeProgressMissingLocales = document.querySelector('[data-account-locale-progress-missing-locales]');
       const localeProgressUntranslatedLocales = document.querySelector('[data-account-locale-progress-untranslated-locales]');
       const localeProgressDeployCount = document.querySelector('[data-account-locale-progress-deploy-count]');
+      const localeProgressActiveFilter = document.querySelector('[data-account-locale-progress-active-filter]');
+      const localeProgressFilteredTotal = document.querySelector('[data-account-locale-progress-filtered-total]');
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
@@ -407,7 +417,9 @@ const accountCopy = {
         !(localeProgressFilterSelect instanceof HTMLSelectElement) ||
         !(localeProgressMissingLocales instanceof HTMLElement) ||
         !(localeProgressUntranslatedLocales instanceof HTMLElement) ||
-        !(localeProgressDeployCount instanceof HTMLElement)
+        !(localeProgressDeployCount instanceof HTMLElement) ||
+        !(localeProgressActiveFilter instanceof HTMLElement) ||
+        !(localeProgressFilteredTotal instanceof HTMLElement)
       ) {
         return;
       }
@@ -427,6 +439,13 @@ const accountCopy = {
       const getPreviewCacheKey = (localeCode, state) => `${normalizeLanguage(localeCode)}:${normalizePreviewState(state)}`;
       const localeProgressByLocale = new Map();
       const localePreviewCache = new Map();
+
+      const getPreviewStateLabel = (state) => {
+        const normalized = normalizePreviewState(state);
+        if (normalized === 'missing') return accountCopy.localeProgressFilterMissing;
+        if (normalized === 'untranslated') return accountCopy.localeProgressFilterUntranslated;
+        return accountCopy.localeProgressFilterAll;
+      };
 
       const setFeedback = (message, isError = false) => {
         feedback.textContent = message;
@@ -467,6 +486,26 @@ const accountCopy = {
         localeProgressMissingLocales.textContent = String(Number(source.locales_with_missing) || 0);
         localeProgressUntranslatedLocales.textContent = String(Number(source.locales_with_untranslated) || 0);
         localeProgressDeployCount.textContent = String(Number(source.deploy_required_count) || 0);
+      };
+
+      const setLocaleFilterSummary = () => {
+        const state = getCurrentPreviewState();
+        localeProgressActiveFilter.textContent = getPreviewStateLabel(state);
+        let total = 0;
+        for (const row of localeProgressByLocale.values()) {
+          const missing = Number(row?.missing_keys || 0);
+          const untranslated = Number(row?.untranslated_keys || 0);
+          if (state === 'missing') {
+            total += missing;
+            continue;
+          }
+          if (state === 'untranslated') {
+            total += untranslated;
+            continue;
+          }
+          total += missing + untranslated;
+        }
+        localeProgressFilteredTotal.textContent = String(total);
       };
 
       const getLocaleWorkCount = (localeCode) => {
@@ -985,11 +1024,12 @@ const accountCopy = {
             localeProgressByLocale.clear();
             localePreviewCache.clear();
             renderLocaleProgress([], 'en');
-            setLocaleProgressSummary(null);
-            updateSelectOptionLabels();
-            updateLanguageHealth();
-            setLocaleProgressFeedback(message, true);
-            return;
+          setLocaleProgressSummary(null);
+          setLocaleFilterSummary();
+          updateSelectOptionLabels();
+          updateLanguageHealth();
+          setLocaleProgressFeedback(message, true);
+          return;
           }
 
           const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
@@ -1007,6 +1047,7 @@ const accountCopy = {
 
           renderLocaleProgress(rows, referenceLocale);
           setLocaleProgressSummary(summary);
+          setLocaleFilterSummary();
           updateSelectOptionLabels();
           updateLanguageHealth();
           setLocaleProgressFeedback('');
@@ -1015,6 +1056,7 @@ const accountCopy = {
           localePreviewCache.clear();
           renderLocaleProgress([], 'en');
           setLocaleProgressSummary(null);
+          setLocaleFilterSummary();
           updateSelectOptionLabels();
           updateLanguageHealth();
           setLocaleProgressFeedback(accountCopy.localeProgressLoadFailed, true);
@@ -1165,6 +1207,7 @@ const accountCopy = {
 
       localeProgressFilterSelect.addEventListener('change', () => {
         localePreviewCache.clear();
+        setLocaleFilterSummary();
         const previewNodes = localeProgressList.querySelectorAll('[data-account-locale-preview]');
         for (const node of previewNodes) {
           if (node instanceof HTMLElement) {

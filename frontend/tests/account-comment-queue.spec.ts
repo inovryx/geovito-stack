@@ -250,7 +250,11 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');
   await expect(page.locator('[data-account-language-health]')).toContainText('12');
+  await expect(page.locator('[data-account-locale-progress-active-filter]')).toContainText('All');
+  await expect(page.locator('[data-account-locale-progress-filtered-total]')).toHaveText('12');
   await page.selectOption('[data-account-locale-progress-filter]', 'missing');
+  await expect(page.locator('[data-account-locale-progress-active-filter]')).toContainText('Missing only');
+  await expect(page.locator('[data-account-locale-progress-filtered-total]')).toHaveText('8');
 
   await page.click('[data-account-locale-preview-toggle][data-locale-code="tr"]');
   await expect.poll(() => previewRequestCount).toBeGreaterThanOrEqual(1);
