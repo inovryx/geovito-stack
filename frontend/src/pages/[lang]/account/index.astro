@@ -68,6 +68,35 @@ const accountCopy = {
   commentsPostRef: translate(ui, 'account.commentsPostRef', {}, 'Post'),
   commentsStatus: translate(ui, 'account.commentsStatus', {}, 'Status'),
   commentsModerationNote: translate(ui, 'account.commentsModerationNote', {}, 'Moderation note'),
+  localeProgressTitle: translate(ui, 'account.localeProgressTitle', {}, 'Translation progress'),
+  localeProgressDescription: translate(
+    ui,
+    'account.localeProgressDescription',
+    {},
+    'Track missing and untranslated UI keys by language.'
+  ),
+  localeProgressRefresh: translate(ui, 'account.localeProgressRefresh', {}, 'Refresh progress'),
+  localeProgressLoading: translate(ui, 'account.localeProgressLoading', {}, 'Loading translation progress...'),
+  localeProgressLoadFailed: translate(
+    ui,
+    'account.localeProgressLoadFailed',
+    {},
+    'Could not load translation progress right now.'
+  ),
+  localeProgressNone: translate(ui, 'account.localeProgressNone', {}, 'No locale progress rows found.'),
+  localeProgressReference: translate(ui, 'account.localeProgressReference', {}, 'Reference'),
+  localeProgressMissing: translate(ui, 'account.localeProgressMissing', {}, 'Missing'),
+  localeProgressUntranslated: translate(ui, 'account.localeProgressUntranslated', {}, 'Untranslated'),
+  localeProgressCoverage: translate(ui, 'account.localeProgressCoverage', {}, 'Coverage'),
+  localeProgressDeployRequired: translate(ui, 'account.localeProgressDeployRequired', {}, 'Deploy required'),
+  localeProgressMissingLocales: translate(ui, 'account.localeProgressMissingLocales', {}, 'Locales with missing'),
+  localeProgressUntranslatedLocales: translate(
+    ui,
+    'account.localeProgressUntranslatedLocales',
+    {},
+    'Locales with untranslated'
+  ),
+  localeProgressDeployCount: translate(ui, 'account.localeProgressDeployCount', {}, 'Locales pending deploy'),
   languageTitle: translate(ui, 'account.languageTitle', {}, 'Site language preference'),
   languageDescription: translate(
     ui,
@@ -186,6 +215,34 @@ const accountCopy = {
     <p class="small account-feedback" data-account-comments-feedback aria-live="polite"></p>
   </section>
 
+  <section class="card panel gv-stack" data-account-locale-progress hidden>
+    <div class="account-comments-head">
+      <div>
+        <h2>{accountCopy.localeProgressTitle}</h2>
+        <p class="small">{accountCopy.localeProgressDescription}</p>
+      </div>
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-progress-refresh>
+        <span class="ui-button-label">{accountCopy.localeProgressRefresh}</span>
+      </button>
+    </div>
+
+    <div class="account-comments-stats" data-account-locale-progress-summary>
+      <span>
+        {accountCopy.localeProgressMissingLocales}: <strong data-account-locale-progress-missing-locales>0</strong>
+      </span>
+      <span>
+        {accountCopy.localeProgressUntranslatedLocales}: <strong data-account-locale-progress-untranslated-locales>0</strong>
+      </span>
+      <span>
+        {accountCopy.localeProgressDeployCount}: <strong data-account-locale-progress-deploy-count>0</strong>
+      </span>
+    </div>
+
+    <ul class="account-comments-list gv-stack" data-account-locale-progress-list></ul>
+    <p class="small" data-account-locale-progress-empty>{accountCopy.localeProgressNone}</p>
+    <p class="small account-feedback" data-account-locale-progress-feedback aria-live="polite"></p>
+  </section>
+
   <section class="card panel gv-stack" data-account-settings hidden>
     <h2>{accountCopy.languageTitle}</h2>
     <p class="small">{accountCopy.languageDescription}</p>
@@ -243,6 +300,7 @@ const accountCopy = {
       const loggedOutPanel = document.querySelector('[data-account-logged-out]');
       const profilePanel = document.querySelector('[data-account-profile]');
       const commentsPanel = document.querySelector('[data-account-comments]');
+      const localeProgressPanel = document.querySelector('[data-account-locale-progress]');
       const profileUsername = document.querySelector('[data-account-profile-username]');
       const profileEmail = document.querySelector('[data-account-profile-email]');
       const profileCreated = document.querySelector('[data-account-profile-created]');
@@ -256,6 +314,13 @@ const accountCopy = {
       const commentsCountApproved = document.querySelector('[data-account-comments-approved]');
       const commentsCountRejected = document.querySelector('[data-account-comments-rejected]');
       const commentsCountSpam = document.querySelector('[data-account-comments-spam]');
+      const localeProgressList = document.querySelector('[data-account-locale-progress-list]');
+      const localeProgressEmpty = document.querySelector('[data-account-locale-progress-empty]');
+      const localeProgressFeedback = document.querySelector('[data-account-locale-progress-feedback]');
+      const localeProgressRefreshButton = document.querySelector('[data-account-locale-progress-refresh]');
+      const localeProgressMissingLocales = document.querySelector('[data-account-locale-progress-missing-locales]');
+      const localeProgressUntranslatedLocales = document.querySelector('[data-account-locale-progress-untranslated-locales]');
+      const localeProgressDeployCount = document.querySelector('[data-account-locale-progress-deploy-count]');
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
@@ -267,7 +332,8 @@ const accountCopy = {
         !(passwordPanel instanceof HTMLElement) ||
         !(loggedOutPanel instanceof HTMLElement) ||
         !(profilePanel instanceof HTMLElement) ||
-        !(commentsPanel instanceof HTMLElement)
+        !(commentsPanel instanceof HTMLElement) ||
+        !(localeProgressPanel instanceof HTMLElement)
       ) {
         return;
       }
@@ -285,7 +351,14 @@ const accountCopy = {
         !(commentsCountPending instanceof HTMLElement) ||
         !(commentsCountApproved instanceof HTMLElement) ||
         !(commentsCountRejected instanceof HTMLElement) ||
-        !(commentsCountSpam instanceof HTMLElement)
+        !(commentsCountSpam instanceof HTMLElement) ||
+        !(localeProgressList instanceof HTMLElement) ||
+        !(localeProgressEmpty instanceof HTMLElement) ||
+        !(localeProgressFeedback instanceof HTMLElement) ||
+        !(localeProgressRefreshButton instanceof HTMLButtonElement) ||
+        !(localeProgressMissingLocales instanceof HTMLElement) ||
+        !(localeProgressUntranslatedLocales instanceof HTMLElement) ||
+        !(localeProgressDeployCount instanceof HTMLElement)
       ) {
         return;
       }
@@ -318,12 +391,24 @@ const accountCopy = {
         commentsFeedback.classList.toggle('is-error', isError);
       };
 
+      const setLocaleProgressFeedback = (message, isError = false) => {
+        localeProgressFeedback.textContent = message;
+        localeProgressFeedback.classList.toggle('is-error', isError);
+      };
+
       const setCommentsCounts = (meta) => {
         const counts = meta && typeof meta === 'object' ? meta.counts || {} : {};
         commentsCountPending.textContent = String(Number(counts.pending) || 0);
         commentsCountApproved.textContent = String(Number(counts.approved) || 0);
         commentsCountRejected.textContent = String(Number(counts.rejected) || 0);
         commentsCountSpam.textContent = String(Number(counts.spam) || 0);
+      };
+
+      const setLocaleProgressSummary = (summary) => {
+        const source = summary && typeof summary === 'object' ? summary : {};
+        localeProgressMissingLocales.textContent = String(Number(source.locales_with_missing) || 0);
+        localeProgressUntranslatedLocales.textContent = String(Number(source.locales_with_untranslated) || 0);
+        localeProgressDeployCount.textContent = String(Number(source.deploy_required_count) || 0);
       };
 
       const escapeHtml = (value) =>
@@ -406,6 +491,7 @@ const accountCopy = {
         passwordPanel.hidden = true;
         profilePanel.hidden = true;
         commentsPanel.hidden = true;
+        localeProgressPanel.hidden = true;
         loggedOutPanel.hidden = false;
         return;
       }
@@ -414,6 +500,7 @@ const accountCopy = {
       passwordPanel.hidden = false;
       profilePanel.hidden = false;
       commentsPanel.hidden = false;
+      localeProgressPanel.hidden = false;
       loggedOutPanel.hidden = true;
       renderProfile(session);
 
@@ -537,6 +624,88 @@ const accountCopy = {
         }
       };
 
+      const renderLocaleProgress = (rows, referenceLocale) => {
+        localeProgressList.innerHTML = '';
+        const list = Array.isArray(rows) ? rows : [];
+        localeProgressEmpty.hidden = list.length > 0;
+        if (list.length === 0) return;
+
+        const fragment = document.createDocumentFragment();
+        const normalizedReference = normalizeLanguage(referenceLocale || 'en');
+        const sorted = [...list].sort((left, right) => {
+          const leftScore = Number(left?.missing_keys || 0) + Number(left?.untranslated_keys || 0);
+          const rightScore = Number(right?.missing_keys || 0) + Number(right?.untranslated_keys || 0);
+          if (rightScore !== leftScore) return rightScore - leftScore;
+          return String(left?.ui_locale || '').localeCompare(String(right?.ui_locale || ''));
+        });
+
+        for (const item of sorted) {
+          const locale = normalizeLanguage(item?.ui_locale || '-');
+          const missing = Number(item?.missing_keys || 0);
+          const untranslated = Number(item?.untranslated_keys || 0);
+          const coverage = Number(item?.coverage_percent || 0);
+          const deployRequired = item?.deploy_required === true;
+          const status = String(item?.status || 'draft');
+
+          const li = document.createElement('li');
+          li.className = 'account-comment-item';
+          if (missing > 0 || untranslated > 0) {
+            li.classList.add('account-locale-item-needs-work');
+          }
+
+          li.innerHTML = `
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(locale.toUpperCase() || '-')}</strong>
+              · <strong>${escapeHtml(accountCopy.commentsStatus)}:</strong> ${escapeHtml(status)}
+              ${locale === normalizedReference ? `· <strong>${escapeHtml(accountCopy.localeProgressReference)}</strong>` : ''}
+            </p>
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(accountCopy.localeProgressMissing)}:</strong> ${missing}
+              · <strong>${escapeHtml(accountCopy.localeProgressUntranslated)}:</strong> ${untranslated}
+              · <strong>${escapeHtml(accountCopy.localeProgressCoverage)}:</strong> ${Number.isFinite(coverage) ? coverage.toFixed(1) : '0.0'}%
+            </p>
+            ${deployRequired ? `<p class="account-comment-note"><strong>${escapeHtml(accountCopy.localeProgressDeployRequired)}</strong></p>` : ''}
+          `;
+          fragment.appendChild(li);
+        }
+
+        localeProgressList.appendChild(fragment);
+      };
+
+      const loadLocaleProgress = async () => {
+        setLocaleProgressFeedback(accountCopy.localeProgressLoading);
+        try {
+          const response = await fetch(`${authBase}/api/ui-locales/meta/progress?reference_locale=en`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.localeProgressLoadFailed;
+            renderLocaleProgress([], 'en');
+            setLocaleProgressSummary(null);
+            setLocaleProgressFeedback(message, true);
+            return;
+          }
+
+          const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
+          const rows = Array.isArray(data.locales) ? data.locales : [];
+          const summary = data.summary && typeof data.summary === 'object' ? data.summary : {};
+          const referenceLocale = normalizeLanguage(summary.reference_locale || 'en');
+
+          renderLocaleProgress(rows, referenceLocale);
+          setLocaleProgressSummary(summary);
+          setLocaleProgressFeedback('');
+        } catch {
+          renderLocaleProgress([], 'en');
+          setLocaleProgressSummary(null);
+          setLocaleProgressFeedback(accountCopy.localeProgressLoadFailed, true);
+        }
+      };
+
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const selected = normalizeLanguage(select.value);
@@ -643,9 +812,14 @@ const accountCopy = {
         loadComments();
       });
 
+      localeProgressRefreshButton.addEventListener('click', () => {
+        loadLocaleProgress();
+      });
+
       loadPreference();
       loadProfile();
       loadComments();
+      loadLocaleProgress();
     })();
   </script>
 </MainLayout>
@@ -769,6 +943,10 @@ const accountCopy = {
     margin: 0.48rem 0 0;
     font-size: 0.82rem;
     color: var(--text-muted);
+  }
+
+  .account-locale-item-needs-work {
+    border-color: color-mix(in srgb, var(--warning) 58%, var(--border));
   }
 
   .account-feedback.is-error {
