@@ -226,4 +226,8 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect.poll(() => previewRequestCount).toBeGreaterThanOrEqual(1);
   await expect(page.locator('[data-account-locale-preview="tr"]')).toContainText('nav.home');
   await expect(page.locator('[data-account-locale-preview="tr"]')).toContainText('missing');
+
+  await page.click('[data-account-locale-preview-export][data-locale-code="tr"]');
+  await expect.poll(() => previewRequestCount).toBeGreaterThanOrEqual(2);
+  await expect(page.locator('[data-account-locale-progress-feedback]')).toContainText('CSV exported for TR');
 });

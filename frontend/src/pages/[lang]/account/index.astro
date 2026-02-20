@@ -97,6 +97,10 @@ const accountCopy = {
   localeProgressDetailsRef: translate(ui, 'account.localeProgressDetailsRef', {}, 'Reference'),
   localeProgressDetailsLocale: translate(ui, 'account.localeProgressDetailsLocale', {}, 'Locale'),
   localeProgressDetailsState: translate(ui, 'account.localeProgressDetailsState', {}, 'State'),
+  localeProgressExportCsv: translate(ui, 'account.localeProgressExportCsv', {}, 'Export CSV'),
+  localeProgressExportDone: translate(ui, 'account.localeProgressExportDone', {}, 'CSV exported for {locale}.'),
+  localeProgressExportFailed: translate(ui, 'account.localeProgressExportFailed', {}, 'Could not export CSV right now.'),
+  localeProgressExportEmpty: translate(ui, 'account.localeProgressExportEmpty', {}, 'No rows available for CSV export.'),
   localeProgressMissingLocales: translate(ui, 'account.localeProgressMissingLocales', {}, 'Locales with missing'),
   localeProgressUntranslatedLocales: translate(
     ui,
@@ -501,6 +505,24 @@ const accountCopy = {
         return text.length > 120 ? `${text.slice(0, 117)}...` : text;
       };
 
+      const csvEscape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
+
+      const rowsToCsv = (rows) => {
+        const list = Array.isArray(rows) ? rows : [];
+        const lines = ['key,state,reference_value,locale_value'];
+        for (const row of list) {
+          lines.push(
+            [
+              csvEscape(row?.key || ''),
+              csvEscape(row?.state || ''),
+              csvEscape(row?.reference_value ?? ''),
+              csvEscape(row?.locale_value ?? ''),
+            ].join(',')
+          );
+        }
+        return `${lines.join('\n')}\n`;
+      };
+
       const findLocalePreviewNode = (localeCode) => {
         const normalized = normalizeLanguage(localeCode);
         if (!normalized) return null;
@@ -513,6 +535,28 @@ const accountCopy = {
           }
         }
         return null;
+      };
+
+      const fetchLocalePreviewRows = async (localeCode, limit = 12) => {
+        const normalized = normalizeLanguage(localeCode);
+        if (!normalized) return [];
+        const response = await fetch(
+          `${authBase}/api/ui-locales/meta/${encodeURIComponent(normalized)}/reference-preview?reference_locale=en&state=all&limit=${limit}`,
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+          }
+        );
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(String(payload?.error?.message || accountCopy.localeProgressLoadFailed));
+        }
+        const rows = Array.isArray(payload?.data?.rows)
+          ? payload.data.rows.filter((item) => item?.state === 'missing' || item?.state === 'untranslated')
+          : [];
+        return rows;
       };
 
       const clearAuthSession = () => {
@@ -766,15 +810,25 @@ const accountCopy = {
             ${
               missing > 0 || untranslated > 0
                 ? `
-                  <button
-                    type="button"
-                    class="ui-button ui-button-secondary ui-button-sm account-locale-preview-toggle"
-                    data-account-locale-preview-toggle
-                    data-locale-code="${escapeHtml(locale)}"
-                    aria-expanded="false"
-                  >
-                    <span class="ui-button-label">${escapeHtml(accountCopy.localeProgressShowDetails)}</span>
-                  </button>
+                  <div class="account-locale-actions">
+                    <button
+                      type="button"
+                      class="ui-button ui-button-secondary ui-button-sm account-locale-preview-toggle"
+                      data-account-locale-preview-toggle
+                      data-locale-code="${escapeHtml(locale)}"
+                      aria-expanded="false"
+                    >
+                      <span class="ui-button-label">${escapeHtml(accountCopy.localeProgressShowDetails)}</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="ui-button ui-button-secondary ui-button-sm account-locale-preview-export"
+                      data-account-locale-preview-export
+                      data-locale-code="${escapeHtml(locale)}"
+                    >
+                      <span class="ui-button-label">${escapeHtml(accountCopy.localeProgressExportCsv)}</span>
+                    </button>
+                  </div>
                   <div class="account-locale-preview" data-account-locale-preview="${escapeHtml(locale)}" hidden></div>
                 `
                 : ''
@@ -834,26 +888,7 @@ const accountCopy = {
         toggleButton.setAttribute('aria-expanded', 'true');
 
         try {
-          const response = await fetch(
-            `${authBase}/api/ui-locales/meta/${encodeURIComponent(normalized)}/reference-preview?reference_locale=en&state=all&limit=12`,
-            {
-              headers: {
-                Accept: 'application/json',
-                Authorization: `Bearer ${session.jwt}`,
-              },
-            }
-          );
-          const payload = await response.json().catch(() => ({}));
-          if (!response.ok) {
-            const message = escapeHtml(payload?.error?.message || accountCopy.localeProgressLoadFailed);
-            previewNode.innerHTML = `<p class="account-comment-meta is-error">${message}</p>`;
-            toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressShowDetails);
-            return;
-          }
-
-          const rows = Array.isArray(payload?.data?.rows)
-            ? payload.data.rows.filter((item) => item?.state === 'missing' || item?.state === 'untranslated')
-            : [];
+          const rows = await fetchLocalePreviewRows(normalized, 12);
           localePreviewCache.set(normalized, rows);
           renderLocalePreview(previewNode, rows);
           toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressHideDetails);
@@ -862,6 +897,43 @@ const accountCopy = {
           toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressShowDetails);
         } finally {
           toggleButton.disabled = false;
+        }
+      };
+
+      const exportLocalePreviewCsv = async (localeCode, exportButton) => {
+        const normalized = normalizeLanguage(localeCode);
+        if (!normalized || !(exportButton instanceof HTMLButtonElement)) return;
+
+        exportButton.disabled = true;
+        setLocaleProgressFeedback(accountCopy.localeProgressLoadingDetails);
+        try {
+          const rows = await fetchLocalePreviewRows(normalized, 300);
+          if (rows.length === 0) {
+            setLocaleProgressFeedback(accountCopy.localeProgressExportEmpty);
+            return;
+          }
+
+          const csv = rowsToCsv(rows);
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+          const objectUrl = URL.createObjectURL(blob);
+          const downloadLink = document.createElement('a');
+          downloadLink.href = objectUrl;
+          downloadLink.download = `ui-locale-${normalized}-missing-untranslated.csv`;
+          downloadLink.rel = 'noopener';
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          downloadLink.remove();
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+
+          localePreviewCache.set(normalized, rows);
+          setLocaleProgressFeedback(
+            String(accountCopy.localeProgressExportDone || '').replace('{locale}', normalized.toUpperCase())
+          );
+        } catch (error) {
+          const message = error instanceof Error && error.message ? error.message : accountCopy.localeProgressExportFailed;
+          setLocaleProgressFeedback(message, true);
+        } finally {
+          exportButton.disabled = false;
         }
       };
 
@@ -1034,6 +1106,14 @@ const accountCopy = {
       localeProgressList.addEventListener('click', (event) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
+
+        const exportButton = target.closest('[data-account-locale-preview-export]');
+        if (exportButton instanceof HTMLButtonElement) {
+          const localeCode = normalizeLanguage(exportButton.getAttribute('data-locale-code') || '');
+          exportLocalePreviewCsv(localeCode, exportButton);
+          return;
+        }
+
         const toggleButton = target.closest('[data-account-locale-preview-toggle]');
         if (!(toggleButton instanceof HTMLButtonElement)) return;
 
@@ -1186,8 +1266,16 @@ const accountCopy = {
     border-color: color-mix(in srgb, var(--warning) 58%, var(--border));
   }
 
-  .account-locale-preview-toggle {
+  .account-locale-actions {
     margin-top: 0.45rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .account-locale-preview-toggle,
+  .account-locale-preview-export {
+    margin-top: 0;
   }
 
   .account-locale-preview {
