@@ -112,6 +112,22 @@ const accountCopy = {
   ),
   localeProgressActiveFilter: translate(ui, 'account.localeProgressActiveFilter', {}, 'Active filter'),
   localeProgressFilteredKeys: translate(ui, 'account.localeProgressFilteredKeys', {}, 'Filtered keys'),
+  localeProgressDeployActionTitle: translate(ui, 'account.localeProgressDeployActionTitle', {}, 'Deployment reminder'),
+  localeProgressDeployActionBody: translate(
+    ui,
+    'account.localeProgressDeployActionBody',
+    {},
+    '{count} locale(s) are pending deploy. Run this on VPS:'
+  ),
+  localeProgressDeployCommand: translate(ui, 'account.localeProgressDeployCommand', {}, 'bash tools/ui_locale_sync.sh'),
+  localeProgressDeployCopy: translate(ui, 'account.localeProgressDeployCopy', {}, 'Copy command'),
+  localeProgressDeployCopyDone: translate(ui, 'account.localeProgressDeployCopyDone', {}, 'Command copied.'),
+  localeProgressDeployCopyFailed: translate(
+    ui,
+    'account.localeProgressDeployCopyFailed',
+    {},
+    'Clipboard blocked. Copy command manually.'
+  ),
   localeProgressMissingLocales: translate(ui, 'account.localeProgressMissingLocales', {}, 'Locales with missing'),
   localeProgressUntranslatedLocales: translate(
     ui,
@@ -283,6 +299,20 @@ const accountCopy = {
       </span>
     </div>
 
+    <div class="account-locale-deploy-hint gv-stack" data-account-locale-deploy-hint hidden>
+      <p class="account-comment-meta">
+        <strong>{accountCopy.localeProgressDeployActionTitle}</strong>
+      </p>
+      <p class="account-comment-meta" data-account-locale-deploy-body>{accountCopy.localeProgressDeployActionBody}</p>
+      <div class="account-locale-deploy-command-wrap">
+        <code data-account-locale-deploy-command>{accountCopy.localeProgressDeployCommand}</code>
+        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-deploy-copy>
+          <span class="ui-button-label">{accountCopy.localeProgressDeployCopy}</span>
+        </button>
+      </div>
+      <p class="small account-feedback" data-account-locale-deploy-feedback aria-live="polite"></p>
+    </div>
+
     <ul class="account-comments-list gv-stack" data-account-locale-progress-list></ul>
     <p class="small" data-account-locale-progress-empty>{accountCopy.localeProgressNone}</p>
     <p class="small account-feedback" data-account-locale-progress-feedback aria-live="polite"></p>
@@ -372,6 +402,11 @@ const accountCopy = {
       const localeProgressDeployCount = document.querySelector('[data-account-locale-progress-deploy-count]');
       const localeProgressActiveFilter = document.querySelector('[data-account-locale-progress-active-filter]');
       const localeProgressFilteredTotal = document.querySelector('[data-account-locale-progress-filtered-total]');
+      const localeDeployHint = document.querySelector('[data-account-locale-deploy-hint]');
+      const localeDeployBody = document.querySelector('[data-account-locale-deploy-body]');
+      const localeDeployCommand = document.querySelector('[data-account-locale-deploy-command]');
+      const localeDeployCopyButton = document.querySelector('[data-account-locale-deploy-copy]');
+      const localeDeployFeedback = document.querySelector('[data-account-locale-deploy-feedback]');
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
@@ -419,7 +454,12 @@ const accountCopy = {
         !(localeProgressUntranslatedLocales instanceof HTMLElement) ||
         !(localeProgressDeployCount instanceof HTMLElement) ||
         !(localeProgressActiveFilter instanceof HTMLElement) ||
-        !(localeProgressFilteredTotal instanceof HTMLElement)
+        !(localeProgressFilteredTotal instanceof HTMLElement) ||
+        !(localeDeployHint instanceof HTMLElement) ||
+        !(localeDeployBody instanceof HTMLElement) ||
+        !(localeDeployCommand instanceof HTMLElement) ||
+        !(localeDeployCopyButton instanceof HTMLButtonElement) ||
+        !(localeDeployFeedback instanceof HTMLElement)
       ) {
         return;
       }
@@ -439,6 +479,8 @@ const accountCopy = {
       const getPreviewCacheKey = (localeCode, state) => `${normalizeLanguage(localeCode)}:${normalizePreviewState(state)}`;
       const localeProgressByLocale = new Map();
       const localePreviewCache = new Map();
+      const deployCommandText = String(accountCopy.localeProgressDeployCommand || 'bash tools/ui_locale_sync.sh');
+      localeDeployCommand.textContent = deployCommandText;
 
       const getPreviewStateLabel = (state) => {
         const normalized = normalizePreviewState(state);
@@ -473,6 +515,11 @@ const accountCopy = {
         localeProgressFeedback.classList.toggle('is-error', isError);
       };
 
+      const setLocaleDeployFeedback = (message, isError = false) => {
+        localeDeployFeedback.textContent = message;
+        localeDeployFeedback.classList.toggle('is-error', isError);
+      };
+
       const setCommentsCounts = (meta) => {
         const counts = meta && typeof meta === 'object' ? meta.counts || {} : {};
         commentsCountPending.textContent = String(Number(counts.pending) || 0);
@@ -486,6 +533,21 @@ const accountCopy = {
         localeProgressMissingLocales.textContent = String(Number(source.locales_with_missing) || 0);
         localeProgressUntranslatedLocales.textContent = String(Number(source.locales_with_untranslated) || 0);
         localeProgressDeployCount.textContent = String(Number(source.deploy_required_count) || 0);
+      };
+
+      const setLocaleDeployHint = (summary) => {
+        const source = summary && typeof summary === 'object' ? summary : {};
+        const deployRequiredCount = Number(source.deploy_required_count) || 0;
+        localeDeployHint.hidden = deployRequiredCount <= 0;
+        if (deployRequiredCount <= 0) {
+          setLocaleDeployFeedback('');
+          return;
+        }
+
+        localeDeployBody.textContent = String(accountCopy.localeProgressDeployActionBody || '').replace(
+          '{count}',
+          String(deployRequiredCount)
+        );
       };
 
       const setLocaleFilterSummary = () => {
@@ -1024,12 +1086,13 @@ const accountCopy = {
             localeProgressByLocale.clear();
             localePreviewCache.clear();
             renderLocaleProgress([], 'en');
-          setLocaleProgressSummary(null);
-          setLocaleFilterSummary();
-          updateSelectOptionLabels();
-          updateLanguageHealth();
-          setLocaleProgressFeedback(message, true);
-          return;
+            setLocaleProgressSummary(null);
+            setLocaleDeployHint(null);
+            setLocaleFilterSummary();
+            updateSelectOptionLabels();
+            updateLanguageHealth();
+            setLocaleProgressFeedback(message, true);
+            return;
           }
 
           const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
@@ -1047,6 +1110,7 @@ const accountCopy = {
 
           renderLocaleProgress(rows, referenceLocale);
           setLocaleProgressSummary(summary);
+          setLocaleDeployHint(summary);
           setLocaleFilterSummary();
           updateSelectOptionLabels();
           updateLanguageHealth();
@@ -1056,6 +1120,7 @@ const accountCopy = {
           localePreviewCache.clear();
           renderLocaleProgress([], 'en');
           setLocaleProgressSummary(null);
+          setLocaleDeployHint(null);
           setLocaleFilterSummary();
           updateSelectOptionLabels();
           updateLanguageHealth();
@@ -1224,6 +1289,15 @@ const accountCopy = {
         }
       });
 
+      localeDeployCopyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(deployCommandText);
+          setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyDone);
+        } catch {
+          setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyFailed, true);
+        }
+      });
+
       updateSelectOptionLabels();
       updateLanguageHealth();
       loadPreference();
@@ -1373,6 +1447,29 @@ const accountCopy = {
     display: flex;
     flex-wrap: wrap;
     gap: 0.45rem;
+  }
+
+  .account-locale-deploy-hint {
+    border: 1px dashed color-mix(in srgb, var(--brand) 42%, var(--border));
+    border-radius: 10px;
+    padding: 0.6rem 0.7rem;
+    background: color-mix(in srgb, var(--surface) 90%, var(--surface2));
+  }
+
+  .account-locale-deploy-command-wrap {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .account-locale-deploy-command-wrap code {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.35rem 0.5rem;
+    background: var(--surface);
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
   }
 
   .account-locale-preview-toggle,

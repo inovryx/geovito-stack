@@ -252,6 +252,8 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-language-health]')).toContainText('12');
   await expect(page.locator('[data-account-locale-progress-active-filter]')).toContainText('All');
   await expect(page.locator('[data-account-locale-progress-filtered-total]')).toHaveText('12');
+  await expect(page.locator('[data-account-locale-deploy-hint]')).toBeVisible();
+  await expect(page.locator('[data-account-locale-deploy-command]')).toContainText('bash tools/ui_locale_sync.sh');
   await page.selectOption('[data-account-locale-progress-filter]', 'missing');
   await expect(page.locator('[data-account-locale-progress-active-filter]')).toContainText('Missing only');
   await expect(page.locator('[data-account-locale-progress-filtered-total]')).toHaveText('8');
