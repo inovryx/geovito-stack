@@ -101,6 +101,15 @@ const accountCopy = {
   localeProgressExportDone: translate(ui, 'account.localeProgressExportDone', {}, 'CSV exported for {locale}.'),
   localeProgressExportFailed: translate(ui, 'account.localeProgressExportFailed', {}, 'Could not export CSV right now.'),
   localeProgressExportEmpty: translate(ui, 'account.localeProgressExportEmpty', {}, 'No rows available for CSV export.'),
+  localeProgressFilterLabel: translate(ui, 'account.localeProgressFilterLabel', {}, 'Preview filter'),
+  localeProgressFilterAll: translate(ui, 'account.localeProgressFilterAll', {}, 'All'),
+  localeProgressFilterMissing: translate(ui, 'account.localeProgressFilterMissing', {}, 'Missing only'),
+  localeProgressFilterUntranslated: translate(
+    ui,
+    'account.localeProgressFilterUntranslated',
+    {},
+    'Untranslated only'
+  ),
   localeProgressMissingLocales: translate(ui, 'account.localeProgressMissingLocales', {}, 'Locales with missing'),
   localeProgressUntranslatedLocales: translate(
     ui,
@@ -241,6 +250,14 @@ const accountCopy = {
         <h2>{accountCopy.localeProgressTitle}</h2>
         <p class="small">{accountCopy.localeProgressDescription}</p>
       </div>
+      <label class="account-field account-inline-field account-locale-filter">
+        <span>{accountCopy.localeProgressFilterLabel}</span>
+        <select data-account-locale-progress-filter>
+          <option value="all">{accountCopy.localeProgressFilterAll}</option>
+          <option value="missing">{accountCopy.localeProgressFilterMissing}</option>
+          <option value="untranslated">{accountCopy.localeProgressFilterUntranslated}</option>
+        </select>
+      </label>
       <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-progress-refresh>
         <span class="ui-button-label">{accountCopy.localeProgressRefresh}</span>
       </button>
@@ -341,6 +358,7 @@ const accountCopy = {
       const localeProgressEmpty = document.querySelector('[data-account-locale-progress-empty]');
       const localeProgressFeedback = document.querySelector('[data-account-locale-progress-feedback]');
       const localeProgressRefreshButton = document.querySelector('[data-account-locale-progress-refresh]');
+      const localeProgressFilterSelect = document.querySelector('[data-account-locale-progress-filter]');
       const localeProgressMissingLocales = document.querySelector('[data-account-locale-progress-missing-locales]');
       const localeProgressUntranslatedLocales = document.querySelector('[data-account-locale-progress-untranslated-locales]');
       const localeProgressDeployCount = document.querySelector('[data-account-locale-progress-deploy-count]');
@@ -386,6 +404,7 @@ const accountCopy = {
         !(localeProgressEmpty instanceof HTMLElement) ||
         !(localeProgressFeedback instanceof HTMLElement) ||
         !(localeProgressRefreshButton instanceof HTMLButtonElement) ||
+        !(localeProgressFilterSelect instanceof HTMLSelectElement) ||
         !(localeProgressMissingLocales instanceof HTMLElement) ||
         !(localeProgressUntranslatedLocales instanceof HTMLElement) ||
         !(localeProgressDeployCount instanceof HTMLElement)
@@ -399,6 +418,13 @@ const accountCopy = {
       const normalizedLanguages = Array.isArray(availableLanguages) ? availableLanguages : [];
       const isAllowedLanguage = (value) => normalizedLanguages.includes(value);
       const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
+      const normalizePreviewState = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (normalized === 'missing' || normalized === 'untranslated') return normalized;
+        return 'all';
+      };
+      const getCurrentPreviewState = () => normalizePreviewState(localeProgressFilterSelect.value);
+      const getPreviewCacheKey = (localeCode, state) => `${normalizeLanguage(localeCode)}:${normalizePreviewState(state)}`;
       const localeProgressByLocale = new Map();
       const localePreviewCache = new Map();
 
@@ -537,11 +563,12 @@ const accountCopy = {
         return null;
       };
 
-      const fetchLocalePreviewRows = async (localeCode, limit = 12) => {
+      const fetchLocalePreviewRows = async (localeCode, state = 'all', limit = 12) => {
         const normalized = normalizeLanguage(localeCode);
+        const normalizedState = normalizePreviewState(state);
         if (!normalized) return [];
         const response = await fetch(
-          `${authBase}/api/ui-locales/meta/${encodeURIComponent(normalized)}/reference-preview?reference_locale=en&state=all&limit=${limit}`,
+          `${authBase}/api/ui-locales/meta/${encodeURIComponent(normalized)}/reference-preview?reference_locale=en&state=${encodeURIComponent(normalizedState)}&limit=${limit}`,
           {
             headers: {
               Accept: 'application/json',
@@ -553,10 +580,11 @@ const accountCopy = {
         if (!response.ok) {
           throw new Error(String(payload?.error?.message || accountCopy.localeProgressLoadFailed));
         }
-        const rows = Array.isArray(payload?.data?.rows)
-          ? payload.data.rows.filter((item) => item?.state === 'missing' || item?.state === 'untranslated')
-          : [];
-        return rows;
+        const rows = Array.isArray(payload?.data?.rows) ? payload.data.rows : [];
+        if (normalizedState === 'all') {
+          return rows.filter((item) => item?.state === 'missing' || item?.state === 'untranslated');
+        }
+        return rows.filter((item) => item?.state === normalizedState);
       };
 
       const clearAuthSession = () => {
@@ -872,10 +900,12 @@ const accountCopy = {
 
       const loadLocalePreview = async (localeCode, previewNode, toggleButton) => {
         const normalized = normalizeLanguage(localeCode);
+        const selectedState = getCurrentPreviewState();
+        const cacheKey = getPreviewCacheKey(normalized, selectedState);
         if (!normalized || !(previewNode instanceof HTMLElement) || !(toggleButton instanceof HTMLButtonElement)) return;
 
-        if (localePreviewCache.has(normalized)) {
-          renderLocalePreview(previewNode, localePreviewCache.get(normalized));
+        if (localePreviewCache.has(cacheKey)) {
+          renderLocalePreview(previewNode, localePreviewCache.get(cacheKey));
           previewNode.hidden = false;
           toggleButton.setAttribute('aria-expanded', 'true');
           toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressHideDetails);
@@ -888,8 +918,8 @@ const accountCopy = {
         toggleButton.setAttribute('aria-expanded', 'true');
 
         try {
-          const rows = await fetchLocalePreviewRows(normalized, 12);
-          localePreviewCache.set(normalized, rows);
+          const rows = await fetchLocalePreviewRows(normalized, selectedState, 12);
+          localePreviewCache.set(cacheKey, rows);
           renderLocalePreview(previewNode, rows);
           toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressHideDetails);
         } catch {
@@ -902,12 +932,14 @@ const accountCopy = {
 
       const exportLocalePreviewCsv = async (localeCode, exportButton) => {
         const normalized = normalizeLanguage(localeCode);
+        const selectedState = getCurrentPreviewState();
+        const cacheKey = getPreviewCacheKey(normalized, selectedState);
         if (!normalized || !(exportButton instanceof HTMLButtonElement)) return;
 
         exportButton.disabled = true;
         setLocaleProgressFeedback(accountCopy.localeProgressLoadingDetails);
         try {
-          const rows = await fetchLocalePreviewRows(normalized, 300);
+          const rows = await fetchLocalePreviewRows(normalized, selectedState, 300);
           if (rows.length === 0) {
             setLocaleProgressFeedback(accountCopy.localeProgressExportEmpty);
             return;
@@ -918,14 +950,14 @@ const accountCopy = {
           const objectUrl = URL.createObjectURL(blob);
           const downloadLink = document.createElement('a');
           downloadLink.href = objectUrl;
-          downloadLink.download = `ui-locale-${normalized}-missing-untranslated.csv`;
+          downloadLink.download = `ui-locale-${normalized}-${selectedState}.csv`;
           downloadLink.rel = 'noopener';
           document.body.appendChild(downloadLink);
           downloadLink.click();
           downloadLink.remove();
           window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
 
-          localePreviewCache.set(normalized, rows);
+          localePreviewCache.set(cacheKey, rows);
           setLocaleProgressFeedback(
             String(accountCopy.localeProgressExportDone || '').replace('{locale}', normalized.toUpperCase())
           );
@@ -1131,6 +1163,24 @@ const accountCopy = {
         loadLocalePreview(localeCode, previewNode, toggleButton);
       });
 
+      localeProgressFilterSelect.addEventListener('change', () => {
+        localePreviewCache.clear();
+        const previewNodes = localeProgressList.querySelectorAll('[data-account-locale-preview]');
+        for (const node of previewNodes) {
+          if (node instanceof HTMLElement) {
+            node.hidden = true;
+            node.innerHTML = '';
+          }
+        }
+        const toggleButtons = localeProgressList.querySelectorAll('[data-account-locale-preview-toggle]');
+        for (const button of toggleButtons) {
+          if (button instanceof HTMLButtonElement) {
+            button.setAttribute('aria-expanded', 'false');
+            button.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressShowDetails);
+          }
+        }
+      });
+
       updateSelectOptionLabels();
       updateLanguageHealth();
       loadPreference();
@@ -1211,6 +1261,15 @@ const accountCopy = {
     justify-content: space-between;
     align-items: flex-start;
     flex-wrap: wrap;
+  }
+
+  .account-inline-field {
+    max-width: 220px;
+    min-width: 180px;
+  }
+
+  .account-locale-filter {
+    margin: 0;
   }
 
   .account-comments-stats {

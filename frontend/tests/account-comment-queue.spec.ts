@@ -7,6 +7,7 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
 
   let queueRequestCount = 0;
   let previewRequestCount = 0;
+  const previewStates: string[] = [];
 
   await page.route(/\/api\/users\/me$/, async (route) => {
     await route.fulfill({
@@ -161,6 +162,47 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
 
   await page.route(/\/api\/ui-locales\/meta\/tr\/reference-preview/, async (route) => {
     previewRequestCount += 1;
+    const requestUrl = new URL(route.request().url());
+    const requestedState = requestUrl.searchParams.get('state') || 'all';
+    previewStates.push(requestedState);
+    const rowsByState = {
+      all: [
+        {
+          key: 'nav.home',
+          state: 'missing',
+          reference_value: 'Home',
+          locale_value: null,
+        },
+        {
+          key: 'nav.blog',
+          state: 'untranslated',
+          reference_value: 'Blog',
+          locale_value: 'Blog',
+        },
+      ],
+      missing: [
+        {
+          key: 'nav.home',
+          state: 'missing',
+          reference_value: 'Home',
+          locale_value: null,
+        },
+      ],
+      untranslated: [
+        {
+          key: 'nav.blog',
+          state: 'untranslated',
+          reference_value: 'Blog',
+          locale_value: 'Blog',
+        },
+      ],
+    } as const;
+
+    const rows =
+      requestedState === 'missing' || requestedState === 'untranslated'
+        ? rowsByState[requestedState]
+        : rowsByState.all;
+
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -168,22 +210,9 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
         data: {
           ui_locale: 'tr',
           reference_locale: 'en',
-          filters: { state: 'all' },
-          pagination: { offset: 0, limit: 12, total: 2, returned: 2 },
-          rows: [
-            {
-              key: 'nav.home',
-              state: 'missing',
-              reference_value: 'Home',
-              locale_value: null,
-            },
-            {
-              key: 'nav.blog',
-              state: 'untranslated',
-              reference_value: 'Blog',
-              locale_value: 'Blog',
-            },
-          ],
+          filters: { state: requestedState },
+          pagination: { offset: 0, limit: 12, total: rows.length, returned: rows.length },
+          rows,
         },
       }),
     });
@@ -221,13 +250,16 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');
   await expect(page.locator('[data-account-language-health]')).toContainText('12');
+  await page.selectOption('[data-account-locale-progress-filter]', 'missing');
 
   await page.click('[data-account-locale-preview-toggle][data-locale-code="tr"]');
   await expect.poll(() => previewRequestCount).toBeGreaterThanOrEqual(1);
   await expect(page.locator('[data-account-locale-preview="tr"]')).toContainText('nav.home');
   await expect(page.locator('[data-account-locale-preview="tr"]')).toContainText('missing');
+  await expect(page.locator('[data-account-locale-preview="tr"]')).not.toContainText('nav.blog');
 
   await page.click('[data-account-locale-preview-export][data-locale-code="tr"]');
   await expect.poll(() => previewRequestCount).toBeGreaterThanOrEqual(2);
+  await expect.poll(() => previewStates.filter((state) => state === 'missing').length).toBeGreaterThanOrEqual(2);
   await expect(page.locator('[data-account-locale-progress-feedback]')).toContainText('CSV exported for TR');
 });
