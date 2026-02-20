@@ -127,13 +127,26 @@ const accountCopy = {
     {},
     'bash tools/release_deploy_smoke.sh --with-moderation'
   ),
+  localeProgressDeployWorkflowCommand: translate(
+    ui,
+    'account.localeProgressDeployWorkflowCommand',
+    {},
+    'bash tools/ui_locale_sync.sh && EXPECTED_SHA7=$(git rev-parse --short=7 HEAD) bash tools/release_deploy_smoke.sh --with-moderation'
+  ),
   localeProgressDeployCopyRelease: translate(ui, 'account.localeProgressDeployCopyRelease', {}, 'Copy release command'),
+  localeProgressDeployCopyWorkflow: translate(ui, 'account.localeProgressDeployCopyWorkflow', {}, 'Copy full workflow'),
   localeProgressDeployCopyDone: translate(ui, 'account.localeProgressDeployCopyDone', {}, 'Command copied.'),
   localeProgressDeployCopyReleaseDone: translate(
     ui,
     'account.localeProgressDeployCopyReleaseDone',
     {},
     'Release command copied.'
+  ),
+  localeProgressDeployCopyWorkflowDone: translate(
+    ui,
+    'account.localeProgressDeployCopyWorkflowDone',
+    {},
+    'Workflow command copied.'
   ),
   localeProgressDeployCopyFailed: translate(
     ui,
@@ -329,6 +342,12 @@ const accountCopy = {
           <span class="ui-button-label">{accountCopy.localeProgressDeployCopyRelease}</span>
         </button>
       </div>
+      <div class="account-locale-deploy-command-wrap">
+        <code data-account-locale-workflow-command>{accountCopy.localeProgressDeployWorkflowCommand}</code>
+        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-workflow-copy>
+          <span class="ui-button-label">{accountCopy.localeProgressDeployCopyWorkflow}</span>
+        </button>
+      </div>
       <p class="small account-feedback" data-account-locale-deploy-feedback aria-live="polite"></p>
     </div>
 
@@ -427,6 +446,8 @@ const accountCopy = {
       const localeDeployCopyButton = document.querySelector('[data-account-locale-deploy-copy]');
       const localeReleaseCommand = document.querySelector('[data-account-locale-release-command]');
       const localeReleaseCopyButton = document.querySelector('[data-account-locale-release-copy]');
+      const localeWorkflowCommand = document.querySelector('[data-account-locale-workflow-command]');
+      const localeWorkflowCopyButton = document.querySelector('[data-account-locale-workflow-copy]');
       const localeDeployFeedback = document.querySelector('[data-account-locale-deploy-feedback]');
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
@@ -482,6 +503,8 @@ const accountCopy = {
         !(localeDeployCopyButton instanceof HTMLButtonElement) ||
         !(localeReleaseCommand instanceof HTMLElement) ||
         !(localeReleaseCopyButton instanceof HTMLButtonElement) ||
+        !(localeWorkflowCommand instanceof HTMLElement) ||
+        !(localeWorkflowCopyButton instanceof HTMLButtonElement) ||
         !(localeDeployFeedback instanceof HTMLElement)
       ) {
         return;
@@ -506,8 +529,13 @@ const accountCopy = {
       const releaseCommandText = String(
         accountCopy.localeProgressDeployReleaseCommand || 'bash tools/release_deploy_smoke.sh --with-moderation'
       );
+      const workflowCommandText = String(
+        accountCopy.localeProgressDeployWorkflowCommand ||
+          'bash tools/ui_locale_sync.sh && EXPECTED_SHA7=$(git rev-parse --short=7 HEAD) bash tools/release_deploy_smoke.sh --with-moderation'
+      );
       localeDeployCommand.textContent = deployCommandText;
       localeReleaseCommand.textContent = releaseCommandText;
+      localeWorkflowCommand.textContent = workflowCommandText;
 
       const getPreviewStateLabel = (state) => {
         const normalized = normalizePreviewState(state);
@@ -1329,6 +1357,15 @@ const accountCopy = {
         try {
           await navigator.clipboard.writeText(releaseCommandText);
           setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyReleaseDone);
+        } catch {
+          setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyFailed, true);
+        }
+      });
+
+      localeWorkflowCopyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(workflowCommandText);
+          setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyWorkflowDone);
         } catch {
           setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyFailed, true);
         }

@@ -257,6 +257,9 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-locale-release-command]')).toContainText(
     'bash tools/release_deploy_smoke.sh --with-moderation'
   );
+  await expect(page.locator('[data-account-locale-workflow-command]')).toContainText(
+    'bash tools/ui_locale_sync.sh && EXPECTED_SHA7=$(git rev-parse --short=7 HEAD) bash tools/release_deploy_smoke.sh --with-moderation'
+  );
   await page.selectOption('[data-account-locale-progress-filter]', 'missing');
   await expect(page.locator('[data-account-locale-progress-active-filter]')).toContainText('Missing only');
   await expect(page.locator('[data-account-locale-progress-filtered-total]')).toHaveText('8');
