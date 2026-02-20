@@ -6,6 +6,7 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   test.skip(testInfo.project.name !== 'desktop', 'Run queue smoke once on desktop');
 
   let queueRequestCount = 0;
+  let previewRequestCount = 0;
 
   await page.route(/\/api\/users\/me$/, async (route) => {
     await route.fulfill({
@@ -158,6 +159,36 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
     });
   });
 
+  await page.route(/\/api\/ui-locales\/meta\/tr\/reference-preview/, async (route) => {
+    previewRequestCount += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          ui_locale: 'tr',
+          reference_locale: 'en',
+          filters: { state: 'all' },
+          pagination: { offset: 0, limit: 12, total: 2, returned: 2 },
+          rows: [
+            {
+              key: 'nav.home',
+              state: 'missing',
+              reference_value: 'Home',
+              locale_value: null,
+            },
+            {
+              key: 'nav.blog',
+              state: 'untranslated',
+              reference_value: 'Blog',
+              locale_value: 'Blog',
+            },
+          ],
+        },
+      }),
+    });
+  });
+
   await page.addInitScript(([jwt]) => {
     const payload = {
       jwt,
@@ -190,4 +221,9 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');
   await expect(page.locator('[data-account-language-health]')).toContainText('12');
+
+  await page.click('[data-account-locale-preview-toggle][data-locale-code="tr"]');
+  await expect.poll(() => previewRequestCount).toBeGreaterThanOrEqual(1);
+  await expect(page.locator('[data-account-locale-preview="tr"]')).toContainText('nav.home');
+  await expect(page.locator('[data-account-locale-preview="tr"]')).toContainText('missing');
 });

@@ -14,7 +14,9 @@ module.exports = {
       method: 'GET',
       path: '/ui-locales/meta/:localeKey/reference-preview',
       handler: 'ui-locale.referencePreview',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
   ],
 };

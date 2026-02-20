@@ -89,6 +89,14 @@ const accountCopy = {
   localeProgressUntranslated: translate(ui, 'account.localeProgressUntranslated', {}, 'Untranslated'),
   localeProgressCoverage: translate(ui, 'account.localeProgressCoverage', {}, 'Coverage'),
   localeProgressDeployRequired: translate(ui, 'account.localeProgressDeployRequired', {}, 'Deploy required'),
+  localeProgressShowDetails: translate(ui, 'account.localeProgressShowDetails', {}, 'Show key examples'),
+  localeProgressHideDetails: translate(ui, 'account.localeProgressHideDetails', {}, 'Hide key examples'),
+  localeProgressLoadingDetails: translate(ui, 'account.localeProgressLoadingDetails', {}, 'Loading key examples...'),
+  localeProgressDetailsEmpty: translate(ui, 'account.localeProgressDetailsEmpty', {}, 'No missing/untranslated keys found.'),
+  localeProgressDetailsKey: translate(ui, 'account.localeProgressDetailsKey', {}, 'Key'),
+  localeProgressDetailsRef: translate(ui, 'account.localeProgressDetailsRef', {}, 'Reference'),
+  localeProgressDetailsLocale: translate(ui, 'account.localeProgressDetailsLocale', {}, 'Locale'),
+  localeProgressDetailsState: translate(ui, 'account.localeProgressDetailsState', {}, 'State'),
   localeProgressMissingLocales: translate(ui, 'account.localeProgressMissingLocales', {}, 'Locales with missing'),
   localeProgressUntranslatedLocales: translate(
     ui,
@@ -388,6 +396,7 @@ const accountCopy = {
       const isAllowedLanguage = (value) => normalizedLanguages.includes(value);
       const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
       const localeProgressByLocale = new Map();
+      const localePreviewCache = new Map();
 
       const setFeedback = (message, isError = false) => {
         feedback.textContent = message;
@@ -485,6 +494,26 @@ const accountCopy = {
           .replaceAll('>', '&gt;')
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#39;');
+
+      const formatPreviewValue = (value) => {
+        if (value === null || value === undefined) return '∅';
+        const text = String(value);
+        return text.length > 120 ? `${text.slice(0, 117)}...` : text;
+      };
+
+      const findLocalePreviewNode = (localeCode) => {
+        const normalized = normalizeLanguage(localeCode);
+        if (!normalized) return null;
+        const nodes = localeProgressList.querySelectorAll('[data-account-locale-preview]');
+        for (const node of nodes) {
+          if (!(node instanceof HTMLElement)) continue;
+          const current = normalizeLanguage(node.getAttribute('data-account-locale-preview'));
+          if (current === normalized) {
+            return node;
+          }
+        }
+        return null;
+      };
 
       const clearAuthSession = () => {
         try {
@@ -734,11 +763,106 @@ const accountCopy = {
               · <strong>${escapeHtml(accountCopy.localeProgressCoverage)}:</strong> ${Number.isFinite(coverage) ? coverage.toFixed(1) : '0.0'}%
             </p>
             ${deployRequired ? `<p class="account-comment-note"><strong>${escapeHtml(accountCopy.localeProgressDeployRequired)}</strong></p>` : ''}
+            ${
+              missing > 0 || untranslated > 0
+                ? `
+                  <button
+                    type="button"
+                    class="ui-button ui-button-secondary ui-button-sm account-locale-preview-toggle"
+                    data-account-locale-preview-toggle
+                    data-locale-code="${escapeHtml(locale)}"
+                    aria-expanded="false"
+                  >
+                    <span class="ui-button-label">${escapeHtml(accountCopy.localeProgressShowDetails)}</span>
+                  </button>
+                  <div class="account-locale-preview" data-account-locale-preview="${escapeHtml(locale)}" hidden></div>
+                `
+                : ''
+            }
           `;
           fragment.appendChild(li);
         }
 
         localeProgressList.appendChild(fragment);
+      };
+
+      const renderLocalePreview = (previewNode, rows) => {
+        if (!(previewNode instanceof HTMLElement)) return;
+        const list = Array.isArray(rows) ? rows.slice(0, 8) : [];
+        if (list.length === 0) {
+          previewNode.innerHTML = `<p class="account-comment-meta">${escapeHtml(accountCopy.localeProgressDetailsEmpty)}</p>`;
+          return;
+        }
+
+        const items = list
+          .map((row) => {
+            const key = escapeHtml(row?.key || '-');
+            const state = escapeHtml(row?.state || '-');
+            const reference = escapeHtml(formatPreviewValue(row?.reference_value));
+            const localeValue = escapeHtml(formatPreviewValue(row?.locale_value));
+            return `
+              <li class="account-locale-preview-item">
+                <p class="account-comment-meta">
+                  <strong>${escapeHtml(accountCopy.localeProgressDetailsKey)}:</strong> ${key}
+                  · <strong>${escapeHtml(accountCopy.localeProgressDetailsState)}:</strong> ${state}
+                </p>
+                <p class="account-comment-meta"><strong>${escapeHtml(accountCopy.localeProgressDetailsRef)}:</strong> ${reference}</p>
+                <p class="account-comment-meta"><strong>${escapeHtml(accountCopy.localeProgressDetailsLocale)}:</strong> ${localeValue}</p>
+              </li>
+            `;
+          })
+          .join('');
+
+        previewNode.innerHTML = `<ul class="account-locale-preview-list">${items}</ul>`;
+      };
+
+      const loadLocalePreview = async (localeCode, previewNode, toggleButton) => {
+        const normalized = normalizeLanguage(localeCode);
+        if (!normalized || !(previewNode instanceof HTMLElement) || !(toggleButton instanceof HTMLButtonElement)) return;
+
+        if (localePreviewCache.has(normalized)) {
+          renderLocalePreview(previewNode, localePreviewCache.get(normalized));
+          previewNode.hidden = false;
+          toggleButton.setAttribute('aria-expanded', 'true');
+          toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressHideDetails);
+          return;
+        }
+
+        previewNode.hidden = false;
+        previewNode.innerHTML = `<p class="account-comment-meta">${escapeHtml(accountCopy.localeProgressLoadingDetails)}</p>`;
+        toggleButton.disabled = true;
+        toggleButton.setAttribute('aria-expanded', 'true');
+
+        try {
+          const response = await fetch(
+            `${authBase}/api/ui-locales/meta/${encodeURIComponent(normalized)}/reference-preview?reference_locale=en&state=all&limit=12`,
+            {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${session.jwt}`,
+              },
+            }
+          );
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = escapeHtml(payload?.error?.message || accountCopy.localeProgressLoadFailed);
+            previewNode.innerHTML = `<p class="account-comment-meta is-error">${message}</p>`;
+            toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressShowDetails);
+            return;
+          }
+
+          const rows = Array.isArray(payload?.data?.rows)
+            ? payload.data.rows.filter((item) => item?.state === 'missing' || item?.state === 'untranslated')
+            : [];
+          localePreviewCache.set(normalized, rows);
+          renderLocalePreview(previewNode, rows);
+          toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressHideDetails);
+        } catch {
+          previewNode.innerHTML = `<p class="account-comment-meta is-error">${escapeHtml(accountCopy.localeProgressLoadFailed)}</p>`;
+          toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressShowDetails);
+        } finally {
+          toggleButton.disabled = false;
+        }
       };
 
       const loadLocaleProgress = async () => {
@@ -755,6 +879,7 @@ const accountCopy = {
           if (!response.ok) {
             const message = payload?.error?.message || accountCopy.localeProgressLoadFailed;
             localeProgressByLocale.clear();
+            localePreviewCache.clear();
             renderLocaleProgress([], 'en');
             setLocaleProgressSummary(null);
             updateSelectOptionLabels();
@@ -769,6 +894,7 @@ const accountCopy = {
           const referenceLocale = normalizeLanguage(summary.reference_locale || 'en');
 
           localeProgressByLocale.clear();
+          localePreviewCache.clear();
           for (const row of rows) {
             const localeCode = normalizeLanguage(row?.ui_locale);
             if (!localeCode) continue;
@@ -782,6 +908,7 @@ const accountCopy = {
           setLocaleProgressFeedback('');
         } catch {
           localeProgressByLocale.clear();
+          localePreviewCache.clear();
           renderLocaleProgress([], 'en');
           setLocaleProgressSummary(null);
           updateSelectOptionLabels();
@@ -902,6 +1029,26 @@ const accountCopy = {
 
       localeProgressRefreshButton.addEventListener('click', () => {
         loadLocaleProgress();
+      });
+
+      localeProgressList.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const toggleButton = target.closest('[data-account-locale-preview-toggle]');
+        if (!(toggleButton instanceof HTMLButtonElement)) return;
+
+        const localeCode = normalizeLanguage(toggleButton.getAttribute('data-locale-code') || '');
+        const previewNode = findLocalePreviewNode(localeCode);
+        if (!(previewNode instanceof HTMLElement)) return;
+
+        if (!previewNode.hidden) {
+          previewNode.hidden = true;
+          toggleButton.setAttribute('aria-expanded', 'false');
+          toggleButton.querySelector('.ui-button-label')?.replaceChildren(accountCopy.localeProgressShowDetails);
+          return;
+        }
+
+        loadLocalePreview(localeCode, previewNode, toggleButton);
       });
 
       updateSelectOptionLabels();
@@ -1037,6 +1184,37 @@ const accountCopy = {
 
   .account-locale-item-needs-work {
     border-color: color-mix(in srgb, var(--warning) 58%, var(--border));
+  }
+
+  .account-locale-preview-toggle {
+    margin-top: 0.45rem;
+  }
+
+  .account-locale-preview {
+    margin-top: 0.5rem;
+    padding: 0.6rem;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface) 92%, var(--surface2));
+  }
+
+  .account-locale-preview-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .account-locale-preview-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.6rem;
+    background: var(--surface);
+  }
+
+  .account-comment-meta.is-error {
+    color: var(--danger);
   }
 
   .account-feedback.is-error {
