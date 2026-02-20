@@ -121,7 +121,20 @@ const accountCopy = {
   ),
   localeProgressDeployCommand: translate(ui, 'account.localeProgressDeployCommand', {}, 'bash tools/ui_locale_sync.sh'),
   localeProgressDeployCopy: translate(ui, 'account.localeProgressDeployCopy', {}, 'Copy command'),
+  localeProgressDeployReleaseCommand: translate(
+    ui,
+    'account.localeProgressDeployReleaseCommand',
+    {},
+    'bash tools/release_deploy_smoke.sh --with-moderation'
+  ),
+  localeProgressDeployCopyRelease: translate(ui, 'account.localeProgressDeployCopyRelease', {}, 'Copy release command'),
   localeProgressDeployCopyDone: translate(ui, 'account.localeProgressDeployCopyDone', {}, 'Command copied.'),
+  localeProgressDeployCopyReleaseDone: translate(
+    ui,
+    'account.localeProgressDeployCopyReleaseDone',
+    {},
+    'Release command copied.'
+  ),
   localeProgressDeployCopyFailed: translate(
     ui,
     'account.localeProgressDeployCopyFailed',
@@ -310,6 +323,12 @@ const accountCopy = {
           <span class="ui-button-label">{accountCopy.localeProgressDeployCopy}</span>
         </button>
       </div>
+      <div class="account-locale-deploy-command-wrap">
+        <code data-account-locale-release-command>{accountCopy.localeProgressDeployReleaseCommand}</code>
+        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-release-copy>
+          <span class="ui-button-label">{accountCopy.localeProgressDeployCopyRelease}</span>
+        </button>
+      </div>
       <p class="small account-feedback" data-account-locale-deploy-feedback aria-live="polite"></p>
     </div>
 
@@ -406,6 +425,8 @@ const accountCopy = {
       const localeDeployBody = document.querySelector('[data-account-locale-deploy-body]');
       const localeDeployCommand = document.querySelector('[data-account-locale-deploy-command]');
       const localeDeployCopyButton = document.querySelector('[data-account-locale-deploy-copy]');
+      const localeReleaseCommand = document.querySelector('[data-account-locale-release-command]');
+      const localeReleaseCopyButton = document.querySelector('[data-account-locale-release-copy]');
       const localeDeployFeedback = document.querySelector('[data-account-locale-deploy-feedback]');
       const form = document.querySelector('[data-account-language-form]');
       const feedback = document.querySelector('[data-account-feedback]');
@@ -459,6 +480,8 @@ const accountCopy = {
         !(localeDeployBody instanceof HTMLElement) ||
         !(localeDeployCommand instanceof HTMLElement) ||
         !(localeDeployCopyButton instanceof HTMLButtonElement) ||
+        !(localeReleaseCommand instanceof HTMLElement) ||
+        !(localeReleaseCopyButton instanceof HTMLButtonElement) ||
         !(localeDeployFeedback instanceof HTMLElement)
       ) {
         return;
@@ -480,7 +503,11 @@ const accountCopy = {
       const localeProgressByLocale = new Map();
       const localePreviewCache = new Map();
       const deployCommandText = String(accountCopy.localeProgressDeployCommand || 'bash tools/ui_locale_sync.sh');
+      const releaseCommandText = String(
+        accountCopy.localeProgressDeployReleaseCommand || 'bash tools/release_deploy_smoke.sh --with-moderation'
+      );
       localeDeployCommand.textContent = deployCommandText;
+      localeReleaseCommand.textContent = releaseCommandText;
 
       const getPreviewStateLabel = (state) => {
         const normalized = normalizePreviewState(state);
@@ -1293,6 +1320,15 @@ const accountCopy = {
         try {
           await navigator.clipboard.writeText(deployCommandText);
           setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyDone);
+        } catch {
+          setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyFailed, true);
+        }
+      });
+
+      localeReleaseCopyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(releaseCommandText);
+          setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyReleaseDone);
         } catch {
           setLocaleDeployFeedback(accountCopy.localeProgressDeployCopyFailed, true);
         }
