@@ -99,9 +99,24 @@ const blogEngagementCopy = {
   commentApproved: translate(ui, 'blog.commentApproved', {}, 'Your comment is now visible.'),
   commentFailed: translate(ui, 'blog.commentFailed', {}, 'Comment could not be submitted.'),
   likeAuthRequired: translate(ui, 'blog.likeAuthRequired', {}, 'Please login to like this post.'),
+  likeLoginCta: translate(ui, 'blog.likeLoginCta', {}, 'Login to continue'),
   likeForbidden: translate(ui, 'blog.likeForbidden', {}, 'Like action is currently unavailable for this account role.'),
   likeFailed: translate(ui, 'blog.likeFailed', {}, 'Like action failed. Please try again.'),
   turnstileRequired: translate(ui, 'auth.turnstileRequired', {}, 'Please complete the captcha challenge.'),
+  commentMissingEmail: translate(ui, 'blog.commentMissingEmail', {}, 'Please enter email.'),
+  commentMissingBody: translate(ui, 'blog.commentMissingBody', {}, 'Comment body is required.'),
+  commentGuestModeHint: translate(
+    ui,
+    'blog.commentGuestModeHint',
+    {},
+    'Guest mode: email and captcha are required.'
+  ),
+  commentLoggedModeHint: translate(
+    ui,
+    'blog.commentLoggedModeHint',
+    {},
+    'Logged in as {name}. Email and captcha are not required.'
+  ),
   commentAuthHint: translate(
     ui,
     'blog.commentAuthHint',
@@ -171,6 +186,9 @@ const blogEngagementCopy = {
         <span class="ui-button-label">{blogEngagementCopy.like}</span>
       </button>
       <p class="small blog-like-feedback" data-like-feedback aria-live="polite"></p>
+      <a class="small blog-like-login-link" data-like-login-link href={loginPath} hidden>
+        {blogEngagementCopy.likeLoginCta}
+      </a>
     </div>
 
     <div class="blog-comments-wrap">
@@ -181,7 +199,7 @@ const blogEngagementCopy = {
 
     <form class="blog-comment-form gv-stack" data-comment-form novalidate>
       <h3 class="gv-h3">{blogEngagementCopy.leaveComment}</h3>
-      <p class="small">{blogEngagementCopy.commentAuthHint}</p>
+      <p class="small" data-comment-mode-note>{blogEngagementCopy.commentAuthHint}</p>
 
       <label class="blog-comment-field" data-comment-display-wrap>
         <span>{blogEngagementCopy.displayName}</span>
@@ -251,17 +269,25 @@ const blogEngagementCopy = {
       const commentCountEl = root.querySelector('[data-comment-count]');
       const likeButton = root.querySelector('[data-like-toggle]');
       const likeFeedback = root.querySelector('[data-like-feedback]');
+      const likeLoginLink = root.querySelector('[data-like-login-link]');
       const commentForm = root.querySelector('[data-comment-form]');
       const commentSubmitButton = root.querySelector('[data-comment-submit]');
       const commentFeedback = root.querySelector('[data-comment-feedback]');
+      const commentModeNote = root.querySelector('[data-comment-mode-note]');
       const commentEmailWrap = root.querySelector('[data-comment-email-wrap]');
       const commentTurnstileWrap = root.querySelector('[data-comment-turnstile-wrap]');
       const turnstileEnabled = root.dataset.turnstileEnabled === 'true';
 
       if (!(commentList instanceof HTMLElement) || !(commentEmpty instanceof HTMLElement)) return;
       if (!(likeCountEl instanceof HTMLElement) || !(commentCountEl instanceof HTMLElement)) return;
-      if (!(likeButton instanceof HTMLButtonElement) || !(likeFeedback instanceof HTMLElement)) return;
-      if (!(commentForm instanceof HTMLFormElement) || !(commentSubmitButton instanceof HTMLButtonElement) || !(commentFeedback instanceof HTMLElement)) return;
+      if (!(likeButton instanceof HTMLButtonElement) || !(likeFeedback instanceof HTMLElement) || !(likeLoginLink instanceof HTMLAnchorElement)) return;
+      if (
+        !(commentForm instanceof HTMLFormElement) ||
+        !(commentSubmitButton instanceof HTMLButtonElement) ||
+        !(commentFeedback instanceof HTMLElement) ||
+        !(commentModeNote instanceof HTMLElement)
+      )
+        return;
 
       const readSession = () => {
         try {
@@ -282,6 +308,10 @@ const blogEngagementCopy = {
       const setLikeFeedback = (message, isError = false) => {
         likeFeedback.textContent = message;
         likeFeedback.classList.toggle('is-error', isError);
+      };
+
+      const setLikeLoginHint = (visible) => {
+        likeLoginLink.hidden = !visible;
       };
 
       const setCommentFeedback = (message, isError = false) => {
@@ -380,12 +410,22 @@ const blogEngagementCopy = {
 
       const applySessionUI = () => {
         const session = readSession();
+        setLikeLoginHint(false);
         if (commentEmailWrap instanceof HTMLElement) {
           commentEmailWrap.hidden = Boolean(session?.jwt);
         }
         if (commentTurnstileWrap instanceof HTMLElement) {
           commentTurnstileWrap.hidden = Boolean(session?.jwt);
         }
+        if (session?.jwt) {
+          const name = session.username || session.email || 'member';
+          commentModeNote.textContent = t('commentLoggedModeHint', 'Logged in as {name}. Email and captcha are not required.').replace(
+            '{name}',
+            name
+          );
+          return;
+        }
+        commentModeNote.textContent = t('commentGuestModeHint', 'Guest mode: email and captcha are required.');
       };
 
       const readTurnstileToken = () => {
@@ -401,14 +441,13 @@ const blogEngagementCopy = {
         const session = readSession();
         if (!session?.jwt) {
           setLikeFeedback(t('likeAuthRequired', 'Please login to like this post.'), true);
-          window.setTimeout(() => {
-            window.location.assign(loginPath);
-          }, 350);
+          setLikeLoginHint(true);
           return;
         }
 
         likeButton.disabled = true;
         setLikeFeedback('');
+        setLikeLoginHint(false);
 
         try {
           const { response, payload } = await fetchJson(`${authBase}/api/blog-likes/toggle`, {
@@ -454,12 +493,12 @@ const blogEngagementCopy = {
         const turnstileToken = readTurnstileToken();
 
         if (!body) {
-          setCommentFeedback(t('commentBodyPlaceholder', 'Share your thoughts...'), true);
+          setCommentFeedback(t('commentMissingBody', 'Comment body is required.'), true);
           return;
         }
 
         if (!session?.jwt && !email) {
-          setCommentFeedback(t('emailPlaceholder', 'Please enter email'), true);
+          setCommentFeedback(t('commentMissingEmail', 'Please enter email.'), true);
           return;
         }
         if (!session?.jwt && turnstileEnabled && !turnstileToken) {
@@ -564,6 +603,12 @@ const blogEngagementCopy = {
     flex-wrap: wrap;
     gap: 0.65rem;
     align-items: center;
+  }
+
+  .blog-like-login-link {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .blog-like-feedback,
