@@ -10,9 +10,26 @@ async function resolveBlogDetailPath(page: import('@playwright/test').Page): Pro
   return hrefs.find((href) => /^\/en\/blog\/.+\/?$/.test(href) && href !== '/en/blog/') || null;
 }
 
-test('guest blog engagement shows login CTA for like and blocks empty-email comment', async ({ page }) => {
+async function requireBlogDetailPath(page: import('@playwright/test').Page): Promise<string> {
   const blogPath = await resolveBlogDetailPath(page);
-  test.skip(!blogPath, 'No blog detail pages available in current dataset.');
+  expect(
+    blogPath,
+    'No blog detail page found. Seed mock data before running this test (ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed).'
+  ).toBeTruthy();
+  return blogPath as string;
+}
+
+async function dismissConsentBanner(page: import('@playwright/test').Page): Promise<void> {
+  const banner = page.locator('[data-consent-banner]');
+  if ((await banner.count()) === 0) return;
+  if (await banner.isVisible()) {
+    await page.locator('[data-consent-reject]').click();
+  }
+  await expect(banner).toBeHidden();
+}
+
+test('guest blog engagement shows login CTA for like and blocks empty-email comment', async ({ page }) => {
+  const blogPath = await requireBlogDetailPath(page);
 
   let likeToggleCalls = 0;
   let commentSubmitCalls = 0;
@@ -59,7 +76,8 @@ test('guest blog engagement shows login CTA for like and blocks empty-email comm
     });
   });
 
-  await page.goto(blogPath!);
+  await page.goto(blogPath);
+  await dismissConsentBanner(page);
 
   await expect(page.locator('[data-comment-mode-note]')).toContainText('Guest mode');
 
@@ -77,8 +95,7 @@ test('guest blog engagement shows login CTA for like and blocks empty-email comm
 });
 
 test('authenticated blog engagement hides guest fields and submits without email', async ({ page }) => {
-  const blogPath = await resolveBlogDetailPath(page);
-  test.skip(!blogPath, 'No blog detail pages available in current dataset.');
+  const blogPath = await requireBlogDetailPath(page);
 
   let likeToggleCalls = 0;
   let commentSubmitCalls = 0;
@@ -136,7 +153,8 @@ test('authenticated blog engagement hides guest fields and submits without email
     );
   }, ['mock-jwt-token']);
 
-  await page.goto(blogPath!);
+  await page.goto(blogPath);
+  await dismissConsentBanner(page);
 
   await expect(page.locator('[data-comment-mode-note]')).toContainText('Logged in as olmysweet');
   await expect(page.locator('[data-comment-email-wrap]')).toBeHidden();
