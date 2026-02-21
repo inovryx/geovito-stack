@@ -1,5 +1,9 @@
 ---
+import MainLayout from '../../../layouts/MainLayout.astro';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export async function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map((language) => ({
@@ -12,5 +16,499 @@ if (!isSupportedLanguage(lang)) {
   throw new Error(`Unsupported language: ${lang}`);
 }
 
-return Astro.redirect(pathForLanguage(lang, 'login'));
+const ui = getUiMessages(lang);
+const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'dashboard')));
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(pathForLanguage('en', 'dashboard'));
+const loginPath = pathForLanguage(lang, 'login');
+const accountPath = pathForLanguage(lang, 'account');
+const authBaseUrl = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+
+const dashboardCopy = {
+  title: translate(ui, 'dashboard.title', {}, 'Dashboard'),
+  description: translate(ui, 'dashboard.description', {}, 'Review account activity and moderation visibility from one place.'),
+  loginRequiredTitle: translate(ui, 'dashboard.loginRequiredTitle', {}, 'Login required'),
+  loginRequiredBody: translate(
+    ui,
+    'dashboard.loginRequiredBody',
+    {},
+    'Sign in first to load your dashboard session and observation cards.'
+  ),
+  loginCta: translate(ui, 'dashboard.loginCta', {}, 'Go to login'),
+  overviewTitle: translate(ui, 'dashboard.overviewTitle', {}, 'Session overview'),
+  overviewIdentity: translate(ui, 'dashboard.overviewIdentity', {}, 'Identity'),
+  overviewEmail: translate(ui, 'dashboard.overviewEmail', {}, 'Email'),
+  overviewStatus: translate(ui, 'dashboard.overviewStatus', {}, 'Status'),
+  overviewMemberSince: translate(ui, 'dashboard.overviewMemberSince', {}, 'Member since'),
+  overviewLoginAt: translate(ui, 'dashboard.overviewLoginAt', {}, 'Last login'),
+  statusActive: translate(ui, 'dashboard.statusActive', {}, 'Active'),
+  statusPending: translate(ui, 'dashboard.statusPending', {}, 'Pending confirmation'),
+  statusBlocked: translate(ui, 'dashboard.statusBlocked', {}, 'Blocked'),
+  unknown: translate(ui, 'dashboard.unknown', {}, 'Unknown'),
+  preferenceTitle: translate(ui, 'dashboard.preferenceTitle', {}, 'Language preference'),
+  preferenceBody: translate(
+    ui,
+    'dashboard.preferenceBody',
+    {},
+    'Preferred UI language saved to your profile.'
+  ),
+  preferenceValue: translate(ui, 'dashboard.preferenceValue', {}, 'Preferred language'),
+  commentsTitle: translate(ui, 'dashboard.commentsTitle', {}, 'My comment moderation'),
+  commentsBody: translate(
+    ui,
+    'dashboard.commentsBody',
+    {},
+    'Quick status from your latest comments.'
+  ),
+  commentsTotal: translate(ui, 'dashboard.commentsTotal', {}, 'Total'),
+  commentsPending: translate(ui, 'dashboard.commentsPending', {}, 'Pending'),
+  commentsApproved: translate(ui, 'dashboard.commentsApproved', {}, 'Approved'),
+  commentsRejected: translate(ui, 'dashboard.commentsRejected', {}, 'Rejected/Spam'),
+  localeTitle: translate(ui, 'dashboard.localeTitle', {}, 'Translation visibility'),
+  localeBody: translate(
+    ui,
+    'dashboard.localeBody',
+    {},
+    'Locale progress is visible for editorial permissions.'
+  ),
+  localeCoverage: translate(ui, 'dashboard.localeCoverage', {}, 'Coverage ({lang})'),
+  localeGapLocales: translate(ui, 'dashboard.localeGapLocales', {}, 'Locales with gaps'),
+  localeDeployRequired: translate(ui, 'dashboard.localeDeployRequired', {}, 'Locales pending deploy'),
+  localeLimited: translate(ui, 'dashboard.localeLimited', {}, 'Limited: editor/admin permission required'),
+  quickTitle: translate(ui, 'dashboard.quickTitle', {}, 'Quick actions'),
+  quickBody: translate(ui, 'dashboard.quickBody', {}, 'Open account settings or continue product workflows.'),
+  quickAccount: translate(ui, 'dashboard.quickAccount', {}, 'Open account settings'),
+  quickAtlas: translate(ui, 'dashboard.quickAtlas', {}, 'Go to atlas'),
+  quickBlog: translate(ui, 'dashboard.quickBlog', {}, 'Go to blog'),
+  refresh: translate(ui, 'dashboard.refresh', {}, 'Refresh'),
+  loading: translate(ui, 'dashboard.loading', {}, 'Loading dashboard data...'),
+  loadFailed: translate(ui, 'dashboard.loadFailed', {}, 'Some dashboard cards could not be loaded.'),
+};
 ---
+
+<MainLayout
+  title={dashboardCopy.title}
+  description={dashboardCopy.description}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage={lang}
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <h1>{dashboardCopy.title}</h1>
+  <p class="small">{dashboardCopy.description}</p>
+
+  <section class="card panel gv-stack" data-dashboard-logged-out hidden>
+    <h2>{dashboardCopy.loginRequiredTitle}</h2>
+    <p class="small">{dashboardCopy.loginRequiredBody}</p>
+    <a class="ui-button ui-button-primary ui-button-md" href={loginPath}>{dashboardCopy.loginCta}</a>
+  </section>
+
+  <section class="dashboard-shell gv-stack" data-dashboard-authenticated hidden>
+    <div class="dashboard-head">
+      <p class="small" data-dashboard-feedback aria-live="polite">{dashboardCopy.loading}</p>
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-refresh>
+        <span class="ui-button-label">{dashboardCopy.refresh}</span>
+      </button>
+    </div>
+
+    <div class="dashboard-grid">
+      <article class="card panel gv-stack">
+        <h2>{dashboardCopy.overviewTitle}</h2>
+        <dl class="dashboard-dl">
+          <div>
+            <dt>{dashboardCopy.overviewIdentity}</dt>
+            <dd data-dashboard-identity>{dashboardCopy.unknown}</dd>
+          </div>
+          <div>
+            <dt>{dashboardCopy.overviewEmail}</dt>
+            <dd data-dashboard-email>{dashboardCopy.unknown}</dd>
+          </div>
+          <div>
+            <dt>{dashboardCopy.overviewStatus}</dt>
+            <dd data-dashboard-status>{dashboardCopy.unknown}</dd>
+          </div>
+          <div>
+            <dt>{dashboardCopy.overviewMemberSince}</dt>
+            <dd data-dashboard-created>{dashboardCopy.unknown}</dd>
+          </div>
+          <div>
+            <dt>{dashboardCopy.overviewLoginAt}</dt>
+            <dd data-dashboard-loginat>{dashboardCopy.unknown}</dd>
+          </div>
+        </dl>
+      </article>
+
+      <article class="card panel gv-stack">
+        <h2>{dashboardCopy.preferenceTitle}</h2>
+        <p class="small">{dashboardCopy.preferenceBody}</p>
+        <p class="dashboard-kpi">
+          <span>{dashboardCopy.preferenceValue}</span>
+          <strong data-dashboard-preferred>{dashboardCopy.unknown}</strong>
+        </p>
+      </article>
+
+      <article class="card panel gv-stack">
+        <h2>{dashboardCopy.commentsTitle}</h2>
+        <p class="small">{dashboardCopy.commentsBody}</p>
+        <div class="dashboard-kpi-grid">
+          <p class="dashboard-kpi"><span>{dashboardCopy.commentsTotal}</span><strong data-dashboard-comments-total>0</strong></p>
+          <p class="dashboard-kpi"><span>{dashboardCopy.commentsPending}</span><strong data-dashboard-comments-pending>0</strong></p>
+          <p class="dashboard-kpi"><span>{dashboardCopy.commentsApproved}</span><strong data-dashboard-comments-approved>0</strong></p>
+          <p class="dashboard-kpi"><span>{dashboardCopy.commentsRejected}</span><strong data-dashboard-comments-rejected>0</strong></p>
+        </div>
+      </article>
+
+      <article class="card panel gv-stack">
+        <h2>{dashboardCopy.localeTitle}</h2>
+        <p class="small">{dashboardCopy.localeBody}</p>
+        <div class="dashboard-kpi-grid">
+          <p class="dashboard-kpi"><span>{dashboardCopy.localeCoverage.replace('{lang}', lang.toUpperCase())}</span><strong data-dashboard-locale-coverage>0%</strong></p>
+          <p class="dashboard-kpi"><span>{dashboardCopy.localeGapLocales}</span><strong data-dashboard-locale-gaps>0</strong></p>
+          <p class="dashboard-kpi"><span>{dashboardCopy.localeDeployRequired}</span><strong data-dashboard-locale-deploy>0</strong></p>
+        </div>
+        <p class="small" data-dashboard-locale-note hidden>{dashboardCopy.localeLimited}</p>
+      </article>
+
+      <article class="card panel gv-stack">
+        <h2>{dashboardCopy.quickTitle}</h2>
+        <p class="small">{dashboardCopy.quickBody}</p>
+        <div class="dashboard-actions">
+          <a class="ui-button ui-button-secondary ui-button-sm" href={accountPath}>
+            <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
+          </a>
+          <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'atlas')}>
+            <span class="ui-button-label">{dashboardCopy.quickAtlas}</span>
+          </a>
+          <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'blog')}>
+            <span class="ui-button-label">{dashboardCopy.quickBlog}</span>
+          </a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ authBaseUrl, dashboardCopy }}>
+    (() => {
+      const loggedOutPanel = document.querySelector('[data-dashboard-logged-out]');
+      const authedPanel = document.querySelector('[data-dashboard-authenticated]');
+      const refreshButton = document.querySelector('[data-dashboard-refresh]');
+      const feedback = document.querySelector('[data-dashboard-feedback]');
+      const localeNote = document.querySelector('[data-dashboard-locale-note]');
+
+      const identityNode = document.querySelector('[data-dashboard-identity]');
+      const emailNode = document.querySelector('[data-dashboard-email]');
+      const statusNode = document.querySelector('[data-dashboard-status]');
+      const createdNode = document.querySelector('[data-dashboard-created]');
+      const loginAtNode = document.querySelector('[data-dashboard-loginat]');
+      const preferredNode = document.querySelector('[data-dashboard-preferred]');
+      const commentsTotalNode = document.querySelector('[data-dashboard-comments-total]');
+      const commentsPendingNode = document.querySelector('[data-dashboard-comments-pending]');
+      const commentsApprovedNode = document.querySelector('[data-dashboard-comments-approved]');
+      const commentsRejectedNode = document.querySelector('[data-dashboard-comments-rejected]');
+      const localeCoverageNode = document.querySelector('[data-dashboard-locale-coverage]');
+      const localeGapsNode = document.querySelector('[data-dashboard-locale-gaps]');
+      const localeDeployNode = document.querySelector('[data-dashboard-locale-deploy]');
+
+      const toNode = (value) => (value instanceof HTMLElement ? value : null);
+      const setText = (node, value) => {
+        const el = toNode(node);
+        if (!el) return;
+        el.textContent = String(value ?? '');
+      };
+
+      const setFeedback = (message, isError = false) => {
+        const el = toNode(feedback);
+        if (!el) return;
+        el.textContent = String(message || '');
+        el.classList.toggle('is-error', Boolean(isError));
+      };
+
+      const readSession = () => {
+        try {
+          const fromLocal = localStorage.getItem('geovito_auth_session');
+          const fromSession = sessionStorage.getItem('geovito_auth_session');
+          const raw = fromLocal || fromSession;
+          if (!raw) return null;
+
+          if (!fromLocal && fromSession) {
+            localStorage.setItem('geovito_auth_session', fromSession);
+          }
+
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          const jwt = typeof parsed.jwt === 'string' ? parsed.jwt.trim() : '';
+          if (!jwt) return null;
+
+          return {
+            jwt,
+            email: typeof parsed.email === 'string' ? parsed.email.trim() : '',
+            username: typeof parsed.username === 'string' ? parsed.username.trim() : '',
+            loginAt: typeof parsed.loginAt === 'string' ? parsed.loginAt.trim() : '',
+          };
+        } catch {
+          return null;
+        }
+      };
+
+      const formatDate = (value) => {
+        if (!value) return dashboardCopy.unknown;
+        const date = new Date(String(value));
+        if (Number.isNaN(date.getTime())) return dashboardCopy.unknown;
+        try {
+          return new Intl.DateTimeFormat(document.documentElement.lang || 'en', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          }).format(date);
+        } catch {
+          return date.toISOString();
+        }
+      };
+
+      const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
+
+      const loadDashboard = async (session) => {
+        setFeedback(dashboardCopy.loading);
+
+        setText(identityNode, session.username || session.email || dashboardCopy.unknown);
+        setText(emailNode, session.email || dashboardCopy.unknown);
+        setText(loginAtNode, formatDate(session.loginAt));
+        setText(statusNode, dashboardCopy.statusActive);
+        setText(createdNode, dashboardCopy.unknown);
+        setText(preferredNode, normalizeLanguage(document.documentElement.lang || 'en').toUpperCase());
+
+        setText(commentsTotalNode, '0');
+        setText(commentsPendingNode, '0');
+        setText(commentsApprovedNode, '0');
+        setText(commentsRejectedNode, '0');
+
+        setText(localeCoverageNode, '0%');
+        setText(localeGapsNode, '0');
+        setText(localeDeployNode, '0');
+        if (toNode(localeNote)) {
+          toNode(localeNote).hidden = true;
+        }
+
+        let hadErrors = false;
+
+        const authHeaders = {
+          Accept: 'application/json',
+          Authorization: `Bearer ${session.jwt}`,
+        };
+
+        try {
+          const response = await fetch(`${authBaseUrl}/api/users/me`, { headers: authHeaders });
+          if (response.ok) {
+            const payload = await response.json().catch(() => null);
+            setText(identityNode, payload?.username || session.username || session.email || dashboardCopy.unknown);
+            setText(emailNode, payload?.email || session.email || dashboardCopy.unknown);
+            setText(createdNode, formatDate(payload?.createdAt));
+            if (payload?.blocked === true) {
+              setText(statusNode, dashboardCopy.statusBlocked);
+            } else if (payload?.confirmed === false) {
+              setText(statusNode, dashboardCopy.statusPending);
+            } else {
+              setText(statusNode, dashboardCopy.statusActive);
+            }
+          } else {
+            hadErrors = true;
+          }
+        } catch {
+          hadErrors = true;
+        }
+
+        try {
+          const response = await fetch(`${authBaseUrl}/api/user-preferences/me`, { headers: authHeaders });
+          if (response.ok) {
+            const payload = await response.json().catch(() => null);
+            const preferred = normalizeLanguage(payload?.data?.preferred_ui_language || '');
+            if (preferred) {
+              setText(preferredNode, preferred.toUpperCase());
+            }
+          } else {
+            hadErrors = true;
+          }
+        } catch {
+          hadErrors = true;
+        }
+
+        try {
+          const response = await fetch(`${authBaseUrl}/api/blog-comments/me/list?limit=30`, { headers: authHeaders });
+          if (response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            const items = Array.isArray(payload?.data) ? payload.data : [];
+            const pending = items.filter((item) => String(item?.status || '').toLowerCase() === 'pending').length;
+            const approved = items.filter((item) => String(item?.status || '').toLowerCase() === 'approved').length;
+            const rejected = items.filter((item) => {
+              const status = String(item?.status || '').toLowerCase();
+              return status === 'rejected' || status === 'spam' || status === 'deleted';
+            }).length;
+
+            setText(commentsTotalNode, String(items.length));
+            setText(commentsPendingNode, String(pending));
+            setText(commentsApprovedNode, String(approved));
+            setText(commentsRejectedNode, String(rejected));
+          } else {
+            hadErrors = true;
+          }
+        } catch {
+          hadErrors = true;
+        }
+
+        try {
+          const response = await fetch(`${authBaseUrl}/api/ui-locales/meta/progress?reference_locale=en`, { headers: authHeaders });
+          if (response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            const rows = Array.isArray(payload?.data?.locales) ? payload.data.locales : [];
+            const summary = payload?.data?.summary && typeof payload.data.summary === 'object' ? payload.data.summary : {};
+            const currentLocale = normalizeLanguage(document.documentElement.lang || 'en');
+            const currentRow = rows.find((row) => normalizeLanguage(row?.ui_locale) === currentLocale) || null;
+
+            const coverage = Number(currentRow?.coverage_percent || 0);
+            const gapLocales = rows.filter((row) => Number(row?.missing_keys || 0) + Number(row?.untranslated_keys || 0) > 0).length;
+            const deployRequired = Number(summary?.deploy_required_count || 0);
+
+            setText(localeCoverageNode, `${Math.round(coverage * 100) / 100}%`);
+            setText(localeGapsNode, String(gapLocales));
+            setText(localeDeployNode, String(deployRequired));
+          } else if (response.status === 401 || response.status === 403) {
+            if (toNode(localeNote)) {
+              toNode(localeNote).hidden = false;
+            }
+          } else {
+            hadErrors = true;
+          }
+        } catch {
+          hadErrors = true;
+        }
+
+        if (hadErrors) {
+          setFeedback(dashboardCopy.loadFailed, true);
+        } else {
+          setFeedback('');
+        }
+      };
+
+      const init = async () => {
+        const session = readSession();
+        if (!session) {
+          if (toNode(loggedOutPanel)) toNode(loggedOutPanel).hidden = false;
+          if (toNode(authedPanel)) toNode(authedPanel).hidden = true;
+          return;
+        }
+
+        if (toNode(loggedOutPanel)) toNode(loggedOutPanel).hidden = true;
+        if (toNode(authedPanel)) toNode(authedPanel).hidden = false;
+
+        await loadDashboard(session);
+
+        if (refreshButton instanceof HTMLButtonElement) {
+          refreshButton.addEventListener('click', async () => {
+            refreshButton.disabled = true;
+            try {
+              await loadDashboard(session);
+            } finally {
+              refreshButton.disabled = false;
+            }
+          });
+        }
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+      } else {
+        void init();
+      }
+    })();
+  </script>
+</MainLayout>
+
+<style>
+  .dashboard-shell {
+    gap: 1rem;
+  }
+
+  .dashboard-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    gap: 0.875rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-dl {
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-dl dt {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-dl dd {
+    margin: 0.25rem 0 0;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .dashboard-kpi-grid {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-kpi {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface-2);
+  }
+
+  .dashboard-kpi span {
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+  }
+
+  .dashboard-kpi strong {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .dashboard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 960px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-dl {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

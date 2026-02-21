@@ -10,14 +10,21 @@ interface Props {
 }
 
 const { currentLanguage, languageLinks, ui } = Astro.props as Props;
+const isTruthy = (value: string | undefined) => ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+const siteLockdownEnabled = isTruthy(
+  (import.meta.env.PUBLIC_SITE_LOCKDOWN_ENABLED as string | undefined) || process.env.PUBLIC_SITE_LOCKDOWN_ENABLED
+);
 const loginPath = `/${currentLanguage}/login/`;
 const registerPath = `/${currentLanguage}/register/`;
+const dashboardPath = `/${currentLanguage}/dashboard/`;
 const accountPath = `/${currentLanguage}/account/`;
 const loginLabel = translate(ui, 'auth.login', {}, 'Login');
 const registerLabel = translate(ui, 'auth.register', {}, 'Register');
+const dashboardLabel = translate(ui, 'dashboard.title', {}, 'Dashboard');
 const accountLabel = translate(ui, 'nav.account', {}, 'Account');
 const logoutLabel = translate(ui, 'auth.logout', {}, 'Logout');
 const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
+const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
 ---
 
 <div class="left-sidebar-stack">
@@ -35,10 +42,19 @@ const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
 
     <div class="sidebar-auth-row" data-auth-logged-out>
       <a href={loginPath} class="small-link">{loginLabel}</a>
-      <a href={registerPath} class="small-link">{registerLabel}</a>
+      {
+        siteLockdownEnabled ? (
+          <span class="small-link sidebar-auth-disabled" aria-disabled="true">
+            {lockdownHint}
+          </span>
+        ) : (
+          <a href={registerPath} class="small-link">{registerLabel}</a>
+        )
+      }
     </div>
 
     <div class="sidebar-auth-row" data-auth-logged-in hidden>
+      <a href={dashboardPath} class="small-link">{dashboardLabel}</a>
       <a href={accountPath} class="small-link">{accountLabel}</a>
       <button type="button" class="small-link sidebar-auth-logout" data-auth-logout>{logoutLabel}</button>
     </div>
@@ -145,3 +161,11 @@ const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
     init();
   })();
 </script>
+
+<style>
+.sidebar-auth-disabled {
+    color: var(--ink-muted);
+    cursor: default;
+    text-decoration: none;
+}
+</style>

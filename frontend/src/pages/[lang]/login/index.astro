@@ -31,13 +31,28 @@ const authBaseUrl = resolveStrapiBaseUrl({
 });
 const isTruthy = (value: string | undefined) =>
   ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
-const localRegisterEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_LOCAL_REGISTER_ENABLED as string | undefined || 'true');
-const googleEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_GOOGLE_ENABLED as string | undefined);
-const facebookEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_FACEBOOK_ENABLED as string | undefined);
+const siteLockdownEnabled = isTruthy(
+  (import.meta.env.PUBLIC_SITE_LOCKDOWN_ENABLED as string | undefined) || process.env.PUBLIC_SITE_LOCKDOWN_ENABLED
+);
+const localRegisterEnabled =
+  !siteLockdownEnabled && isTruthy((import.meta.env.PUBLIC_AUTH_LOCAL_REGISTER_ENABLED as string | undefined) || 'true');
+const googleEnabled = !siteLockdownEnabled && isTruthy(import.meta.env.PUBLIC_AUTH_GOOGLE_ENABLED as string | undefined);
+const facebookEnabled = !siteLockdownEnabled && isTruthy(import.meta.env.PUBLIC_AUTH_FACEBOOK_ENABLED as string | undefined);
+const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim();
+const turnstileEnabled = !siteLockdownEnabled && turnstileSiteKey.length > 0;
 const googleUrl = `${authBaseUrl}/api/connect/google`;
 const facebookUrl = `${authBaseUrl}/api/connect/facebook`;
 const availableLanguages = SUPPORTED_LANGUAGES;
-const accountPath = pathForLanguage(lang, 'account');
+const dashboardPath = pathForLanguage(lang, 'dashboard');
+const loginMessages = {
+  required: translate(ui, 'auth.loginRequired', {}, 'Email and password are required.'),
+  trying: translate(ui, 'auth.loginTrying', {}, 'Trying to sign in...'),
+  failed: translate(ui, 'auth.loginFailed', {}, 'Login failed. Please check your credentials and try again.'),
+  storageError: translate(ui, 'auth.loginStorageError', {}, 'Session could not be saved in your browser.'),
+  successRedirect: translate(ui, 'auth.loginSuccessRedirect', {}, 'Login successful. Redirecting...'),
+  networkError: translate(ui, 'auth.networkError', {}, 'Network error. Please try again.'),
+  turnstileRequired: translate(ui, 'auth.turnstileRequired', {}, 'Please complete the captcha challenge.'),
+};
 ---
 
 <MainLayout
@@ -83,6 +98,14 @@ const accountPath = pathForLanguage(lang, 'account');
         <a href={pathForLanguage(lang, 'forgot-password')}>{translate(ui, 'auth.forgotPassword', {}, 'Forgot password?')}</a>
       </p>
 
+      {
+        turnstileEnabled ? (
+          <div class="auth-turnstile">
+            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto"></div>
+          </div>
+        ) : null
+      }
+
       <button type="submit" class="ui-button ui-button-primary ui-button-md">
         <span class="ui-button-label">{translate(ui, 'auth.login', {}, 'Login')}</span>
       </button>
@@ -108,7 +131,11 @@ const accountPath = pathForLanguage(lang, 'account');
       }
       {
         !googleEnabled && !facebookEnabled ? (
-          <p class="small">{translate(ui, 'auth.socialDisabled', {}, 'Google/Facebook login will appear when enabled in environment settings.')}</p>
+          <p class="small">
+            {siteLockdownEnabled
+              ? translate(ui, 'auth.lockdownHint', {}, 'Test mode active')
+              : translate(ui, 'auth.socialDisabled', {}, 'Google/Facebook login will appear when enabled in environment settings.')}
+          </p>
         ) : null
       }
     </div>
@@ -131,14 +158,16 @@ const accountPath = pathForLanguage(lang, 'account');
     />
   </section>
 
-  <script is:inline define:vars={{ lang, availableLanguages, accountPath }}>
+  {turnstileEnabled ? <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> : null}
+
+  <script is:inline define:vars={{ lang, availableLanguages, dashboardPath, turnstileEnabled, loginMessages }}>
     (() => {
       try {
         const raw = localStorage.getItem('geovito_auth_session') || sessionStorage.getItem('geovito_auth_session');
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed && typeof parsed.jwt === 'string' && parsed.jwt.trim()) {
-            window.location.replace(accountPath);
+            window.location.replace(dashboardPath);
             return;
           }
         }
@@ -158,6 +187,12 @@ const accountPath = pathForLanguage(lang, 'account');
         feedback.classList.toggle('is-error', isError);
       };
 
+      const readTurnstileToken = () => {
+        const tokenInput = form.querySelector('input[name="cf-turnstile-response"]');
+        if (!(tokenInput instanceof HTMLInputElement)) return '';
+        return String(tokenInput.value || '').trim();
+      };
+
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
@@ -165,11 +200,17 @@ const accountPath = pathForLanguage(lang, 'account');
         const password = String(formData.get('password') || '');
 
         if (!identifier || !password) {
-          setFeedback('Email ve sifre zorunludur.', true);
+          setFeedback(loginMessages.required, true);
           return;
         }
 
-        setFeedback('Giris deneniyor...');
+        const turnstileToken = readTurnstileToken();
+        if (turnstileEnabled && !turnstileToken) {
+          setFeedback(loginMessages.turnstileRequired, true);
+          return;
+        }
+
+        setFeedback(loginMessages.trying);
         try {
           const response = await fetch(`${authBase}/api/auth/local`, {
             method: 'POST',
@@ -177,7 +218,11 @@ const accountPath = pathForLanguage(lang, 'account');
               'Content-Type': 'application/json',
               Accept: 'application/json',
             },
-            body: JSON.stringify({ identifier, password }),
+            body: JSON.stringify({
+              identifier,
+              password,
+              'cf-turnstile-response': turnstileToken,
+            }),
           });
 
           const payload = await response.json().catch(() => ({}));
@@ -185,7 +230,7 @@ const accountPath = pathForLanguage(lang, 'account');
             const message =
               payload?.error?.message ||
               payload?.message ||
-              'Giris basarisiz. Bilgilerinizi kontrol edip tekrar deneyin.';
+              loginMessages.failed;
             setFeedback(message, true);
             return;
           }
@@ -202,7 +247,7 @@ const accountPath = pathForLanguage(lang, 'account');
             // Backward compatibility for any legacy reads during transition.
             sessionStorage.setItem('geovito_auth_session', rawSession);
           } catch {
-            setFeedback('Oturum kaydedilemedi. Tarayici depolama ayarlarini kontrol edin.', true);
+            setFeedback(loginMessages.storageError, true);
             return;
           }
 
@@ -233,12 +278,12 @@ const accountPath = pathForLanguage(lang, 'account');
             localStorage.setItem('geovito.ui_lang', redirectLanguage);
           }
 
-          setFeedback('Giris basarili. Yonlendiriliyorsunuz...');
+          setFeedback(loginMessages.successRedirect);
           window.setTimeout(() => {
-            window.location.assign(`/${redirectLanguage}/`);
+          window.location.assign(`/${redirectLanguage}/dashboard/`);
           }, 500);
         } catch (error) {
-          setFeedback('Baglanti hatasi olustu. Lutfen tekrar deneyin.', true);
+          setFeedback(loginMessages.networkError, true);
         }
       });
     })();
