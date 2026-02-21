@@ -26,5 +26,21 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/blog-comments/moderation/list',
+      handler: 'blog-comment.moderationList',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
+      path: '/blog-comments/moderation/set',
+      handler: 'blog-comment.moderationSet',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

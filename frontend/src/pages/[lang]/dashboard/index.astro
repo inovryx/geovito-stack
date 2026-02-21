@@ -73,6 +73,26 @@ const dashboardCopy = {
   commentsPending: translate(ui, 'dashboard.commentsPending', {}, 'Pending'),
   commentsApproved: translate(ui, 'dashboard.commentsApproved', {}, 'Approved'),
   commentsRejected: translate(ui, 'dashboard.commentsRejected', {}, 'Rejected/Spam'),
+  moderationQueueTitle: translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue'),
+  moderationQueueBody: translate(
+    ui,
+    'dashboard.moderationQueueBody',
+    {},
+    'Editor/admin roles can approve, reject, or mark spam directly from dashboard.'
+  ),
+  moderationQueueEmpty: translate(ui, 'dashboard.moderationQueueEmpty', {}, 'No pending comments in queue.'),
+  moderationApprove: translate(ui, 'dashboard.moderationApprove', {}, 'Approve'),
+  moderationReject: translate(ui, 'dashboard.moderationReject', {}, 'Reject'),
+  moderationSpam: translate(ui, 'dashboard.moderationSpam', {}, 'Spam'),
+  moderationNotesPrompt: translate(
+    ui,
+    'dashboard.moderationNotesPrompt',
+    {},
+    'Enter moderation note (required for reject/spam):'
+  ),
+  moderationNotesRequired: translate(ui, 'dashboard.moderationNotesRequired', {}, 'Moderation note is required for this action.'),
+  moderationActionSuccess: translate(ui, 'dashboard.moderationActionSuccess', {}, 'Moderation update saved.'),
+  moderationActionFailed: translate(ui, 'dashboard.moderationActionFailed', {}, 'Moderation update failed.'),
   localeTitle: translate(ui, 'dashboard.localeTitle', {}, 'Translation visibility'),
   localeBody: translate(
     ui,
@@ -200,6 +220,11 @@ const dashboardCopy = {
           <p class="dashboard-kpi"><span>{dashboardCopy.commentsRejected}</span><strong data-dashboard-comments-rejected>0</strong></p>
         </div>
         <ul class="dashboard-mini-list" data-dashboard-comments-recent hidden></ul>
+        <div class="gv-stack dashboard-moderation-wrap" data-dashboard-moderation-wrap hidden>
+          <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
+          <p class="small">{dashboardCopy.moderationQueueBody}</p>
+          <ul class="dashboard-mini-list" data-dashboard-moderation-list></ul>
+        </div>
       </article>
 
       <article class="card panel gv-stack">
@@ -301,6 +326,8 @@ const dashboardCopy = {
       const controlNote = document.querySelector('[data-dashboard-control-note]');
       const adminLinks = Array.from(document.querySelectorAll('[data-dashboard-admin-link]'));
       const copyReleaseButton = document.querySelector('[data-dashboard-copy-release]');
+      const moderationWrapNode = document.querySelector('[data-dashboard-moderation-wrap]');
+      const moderationListNode = document.querySelector('[data-dashboard-moderation-list]');
 
       const identityNode = document.querySelector('[data-dashboard-identity]');
       const emailNode = document.querySelector('[data-dashboard-email]');
@@ -320,6 +347,9 @@ const dashboardCopy = {
       const localeCoverageNode = document.querySelector('[data-dashboard-locale-coverage]');
       const localeGapsNode = document.querySelector('[data-dashboard-locale-gaps]');
       const localeDeployNode = document.querySelector('[data-dashboard-locale-deploy]');
+      let currentSession = null;
+      let canRunModeration = false;
+      let isLoading = false;
 
       const toNode = (value) => (value instanceof HTMLElement ? value : null);
       const setText = (node, value) => {
@@ -334,6 +364,14 @@ const dashboardCopy = {
         el.textContent = String(message || '');
         el.classList.toggle('is-error', Boolean(isError));
       };
+
+      const escapeHtml = (value) =>
+        String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
 
       const readSession = () => {
         try {
@@ -406,6 +444,7 @@ const dashboardCopy = {
         const isOwner = normalizedRole === 'owner';
         const isAdmin = isOwner || normalizedRole === 'admin';
         const isEditor = isAdmin || normalizedRole === 'editor';
+        canRunModeration = isEditor;
 
         const roleLabel = isOwner
           ? dashboardCopy.accessOwner
@@ -432,6 +471,16 @@ const dashboardCopy = {
         if (toNode(controlNote)) {
           toNode(controlNote).hidden = isAdmin;
         }
+
+        if (toNode(moderationWrapNode)) {
+          toNode(moderationWrapNode).hidden = !canRunModeration;
+        }
+
+        return {
+          isOwner,
+          isAdmin,
+          isEditor,
+        };
       };
 
       const renderRecentComments = (items) => {
@@ -457,7 +506,90 @@ const dashboardCopy = {
         host.appendChild(fragment);
       };
 
+      const renderModerationQueue = (items) => {
+        const host = toNode(moderationListNode);
+        if (!host) return;
+
+        host.innerHTML = '';
+        const list = Array.isArray(items) ? items.slice(0, 8) : [];
+        if (!canRunModeration || list.length === 0) {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          row.innerHTML = `<span>${escapeHtml(dashboardCopy.moderationQueueEmpty)}</span>`;
+          host.appendChild(row);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        list.forEach((item) => {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item dashboard-moderation-item';
+          const status = String(item?.status || '').trim().toUpperCase() || '-';
+          const body = String(item?.body || '').trim() || '-';
+          const compactBody = body.length > 120 ? `${body.slice(0, 117)}...` : body;
+          const commentId = String(item?.comment_id || '').trim();
+          const author = String(item?.display_name || item?.source || '').trim() || '-';
+          row.innerHTML = `
+            <strong>${escapeHtml(status)} · ${escapeHtml(author)}</strong>
+            <span>${escapeHtml(compactBody)}</span>
+            <div class="dashboard-action-row">
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-moderate="approved" data-comment-id="${escapeHtml(commentId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.moderationApprove)}</span>
+              </button>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-moderate="rejected" data-comment-id="${escapeHtml(commentId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.moderationReject)}</span>
+              </button>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-moderate="spam" data-comment-id="${escapeHtml(commentId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.moderationSpam)}</span>
+              </button>
+            </div>
+          `;
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+      };
+
+      const runModerationAction = async (session, commentId, status) => {
+        if (!session?.jwt || !commentId || !status) return false;
+
+        let moderationNotes = '';
+        if (status === 'rejected' || status === 'spam') {
+          moderationNotes = String(window.prompt(dashboardCopy.moderationNotesPrompt, '') || '').trim();
+          if (!moderationNotes) {
+            setFeedback(dashboardCopy.moderationNotesRequired, true);
+            return false;
+          }
+        }
+
+        const response = await fetch(`${authBaseUrl}/api/blog-comments/moderation/set`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.jwt}`,
+          },
+          body: JSON.stringify({
+            comment_id: commentId,
+            status,
+            moderation_notes: moderationNotes || undefined,
+          }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          const message = String(payload?.error?.message || dashboardCopy.moderationActionFailed);
+          setFeedback(message, true);
+          return false;
+        }
+
+        setFeedback(dashboardCopy.moderationActionSuccess);
+        return true;
+      };
+
       const loadDashboard = async (session) => {
+        if (isLoading) return;
+        isLoading = true;
         setFeedback(dashboardCopy.loading);
 
         setText(identityNode, session.username || session.email || dashboardCopy.unknown);
@@ -468,6 +600,7 @@ const dashboardCopy = {
         setText(preferredNode, normalizeLanguage(document.documentElement.lang || 'en').toUpperCase());
         applyAccessView('member');
         renderRecentComments([]);
+        renderModerationQueue([]);
 
         setText(commentsTotalNode, '0');
         setText(commentsPendingNode, '0');
@@ -512,7 +645,7 @@ const dashboardCopy = {
           hadErrors = true;
         }
 
-        applyAccessView(inferRole(userPayload, session));
+        const access = applyAccessView(inferRole(userPayload, session));
 
         try {
           const response = await fetch(`${authBaseUrl}/api/user-preferences/me`, { headers: authHeaders });
@@ -553,6 +686,26 @@ const dashboardCopy = {
           hadErrors = true;
         }
 
+        if (access.isEditor) {
+          try {
+            const response = await fetch(
+              `${authBaseUrl}/api/blog-comments/moderation/list?status=pending&limit=8`,
+              { headers: authHeaders }
+            );
+            if (response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              const items = Array.isArray(payload?.data) ? payload.data : [];
+              renderModerationQueue(items);
+            } else {
+              hadErrors = true;
+            }
+          } catch {
+            hadErrors = true;
+          }
+        } else {
+          renderModerationQueue([]);
+        }
+
         try {
           const response = await fetch(`${authBaseUrl}/api/ui-locales/meta/progress?reference_locale=en`, { headers: authHeaders });
           if (response.ok) {
@@ -585,6 +738,7 @@ const dashboardCopy = {
         } else {
           setFeedback('');
         }
+        isLoading = false;
       };
 
       const init = async () => {
@@ -595,6 +749,7 @@ const dashboardCopy = {
           return;
         }
 
+        currentSession = session;
         if (toNode(loggedOutPanel)) toNode(loggedOutPanel).hidden = true;
         if (toNode(authedPanel)) toNode(authedPanel).hidden = false;
 
@@ -619,6 +774,30 @@ const dashboardCopy = {
               setFeedback(dashboardCopy.controlReleaseCopied);
             } catch {
               setFeedback(`${dashboardCopy.controlReleaseCopyFailed} ${command}`, true);
+            }
+          });
+        }
+
+        if (moderationListNode instanceof HTMLElement) {
+          moderationListNode.addEventListener('click', async (event) => {
+            const target = event.target;
+            const button =
+              target instanceof HTMLElement ? target.closest('[data-dashboard-moderate]') : null;
+            if (!(button instanceof HTMLButtonElement)) return;
+            if (!canRunModeration || !currentSession) return;
+
+            const commentId = String(button.dataset.commentId || '').trim();
+            const status = String(button.dataset.dashboardModerate || '').trim().toLowerCase();
+            if (!commentId || !status) return;
+
+            button.disabled = true;
+            try {
+              const ok = await runModerationAction(currentSession, commentId, status);
+              if (ok) {
+                await loadDashboard(currentSession);
+              }
+            } finally {
+              button.disabled = false;
             }
           });
         }
@@ -759,6 +938,26 @@ const dashboardCopy = {
     font-size: 0.85rem;
     color: var(--ink);
     line-height: 1.35;
+  }
+
+  .dashboard-mini-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .dashboard-moderation-wrap {
+    padding-top: 0.25rem;
+  }
+
+  .dashboard-moderation-item {
+    gap: 0.45rem;
+  }
+
+  .dashboard-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
   }
 
   @media (max-width: 960px) {

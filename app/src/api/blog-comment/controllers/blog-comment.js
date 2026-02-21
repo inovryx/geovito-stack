@@ -20,7 +20,11 @@ const { resolveActor } = require('../../../modules/domain-logging/context');
 
 const UID = 'api::blog-comment.blog-comment';
 const BLOG_POST_UID = 'api::blog-post.blog-post';
+const USERS_PERMISSIONS_USER_UID = 'plugin::users-permissions.user';
 const COMMENT_STATUS_SET = new Set(Object.values(BLOG_COMMENT_STATUS));
+const OWNER_EMAIL_HINT = String(
+  process.env.OWNER_EMAIL || process.env.PUBLIC_OWNER_EMAIL || ''
+).trim().toLowerCase();
 
 const toPublicComment = (entry) => {
   if (!entry) return null;
@@ -78,10 +82,91 @@ const parseIntSafe = (value, fallback, min, max) => {
 };
 
 const normalizeSortOrder = (value) => (String(value || '').toLowerCase() === 'asc' ? 'asc' : 'desc');
+const normalizeLower = (value) => String(value || '').trim().toLowerCase();
 const normalizeCommentStatus = (value) => {
-  const normalized = String(value || '').trim().toLowerCase();
+  const normalized = normalizeLower(value);
   if (!normalized) return null;
   return COMMENT_STATUS_SET.has(normalized) ? normalized : null;
+};
+
+const findCommentByCommentId = async (strapi, commentId) => {
+  const entries = await strapi.entityService.findMany(UID, {
+    publicationState: 'preview',
+    filters: {
+      comment_id: commentId,
+    },
+    fields: [
+      'id',
+      'comment_id',
+      'body',
+      'language',
+      'source',
+      'status',
+      'blog_post_ref',
+      'guest_display_name',
+      'owner_username',
+      'moderation_notes',
+      'reviewed_at',
+      'reviewed_by',
+      'createdAt',
+      'updatedAt',
+    ],
+    limit: 1,
+  });
+
+  return entries[0] || null;
+};
+
+const resolveModerationIdentity = async (strapi, ctx) => {
+  const baseUser = ctx.state?.user?.id ? ctx.state.user : await authenticateFromBearer(strapi, ctx);
+  if (!baseUser?.id) return null;
+
+  const user = await strapi.entityService.findOne(USERS_PERMISSIONS_USER_UID, Number(baseUser.id), {
+    fields: ['id', 'email', 'username', 'confirmed', 'blocked'],
+    populate: {
+      role: {
+        fields: ['id', 'type', 'name'],
+      },
+    },
+  });
+
+  if (!user || user.blocked === true) return null;
+
+  const roleRaw = normalizeLower(user?.role?.type || user?.role?.name || '');
+  const isAdmin = roleRaw.includes('super') || roleRaw.includes('admin');
+  const isEditor = isAdmin || roleRaw.includes('editor');
+  const isOwner = Boolean(OWNER_EMAIL_HINT) && normalizeLower(user.email) === OWNER_EMAIL_HINT;
+  const canModerate = isEditor || isOwner;
+
+  return {
+    user,
+    canModerate,
+    roleRaw,
+    isAdmin,
+    isEditor,
+    isOwner,
+  };
+};
+
+const toModerationComment = (entry) => {
+  if (!entry) return null;
+  return {
+    comment_id: entry.comment_id,
+    body: entry.body,
+    language: entry.language || 'en',
+    source: entry.source,
+    status: entry.status,
+    blog_post_ref: entry.blog_post_ref || null,
+    display_name:
+      entry.source === BLOG_COMMENT_SOURCE.REGISTERED
+        ? entry.owner_username || null
+        : entry.guest_display_name || null,
+    moderation_notes: entry.moderation_notes || null,
+    reviewed_at: entry.reviewed_at || null,
+    reviewed_by: entry.reviewed_by || null,
+    created_at: entry.createdAt,
+    updated_at: entry.updatedAt,
+  };
 };
 
 module.exports = createCoreController(UID, ({ strapi }) => ({
@@ -216,6 +301,225 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         status: status || 'all',
         counts,
       },
+    };
+  },
+
+  async moderationList(ctx) {
+    const requestId = ctx.state?.requestId || null;
+    const actor = resolveActor(ctx);
+    const identity = await resolveModerationIdentity(strapi, ctx);
+
+    if (!identity?.user?.id) {
+      await log(
+        'blog',
+        'WARN',
+        'blog.comment.moderation.list.unauthorized',
+        'Unauthorized moderation-list request',
+        {},
+        { request_id: requestId, actor }
+      );
+      ctx.status = 401;
+      ctx.body = {
+        data: null,
+        error: {
+          status: 401,
+          name: 'UnauthorizedError',
+          message: 'Authentication required',
+          details: {},
+        },
+      };
+      return;
+    }
+
+    if (!identity.canModerate) {
+      await log(
+        'blog',
+        'WARN',
+        'blog.comment.moderation.list.forbidden',
+        'Forbidden moderation-list request',
+        {
+          user_id: identity.user.id,
+          role: identity.roleRaw || 'member',
+        },
+        { request_id: requestId, actor }
+      );
+      ctx.status = 403;
+      ctx.body = {
+        data: null,
+        error: {
+          status: 403,
+          name: 'ForbiddenError',
+          message: 'Moderator role required',
+          details: {},
+        },
+      };
+      return;
+    }
+
+    const limit = parseIntSafe(ctx.query?.limit, 20, 1, 100);
+    const sortOrder = normalizeSortOrder(ctx.query?.sort);
+    const statusRaw = normalizeLower(ctx.query?.status || '');
+    let status = BLOG_COMMENT_STATUS.PENDING;
+
+    if (statusRaw === 'all') {
+      status = null;
+    } else if (statusRaw) {
+      status = normalizeCommentStatus(statusRaw);
+      if (!status) {
+        return ctx.badRequest('status is invalid');
+      }
+    }
+
+    const filters = {};
+    if (status) {
+      filters.status = status;
+    }
+
+    const entries = await strapi.entityService.findMany(UID, {
+      publicationState: 'preview',
+      filters,
+      sort: [`createdAt:${sortOrder}`],
+      fields: [
+        'comment_id',
+        'body',
+        'language',
+        'source',
+        'status',
+        'blog_post_ref',
+        'guest_display_name',
+        'owner_username',
+        'moderation_notes',
+        'reviewed_at',
+        'reviewed_by',
+        'createdAt',
+        'updatedAt',
+      ],
+      limit,
+    });
+
+    ctx.body = {
+      data: Array.isArray(entries) ? entries.map(toModerationComment) : [],
+      meta: {
+        limit,
+        status: status || 'all',
+      },
+    };
+  },
+
+  async moderationSet(ctx) {
+    const requestId = ctx.state?.requestId || null;
+    const actor = resolveActor(ctx);
+    const identity = await resolveModerationIdentity(strapi, ctx);
+
+    if (!identity?.user?.id) {
+      await log(
+        'blog',
+        'WARN',
+        'blog.comment.moderation.set.unauthorized',
+        'Unauthorized moderation-set request',
+        {},
+        { request_id: requestId, actor }
+      );
+      ctx.status = 401;
+      ctx.body = {
+        data: null,
+        error: {
+          status: 401,
+          name: 'UnauthorizedError',
+          message: 'Authentication required',
+          details: {},
+        },
+      };
+      return;
+    }
+
+    if (!identity.canModerate) {
+      await log(
+        'blog',
+        'WARN',
+        'blog.comment.moderation.set.forbidden',
+        'Forbidden moderation-set request',
+        {
+          user_id: identity.user.id,
+          role: identity.roleRaw || 'member',
+        },
+        { request_id: requestId, actor }
+      );
+      ctx.status = 403;
+      ctx.body = {
+        data: null,
+        error: {
+          status: 403,
+          name: 'ForbiddenError',
+          message: 'Moderator role required',
+          details: {},
+        },
+      };
+      return;
+    }
+
+    const payload = ctx.request.body && typeof ctx.request.body === 'object' ? ctx.request.body : {};
+    const commentId = String(payload.comment_id || '').trim();
+    const status = normalizeCommentStatus(payload.status);
+    const moderationNotes =
+      typeof payload.moderation_notes === 'string' ? payload.moderation_notes : undefined;
+
+    if (!commentId) {
+      return ctx.badRequest('comment_id is required');
+    }
+
+    if (!status) {
+      return ctx.badRequest('status is invalid');
+    }
+
+    const existing = await findCommentByCommentId(strapi, commentId);
+    if (!existing?.id) {
+      return ctx.notFound('Comment not found');
+    }
+
+    ctx.state.user = identity.user;
+
+    const data = { status };
+    if (typeof moderationNotes === 'string') {
+      data.moderation_notes = moderationNotes;
+    }
+
+    const updated = await strapi.entityService.update(UID, existing.id, {
+      data,
+      fields: [
+        'comment_id',
+        'body',
+        'language',
+        'source',
+        'status',
+        'blog_post_ref',
+        'moderation_notes',
+        'reviewed_at',
+        'reviewed_by',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
+
+    await log(
+      'blog',
+      'INFO',
+      'blog.comment.moderation.set.updated',
+      'Blog comment moderated',
+      {
+        comment_id: updated.comment_id,
+        from_status: existing.status,
+        to_status: updated.status,
+      },
+      {
+        request_id: requestId,
+        actor,
+        entity_ref: updated.comment_id,
+      }
+    );
+
+    ctx.body = {
+      data: toOwnComment(updated),
     };
   },
 
