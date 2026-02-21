@@ -12,8 +12,8 @@ const usage = () => {
   console.log('  node scripts/blog_comment_moderate.js list [--status pending] [--limit 20]');
   console.log('  node scripts/blog_comment_moderate.js set <comment_id> <status> [--notes "text"]');
   console.log('  node scripts/blog_comment_moderate.js next');
-  console.log('  node scripts/blog_comment_moderate.js set-next <status> [--notes "text"]');
-  console.log('  node scripts/blog_comment_moderate.js bulk-set-next <status> [--limit 20] [--notes "text"]');
+  console.log('  node scripts/blog_comment_moderate.js set-next <status> [--notes "text"] [--dry-run]');
+  console.log('  node scripts/blog_comment_moderate.js bulk-set-next <status> [--limit 20] [--notes "text"] [--dry-run]');
   console.log('');
   console.log('Valid status values: pending, approved, rejected, spam, deleted');
 };
@@ -247,11 +247,14 @@ const setNextPendingStatus = async (strapi, argv) => {
   }
 
   let notes;
+  let dryRun = false;
   for (let i = 1; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--notes') {
       notes = String(argv[i + 1] || '');
       i += 1;
+    } else if (token === '--dry-run') {
+      dryRun = true;
     } else if (token === '-h' || token === '--help') {
       usage();
       return 0;
@@ -265,8 +268,23 @@ const setNextPendingStatus = async (strapi, argv) => {
     console.log('==============================================================');
     console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
     console.log('==============================================================');
+    console.log(`mode=set-next dry_run=${dryRun}`);
     console.log('pending=0');
     console.log('no pending comment');
+    console.log('==============================================================');
+    return 0;
+  }
+
+  if (dryRun) {
+    console.log('==============================================================');
+    console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
+    console.log('==============================================================');
+    console.log(`mode=set-next dry_run=true`);
+    console.log(`comment_id=${next.comment_id}`);
+    console.log(`from=${next.status} to=${nextStatus}`);
+    console.log(`source=${next.source} post=${next.blog_post_ref}`);
+    console.log(`would_change=true`);
+    console.log(`moderation_notes=${typeof notes === 'string' ? notes : ''}`);
     console.log('==============================================================');
     return 0;
   }
@@ -294,7 +312,7 @@ const setNextPendingStatus = async (strapi, argv) => {
   console.log('==============================================================');
   console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
   console.log('==============================================================');
-  console.log(`mode=set-next`);
+  console.log(`mode=set-next dry_run=false`);
   console.log(`comment_id=${updated.comment_id}`);
   console.log(`from=${next.status} to=${updated.status}`);
   console.log(`source=${updated.source} post=${updated.blog_post_ref}`);
@@ -320,6 +338,7 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
 
   let notes;
   let limit = 20;
+  let dryRun = false;
   for (let i = 1; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--notes') {
@@ -328,6 +347,8 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
     } else if (token === '--limit') {
       limit = parseIntSafe(argv[i + 1], 20);
       i += 1;
+    } else if (token === '--dry-run') {
+      dryRun = true;
     } else if (token === '-h' || token === '--help') {
       usage();
       return 0;
@@ -350,11 +371,26 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
   console.log('==============================================================');
   console.log('GEOVITO BLOG COMMENT MODERATION BULK UPDATE');
   console.log('==============================================================');
-  console.log(`mode=bulk-set-next target_status=${nextStatus} limit=${safeLimit}`);
+  console.log(`mode=bulk-set-next target_status=${nextStatus} limit=${safeLimit} dry_run=${dryRun}`);
 
   if (!entries.length) {
     console.log('pending=0');
     console.log('changed=0');
+    if (dryRun) {
+      console.log('would_change=0');
+    }
+    console.log('==============================================================');
+    return 0;
+  }
+
+  if (dryRun) {
+    console.log(`pending=${entries.length}`);
+    console.log('changed=0');
+    console.log(`would_change=${entries.length}`);
+    for (const entry of entries) {
+      console.log(`${entry.comment_id} | from=${entry.status} to=${nextStatus} | source=${entry.source} | post=${entry.blog_post_ref}`);
+    }
+    console.log(`moderation_notes=${typeof notes === 'string' ? notes : ''}`);
     console.log('==============================================================');
     return 0;
   }

@@ -61,6 +61,7 @@ if [[ "${RUN_COMMENT_BULK_GATE:-false}" == "true" ]]; then
   COMMENT_BULK_ACTION_VALUE="${COMMENT_BULK_ACTION:-}"
   COMMENT_BULK_LIMIT_VALUE="${COMMENT_BULK_LIMIT:-10}"
   COMMENT_BULK_NOTES_VALUE="${COMMENT_BULK_NOTES:-pre-design bulk moderation}"
+  COMMENT_BULK_DRY_RUN_VALUE="${COMMENT_BULK_DRY_RUN:-false}"
 
   case "$COMMENT_BULK_ACTION_VALUE" in
     approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk)
@@ -69,7 +70,8 @@ if [[ "${RUN_COMMENT_BULK_GATE:-false}" == "true" ]]; then
         bash tools/blog_comment_quick_action.sh \
           "$COMMENT_BULK_ACTION_VALUE" \
           --limit "$COMMENT_BULK_LIMIT_VALUE" \
-          --notes "$COMMENT_BULK_NOTES_VALUE"
+          --notes "$COMMENT_BULK_NOTES_VALUE" \
+          $([[ "$COMMENT_BULK_DRY_RUN_VALUE" == "true" || "$COMMENT_BULK_DRY_RUN_VALUE" == "1" ]] && echo "--dry-run")
       ;;
     *)
       echo "RESULT: FAIL (Comment Bulk Quick Action) invalid COMMENT_BULK_ACTION"

@@ -39,14 +39,14 @@ case "$ACTION" in
     cat <<'USAGE'
 Usage:
   bash tools/blog_comment_quick_action.sh next
-  bash tools/blog_comment_quick_action.sh approve-next [--notes "text"]
-  bash tools/blog_comment_quick_action.sh approve-next-bulk [--limit 20] [--notes "text"]
-  bash tools/blog_comment_quick_action.sh reject-next [--notes "text"]
-  bash tools/blog_comment_quick_action.sh reject-next-bulk [--limit 20] [--notes "text"]
-  bash tools/blog_comment_quick_action.sh spam-next [--notes "text"]
-  bash tools/blog_comment_quick_action.sh spam-next-bulk [--limit 20] [--notes "text"]
-  bash tools/blog_comment_quick_action.sh delete-next [--notes "text"]
-  bash tools/blog_comment_quick_action.sh delete-next-bulk [--limit 20] [--notes "text"]
+  bash tools/blog_comment_quick_action.sh approve-next [--notes "text"] [--dry-run]
+  bash tools/blog_comment_quick_action.sh approve-next-bulk [--limit 20] [--notes "text"] [--dry-run]
+  bash tools/blog_comment_quick_action.sh reject-next [--notes "text"] [--dry-run]
+  bash tools/blog_comment_quick_action.sh reject-next-bulk [--limit 20] [--notes "text"] [--dry-run]
+  bash tools/blog_comment_quick_action.sh spam-next [--notes "text"] [--dry-run]
+  bash tools/blog_comment_quick_action.sh spam-next-bulk [--limit 20] [--notes "text"] [--dry-run]
+  bash tools/blog_comment_quick_action.sh delete-next [--notes "text"] [--dry-run]
+  bash tools/blog_comment_quick_action.sh delete-next-bulk [--limit 20] [--notes "text"] [--dry-run]
 
 Shortcuts:
   next         -> show oldest pending comment

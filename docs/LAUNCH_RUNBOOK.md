@@ -182,6 +182,8 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-blog-engagement-test`
 - Include bulk moderation action (oldest pending N comments):
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
+- Include bulk moderation action as preview only (no write):
+  - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
 - Include both optional checks:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test`
 - Include all optional checks:
@@ -194,12 +196,15 @@ Notes:
 - `--with-comment-bulk-action` requires:
   - `COMMENT_BULK_ACTION` in `approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk`
   - optional `COMMENT_BULK_LIMIT` (default `10`) and `COMMENT_BULK_NOTES`.
+  - optional `COMMENT_BULK_DRY_RUN=true` to preview without state change.
 
 Pre-design gate icinde blog engagement UI adimini da kosmak istersen:
 - `RUN_BLOG_ENGAGEMENT_UI_GATE=true bash tools/pre_design_gate_check.sh`
 
 Pre-design gate icinde bulk yorum moderasyon aksiyonu kosmak istersen:
 - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_NOTES="pre-design bulk" bash tools/pre_design_gate_check.sh`
+- dry-run preview:
+- `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/pre_design_gate_check.sh`
 
 ## 3) Test Mode Protection (Recommended for closed testing)
 

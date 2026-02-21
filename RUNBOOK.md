@@ -214,6 +214,8 @@ Optional tuning:
   - `SMOKE_BLOG_MODERATION_ARGS="--fail-on-stale-pending --json" bash tools/release_deploy_smoke.sh --with-moderation`
 - optional bulk moderation action during release:
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
+  - dry-run preview (no write):
+    - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
 
 ## Pre-Design Gate (All Critical Checks)
 ```bash
@@ -239,6 +241,8 @@ Optional pre-design extensions:
   - `RUN_BLOG_ENGAGEMENT_UI_GATE=true bash tools/pre_design_gate_check.sh`
 - Bulk comment moderation action:
   - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/pre_design_gate_check.sh`
+  - dry-run preview:
+    - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/pre_design_gate_check.sh`
 
 ## Logs By Domain
 Domain log folders (human + jsonl):
@@ -591,6 +595,9 @@ bash tools/blog_comment_quick_action.sh reject-next --notes "policy reason"
 # quick bulk flow (oldest pending N items)
 bash tools/blog_comment_quick_action.sh approve-next-bulk --limit 10 --notes "qa batch pass"
 bash tools/blog_comment_quick_action.sh reject-next-bulk --limit 5 --notes "policy batch reject"
+
+# dry-run preview (no write)
+bash tools/blog_comment_quick_action.sh approve-next-bulk --limit 10 --notes "qa batch pass" --dry-run
 ```
 
 Optional release smoke extension:
