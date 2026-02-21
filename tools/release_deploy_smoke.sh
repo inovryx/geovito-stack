@@ -10,11 +10,12 @@ RUN_MODERATION="false"
 RUN_ACCOUNT_TEST="false"
 RUN_BLOG_ENGAGEMENT_TEST="false"
 RUN_COMMENT_BULK_ACTION="false"
+RUN_MOCK_RESEED="false"
 
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--with-comment-bulk-action]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--with-comment-bulk-action] [--with-mock-reseed]
 
 Purpose:
   Single command release verification:
@@ -24,6 +25,7 @@ Purpose:
   4) (Optional) Run account comment queue Playwright smoke
   5) (Optional) Run blog engagement Playwright smoke (auto-seed if needed)
   6) (Optional) Run bulk moderation action on oldest pending comments
+  7) (Optional) Re-seed mock dataset at end (useful after purge flows)
 
 Notes:
   - pages deploy hook must be configured:
@@ -66,6 +68,10 @@ while [[ $# -gt 0 ]]; do
       RUN_COMMENT_BULK_ACTION="true"
       shift
       ;;
+    --with-mock-reseed)
+      RUN_MOCK_RESEED="true"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -83,7 +89,7 @@ EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
 echo "expected_sha7=${EXPECTED_SHA7}"
-echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED}"
 echo "=============================================================="
 
 if [[ "$RUN_DEPLOY" == "true" ]]; then
@@ -147,6 +153,13 @@ if [[ "$RUN_COMMENT_BULK_ACTION" == "true" ]]; then
   "${BULK_CMD[@]}"
 else
   echo "INFO: skipped comment bulk action stage (use --with-comment-bulk-action)"
+fi
+
+if [[ "$RUN_MOCK_RESEED" == "true" ]]; then
+  echo "INFO: running mock reseed stage"
+  env ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed
+else
+  echo "INFO: skipped mock reseed stage (use --with-mock-reseed)"
 fi
 
 echo "=============================================================="
