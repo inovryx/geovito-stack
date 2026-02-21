@@ -25,6 +25,7 @@ Env:
   UI_LOCALE_PROGRESS_REPORT Progress report output (default: artifacts/ui-locale-progress.json)
   UI_LOCALE_PROGRESS_STRICT true => fail if missing/untranslated > 0 (default: false)
   UI_PAGE_PROGRESS_STRICT true => fail if ui-page draft/missing exists (default: false)
+  UI_PAGE_PROGRESS_REQUIRED true => fail when ui-page report endpoint is unreachable/forbidden (default: false)
 
 Secret file format example:
   STRAPI_API_TOKEN='your_real_token_here'
@@ -87,7 +88,13 @@ echo "=============================================================="
 bash tools/export_ui_locales.sh
 bash tools/ui_locale_progress_report.sh
 if [[ "$RUN_UI_PAGE_PROGRESS_REPORT" == "true" ]]; then
-  bash tools/ui_page_progress_report.sh
+  if ! bash tools/ui_page_progress_report.sh; then
+    if [[ "${UI_PAGE_PROGRESS_REQUIRED:-false}" == "true" ]]; then
+      echo "ERROR: ui-page progress report failed and UI_PAGE_PROGRESS_REQUIRED=true"
+      exit 1
+    fi
+    echo "WARN: ui-page progress report failed (continuing)"
+  fi
 else
   echo "Skip ui-page progress report (--no-ui-page-report)"
 fi

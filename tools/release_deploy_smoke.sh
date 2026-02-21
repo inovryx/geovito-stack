@@ -11,12 +11,13 @@ RUN_ACCOUNT_TEST="false"
 RUN_BLOG_ENGAGEMENT_TEST="false"
 RUN_COMMENT_BULK_ACTION="false"
 RUN_MOCK_RESEED="false"
+RUN_UI_LOCALE_SYNC="false"
 RUN_UI_LOCALE_PROGRESS="false"
 
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-progress]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress]
 
 Purpose:
   Single command release verification:
@@ -27,7 +28,8 @@ Purpose:
   5) (Optional) Run blog engagement Playwright smoke (auto-seed if needed)
   6) (Optional) Run bulk moderation action on oldest pending comments
   7) (Optional) Re-seed mock dataset at end (useful after purge flows)
-  8) (Optional) Validate ui-locale progress report (strict by default)
+  8) (Optional) Sync ui-locale import/export flow before release checks
+  9) (Optional) Validate ui-locale progress report (strict by default)
 
 Notes:
   - pages deploy hook must be configured:
@@ -41,7 +43,7 @@ Env passthrough:
   EXPECTED_SHA7, BASE_URL, FINGERPRINT_BASE_URL, DEPLOY_TIMEOUT_SECONDS,
   DEPLOY_POLL_INTERVAL_SECONDS, PAGES_DEPLOY_ENV_FILE, SMOKE_ACCESS_ENV_FILE,
   SMOKE_BLOG_MODERATION_ARGS, COMMENT_BULK_ACTION, COMMENT_BULK_LIMIT, COMMENT_BULK_NOTES, COMMENT_BULK_DRY_RUN, COMMENT_BULK_REPORT_OUTPUT,
-  UI_LOCALE_PROGRESS_REPORT, UI_LOCALE_PROGRESS_STRICT
+  UI_LOCALE_PROGRESS_REPORT, UI_LOCALE_PROGRESS_STRICT, UI_LOCALE_SYNC_BUILD_CHECK
 USAGE
 }
 
@@ -75,6 +77,10 @@ while [[ $# -gt 0 ]]; do
       RUN_MOCK_RESEED="true"
       shift
       ;;
+    --with-ui-locale-sync)
+      RUN_UI_LOCALE_SYNC="true"
+      shift
+      ;;
     --with-ui-locale-progress)
       RUN_UI_LOCALE_PROGRESS="true"
       shift
@@ -96,7 +102,7 @@ EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
 echo "expected_sha7=${EXPECTED_SHA7}"
-echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_sync=${RUN_UI_LOCALE_SYNC} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS}"
 echo "=============================================================="
 
 if [[ "$RUN_DEPLOY" == "true" ]]; then
@@ -169,8 +175,24 @@ else
   echo "INFO: skipped mock reseed stage (use --with-mock-reseed)"
 fi
 
+if [[ "$RUN_UI_LOCALE_SYNC" == "true" ]]; then
+  echo "INFO: running ui-locale sync stage"
+  if [[ "${UI_LOCALE_SYNC_BUILD_CHECK:-false}" == "true" ]]; then
+    bash tools/ui_locale_sync.sh
+  else
+    bash tools/ui_locale_sync.sh --no-build-check
+  fi
+else
+  echo "INFO: skipped ui-locale sync stage (use --with-ui-locale-sync)"
+fi
+
 if [[ "$RUN_UI_LOCALE_PROGRESS" == "true" ]]; then
   echo "INFO: running ui-locale progress stage"
+  REPORT_PATH="${UI_LOCALE_PROGRESS_REPORT:-$ROOT_DIR/artifacts/ui-locale-progress.json}"
+  if [[ ! -f "$REPORT_PATH" ]]; then
+    echo "INFO: ui-locale progress report missing, auto-exporting"
+    bash tools/export_ui_locales.sh
+  fi
   UI_LOCALE_PROGRESS_STRICT="${UI_LOCALE_PROGRESS_STRICT:-true}" \
     bash tools/ui_locale_progress_report.sh
 else

@@ -186,8 +186,14 @@ Not:
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
 - Include mock re-seed at end (after release checks):
   - `bash tools/release_deploy_smoke.sh --with-mock-reseed`
+- Include ui-locale sync stage (import + export before progress check):
+  - `bash tools/release_deploy_smoke.sh --with-ui-locale-sync`
+  - default sync runs without build check (`tools/ui_locale_sync.sh --no-build-check`)
+  - enable build check in sync stage:
+    - `UI_LOCALE_SYNC_BUILD_CHECK=true bash tools/release_deploy_smoke.sh --with-ui-locale-sync`
 - Include ui-locale translation gap check:
   - `bash tools/release_deploy_smoke.sh --with-ui-locale-progress`
+  - if report is missing, script auto-runs `tools/export_ui_locales.sh` first
 - Include everything (moderation + account + engagement + bulk + reseed):
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test --with-comment-bulk-action --with-mock-reseed`
 - Include both optional checks:
