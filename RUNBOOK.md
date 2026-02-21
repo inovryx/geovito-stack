@@ -218,6 +218,11 @@ Optional tuning:
     - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
 - optional mock re-seed after all release stages:
   - `bash tools/release_deploy_smoke.sh --with-mock-reseed`
+- optional ui-locale translation gap check during release:
+  - `bash tools/release_deploy_smoke.sh --with-ui-locale-progress`
+  - strict mode default is `true` in this stage.
+  - to only print warnings without fail:
+    - `UI_LOCALE_PROGRESS_STRICT=false bash tools/release_deploy_smoke.sh --with-ui-locale-progress`
 
 ## Pre-Design Gate (All Critical Checks)
 ```bash

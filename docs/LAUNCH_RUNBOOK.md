@@ -186,6 +186,8 @@ Not:
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
 - Include mock re-seed at end (after release checks):
   - `bash tools/release_deploy_smoke.sh --with-mock-reseed`
+- Include ui-locale translation gap check:
+  - `bash tools/release_deploy_smoke.sh --with-ui-locale-progress`
 - Include everything (moderation + account + engagement + bulk + reseed):
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test --with-comment-bulk-action --with-mock-reseed`
 - Include both optional checks:
@@ -204,6 +206,11 @@ Notes:
   - optional `COMMENT_BULK_REPORT_OUTPUT` to force JSON report path; if omitted, report is saved under `artifacts/moderation/`.
 - `--with-mock-reseed` runs:
   - `ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed`
+- `--with-ui-locale-progress` runs:
+  - `bash tools/ui_locale_progress_report.sh`
+  - this stage enforces `UI_LOCALE_PROGRESS_STRICT=true` by default.
+  - override if needed:
+    - `UI_LOCALE_PROGRESS_STRICT=false`
 
 Pre-design gate icinde blog engagement UI adimini da kosmak istersen:
 - `RUN_BLOG_ENGAGEMENT_UI_GATE=true bash tools/pre_design_gate_check.sh`
