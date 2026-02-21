@@ -180,6 +180,8 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-account-test`
 - Include blog engagement Playwright smoke (auto-seed blog mock data when missing):
   - `bash tools/release_deploy_smoke.sh --with-blog-engagement-test`
+- Include bulk moderation action (oldest pending N comments):
+  - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
 - Include both optional checks:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test`
 - Include all optional checks:
@@ -189,6 +191,9 @@ Notes:
 - `--with-account-test` runs `bash tools/account_comment_queue_test.sh`.
 - The account test uses Docker Playwright and requires writable `frontend/node_modules` ownership.
 - `--with-blog-engagement-test` runs `bash tools/blog_engagement_ui_playwright.sh`.
+- `--with-comment-bulk-action` requires:
+  - `COMMENT_BULK_ACTION` in `approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk`
+  - optional `COMMENT_BULK_LIMIT` (default `10`) and `COMMENT_BULK_NOTES`.
 
 Pre-design gate icinde blog engagement UI adimini da kosmak istersen:
 - `RUN_BLOG_ENGAGEMENT_UI_GATE=true bash tools/pre_design_gate_check.sh`

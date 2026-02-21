@@ -212,6 +212,8 @@ Optional tuning:
 - pending age threshold: `BLOG_MOD_PENDING_ALERT_HOURS` (default `24`)
 - custom moderation args passthrough:
   - `SMOKE_BLOG_MODERATION_ARGS="--fail-on-stale-pending --json" bash tools/release_deploy_smoke.sh --with-moderation`
+- optional bulk moderation action during release:
+  - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
 
 ## Pre-Design Gate (All Critical Checks)
 ```bash
