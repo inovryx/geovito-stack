@@ -81,6 +81,14 @@ const dashboardCopy = {
     'Editor/admin roles can approve, reject, or mark spam directly from dashboard.'
   ),
   moderationQueueEmpty: translate(ui, 'dashboard.moderationQueueEmpty', {}, 'No pending comments in queue.'),
+  moderationHistoryTitle: translate(ui, 'dashboard.moderationHistoryTitle', {}, 'Recent moderation actions'),
+  moderationHistoryBody: translate(
+    ui,
+    'dashboard.moderationHistoryBody',
+    {},
+    'Latest approved/rejected/spam actions with reviewer and timestamp.'
+  ),
+  moderationHistoryEmpty: translate(ui, 'dashboard.moderationHistoryEmpty', {}, 'No recent moderation actions yet.'),
   moderationApprove: translate(ui, 'dashboard.moderationApprove', {}, 'Approve'),
   moderationReject: translate(ui, 'dashboard.moderationReject', {}, 'Reject'),
   moderationSpam: translate(ui, 'dashboard.moderationSpam', {}, 'Spam'),
@@ -224,6 +232,9 @@ const dashboardCopy = {
           <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
           <p class="small">{dashboardCopy.moderationQueueBody}</p>
           <ul class="dashboard-mini-list" data-dashboard-moderation-list></ul>
+          <h3 class="dashboard-mini-title">{dashboardCopy.moderationHistoryTitle}</h3>
+          <p class="small">{dashboardCopy.moderationHistoryBody}</p>
+          <ul class="dashboard-mini-list" data-dashboard-moderation-history></ul>
         </div>
       </article>
 
@@ -328,6 +339,7 @@ const dashboardCopy = {
       const copyReleaseButton = document.querySelector('[data-dashboard-copy-release]');
       const moderationWrapNode = document.querySelector('[data-dashboard-moderation-wrap]');
       const moderationListNode = document.querySelector('[data-dashboard-moderation-list]');
+      const moderationHistoryNode = document.querySelector('[data-dashboard-moderation-history]');
 
       const identityNode = document.querySelector('[data-dashboard-identity]');
       const emailNode = document.querySelector('[data-dashboard-email]');
@@ -550,6 +562,42 @@ const dashboardCopy = {
         host.appendChild(fragment);
       };
 
+      const renderModerationHistory = (items) => {
+        const host = toNode(moderationHistoryNode);
+        if (!host) return;
+
+        host.innerHTML = '';
+        const list = Array.isArray(items) ? items.slice(0, 8) : [];
+        if (!canRunModeration || list.length === 0) {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          row.innerHTML = `<span>${escapeHtml(dashboardCopy.moderationHistoryEmpty)}</span>`;
+          host.appendChild(row);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        list.forEach((item) => {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+
+          const status = String(item?.status || '').trim().toUpperCase() || '-';
+          const reviewer = String(item?.reviewed_by || '').trim() || '-';
+          const reviewedAt = String(item?.reviewed_at || item?.updated_at || '').trim();
+          const reviewedAtLabel = reviewedAt ? formatDate(reviewedAt) : dashboardCopy.unknown;
+          const body = String(item?.body || '').trim() || '-';
+          const compactBody = body.length > 120 ? `${body.slice(0, 117)}...` : body;
+
+          row.innerHTML = `
+            <strong>${escapeHtml(status)} · ${escapeHtml(reviewer)} · ${escapeHtml(reviewedAtLabel)}</strong>
+            <span>${escapeHtml(compactBody)}</span>
+          `;
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+      };
+
       const runModerationAction = async (session, commentId, status) => {
         if (!session?.jwt || !commentId || !status) return false;
 
@@ -601,6 +649,7 @@ const dashboardCopy = {
         applyAccessView('member');
         renderRecentComments([]);
         renderModerationQueue([]);
+        renderModerationHistory([]);
 
         setText(commentsTotalNode, '0');
         setText(commentsPendingNode, '0');
@@ -689,13 +738,22 @@ const dashboardCopy = {
         if (access.isEditor) {
           try {
             const response = await fetch(
-              `${authBaseUrl}/api/blog-comments/moderation/list?status=pending&limit=8`,
+              `${authBaseUrl}/api/blog-comments/moderation/list?status=all&limit=40`,
               { headers: authHeaders }
             );
             if (response.ok) {
               const payload = await response.json().catch(() => ({}));
               const items = Array.isArray(payload?.data) ? payload.data : [];
-              renderModerationQueue(items);
+              const pendingItems = items.filter((item) => String(item?.status || '').toLowerCase() === 'pending');
+              const reviewedItems = items
+                .filter((item) => String(item?.status || '').toLowerCase() !== 'pending')
+                .sort((a, b) => {
+                  const aTs = new Date(String(a?.reviewed_at || a?.updated_at || a?.created_at || 0)).getTime();
+                  const bTs = new Date(String(b?.reviewed_at || b?.updated_at || b?.created_at || 0)).getTime();
+                  return Number.isFinite(bTs) && Number.isFinite(aTs) ? bTs - aTs : 0;
+                });
+              renderModerationQueue(pendingItems);
+              renderModerationHistory(reviewedItems);
             } else {
               hadErrors = true;
             }
@@ -704,6 +762,7 @@ const dashboardCopy = {
           }
         } else {
           renderModerationQueue([]);
+          renderModerationHistory([]);
         }
 
         try {
