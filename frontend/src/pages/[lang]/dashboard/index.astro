@@ -22,6 +22,7 @@ const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage('en', 'dashboard'));
 const loginPath = pathForLanguage(lang, 'login');
 const accountPath = pathForLanguage(lang, 'account');
+const ownerEmailHint = String(import.meta.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
   PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
@@ -30,6 +31,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
   ALLOW_LOCALHOST_STRAPI:
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
+const strapiAdminUrl = `${authBaseUrl.replace(/\/$/, '')}/admin`;
 
 const dashboardCopy = {
   title: translate(ui, 'dashboard.title', {}, 'Dashboard'),
@@ -85,8 +87,40 @@ const dashboardCopy = {
   quickTitle: translate(ui, 'dashboard.quickTitle', {}, 'Quick actions'),
   quickBody: translate(ui, 'dashboard.quickBody', {}, 'Open account settings or continue product workflows.'),
   quickAccount: translate(ui, 'dashboard.quickAccount', {}, 'Open account settings'),
+  quickComments: translate(ui, 'dashboard.quickComments', {}, 'Open my comment queue'),
+  quickLocale: translate(ui, 'dashboard.quickLocale', {}, 'Open translation progress'),
   quickAtlas: translate(ui, 'dashboard.quickAtlas', {}, 'Go to atlas'),
   quickBlog: translate(ui, 'dashboard.quickBlog', {}, 'Go to blog'),
+  accessTitle: translate(ui, 'dashboard.accessTitle', {}, 'Access level'),
+  accessBody: translate(
+    ui,
+    'dashboard.accessBody',
+    {},
+    'Role-driven capability map for dashboard visibility. Backend permissions remain authoritative.'
+  ),
+  accessRole: translate(ui, 'dashboard.accessRole', {}, 'Role'),
+  accessOwner: translate(ui, 'dashboard.accessOwner', {}, 'Owner'),
+  accessAdmin: translate(ui, 'dashboard.accessAdmin', {}, 'Admin'),
+  accessEditor: translate(ui, 'dashboard.accessEditor', {}, 'Editor'),
+  accessMember: translate(ui, 'dashboard.accessMember', {}, 'Member'),
+  capabilityModeration: translate(ui, 'dashboard.capabilityModeration', {}, 'Moderation view'),
+  capabilityLocale: translate(ui, 'dashboard.capabilityLocale', {}, 'Translation progress'),
+  capabilityAdminTools: translate(ui, 'dashboard.capabilityAdminTools', {}, 'Admin tools links'),
+  capabilityEnabled: translate(ui, 'dashboard.capabilityEnabled', {}, 'Enabled'),
+  capabilityDisabled: translate(ui, 'dashboard.capabilityDisabled', {}, 'Limited'),
+  controlTitle: translate(ui, 'dashboard.controlTitle', {}, 'Control center'),
+  controlBody: translate(
+    ui,
+    'dashboard.controlBody',
+    {},
+    'Owner/admin shortcuts for operational panels. UI visibility is role-based; backend still enforces access.'
+  ),
+  controlAdmin: translate(ui, 'dashboard.controlAdmin', {}, 'Open Strapi admin'),
+  controlRunbook: translate(ui, 'dashboard.controlRunbook', {}, 'Open launch runbook'),
+  controlRelease: translate(ui, 'dashboard.controlRelease', {}, 'Copy release smoke command'),
+  controlReleaseCopied: translate(ui, 'dashboard.controlReleaseCopied', {}, 'Release command copied.'),
+  controlReleaseCopyFailed: translate(ui, 'dashboard.controlReleaseCopyFailed', {}, 'Clipboard blocked. Copy manually.'),
+  controlLimited: translate(ui, 'dashboard.controlLimited', {}, 'Admin links are visible for owner/admin roles only.'),
   refresh: translate(ui, 'dashboard.refresh', {}, 'Refresh'),
   loading: translate(ui, 'dashboard.loading', {}, 'Loading dashboard data...'),
   loadFailed: translate(ui, 'dashboard.loadFailed', {}, 'Some dashboard cards could not be loaded.'),
@@ -165,6 +199,7 @@ const dashboardCopy = {
           <p class="dashboard-kpi"><span>{dashboardCopy.commentsApproved}</span><strong data-dashboard-comments-approved>0</strong></p>
           <p class="dashboard-kpi"><span>{dashboardCopy.commentsRejected}</span><strong data-dashboard-comments-rejected>0</strong></p>
         </div>
+        <ul class="dashboard-mini-list" data-dashboard-comments-recent hidden></ul>
       </article>
 
       <article class="card panel gv-stack">
@@ -179,11 +214,40 @@ const dashboardCopy = {
       </article>
 
       <article class="card panel gv-stack">
+        <h2>{dashboardCopy.accessTitle}</h2>
+        <p class="small">{dashboardCopy.accessBody}</p>
+        <p class="dashboard-kpi">
+          <span>{dashboardCopy.accessRole}</span>
+          <strong data-dashboard-role>{dashboardCopy.accessMember}</strong>
+        </p>
+        <ul class="dashboard-capabilities">
+          <li>
+            <span>{dashboardCopy.capabilityModeration}</span>
+            <strong data-dashboard-cap-moderation>{dashboardCopy.capabilityDisabled}</strong>
+          </li>
+          <li>
+            <span>{dashboardCopy.capabilityLocale}</span>
+            <strong data-dashboard-cap-locale>{dashboardCopy.capabilityDisabled}</strong>
+          </li>
+          <li>
+            <span>{dashboardCopy.capabilityAdminTools}</span>
+            <strong data-dashboard-cap-admin>{dashboardCopy.capabilityDisabled}</strong>
+          </li>
+        </ul>
+      </article>
+
+      <article class="card panel gv-stack">
         <h2>{dashboardCopy.quickTitle}</h2>
         <p class="small">{dashboardCopy.quickBody}</p>
         <div class="dashboard-actions">
           <a class="ui-button ui-button-secondary ui-button-sm" href={accountPath}>
             <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
+          </a>
+          <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#comments`}>
+            <span class="ui-button-label">{dashboardCopy.quickComments}</span>
+          </a>
+          <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#locale-progress`}>
+            <span class="ui-button-label">{dashboardCopy.quickLocale}</span>
           </a>
           <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'atlas')}>
             <span class="ui-button-label">{dashboardCopy.quickAtlas}</span>
@@ -193,16 +257,50 @@ const dashboardCopy = {
           </a>
         </div>
       </article>
+
+      <article class="card panel gv-stack">
+        <h2>{dashboardCopy.controlTitle}</h2>
+        <p class="small">{dashboardCopy.controlBody}</p>
+        <div class="dashboard-actions">
+          <a
+            class="ui-button ui-button-secondary ui-button-sm"
+            href={strapiAdminUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-dashboard-admin-link
+            hidden
+          >
+            <span class="ui-button-label">{dashboardCopy.controlAdmin}</span>
+          </a>
+          <a
+            class="ui-button ui-button-secondary ui-button-sm"
+            href="https://github.com/inovryx/geovito-stack/blob/main/docs/LAUNCH_RUNBOOK.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-dashboard-admin-link
+            hidden
+          >
+            <span class="ui-button-label">{dashboardCopy.controlRunbook}</span>
+          </a>
+          <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-copy-release hidden>
+            <span class="ui-button-label">{dashboardCopy.controlRelease}</span>
+          </button>
+        </div>
+        <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
+      </article>
     </div>
   </section>
 
-  <script is:inline define:vars={{ authBaseUrl, dashboardCopy }}>
+  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint }}>
     (() => {
       const loggedOutPanel = document.querySelector('[data-dashboard-logged-out]');
       const authedPanel = document.querySelector('[data-dashboard-authenticated]');
       const refreshButton = document.querySelector('[data-dashboard-refresh]');
       const feedback = document.querySelector('[data-dashboard-feedback]');
       const localeNote = document.querySelector('[data-dashboard-locale-note]');
+      const controlNote = document.querySelector('[data-dashboard-control-note]');
+      const adminLinks = Array.from(document.querySelectorAll('[data-dashboard-admin-link]'));
+      const copyReleaseButton = document.querySelector('[data-dashboard-copy-release]');
 
       const identityNode = document.querySelector('[data-dashboard-identity]');
       const emailNode = document.querySelector('[data-dashboard-email]');
@@ -210,10 +308,15 @@ const dashboardCopy = {
       const createdNode = document.querySelector('[data-dashboard-created]');
       const loginAtNode = document.querySelector('[data-dashboard-loginat]');
       const preferredNode = document.querySelector('[data-dashboard-preferred]');
+      const roleNode = document.querySelector('[data-dashboard-role]');
+      const capModerationNode = document.querySelector('[data-dashboard-cap-moderation]');
+      const capLocaleNode = document.querySelector('[data-dashboard-cap-locale]');
+      const capAdminNode = document.querySelector('[data-dashboard-cap-admin]');
       const commentsTotalNode = document.querySelector('[data-dashboard-comments-total]');
       const commentsPendingNode = document.querySelector('[data-dashboard-comments-pending]');
       const commentsApprovedNode = document.querySelector('[data-dashboard-comments-approved]');
       const commentsRejectedNode = document.querySelector('[data-dashboard-comments-rejected]');
+      const commentsRecentNode = document.querySelector('[data-dashboard-comments-recent]');
       const localeCoverageNode = document.querySelector('[data-dashboard-locale-coverage]');
       const localeGapsNode = document.querySelector('[data-dashboard-locale-gaps]');
       const localeDeployNode = document.querySelector('[data-dashboard-locale-deploy]');
@@ -275,6 +378,85 @@ const dashboardCopy = {
 
       const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
 
+      const inferRole = (userPayload, session) => {
+        const roleRaw = String(
+          userPayload?.role?.type ||
+          userPayload?.role?.name ||
+          userPayload?.role?.code ||
+          ''
+        ).trim().toLowerCase();
+
+        if (roleRaw.includes('super') || roleRaw === 'admin' || roleRaw.includes('administrator')) {
+          return 'admin';
+        }
+        if (roleRaw.includes('editor')) {
+          return 'editor';
+        }
+
+        const email = normalizeLanguage(userPayload?.email || session?.email || '');
+        if (ownerEmailHint && email && email === normalizeLanguage(ownerEmailHint)) {
+          return 'owner';
+        }
+
+        return 'member';
+      };
+
+      const applyAccessView = (role) => {
+        const normalizedRole = String(role || 'member').toLowerCase();
+        const isOwner = normalizedRole === 'owner';
+        const isAdmin = isOwner || normalizedRole === 'admin';
+        const isEditor = isAdmin || normalizedRole === 'editor';
+
+        const roleLabel = isOwner
+          ? dashboardCopy.accessOwner
+          : isAdmin
+            ? dashboardCopy.accessAdmin
+            : isEditor
+              ? dashboardCopy.accessEditor
+              : dashboardCopy.accessMember;
+        setText(roleNode, roleLabel);
+
+        setText(capModerationNode, isEditor ? dashboardCopy.capabilityEnabled : dashboardCopy.capabilityDisabled);
+        setText(capLocaleNode, isEditor ? dashboardCopy.capabilityEnabled : dashboardCopy.capabilityDisabled);
+        setText(capAdminNode, isAdmin ? dashboardCopy.capabilityEnabled : dashboardCopy.capabilityDisabled);
+
+        adminLinks.forEach((link) => {
+          if (!(link instanceof HTMLElement)) return;
+          link.hidden = !isAdmin;
+        });
+
+        if (copyReleaseButton instanceof HTMLElement) {
+          copyReleaseButton.hidden = !isAdmin;
+        }
+
+        if (toNode(controlNote)) {
+          toNode(controlNote).hidden = isAdmin;
+        }
+      };
+
+      const renderRecentComments = (items) => {
+        const host = toNode(commentsRecentNode);
+        if (!host) return;
+        host.innerHTML = '';
+
+        const list = Array.isArray(items) ? items.slice(0, 5) : [];
+        host.hidden = list.length === 0;
+        if (list.length === 0) return;
+
+        const fragment = document.createDocumentFragment();
+        list.forEach((item) => {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          const status = String(item?.status || '').trim().toUpperCase() || '-';
+          const body = String(item?.body || '').trim() || '-';
+          const compactBody = body.length > 110 ? `${body.slice(0, 107)}...` : body;
+          row.innerHTML = `<strong>${status}</strong><span>${compactBody}</span>`;
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+      };
+
       const loadDashboard = async (session) => {
         setFeedback(dashboardCopy.loading);
 
@@ -284,6 +466,8 @@ const dashboardCopy = {
         setText(statusNode, dashboardCopy.statusActive);
         setText(createdNode, dashboardCopy.unknown);
         setText(preferredNode, normalizeLanguage(document.documentElement.lang || 'en').toUpperCase());
+        applyAccessView('member');
+        renderRecentComments([]);
 
         setText(commentsTotalNode, '0');
         setText(commentsPendingNode, '0');
@@ -304,10 +488,13 @@ const dashboardCopy = {
           Authorization: `Bearer ${session.jwt}`,
         };
 
+        let userPayload = null;
+
         try {
-          const response = await fetch(`${authBaseUrl}/api/users/me`, { headers: authHeaders });
+          const response = await fetch(`${authBaseUrl}/api/users/me?populate=role`, { headers: authHeaders });
           if (response.ok) {
             const payload = await response.json().catch(() => null);
+            userPayload = payload;
             setText(identityNode, payload?.username || session.username || session.email || dashboardCopy.unknown);
             setText(emailNode, payload?.email || session.email || dashboardCopy.unknown);
             setText(createdNode, formatDate(payload?.createdAt));
@@ -324,6 +511,8 @@ const dashboardCopy = {
         } catch {
           hadErrors = true;
         }
+
+        applyAccessView(inferRole(userPayload, session));
 
         try {
           const response = await fetch(`${authBaseUrl}/api/user-preferences/me`, { headers: authHeaders });
@@ -356,6 +545,7 @@ const dashboardCopy = {
             setText(commentsPendingNode, String(pending));
             setText(commentsApprovedNode, String(approved));
             setText(commentsRejectedNode, String(rejected));
+            renderRecentComments(items);
           } else {
             hadErrors = true;
           }
@@ -417,6 +607,18 @@ const dashboardCopy = {
               await loadDashboard(session);
             } finally {
               refreshButton.disabled = false;
+            }
+          });
+        }
+
+        if (copyReleaseButton instanceof HTMLButtonElement) {
+          copyReleaseButton.addEventListener('click', async () => {
+            const command = 'bash tools/release_deploy_smoke.sh --with-moderation --with-ui-locale-sync --with-ui-locale-progress';
+            try {
+              await navigator.clipboard.writeText(command);
+              setFeedback(dashboardCopy.controlReleaseCopied);
+            } catch {
+              setFeedback(`${dashboardCopy.controlReleaseCopyFailed} ${command}`, true);
             }
           });
         }
@@ -500,6 +702,63 @@ const dashboardCopy = {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+
+  .dashboard-capabilities {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .dashboard-capabilities li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.65rem;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 0.84rem;
+  }
+
+  .dashboard-capabilities strong {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .dashboard-mini-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .dashboard-mini-item {
+    border: 1px solid var(--border);
+    border-radius: 0.65rem;
+    background: var(--surface-2);
+    padding: 0.5rem 0.6rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .dashboard-mini-item strong {
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-mini-item span {
+    font-size: 0.85rem;
+    color: var(--ink);
+    line-height: 1.35;
   }
 
   @media (max-width: 960px) {
