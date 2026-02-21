@@ -80,6 +80,15 @@ const dashboardCopy = {
     {},
     'Editor/admin roles can approve, reject, or mark spam directly from dashboard.'
   ),
+  moderationQueuePendingCount: translate(ui, 'dashboard.moderationQueuePendingCount', {}, 'Pending items'),
+  moderationQueueStaleCount: translate(ui, 'dashboard.moderationQueueStaleCount', {}, 'Older than 24h'),
+  moderationQueueOldest: translate(ui, 'dashboard.moderationQueueOldest', {}, 'Oldest pending'),
+  moderationQueueStaleAlert: translate(
+    ui,
+    'dashboard.moderationQueueStaleAlert',
+    {},
+    '{count} pending comments are older than {hours}h.'
+  ),
   moderationQueueEmpty: translate(ui, 'dashboard.moderationQueueEmpty', {}, 'No pending comments in queue.'),
   moderationHistoryTitle: translate(ui, 'dashboard.moderationHistoryTitle', {}, 'Recent moderation actions'),
   moderationHistoryBody: translate(
@@ -299,6 +308,21 @@ const dashboardCopy = {
         <div class="gv-stack dashboard-moderation-wrap" data-dashboard-moderation-wrap hidden>
           <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
           <p class="small">{dashboardCopy.moderationQueueBody}</p>
+          <div class="dashboard-kpi-grid">
+            <p class="dashboard-kpi">
+              <span>{dashboardCopy.moderationQueuePendingCount}</span>
+              <strong data-dashboard-moderation-pending>0</strong>
+            </p>
+            <p class="dashboard-kpi">
+              <span>{dashboardCopy.moderationQueueStaleCount}</span>
+              <strong data-dashboard-moderation-stale>0</strong>
+            </p>
+            <p class="dashboard-kpi">
+              <span>{dashboardCopy.moderationQueueOldest}</span>
+              <strong data-dashboard-moderation-oldest>0h</strong>
+            </p>
+          </div>
+          <p class="small dashboard-alert" data-dashboard-moderation-alert hidden></p>
           <ul class="dashboard-mini-list" data-dashboard-moderation-list></ul>
           <h3 class="dashboard-mini-title">{dashboardCopy.moderationHistoryTitle}</h3>
           <p class="small">{dashboardCopy.moderationHistoryBody}</p>
@@ -442,6 +466,10 @@ const dashboardCopy = {
       const moderationWrapNode = document.querySelector('[data-dashboard-moderation-wrap]');
       const moderationListNode = document.querySelector('[data-dashboard-moderation-list]');
       const moderationHistoryNode = document.querySelector('[data-dashboard-moderation-history]');
+      const moderationPendingNode = document.querySelector('[data-dashboard-moderation-pending]');
+      const moderationStaleNode = document.querySelector('[data-dashboard-moderation-stale]');
+      const moderationOldestNode = document.querySelector('[data-dashboard-moderation-oldest]');
+      const moderationAlertNode = document.querySelector('[data-dashboard-moderation-alert]');
 
       const identityNode = document.querySelector('[data-dashboard-identity]');
       const emailNode = document.querySelector('[data-dashboard-email]');
@@ -468,6 +496,7 @@ const dashboardCopy = {
       let currentSession = null;
       let canRunModeration = false;
       let isLoading = false;
+      const STALE_PENDING_HOURS = 24;
 
       const toNode = (value) => (value instanceof HTMLElement ? value : null);
       const setText = (node, value) => {
@@ -666,7 +695,47 @@ const dashboardCopy = {
         if (!host) return;
 
         host.innerHTML = '';
-        const list = Array.isArray(items) ? items.slice(0, 8) : [];
+
+        const sourceList = Array.isArray(items) ? items : [];
+        let staleCount = 0;
+        let oldestHours = 0;
+        const nowMs = Date.now();
+
+        sourceList.forEach((item) => {
+          const createdRaw = String(
+            item?.created_at ||
+            item?.createdAt ||
+            item?.submitted_at ||
+            ''
+          ).trim();
+          if (!createdRaw) return;
+
+          const createdMs = new Date(createdRaw).getTime();
+          if (!Number.isFinite(createdMs) || createdMs <= 0) return;
+
+          const ageHours = Math.max(0, Math.floor((nowMs - createdMs) / 3600000));
+          if (ageHours > oldestHours) oldestHours = ageHours;
+          if (ageHours >= STALE_PENDING_HOURS) staleCount += 1;
+        });
+
+        setText(moderationPendingNode, String(sourceList.length));
+        setText(moderationStaleNode, String(staleCount));
+        setText(moderationOldestNode, `${oldestHours}h`);
+
+        const alertEl = toNode(moderationAlertNode);
+        if (alertEl) {
+          if (staleCount > 0) {
+            alertEl.hidden = false;
+            alertEl.textContent = dashboardCopy.moderationQueueStaleAlert
+              .replace('{count}', String(staleCount))
+              .replace('{hours}', String(STALE_PENDING_HOURS));
+          } else {
+            alertEl.hidden = true;
+            alertEl.textContent = '';
+          }
+        }
+
+        const list = sourceList.slice(0, 8);
         if (!canRunModeration || list.length === 0) {
           const row = document.createElement('li');
           row.className = 'dashboard-mini-item';
@@ -804,6 +873,12 @@ const dashboardCopy = {
         setText(commentsPendingNode, '0');
         setText(commentsApprovedNode, '0');
         setText(commentsRejectedNode, '0');
+        setText(moderationPendingNode, '0');
+        setText(moderationStaleNode, '0');
+        setText(moderationOldestNode, '0h');
+        if (toNode(moderationAlertNode)) {
+          toNode(moderationAlertNode).hidden = true;
+        }
 
         setText(localeCoverageNode, '0%');
         setText(localeGapsNode, '0');
@@ -1160,6 +1235,11 @@ const dashboardCopy = {
 
   .dashboard-moderation-item {
     gap: 0.45rem;
+  }
+
+  .dashboard-alert {
+    color: #b9382f;
+    font-weight: 600;
   }
 
   .dashboard-action-row {
