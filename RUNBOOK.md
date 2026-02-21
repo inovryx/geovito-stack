@@ -579,6 +579,10 @@ bash tools/blog_comment_moderate.sh set <comment_id> rejected --notes "policy re
 bash tools/blog_comment_quick_action.sh next
 bash tools/blog_comment_quick_action.sh approve-next --notes "qa ok"
 bash tools/blog_comment_quick_action.sh reject-next --notes "policy reason"
+
+# quick bulk flow (oldest pending N items)
+bash tools/blog_comment_quick_action.sh approve-next-bulk --limit 10 --notes "qa batch pass"
+bash tools/blog_comment_quick_action.sh reject-next-bulk --limit 5 --notes "policy batch reject"
 ```
 
 Optional release smoke extension:

@@ -13,6 +13,7 @@ const usage = () => {
   console.log('  node scripts/blog_comment_moderate.js set <comment_id> <status> [--notes "text"]');
   console.log('  node scripts/blog_comment_moderate.js next');
   console.log('  node scripts/blog_comment_moderate.js set-next <status> [--notes "text"]');
+  console.log('  node scripts/blog_comment_moderate.js bulk-set-next <status> [--limit 20] [--notes "text"]');
   console.log('');
   console.log('Valid status values: pending, approved, rejected, spam, deleted');
 };
@@ -304,6 +305,90 @@ const setNextPendingStatus = async (strapi, argv) => {
   return 0;
 };
 
+const setBulkNextPendingStatus = async (strapi, argv) => {
+  if (argv.length < 1) {
+    throw new Error('bulk-set-next command requires: <status>');
+  }
+
+  const nextStatus = String(argv[0] || '').trim().toLowerCase();
+  if (!VALID_STATUSES.has(nextStatus)) {
+    throw new Error(`Invalid status: ${nextStatus}`);
+  }
+  if (nextStatus === BLOG_COMMENT_STATUS.PENDING) {
+    throw new Error('bulk-set-next cannot set status back to pending');
+  }
+
+  let notes;
+  let limit = 20;
+  for (let i = 1; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (token === '--notes') {
+      notes = String(argv[i + 1] || '');
+      i += 1;
+    } else if (token === '--limit') {
+      limit = parseIntSafe(argv[i + 1], 20);
+      i += 1;
+    } else if (token === '-h' || token === '--help') {
+      usage();
+      return 0;
+    } else {
+      throw new Error(`Unknown argument: ${token}`);
+    }
+  }
+
+  const safeLimit = Math.min(Math.max(limit, 1), 200);
+  const entries = await strapi.entityService.findMany(UID, {
+    publicationState: 'preview',
+    filters: {
+      status: BLOG_COMMENT_STATUS.PENDING,
+    },
+    sort: ['createdAt:asc'],
+    fields: ['id', 'comment_id', 'status', 'source', 'blog_post_ref', 'createdAt'],
+    limit: safeLimit,
+  });
+
+  console.log('==============================================================');
+  console.log('GEOVITO BLOG COMMENT MODERATION BULK UPDATE');
+  console.log('==============================================================');
+  console.log(`mode=bulk-set-next target_status=${nextStatus} limit=${safeLimit}`);
+
+  if (!entries.length) {
+    console.log('pending=0');
+    console.log('changed=0');
+    console.log('==============================================================');
+    return 0;
+  }
+
+  const changed = [];
+  for (const entry of entries) {
+    const data = { status: nextStatus };
+    if (typeof notes === 'string') {
+      data.moderation_notes = notes;
+    }
+
+    const updated = await strapi.entityService.update(UID, entry.id, {
+      data,
+      fields: ['comment_id', 'status', 'source', 'blog_post_ref', 'reviewed_at', 'reviewed_by'],
+    });
+
+    changed.push({
+      comment_id: updated.comment_id,
+      from: entry.status,
+      to: updated.status,
+      source: updated.source,
+      post: updated.blog_post_ref,
+    });
+  }
+
+  console.log(`pending=${entries.length}`);
+  console.log(`changed=${changed.length}`);
+  for (const item of changed) {
+    console.log(`${item.comment_id} | from=${item.from} to=${item.to} | source=${item.source} | post=${item.post}`);
+  }
+  console.log('==============================================================');
+  return 0;
+};
+
 const main = async () => {
   const argv = process.argv.slice(2);
   const command = String(argv[0] || '').trim().toLowerCase();
@@ -329,6 +414,10 @@ const main = async () => {
     }
     if (command === 'set-next') {
       await setNextPendingStatus(strapi, argv.slice(1));
+      return;
+    }
+    if (command === 'bulk-set-next') {
+      await setBulkNextPendingStatus(strapi, argv.slice(1));
       return;
     }
     throw new Error(`Unknown command: ${command}`);
