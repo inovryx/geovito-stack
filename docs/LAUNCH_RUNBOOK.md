@@ -190,6 +190,9 @@ Notes:
 - The account test uses Docker Playwright and requires writable `frontend/node_modules` ownership.
 - `--with-blog-engagement-test` runs `bash tools/blog_engagement_ui_playwright.sh`.
 
+Pre-design gate icinde blog engagement UI adimini da kosmak istersen:
+- `RUN_BLOG_ENGAGEMENT_UI_GATE=true bash tools/pre_design_gate_check.sh`
+
 ## 3) Test Mode Protection (Recommended for closed testing)
 
 If you want to avoid accidental public usage during test phase:

@@ -51,6 +51,12 @@ run_gate "OAuth Config Guard" bash tools/oauth_config_check.sh
 run_gate "Blog Comment State Contract" bash tools/blog_comment_state_contract_check.sh
 run_gate "Blog Engagement Policy Guard" bash tools/blog_engagement_policy_check.sh
 run_gate "Blog Engagement Smoke" bash tools/blog_engagement_smoke.sh
+if [[ "${RUN_BLOG_ENGAGEMENT_UI_GATE:-false}" == "true" ]]; then
+  run_gate "Blog Engagement UI Playwright" bash tools/blog_engagement_ui_playwright.sh
+else
+  echo "RESULT: SKIP (Blog Engagement UI Playwright) set RUN_BLOG_ENGAGEMENT_UI_GATE=true to enable"
+  SUMMARY_LINES+=("SKIP | Blog Engagement UI Playwright | opt_in")
+fi
 run_gate "Import Dormant Guard" bash tools/import_dormant_check.sh
 run_gate "Translation Bundle Dormant Guard" bash tools/translation_bundle_dormant_check.sh
 run_gate "Import Log Domain Sanity" bash tools/import_log_sanity_check.sh
