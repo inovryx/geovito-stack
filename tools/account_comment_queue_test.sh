@@ -26,41 +26,21 @@ if ! docker compose version >/dev/null 2>&1; then
   exit 1
 fi
 
-check_permission_footguns() {
-  local -a candidates=()
-  local -a issues=()
-  local path owner_uid
-
-  shopt -s nullglob
-  candidates+=("frontend/node_modules")
-  candidates+=("frontend/test-results")
-  candidates+=("frontend/playwright-report")
-  candidates+=("frontend"/dist*)
-  shopt -u nullglob
-
-  for path in "${candidates[@]}"; do
-    [[ -e "$path" ]] || continue
-    owner_uid="$(stat -c '%u' "$path" 2>/dev/null || true)"
-    if [[ "$owner_uid" == "0" || ! -w "$path" ]]; then
-      issues+=("$path")
-    fi
-  done
-
-  if [[ "${#issues[@]}" -gt 0 ]]; then
-    echo "FAIL: Frontend artifact izin/sahiplik problemi tespit edildi:"
-    for path in "${issues[@]}"; do
-      echo " - $path"
-    done
-    echo ""
-    echo "Duzenleme komutu (kopyala-calistir):"
-    echo "sudo chown -R \$(whoami):\$(id -gn) frontend && rm -rf frontend/dist* frontend/test-results frontend/playwright-report frontend/node_modules"
-    echo ""
-    echo "Bu duzeltmeden sonra scripti tekrar calistirin."
-    exit 2
+fix_frontend_ownership_and_cache() {
+  if [[ "${ACCOUNT_TEST_AUTO_FIX_OWNERSHIP:-true}" != "true" ]]; then
+    return 0
   fi
+
+  echo "INFO: Frontend ownership/cache duzeltiliyor (EACCES onleme)."
+  docker run --rm \
+    -e UID_HOST="$(id -u)" \
+    -e GID_HOST="$(id -g)" \
+    -v "$PWD":/work \
+    alpine:3.20 \
+    sh -lc 'chown -R "$UID_HOST:$GID_HOST" /work/frontend && rm -rf /work/frontend/node_modules/.vite /work/frontend/test-results /work/frontend/playwright-report'
 }
 
-check_permission_footguns
+fix_frontend_ownership_and_cache
 
 if [[ "${SKIP_STRAPI:-0}" != "1" ]]; then
   echo "INFO: Strapi ayaga kaldiriliyor (SKIP_STRAPI=1 degil)."
