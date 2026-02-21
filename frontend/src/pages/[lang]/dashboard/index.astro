@@ -259,197 +259,251 @@ const dashboardCopy = {
       </button>
     </div>
 
-    <div class="dashboard-grid">
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.overviewTitle}</h2>
-        <dl class="dashboard-dl">
-          <div>
-            <dt>{dashboardCopy.overviewIdentity}</dt>
-            <dd data-dashboard-identity>{dashboardCopy.unknown}</dd>
-          </div>
-          <div>
-            <dt>{dashboardCopy.overviewEmail}</dt>
-            <dd data-dashboard-email>{dashboardCopy.unknown}</dd>
-          </div>
-          <div>
-            <dt>{dashboardCopy.overviewStatus}</dt>
-            <dd data-dashboard-status>{dashboardCopy.unknown}</dd>
-          </div>
-          <div>
-            <dt>{dashboardCopy.overviewMemberSince}</dt>
-            <dd data-dashboard-created>{dashboardCopy.unknown}</dd>
-          </div>
-          <div>
-            <dt>{dashboardCopy.overviewLoginAt}</dt>
-            <dd data-dashboard-loginat>{dashboardCopy.unknown}</dd>
-          </div>
-        </dl>
-      </article>
+    <nav class="dashboard-section-nav" aria-label={dashboardCopy.quickTitle}>
+      <a class="dashboard-section-pill" href="#dashboard-member">{dashboardCopy.overviewTitle}</a>
+      <a class="dashboard-section-pill" href="#dashboard-editorial">{dashboardCopy.localeTitle}</a>
+      <a class="dashboard-section-pill" href="#dashboard-control">{dashboardCopy.controlTitle}</a>
+    </nav>
 
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.preferenceTitle}</h2>
-        <p class="small">{dashboardCopy.preferenceBody}</p>
-        <p class="dashboard-kpi">
-          <span>{dashboardCopy.preferenceValue}</span>
-          <strong data-dashboard-preferred>{dashboardCopy.unknown}</strong>
-        </p>
-      </article>
+    <div class="dashboard-lanes">
+      <section class="dashboard-lane gv-stack" id="dashboard-member" data-dashboard-lane data-min-role="member">
+        <header class="dashboard-lane-head">
+          <div class="dashboard-lane-title-wrap">
+            <h2 class="dashboard-lane-title">{dashboardCopy.overviewTitle}</h2>
+            <p class="small">{dashboardCopy.quickBody}</p>
+          </div>
+          <p class="dashboard-role-pill">
+            <span>{dashboardCopy.accessRole}</span>
+            <strong data-dashboard-role>{dashboardCopy.accessMember}</strong>
+          </p>
+        </header>
 
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.commentsTitle}</h2>
-        <p class="small">{dashboardCopy.commentsBody}</p>
-        <div class="dashboard-kpi-grid">
-          <p class="dashboard-kpi"><span>{dashboardCopy.commentsTotal}</span><strong data-dashboard-comments-total>0</strong></p>
-          <p class="dashboard-kpi"><span>{dashboardCopy.commentsPending}</span><strong data-dashboard-comments-pending>0</strong></p>
-          <p class="dashboard-kpi"><span>{dashboardCopy.commentsApproved}</span><strong data-dashboard-comments-approved>0</strong></p>
-          <p class="dashboard-kpi"><span>{dashboardCopy.commentsRejected}</span><strong data-dashboard-comments-rejected>0</strong></p>
-        </div>
-        <ul class="dashboard-mini-list" data-dashboard-comments-recent hidden></ul>
-        <div class="gv-stack dashboard-moderation-wrap" data-dashboard-moderation-wrap hidden>
-          <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
-          <p class="small">{dashboardCopy.moderationQueueBody}</p>
-          <div class="dashboard-kpi-grid">
+        <div class="dashboard-grid">
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.overviewTitle}</h3>
+            <dl class="dashboard-dl">
+              <div>
+                <dt>{dashboardCopy.overviewIdentity}</dt>
+                <dd data-dashboard-identity>{dashboardCopy.unknown}</dd>
+              </div>
+              <div>
+                <dt>{dashboardCopy.overviewEmail}</dt>
+                <dd data-dashboard-email>{dashboardCopy.unknown}</dd>
+              </div>
+              <div>
+                <dt>{dashboardCopy.overviewStatus}</dt>
+                <dd data-dashboard-status>{dashboardCopy.unknown}</dd>
+              </div>
+              <div>
+                <dt>{dashboardCopy.overviewMemberSince}</dt>
+                <dd data-dashboard-created>{dashboardCopy.unknown}</dd>
+              </div>
+              <div>
+                <dt>{dashboardCopy.overviewLoginAt}</dt>
+                <dd data-dashboard-loginat>{dashboardCopy.unknown}</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.preferenceTitle}</h3>
+            <p class="small">{dashboardCopy.preferenceBody}</p>
             <p class="dashboard-kpi">
-              <span>{dashboardCopy.moderationQueuePendingCount}</span>
-              <strong data-dashboard-moderation-pending>0</strong>
+              <span>{dashboardCopy.preferenceValue}</span>
+              <strong data-dashboard-preferred>{dashboardCopy.unknown}</strong>
             </p>
-            <p class="dashboard-kpi">
-              <span>{dashboardCopy.moderationQueueStaleCount}</span>
-              <strong data-dashboard-moderation-stale>0</strong>
-            </p>
-            <p class="dashboard-kpi">
-              <span>{dashboardCopy.moderationQueueOldest}</span>
-              <strong data-dashboard-moderation-oldest>0h</strong>
-            </p>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.commentsTitle}</h3>
+            <p class="small">{dashboardCopy.commentsBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi"><span>{dashboardCopy.commentsTotal}</span><strong data-dashboard-comments-total>0</strong></p>
+              <p class="dashboard-kpi"><span>{dashboardCopy.commentsPending}</span><strong data-dashboard-comments-pending>0</strong></p>
+              <p class="dashboard-kpi"><span>{dashboardCopy.commentsApproved}</span><strong data-dashboard-comments-approved>0</strong></p>
+              <p class="dashboard-kpi"><span>{dashboardCopy.commentsRejected}</span><strong data-dashboard-comments-rejected>0</strong></p>
+            </div>
+            <ul class="dashboard-mini-list" data-dashboard-comments-recent hidden></ul>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.accessTitle}</h3>
+            <p class="small">{dashboardCopy.accessBody}</p>
+            <ul class="dashboard-capabilities">
+              <li>
+                <span>{dashboardCopy.capabilityModeration}</span>
+                <strong data-dashboard-cap-moderation>{dashboardCopy.capabilityDisabled}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.capabilityLocale}</span>
+                <strong data-dashboard-cap-locale>{dashboardCopy.capabilityDisabled}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.capabilityAdminTools}</span>
+                <strong data-dashboard-cap-admin>{dashboardCopy.capabilityDisabled}</strong>
+              </li>
+            </ul>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.quickTitle}</h3>
+            <p class="small">{dashboardCopy.quickBody}</p>
+            <div class="dashboard-actions">
+              <a class="ui-button ui-button-secondary ui-button-sm" href={accountPath}>
+                <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
+              </a>
+              <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#comments`}>
+                <span class="ui-button-label">{dashboardCopy.quickComments}</span>
+              </a>
+              <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#locale-progress`}>
+                <span class="ui-button-label">{dashboardCopy.quickLocale}</span>
+              </a>
+              <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'atlas')}>
+                <span class="ui-button-label">{dashboardCopy.quickAtlas}</span>
+              </a>
+              <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'blog')}>
+                <span class="ui-button-label">{dashboardCopy.quickBlog}</span>
+              </a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section
+        class="dashboard-lane gv-stack"
+        id="dashboard-editorial"
+        data-dashboard-lane
+        data-min-role="editor"
+        hidden
+      >
+        <header class="dashboard-lane-head">
+          <div class="dashboard-lane-title-wrap">
+            <h2 class="dashboard-lane-title">{dashboardCopy.localeTitle}</h2>
+            <p class="small">{dashboardCopy.localeBody}</p>
           </div>
-          <p class="small dashboard-alert" data-dashboard-moderation-alert hidden></p>
-          <ul class="dashboard-mini-list" data-dashboard-moderation-list></ul>
-          <h3 class="dashboard-mini-title">{dashboardCopy.moderationHistoryTitle}</h3>
-          <p class="small">{dashboardCopy.moderationHistoryBody}</p>
-          <ul class="dashboard-mini-list" data-dashboard-moderation-history></ul>
-        </div>
-      </article>
+        </header>
 
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.localeTitle}</h2>
-        <p class="small">{dashboardCopy.localeBody}</p>
-        <div class="dashboard-kpi-grid">
-          <p class="dashboard-kpi"><span>{dashboardCopy.localeCoverage.replace('{lang}', lang.toUpperCase())}</span><strong data-dashboard-locale-coverage>0%</strong></p>
-          <p class="dashboard-kpi"><span>{dashboardCopy.localeGapLocales}</span><strong data-dashboard-locale-gaps>0</strong></p>
-          <p class="dashboard-kpi"><span>{dashboardCopy.localeDeployRequired}</span><strong data-dashboard-locale-deploy>0</strong></p>
-        </div>
-        <p class="small" data-dashboard-locale-note hidden>{dashboardCopy.localeLimited}</p>
-      </article>
+        <div class="dashboard-grid">
+          <article class="card panel gv-stack">
+            <div class="gv-stack dashboard-moderation-wrap" data-dashboard-moderation-wrap hidden>
+              <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
+              <p class="small">{dashboardCopy.moderationQueueBody}</p>
+              <div class="dashboard-kpi-grid">
+                <p class="dashboard-kpi">
+                  <span>{dashboardCopy.moderationQueuePendingCount}</span>
+                  <strong data-dashboard-moderation-pending>0</strong>
+                </p>
+                <p class="dashboard-kpi">
+                  <span>{dashboardCopy.moderationQueueStaleCount}</span>
+                  <strong data-dashboard-moderation-stale>0</strong>
+                </p>
+                <p class="dashboard-kpi">
+                  <span>{dashboardCopy.moderationQueueOldest}</span>
+                  <strong data-dashboard-moderation-oldest>0h</strong>
+                </p>
+              </div>
+              <p class="small dashboard-alert" data-dashboard-moderation-alert hidden></p>
+              <ul class="dashboard-mini-list" data-dashboard-moderation-list></ul>
+              <h3 class="dashboard-mini-title">{dashboardCopy.moderationHistoryTitle}</h3>
+              <p class="small">{dashboardCopy.moderationHistoryBody}</p>
+              <ul class="dashboard-mini-list" data-dashboard-moderation-history></ul>
+            </div>
+          </article>
 
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.accessTitle}</h2>
-        <p class="small">{dashboardCopy.accessBody}</p>
-        <p class="dashboard-kpi">
-          <span>{dashboardCopy.accessRole}</span>
-          <strong data-dashboard-role>{dashboardCopy.accessMember}</strong>
-        </p>
-        <ul class="dashboard-capabilities">
-          <li>
-            <span>{dashboardCopy.capabilityModeration}</span>
-            <strong data-dashboard-cap-moderation>{dashboardCopy.capabilityDisabled}</strong>
-          </li>
-          <li>
-            <span>{dashboardCopy.capabilityLocale}</span>
-            <strong data-dashboard-cap-locale>{dashboardCopy.capabilityDisabled}</strong>
-          </li>
-          <li>
-            <span>{dashboardCopy.capabilityAdminTools}</span>
-            <strong data-dashboard-cap-admin>{dashboardCopy.capabilityDisabled}</strong>
-          </li>
-        </ul>
-      </article>
-
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.roleGovernanceTitle}</h2>
-        <p class="small">{dashboardCopy.roleGovernanceBody}</p>
-        <p class="dashboard-kpi">
-          <span>{dashboardCopy.roleGovernanceCurrent}</span>
-          <strong data-dashboard-governance-role>{dashboardCopy.accessMember}</strong>
-        </p>
-        <p class="small"><strong>{dashboardCopy.roleGovernanceScope}:</strong> <span data-dashboard-governance-scope>{dashboardCopy.roleGovernanceMemberScope}</span></p>
-        <p class="small"><strong>{dashboardCopy.roleGovernancePolicy}:</strong> <span data-dashboard-governance-policy>{dashboardCopy.roleGovernanceMemberPolicy}</span></p>
-        <div class="dashboard-actions">
-          <a
-            class="ui-button ui-button-secondary ui-button-sm"
-            href={`${strapiAdminUrl}/settings/users-permissions/roles`}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-dashboard-admin-link
-            hidden
-          >
-            <span class="ui-button-label">{dashboardCopy.roleGovernanceManageRoles}</span>
-          </a>
-          <a
-            class="ui-button ui-button-secondary ui-button-sm"
-            href={`${strapiAdminUrl}/settings/users-permissions/users`}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-dashboard-admin-link
-            hidden
-          >
-            <span class="ui-button-label">{dashboardCopy.roleGovernanceManageUsers}</span>
-          </a>
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.localeTitle}</h3>
+            <p class="small">{dashboardCopy.localeBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi"><span>{dashboardCopy.localeCoverage.replace('{lang}', lang.toUpperCase())}</span><strong data-dashboard-locale-coverage>0%</strong></p>
+              <p class="dashboard-kpi"><span>{dashboardCopy.localeGapLocales}</span><strong data-dashboard-locale-gaps>0</strong></p>
+              <p class="dashboard-kpi"><span>{dashboardCopy.localeDeployRequired}</span><strong data-dashboard-locale-deploy>0</strong></p>
+            </div>
+            <p class="small" data-dashboard-locale-note hidden>{dashboardCopy.localeLimited}</p>
+          </article>
         </div>
-        <p class="small" data-dashboard-governance-limited>{dashboardCopy.roleGovernanceLimited}</p>
-      </article>
+      </section>
 
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.quickTitle}</h2>
-        <p class="small">{dashboardCopy.quickBody}</p>
-        <div class="dashboard-actions">
-          <a class="ui-button ui-button-secondary ui-button-sm" href={accountPath}>
-            <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
-          </a>
-          <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#comments`}>
-            <span class="ui-button-label">{dashboardCopy.quickComments}</span>
-          </a>
-          <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#locale-progress`}>
-            <span class="ui-button-label">{dashboardCopy.quickLocale}</span>
-          </a>
-          <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'atlas')}>
-            <span class="ui-button-label">{dashboardCopy.quickAtlas}</span>
-          </a>
-          <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'blog')}>
-            <span class="ui-button-label">{dashboardCopy.quickBlog}</span>
-          </a>
-        </div>
-      </article>
+      <section
+        class="dashboard-lane gv-stack"
+        id="dashboard-control"
+        data-dashboard-lane
+        data-min-role="admin"
+        hidden
+      >
+        <header class="dashboard-lane-head">
+          <div class="dashboard-lane-title-wrap">
+            <h2 class="dashboard-lane-title">{dashboardCopy.controlTitle}</h2>
+            <p class="small">{dashboardCopy.controlBody}</p>
+          </div>
+          <p class="dashboard-role-pill">
+            <span>{dashboardCopy.roleGovernanceCurrent}</span>
+            <strong data-dashboard-governance-role>{dashboardCopy.accessMember}</strong>
+          </p>
+        </header>
 
-      <article class="card panel gv-stack">
-        <h2>{dashboardCopy.controlTitle}</h2>
-        <p class="small">{dashboardCopy.controlBody}</p>
-        <div class="dashboard-actions">
-          <a
-            class="ui-button ui-button-secondary ui-button-sm"
-            href={strapiAdminUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-dashboard-admin-link
-            hidden
-          >
-            <span class="ui-button-label">{dashboardCopy.controlAdmin}</span>
-          </a>
-          <a
-            class="ui-button ui-button-secondary ui-button-sm"
-            href="https://github.com/inovryx/geovito-stack/blob/main/docs/LAUNCH_RUNBOOK.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-dashboard-admin-link
-            hidden
-          >
-            <span class="ui-button-label">{dashboardCopy.controlRunbook}</span>
-          </a>
-          <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-copy-release hidden>
-            <span class="ui-button-label">{dashboardCopy.controlRelease}</span>
-          </button>
+        <div class="dashboard-grid">
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.roleGovernanceTitle}</h3>
+            <p class="small">{dashboardCopy.roleGovernanceBody}</p>
+            <p class="small"><strong>{dashboardCopy.roleGovernanceScope}:</strong> <span data-dashboard-governance-scope>{dashboardCopy.roleGovernanceMemberScope}</span></p>
+            <p class="small"><strong>{dashboardCopy.roleGovernancePolicy}:</strong> <span data-dashboard-governance-policy>{dashboardCopy.roleGovernanceMemberPolicy}</span></p>
+            <div class="dashboard-actions">
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href={`${strapiAdminUrl}/settings/users-permissions/roles`}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-dashboard-admin-link
+                hidden
+              >
+                <span class="ui-button-label">{dashboardCopy.roleGovernanceManageRoles}</span>
+              </a>
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href={`${strapiAdminUrl}/settings/users-permissions/users`}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-dashboard-admin-link
+                hidden
+              >
+                <span class="ui-button-label">{dashboardCopy.roleGovernanceManageUsers}</span>
+              </a>
+            </div>
+            <p class="small" data-dashboard-governance-limited>{dashboardCopy.roleGovernanceLimited}</p>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.controlTitle}</h3>
+            <p class="small">{dashboardCopy.controlBody}</p>
+            <div class="dashboard-actions">
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href={strapiAdminUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-dashboard-admin-link
+                hidden
+              >
+                <span class="ui-button-label">{dashboardCopy.controlAdmin}</span>
+              </a>
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href="https://github.com/inovryx/geovito-stack/blob/main/docs/LAUNCH_RUNBOOK.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-dashboard-admin-link
+                hidden
+              >
+                <span class="ui-button-label">{dashboardCopy.controlRunbook}</span>
+              </a>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-copy-release hidden>
+                <span class="ui-button-label">{dashboardCopy.controlRelease}</span>
+              </button>
+            </div>
+            <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
+          </article>
         </div>
-        <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
-      </article>
+      </section>
     </div>
   </section>
 
@@ -493,10 +547,17 @@ const dashboardCopy = {
       const localeCoverageNode = document.querySelector('[data-dashboard-locale-coverage]');
       const localeGapsNode = document.querySelector('[data-dashboard-locale-gaps]');
       const localeDeployNode = document.querySelector('[data-dashboard-locale-deploy]');
+      const laneNodes = Array.from(document.querySelectorAll('[data-dashboard-lane]'));
       let currentSession = null;
       let canRunModeration = false;
       let isLoading = false;
       const STALE_PENDING_HOURS = 24;
+      const roleRanks = {
+        member: 0,
+        editor: 1,
+        admin: 2,
+        owner: 3,
+      };
 
       const toNode = (value) => (value instanceof HTMLElement ? value : null);
       const setText = (node, value) => {
@@ -617,6 +678,8 @@ const dashboardCopy = {
         const isOwner = normalizedRole === 'owner';
         const isAdmin = isOwner || normalizedRole === 'admin';
         const isEditor = isAdmin || normalizedRole === 'editor';
+        const effectiveRole = isOwner ? 'owner' : isAdmin ? 'admin' : isEditor ? 'editor' : 'member';
+        const effectiveRoleRank = Number(roleRanks[effectiveRole] ?? 0);
         canRunModeration = isEditor;
 
         const roleLabel = isOwner
@@ -659,6 +722,13 @@ const dashboardCopy = {
         if (toNode(moderationWrapNode)) {
           toNode(moderationWrapNode).hidden = !canRunModeration;
         }
+
+        laneNodes.forEach((lane) => {
+          if (!(lane instanceof HTMLElement)) return;
+          const minRole = String(lane.getAttribute('data-min-role') || 'member').toLowerCase();
+          const minRoleRank = Number(roleRanks[minRole] ?? 0);
+          lane.hidden = effectiveRoleRank < minRoleRank;
+        });
 
         return {
           isOwner,
@@ -1107,6 +1177,84 @@ const dashboardCopy = {
     gap: 0.75rem;
   }
 
+  .dashboard-section-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .dashboard-section-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.18rem 0.64rem;
+  }
+
+  .dashboard-section-pill:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+    background: var(--brand-soft);
+  }
+
+  .dashboard-lanes {
+    display: grid;
+    gap: 0.95rem;
+  }
+
+  .dashboard-lane {
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--surface-2) 68%, transparent);
+    padding: 0.75rem;
+  }
+
+  .dashboard-lane-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .dashboard-lane-title-wrap {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .dashboard-lane-title {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+  }
+
+  .dashboard-role-pill {
+    margin: 0;
+    display: grid;
+    gap: 0.1rem;
+    text-align: right;
+    padding: 0.42rem 0.58rem;
+    border: 1px solid var(--border);
+    border-radius: 0.72rem;
+    background: var(--surface-2);
+  }
+
+  .dashboard-role-pill span {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-role-pill strong {
+    font-size: 0.84rem;
+    color: var(--ink);
+  }
+
   .dashboard-grid {
     display: grid;
     gap: 0.875rem;
@@ -1249,6 +1397,16 @@ const dashboardCopy = {
   }
 
   @media (max-width: 960px) {
+    .dashboard-lane-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .dashboard-role-pill {
+      text-align: left;
+      width: 100%;
+    }
+
     .dashboard-grid {
       grid-template-columns: 1fr;
     }
