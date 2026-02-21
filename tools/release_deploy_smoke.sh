@@ -8,11 +8,12 @@ RUN_DEPLOY="true"
 RUN_SMOKE="true"
 RUN_MODERATION="false"
 RUN_ACCOUNT_TEST="false"
+RUN_BLOG_ENGAGEMENT_TEST="false"
 
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test]
 
 Purpose:
   Single command release verification:
@@ -20,6 +21,7 @@ Purpose:
   2) Run domain smoke check via Access token
   3) (Optional) Run blog moderation stale-pending guard
   4) (Optional) Run account comment queue Playwright smoke
+  5) (Optional) Run blog engagement Playwright smoke (auto-seed if needed)
 
 Notes:
   - pages deploy hook must be configured:
@@ -54,6 +56,10 @@ while [[ $# -gt 0 ]]; do
       RUN_ACCOUNT_TEST="true"
       shift
       ;;
+    --with-blog-engagement-test)
+      RUN_BLOG_ENGAGEMENT_TEST="true"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -71,7 +77,7 @@ EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
 echo "expected_sha7=${EXPECTED_SHA7}"
-echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST}"
 echo "=============================================================="
 
 if [[ "$RUN_DEPLOY" == "true" ]]; then
@@ -96,6 +102,12 @@ if [[ "$RUN_ACCOUNT_TEST" == "true" ]]; then
   bash tools/account_comment_queue_test.sh
 else
   echo "INFO: skipped account queue test stage (use --with-account-test)"
+fi
+
+if [[ "$RUN_BLOG_ENGAGEMENT_TEST" == "true" ]]; then
+  bash tools/blog_engagement_ui_playwright.sh
+else
+  echo "INFO: skipped blog engagement ui test stage (use --with-blog-engagement-test)"
 fi
 
 echo "=============================================================="

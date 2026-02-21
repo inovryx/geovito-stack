@@ -178,12 +178,17 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-moderation`
 - Include account comment queue Playwright smoke:
   - `bash tools/release_deploy_smoke.sh --with-account-test`
+- Include blog engagement Playwright smoke (auto-seed blog mock data when missing):
+  - `bash tools/release_deploy_smoke.sh --with-blog-engagement-test`
 - Include both optional checks:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test`
+- Include all optional checks:
+  - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test`
 
 Notes:
 - `--with-account-test` runs `bash tools/account_comment_queue_test.sh`.
 - The account test uses Docker Playwright and requires writable `frontend/node_modules` ownership.
+- `--with-blog-engagement-test` runs `bash tools/blog_engagement_ui_playwright.sh`.
 
 ## 3) Test Mode Protection (Recommended for closed testing)
 
