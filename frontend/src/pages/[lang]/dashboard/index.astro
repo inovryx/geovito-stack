@@ -89,6 +89,8 @@ const dashboardCopy = {
     'Latest approved/rejected/spam actions with reviewer and timestamp.'
   ),
   moderationHistoryEmpty: translate(ui, 'dashboard.moderationHistoryEmpty', {}, 'No recent moderation actions yet.'),
+  moderationHistoryPost: translate(ui, 'dashboard.moderationHistoryPost', {}, 'Post'),
+  moderationHistoryNote: translate(ui, 'dashboard.moderationHistoryNote', {}, 'Note'),
   moderationApprove: translate(ui, 'dashboard.moderationApprove', {}, 'Approve'),
   moderationReject: translate(ui, 'dashboard.moderationReject', {}, 'Reject'),
   moderationSpam: translate(ui, 'dashboard.moderationSpam', {}, 'Spam'),
@@ -541,9 +543,11 @@ const dashboardCopy = {
           const compactBody = body.length > 120 ? `${body.slice(0, 117)}...` : body;
           const commentId = String(item?.comment_id || '').trim();
           const author = String(item?.display_name || item?.source || '').trim() || '-';
+          const postRef = String(item?.blog_post_ref || '').trim() || '-';
           row.innerHTML = `
             <strong>${escapeHtml(status)} · ${escapeHtml(author)}</strong>
             <span>${escapeHtml(compactBody)}</span>
+            <span>${escapeHtml(dashboardCopy.moderationHistoryPost)}: ${escapeHtml(postRef)}</span>
             <div class="dashboard-action-row">
               <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-moderate="approved" data-comment-id="${escapeHtml(commentId)}">
                 <span class="ui-button-label">${escapeHtml(dashboardCopy.moderationApprove)}</span>
@@ -587,10 +591,14 @@ const dashboardCopy = {
           const reviewedAtLabel = reviewedAt ? formatDate(reviewedAt) : dashboardCopy.unknown;
           const body = String(item?.body || '').trim() || '-';
           const compactBody = body.length > 120 ? `${body.slice(0, 117)}...` : body;
+          const postRef = String(item?.blog_post_ref || '').trim() || '-';
+          const moderationNote = String(item?.moderation_notes || '').trim();
 
           row.innerHTML = `
             <strong>${escapeHtml(status)} · ${escapeHtml(reviewer)} · ${escapeHtml(reviewedAtLabel)}</strong>
             <span>${escapeHtml(compactBody)}</span>
+            <span>${escapeHtml(dashboardCopy.moderationHistoryPost)}: ${escapeHtml(postRef)}</span>
+            ${moderationNote ? `<span>${escapeHtml(dashboardCopy.moderationHistoryNote)}: ${escapeHtml(moderationNote)}</span>` : ''}
           `;
           fragment.appendChild(row);
         });
