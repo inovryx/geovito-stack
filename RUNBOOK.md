@@ -234,6 +234,12 @@ Includes:
 - `tools/pages_build_check.sh`
 - `tools/purge_mock.sh`
 
+Optional pre-design extensions:
+- Blog engagement UI Playwright:
+  - `RUN_BLOG_ENGAGEMENT_UI_GATE=true bash tools/pre_design_gate_check.sh`
+- Bulk comment moderation action:
+  - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/pre_design_gate_check.sh`
+
 ## Logs By Domain
 Domain log folders (human + jsonl):
 - `logs/atlas/`
