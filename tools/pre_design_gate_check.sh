@@ -101,6 +101,12 @@ run_gate "Pre-Import Index Gate" bash tools/pre_import_index_gate_check.sh
 run_gate "Shell Smoke Test" env SHELL_SMOKE_REUSE_DIST=1 bash tools/shell_smoke_test.sh
 run_gate "Cloudflare Pages Build Check" bash tools/pages_build_check.sh
 run_gate "Final Mock Purge Cleanup" bash tools/purge_mock.sh
+if [[ "${RESEED_MOCK_AFTER_PURGE:-false}" == "true" ]]; then
+  run_gate "Mock Reseed After Purge" env ALLOW_MOCK_SEED=true bash tools/mock_data.sh seed
+else
+  echo "RESULT: SKIP (Mock Reseed After Purge) set RESEED_MOCK_AFTER_PURGE=true to enable"
+  SUMMARY_LINES+=("SKIP | Mock Reseed After Purge | opt_in")
+fi
 
 echo ""
 echo "================ PRE-DESIGN SUMMARY ================"

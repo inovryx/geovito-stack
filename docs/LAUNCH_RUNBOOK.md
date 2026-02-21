@@ -197,6 +197,7 @@ Notes:
   - `COMMENT_BULK_ACTION` in `approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk`
   - optional `COMMENT_BULK_LIMIT` (default `10`) and `COMMENT_BULK_NOTES`.
   - optional `COMMENT_BULK_DRY_RUN=true` to preview without state change.
+  - optional `COMMENT_BULK_REPORT_OUTPUT` to force JSON report path; if omitted, report is saved under `artifacts/moderation/`.
 
 Pre-design gate icinde blog engagement UI adimini da kosmak istersen:
 - `RUN_BLOG_ENGAGEMENT_UI_GATE=true bash tools/pre_design_gate_check.sh`
@@ -205,6 +206,11 @@ Pre-design gate icinde bulk yorum moderasyon aksiyonu kosmak istersen:
 - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_NOTES="pre-design bulk" bash tools/pre_design_gate_check.sh`
 - dry-run preview:
 - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/pre_design_gate_check.sh`
+- Purge sonunda mock veriyi otomatik geri almak istersen:
+- `RESEED_MOCK_AFTER_PURGE=true bash tools/pre_design_gate_check.sh`
+
+Standalone JSON bulk report:
+- `bash tools/blog_comment_bulk_report.sh --action approve-next-bulk --limit 10 --dry-run`
 
 ## 3) Test Mode Protection (Recommended for closed testing)
 

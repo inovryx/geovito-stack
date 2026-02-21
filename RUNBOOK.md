@@ -243,6 +243,8 @@ Optional pre-design extensions:
   - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/pre_design_gate_check.sh`
   - dry-run preview:
     - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_DRY_RUN=true bash tools/pre_design_gate_check.sh`
+- Auto re-seed mock data after final purge:
+  - `RESEED_MOCK_AFTER_PURGE=true bash tools/pre_design_gate_check.sh`
 
 ## Logs By Domain
 Domain log folders (human + jsonl):
