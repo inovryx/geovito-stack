@@ -2,6 +2,7 @@
 import Nav from './Nav.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import { translate } from '../lib/uiLanguage';
+import { resolveStrapiBaseUrl } from '../lib/strapiConfig';
 
 interface Props {
   currentLanguage: string;
@@ -18,6 +19,16 @@ const loginPath = `/${currentLanguage}/login/`;
 const registerPath = `/${currentLanguage}/register/`;
 const dashboardPath = `/${currentLanguage}/dashboard/`;
 const accountPath = `/${currentLanguage}/account/`;
+const authBaseUrl = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+const strapiAdminUrl = `${authBaseUrl.replace(/\/$/, '')}/admin`;
+const ownerEmailHint = String(import.meta.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
 const loginLabel = translate(ui, 'auth.login', {}, 'Login');
 const registerLabel = translate(ui, 'auth.register', {}, 'Register');
 const dashboardLabel = translate(ui, 'dashboard.title', {}, 'Dashboard');
@@ -25,6 +36,15 @@ const accountLabel = translate(ui, 'nav.account', {}, 'Account');
 const logoutLabel = translate(ui, 'auth.logout', {}, 'Logout');
 const signedInLabel = translate(ui, 'auth.signedInAs', {}, 'Signed in');
 const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
+const adminToolsLabel = translate(ui, 'dashboard.controlTitle', {}, 'Control center');
+const adminRoleLabel = translate(ui, 'dashboard.accessRole', {}, 'Role');
+const accessMemberLabel = translate(ui, 'dashboard.accessMember', {}, 'Member');
+const accessEditorLabel = translate(ui, 'dashboard.accessEditor', {}, 'Editor');
+const accessAdminLabel = translate(ui, 'dashboard.accessAdmin', {}, 'Admin');
+const accessOwnerLabel = translate(ui, 'dashboard.accessOwner', {}, 'Owner');
+const adminModerationLabel = translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue');
+const adminLocaleLabel = translate(ui, 'dashboard.localeTitle', {}, 'Translation visibility');
+const adminControlLabel = translate(ui, 'dashboard.controlAdmin', {}, 'Open Strapi admin');
 ---
 
 <div class="left-sidebar-stack">
@@ -37,7 +57,13 @@ const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
     <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
   </section>
 
-  <section class="sidebar-block sidebar-auth-links gv-card bg-surface border-border" data-auth-shell data-signed-in-label={signedInLabel}>
+  <section
+    class="sidebar-block sidebar-auth-links gv-card bg-surface border-border"
+    data-auth-shell
+    data-signed-in-label={signedInLabel}
+    data-auth-base-url={authBaseUrl}
+    data-owner-email-hint={ownerEmailHint}
+  >
     <p class="small sidebar-auth-user" data-auth-user hidden></p>
 
     <div class="sidebar-auth-row" data-auth-logged-out>
@@ -58,6 +84,47 @@ const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
       <a href={accountPath} class="small-link">{accountLabel}</a>
       <button type="button" class="small-link sidebar-auth-logout" data-auth-logout>{logoutLabel}</button>
     </div>
+  </section>
+
+  <section
+    class="sidebar-block sidebar-admin-tools gv-card bg-surface border-border"
+    data-auth-admin-shell
+    data-role-prefix={adminRoleLabel}
+    data-role-member={accessMemberLabel}
+    data-role-editor={accessEditorLabel}
+    data-role-admin={accessAdminLabel}
+    data-role-owner={accessOwnerLabel}
+    hidden
+  >
+    <h2 class="sidebar-title">{adminToolsLabel}</h2>
+    <p class="small sidebar-auth-user" data-auth-admin-role>
+      {adminRoleLabel}: {accessMemberLabel}
+    </p>
+    <ul class="sidebar-admin-list">
+      <li>
+        <a class="small-link" href={`${dashboardPath}#moderation`} data-auth-admin-link data-min-role="editor" hidden>
+          {adminModerationLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={`${dashboardPath}#locale-progress`} data-auth-admin-link data-min-role="editor" hidden>
+          {adminLocaleLabel}
+        </a>
+      </li>
+      <li>
+        <a
+          class="small-link"
+          href={strapiAdminUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-auth-admin-link
+          data-min-role="admin"
+          hidden
+        >
+          {adminControlLabel}
+        </a>
+      </li>
+    </ul>
   </section>
 </div>
 
@@ -83,14 +150,71 @@ const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
         if (!jwt) return null;
         const username = typeof parsed.username === 'string' ? parsed.username.trim() : '';
         const email = typeof parsed.email === 'string' ? parsed.email.trim() : '';
-        return { username, email };
+        return { username, email, jwt };
       } catch {
         return null;
       }
     };
 
-    const applyAuthState = () => {
+    const normalize = (value) => String(value || '').trim().toLowerCase();
+    const roleOrder = {
+      member: 0,
+      editor: 1,
+      admin: 2,
+      owner: 3,
+    };
+
+    const inferRole = (payload, session, ownerHint) => {
+      const roleRaw = normalize(payload?.role?.type || payload?.role?.name || payload?.role?.code);
+      if (roleRaw.includes('super') || roleRaw.includes('admin') || roleRaw.includes('administrator')) {
+        return 'admin';
+      }
+      if (roleRaw.includes('editor')) {
+        return 'editor';
+      }
+      const email = normalize(payload?.email || session?.email || '');
+      if (ownerHint && email && email === ownerHint) {
+        return 'owner';
+      }
+      return 'member';
+    };
+
+    const resolveSessionRole = async (session) => {
+      const shells = Array.from(document.querySelectorAll('[data-auth-shell]'));
+      const firstShell = shells.find((shell) => shell instanceof HTMLElement);
+      const authBaseUrl = firstShell instanceof HTMLElement
+        ? String(firstShell.getAttribute('data-auth-base-url') || '').trim()
+        : '';
+      const ownerHint = firstShell instanceof HTMLElement
+        ? normalize(firstShell.getAttribute('data-owner-email-hint') || '')
+        : '';
+
+      if (!session || !session.email || !authBaseUrl) {
+        return 'member';
+      }
+
+      try {
+        const response = await fetch(`${authBaseUrl}/api/users/me?populate=role`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${session.jwt}`,
+          },
+        });
+        if (!response.ok) {
+          return ownerHint && normalize(session.email) === ownerHint ? 'owner' : 'member';
+        }
+        const payload = await response.json().catch(() => null);
+        return inferRole(payload, session, ownerHint);
+      } catch {
+        return ownerHint && normalize(session.email) === ownerHint ? 'owner' : 'member';
+      }
+    };
+
+    const applyAuthState = async () => {
       const session = readSession();
+      const role = session ? await resolveSessionRole(session) : 'member';
+      const roleRank = Number(roleOrder[role] ?? 0);
+
       document.querySelectorAll('[data-auth-shell]').forEach((shell) => {
         if (!(shell instanceof HTMLElement)) return;
 
@@ -118,6 +242,31 @@ const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
           }
         }
       });
+
+      document.querySelectorAll('[data-auth-admin-shell]').forEach((shell) => {
+        if (!(shell instanceof HTMLElement)) return;
+
+        shell.hidden = !session || roleRank < roleOrder.editor;
+
+        const roleNode = shell.querySelector('[data-auth-admin-role]');
+        const rolePrefix = shell.getAttribute('data-role-prefix') || 'Role';
+        const roleLabelMap = {
+          member: shell.getAttribute('data-role-member') || 'Member',
+          editor: shell.getAttribute('data-role-editor') || 'Editor',
+          admin: shell.getAttribute('data-role-admin') || 'Admin',
+          owner: shell.getAttribute('data-role-owner') || 'Owner',
+        };
+        if (roleNode instanceof HTMLElement) {
+          roleNode.textContent = `${rolePrefix}: ${roleLabelMap[role] || roleLabelMap.member}`;
+        }
+
+        shell.querySelectorAll('[data-auth-admin-link]').forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          const minRole = normalize(node.getAttribute('data-min-role') || 'member');
+          const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
+          node.hidden = roleRank < minRank;
+        });
+      });
     };
 
     const bindLogout = () => {
@@ -134,7 +283,7 @@ const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
             // no-op
           }
 
-          applyAuthState();
+          void applyAuthState();
 
           const language = document.documentElement.lang?.toLowerCase() || 'en';
           window.location.assign(`/${language}/login/`);
@@ -144,12 +293,12 @@ const lockdownHint = translate(ui, 'auth.lockdownHint', {}, 'Test mode active');
 
     const init = () => {
       bindLogout();
-      applyAuthState();
+      void applyAuthState();
     };
 
     window.addEventListener('storage', (event) => {
       if (event.key === 'geovito_auth_session') {
-        applyAuthState();
+        void applyAuthState();
       }
     });
 

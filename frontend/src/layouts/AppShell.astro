@@ -52,7 +52,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
   ui={ui}
 >
   {Astro.slots.has('head') ? <slot name="head" slot="head" /> : null}
-  <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`} data-ev-root="ui">
+  <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`} data-ev-root="ui" data-shell-layout>
     <aside class="left-column desktop-tablet-column" aria-label={t('layout.mainNavigation', 'Main navigation')}>
       <div class="left-nav-card">
         <div class="left-nav-head">
@@ -150,6 +150,40 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
       'app_shell',
       () => {
       const root = document.documentElement;
+      const shellLayout = document.querySelector('[data-shell-layout]');
+      const readAuthSession = () => {
+        try {
+          const fromLocal = localStorage.getItem('geovito_auth_session');
+          const fromSession = sessionStorage.getItem('geovito_auth_session');
+          const raw = fromLocal || fromSession;
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          const jwt = typeof parsed.jwt === 'string' ? parsed.jwt.trim() : '';
+          if (!jwt) return null;
+          return parsed;
+        } catch {
+          return null;
+        }
+      };
+
+      const isReadingRoute = (() => {
+        const parts = String(window.location.pathname || '')
+          .split('/')
+          .filter(Boolean);
+        if (parts.length < 3) return false;
+        const section = parts[1];
+        if (section !== 'atlas' && section !== 'blog') return false;
+        return parts.length === 3;
+      })();
+
+      const updateGuestReadingMode = () => {
+        if (!(shellLayout instanceof HTMLElement)) return;
+        const hasSession = Boolean(readAuthSession());
+        root.classList.toggle('shell-guest-reading', isReadingRoute && !hasSession);
+      };
+
+      updateGuestReadingMode();
       const sidebarToggles = Array.from(document.querySelectorAll('[data-sidebar-toggle]'));
 
       if (sidebarToggles.length > 0) {
@@ -185,7 +219,19 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
           }
         };
 
-        applySidebarState(readSidebarState());
+        let resolvedState = readSidebarState();
+        if (isReadingRoute && readAuthSession()) {
+          try {
+            const explicitPreference = localStorage.getItem('sidebar');
+            if (!explicitPreference) {
+              resolvedState = 'compact';
+              writeSidebarState(resolvedState);
+            }
+          } catch {
+            resolvedState = 'compact';
+          }
+        }
+        applySidebarState(resolvedState);
 
         sidebarToggles.forEach((button) => {
           if (button.getAttribute('data-sidebar-bound') === 'true') return;
@@ -201,6 +247,12 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
           });
         });
       }
+
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'geovito_auth_session') {
+          updateGuestReadingMode();
+        }
+      });
 
       const drawer = document.querySelector('[data-shell-drawer]');
       const backdrop = document.querySelector('[data-shell-backdrop]');

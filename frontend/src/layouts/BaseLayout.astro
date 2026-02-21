@@ -19,6 +19,8 @@ interface Props {
   description?: string;
   canonical: string;
   robots?: string;
+  ogImagePath?: string;
+  twitterCard?: 'summary' | 'summary_large_image';
   currentLanguage: string;
   languageLinks: Record<string, string>;
   alternates?: AlternateLink[];
@@ -30,6 +32,8 @@ const {
   description = 'Geovito Atlas frontend on top of Strapi.',
   canonical,
   robots = 'index,follow',
+  ogImagePath = '/og-default.jpg',
+  twitterCard = 'summary_large_image',
   currentLanguage,
   languageLinks,
   alternates = [],
@@ -39,9 +43,37 @@ const {
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 const legalHref = (slug: 'privacy' | 'cookies' | 'terms') => `/${currentLanguage}/${slug}/`;
 const cookiesHref = legalHref('cookies');
+const isTruthy = (value: string | undefined) => ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+const siteLockdownEnabled = isTruthy(
+  (import.meta.env.PUBLIC_SITE_LOCKDOWN_ENABLED as string | undefined) || process.env.PUBLIC_SITE_LOCKDOWN_ENABLED
+);
+const siteLockdownNotice = String(
+  (import.meta.env.PUBLIC_SITE_LOCKDOWN_NOTICE as string | undefined) ||
+    process.env.PUBLIC_SITE_LOCKDOWN_NOTICE ||
+    t('site.lockdownNotice', 'Test mode is active. This environment is not open for public usage.')
+).trim();
+const effectiveRobots = siteLockdownEnabled ? 'noindex,nofollow' : robots;
 const cfBuildSha = String(process.env.CF_PAGES_COMMIT_SHA || '').trim();
 const cfBuildBranch = String(process.env.CF_PAGES_BRANCH || '').trim();
 const isCfPages = process.env.CF_PAGES ? '1' : '0';
+const resolvedOgImage = (() => {
+  const candidate = String(ogImagePath || '').trim();
+  if (!candidate) return '';
+  if (/^https?:\/\//i.test(candidate)) return candidate;
+  try {
+    return new URL(candidate, canonical).toString();
+  } catch (_error) {
+    return candidate;
+  }
+})();
+const normalizePath = (value: string) => (value.endsWith('/') ? value : `${value}/`);
+const currentPath = normalizePath(Astro.url.pathname || '/');
+const headerNav = [
+  { key: 'home', href: `/${currentLanguage}/`, fallback: 'Home' },
+  { key: 'atlas', href: `/${currentLanguage}/atlas/`, fallback: 'Atlas' },
+  { key: 'blog', href: `/${currentLanguage}/blog/`, fallback: 'Blog' },
+  { key: 'about', href: `/${currentLanguage}/about/`, fallback: 'About' },
+];
 ---
 
 <!doctype html>
@@ -51,8 +83,17 @@ const isCfPages = process.env.CF_PAGES ? '1' : '0';
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content={robots} />
+    <meta name="robots" content={effectiveRobots} />
     <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    {resolvedOgImage ? <meta property="og:image" content={resolvedOgImage} /> : null}
+    <meta name="twitter:card" content={twitterCard} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {resolvedOgImage ? <meta name="twitter:image" content={resolvedOgImage} /> : null}
     {alternates.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
     <link rel="alternate" hreflang="x-default" href={languageLinks['en'] || '/en/'} />
     <slot name="head" />
@@ -160,6 +201,23 @@ const isCfPages = process.env.CF_PAGES ? '1' : '0';
           <span class="truncate">{t('site.brand', 'Geovito')}</span>
         </a>
 
+        <nav class="site-header-nav" aria-label={t('layout.mainNavigation', 'Main navigation')}>
+          {
+            headerNav.map((item) => {
+              const label = t(`nav.${item.key}`, item.fallback);
+              const href = item.href;
+              const isActive = item.key === 'home'
+                ? currentPath === normalizePath(href)
+                : currentPath.startsWith(normalizePath(href));
+              return (
+                <a class={`site-header-nav-link ${isActive ? 'is-active' : ''}`} href={href}>
+                  {label}
+                </a>
+              );
+            })
+          }
+        </nav>
+
         <div class="header-search-wrap">
           <SearchBar currentLanguage={currentLanguage} ui={ui} variant="small" analyticsLocation="header" />
         </div>
@@ -175,6 +233,15 @@ const isCfPages = process.env.CF_PAGES ? '1' : '0';
       </div>
     </header>
     <div class="site-header-spacer" aria-hidden="true"></div>
+
+    {
+      siteLockdownEnabled ? (
+        <div class="site-lockdown-banner" role="status" aria-live="polite" data-site-lockdown-banner>
+          <strong>{t('site.lockdownTitle', 'TEST MODE')}</strong>
+          <span>{siteLockdownNotice}</span>
+        </div>
+      ) : null
+    }
 
     <slot />
 
