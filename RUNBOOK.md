@@ -598,6 +598,12 @@ bash tools/blog_comment_quick_action.sh reject-next-bulk --limit 5 --notes "poli
 
 # dry-run preview (no write)
 bash tools/blog_comment_quick_action.sh approve-next-bulk --limit 10 --notes "qa batch pass" --dry-run
+
+# write JSON report artifact (for release/pre-design audit trail)
+bash tools/blog_comment_bulk_report.sh --action approve-next-bulk --limit 10 --notes "qa batch pass"
+
+# write JSON report artifact as dry-run preview
+bash tools/blog_comment_bulk_report.sh --action approve-next-bulk --limit 10 --notes "qa batch pass" --dry-run
 ```
 
 Optional release smoke extension:

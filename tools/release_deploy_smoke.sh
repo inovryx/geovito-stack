@@ -36,7 +36,7 @@ Notes:
 Env passthrough:
   EXPECTED_SHA7, BASE_URL, FINGERPRINT_BASE_URL, DEPLOY_TIMEOUT_SECONDS,
   DEPLOY_POLL_INTERVAL_SECONDS, PAGES_DEPLOY_ENV_FILE, SMOKE_ACCESS_ENV_FILE,
-  SMOKE_BLOG_MODERATION_ARGS, COMMENT_BULK_ACTION, COMMENT_BULK_LIMIT, COMMENT_BULK_NOTES, COMMENT_BULK_DRY_RUN
+  SMOKE_BLOG_MODERATION_ARGS, COMMENT_BULK_ACTION, COMMENT_BULK_LIMIT, COMMENT_BULK_NOTES, COMMENT_BULK_DRY_RUN, COMMENT_BULK_REPORT_OUTPUT
 USAGE
 }
 
@@ -121,6 +121,7 @@ if [[ "$RUN_COMMENT_BULK_ACTION" == "true" ]]; then
   BULK_LIMIT="${COMMENT_BULK_LIMIT:-10}"
   BULK_NOTES="${COMMENT_BULK_NOTES:-release bulk moderation}"
   BULK_DRY_RUN="${COMMENT_BULK_DRY_RUN:-false}"
+  BULK_REPORT_OUTPUT="${COMMENT_BULK_REPORT_OUTPUT:-}"
 
   case "$BULK_ACTION" in
     approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk)
@@ -136,11 +137,14 @@ if [[ "$RUN_COMMENT_BULK_ACTION" == "true" ]]; then
 
   echo "INFO: running bulk moderation action"
   echo "  action=${BULK_ACTION} limit=${BULK_LIMIT} dry_run=${BULK_DRY_RUN}"
-  BULK_EXTRA_ARGS=()
+  BULK_CMD=(bash tools/blog_comment_bulk_report.sh --action "$BULK_ACTION" --limit "$BULK_LIMIT" --notes "$BULK_NOTES")
   if [[ "$BULK_DRY_RUN" == "true" || "$BULK_DRY_RUN" == "1" ]]; then
-    BULK_EXTRA_ARGS+=(--dry-run)
+    BULK_CMD+=(--dry-run)
   fi
-  bash tools/blog_comment_quick_action.sh "$BULK_ACTION" --limit "$BULK_LIMIT" --notes "$BULK_NOTES" "${BULK_EXTRA_ARGS[@]}"
+  if [[ -n "$BULK_REPORT_OUTPUT" ]]; then
+    BULK_CMD+=(--output "$BULK_REPORT_OUTPUT")
+  fi
+  "${BULK_CMD[@]}"
 else
   echo "INFO: skipped comment bulk action stage (use --with-comment-bulk-action)"
 fi

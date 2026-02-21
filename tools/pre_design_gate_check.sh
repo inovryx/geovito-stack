@@ -62,27 +62,37 @@ if [[ "${RUN_COMMENT_BULK_GATE:-false}" == "true" ]]; then
   COMMENT_BULK_LIMIT_VALUE="${COMMENT_BULK_LIMIT:-10}"
   COMMENT_BULK_NOTES_VALUE="${COMMENT_BULK_NOTES:-pre-design bulk moderation}"
   COMMENT_BULK_DRY_RUN_VALUE="${COMMENT_BULK_DRY_RUN:-false}"
+  COMMENT_BULK_REPORT_OUTPUT_VALUE="${COMMENT_BULK_REPORT_OUTPUT:-}"
 
   case "$COMMENT_BULK_ACTION_VALUE" in
     approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk)
+      BULK_CMD=(
+        bash tools/blog_comment_bulk_report.sh
+        --action "$COMMENT_BULK_ACTION_VALUE"
+        --limit "$COMMENT_BULK_LIMIT_VALUE"
+        --notes "$COMMENT_BULK_NOTES_VALUE"
+      )
+      if [[ "$COMMENT_BULK_DRY_RUN_VALUE" == "true" || "$COMMENT_BULK_DRY_RUN_VALUE" == "1" ]]; then
+        BULK_CMD+=(--dry-run)
+      fi
+      if [[ -n "$COMMENT_BULK_REPORT_OUTPUT_VALUE" ]]; then
+        BULK_CMD+=(--output "$COMMENT_BULK_REPORT_OUTPUT_VALUE")
+      fi
+
       run_gate \
-        "Comment Bulk Quick Action" \
-        bash tools/blog_comment_quick_action.sh \
-          "$COMMENT_BULK_ACTION_VALUE" \
-          --limit "$COMMENT_BULK_LIMIT_VALUE" \
-          --notes "$COMMENT_BULK_NOTES_VALUE" \
-          $([[ "$COMMENT_BULK_DRY_RUN_VALUE" == "true" || "$COMMENT_BULK_DRY_RUN_VALUE" == "1" ]] && echo "--dry-run")
+        "Comment Bulk Report Action" \
+        "${BULK_CMD[@]}"
       ;;
     *)
-      echo "RESULT: FAIL (Comment Bulk Quick Action) invalid COMMENT_BULK_ACTION"
+      echo "RESULT: FAIL (Comment Bulk Report Action) invalid COMMENT_BULK_ACTION"
       echo "  expected: approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk"
-      SUMMARY_LINES+=("FAIL | Comment Bulk Quick Action | invalid_COMMENT_BULK_ACTION")
+      SUMMARY_LINES+=("FAIL | Comment Bulk Report Action | invalid_COMMENT_BULK_ACTION")
       FAIL_COUNT=$((FAIL_COUNT + 1))
       ;;
   esac
 else
-  echo "RESULT: SKIP (Comment Bulk Quick Action) set RUN_COMMENT_BULK_GATE=true to enable"
-  SUMMARY_LINES+=("SKIP | Comment Bulk Quick Action | opt_in")
+  echo "RESULT: SKIP (Comment Bulk Report Action) set RUN_COMMENT_BULK_GATE=true to enable"
+  SUMMARY_LINES+=("SKIP | Comment Bulk Report Action | opt_in")
 fi
 run_gate "Import Dormant Guard" bash tools/import_dormant_check.sh
 run_gate "Translation Bundle Dormant Guard" bash tools/translation_bundle_dormant_check.sh

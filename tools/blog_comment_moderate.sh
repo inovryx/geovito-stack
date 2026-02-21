@@ -23,7 +23,7 @@ wait_for_strapi() {
 ensure_strapi_runtime() {
   docker compose up -d strapi >/dev/null
 
-  if docker compose exec -T strapi sh -lc "test -f ${SCRIPT_IN_CONTAINER} && grep -q \"bulk-set-next\" ${SCRIPT_IN_CONTAINER} && grep -q -- \"--dry-run\" ${SCRIPT_IN_CONTAINER}" >/dev/null 2>&1; then
+  if docker compose exec -T strapi sh -lc "test -f ${SCRIPT_IN_CONTAINER} && grep -q \"bulk-set-next\" ${SCRIPT_IN_CONTAINER} && grep -q -- \"--dry-run\" ${SCRIPT_IN_CONTAINER} && grep -q -- \"--json\" ${SCRIPT_IN_CONTAINER}" >/dev/null 2>&1; then
     return 0
   fi
 
@@ -34,11 +34,11 @@ ensure_strapi_runtime() {
 if [[ $# -eq 0 ]]; then
   cat <<'USAGE'
 Usage:
-  bash tools/blog_comment_moderate.sh list [--status pending] [--limit 20]
-  bash tools/blog_comment_moderate.sh set <comment_id> <status> [--notes "text"]
-  bash tools/blog_comment_moderate.sh next
-  bash tools/blog_comment_moderate.sh set-next <status> [--notes "text"] [--dry-run]
-  bash tools/blog_comment_moderate.sh bulk-set-next <status> [--limit 20] [--notes "text"] [--dry-run]
+  bash tools/blog_comment_moderate.sh list [--status pending] [--limit 20] [--json]
+  bash tools/blog_comment_moderate.sh set <comment_id> <status> [--notes "text"] [--json]
+  bash tools/blog_comment_moderate.sh next [--json]
+  bash tools/blog_comment_moderate.sh set-next <status> [--notes "text"] [--dry-run] [--json]
+  bash tools/blog_comment_moderate.sh bulk-set-next <status> [--limit 20] [--notes "text"] [--dry-run] [--json]
 USAGE
   exit 1
 fi
