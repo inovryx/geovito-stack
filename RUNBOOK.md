@@ -574,6 +574,11 @@ bash tools/blog_comment_moderate.sh list --status pending --limit 20
 # set status (notes required for rejected/spam/deleted)
 bash tools/blog_comment_moderate.sh set <comment_id> approved
 bash tools/blog_comment_moderate.sh set <comment_id> rejected --notes "policy reason"
+
+# quick operator flow (oldest pending item)
+bash tools/blog_comment_quick_action.sh next
+bash tools/blog_comment_quick_action.sh approve-next --notes "qa ok"
+bash tools/blog_comment_quick_action.sh reject-next --notes "policy reason"
 ```
 
 Optional release smoke extension:

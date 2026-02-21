@@ -11,6 +11,8 @@ const usage = () => {
   console.log('Usage:');
   console.log('  node scripts/blog_comment_moderate.js list [--status pending] [--limit 20]');
   console.log('  node scripts/blog_comment_moderate.js set <comment_id> <status> [--notes "text"]');
+  console.log('  node scripts/blog_comment_moderate.js next');
+  console.log('  node scripts/blog_comment_moderate.js set-next <status> [--notes "text"]');
   console.log('');
   console.log('Valid status values: pending, approved, rejected, spam, deleted');
 };
@@ -38,6 +40,30 @@ const findByCommentId = async (strapi, commentId) => {
     filters: {
       comment_id: commentId,
     },
+    fields: [
+      'id',
+      'comment_id',
+      'status',
+      'source',
+      'blog_post_ref',
+      'createdAt',
+      'moderation_notes',
+      'reviewed_at',
+      'reviewed_by',
+    ],
+    limit: 1,
+  });
+
+  return entries[0] || null;
+};
+
+const findOldestPending = async (strapi) => {
+  const entries = await strapi.entityService.findMany(UID, {
+    publicationState: 'preview',
+    filters: {
+      status: BLOG_COMMENT_STATUS.PENDING,
+    },
+    sort: ['createdAt:asc'],
     fields: [
       'id',
       'comment_id',
@@ -183,6 +209,101 @@ const setCommentStatus = async (strapi, argv) => {
   return 0;
 };
 
+const printNextPending = async (strapi) => {
+  const next = await findOldestPending(strapi);
+
+  console.log('==============================================================');
+  console.log('GEOVITO BLOG COMMENT MODERATION NEXT');
+  console.log('==============================================================');
+
+  if (!next?.id) {
+    console.log('pending=0');
+    console.log('no pending comment');
+    console.log('==============================================================');
+    return 0;
+  }
+
+  console.log(`comment_id=${next.comment_id}`);
+  console.log(`status=${next.status}`);
+  console.log(`source=${next.source}`);
+  console.log(`post=${next.blog_post_ref}`);
+  console.log(`created=${next.createdAt}`);
+  console.log('==============================================================');
+  return 0;
+};
+
+const setNextPendingStatus = async (strapi, argv) => {
+  if (argv.length < 1) {
+    throw new Error('set-next command requires: <status>');
+  }
+
+  const nextStatus = String(argv[0] || '').trim().toLowerCase();
+  if (!VALID_STATUSES.has(nextStatus)) {
+    throw new Error(`Invalid status: ${nextStatus}`);
+  }
+  if (nextStatus === BLOG_COMMENT_STATUS.PENDING) {
+    throw new Error('set-next cannot set status back to pending');
+  }
+
+  let notes;
+  for (let i = 1; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (token === '--notes') {
+      notes = String(argv[i + 1] || '');
+      i += 1;
+    } else if (token === '-h' || token === '--help') {
+      usage();
+      return 0;
+    } else {
+      throw new Error(`Unknown argument: ${token}`);
+    }
+  }
+
+  const next = await findOldestPending(strapi);
+  if (!next?.id) {
+    console.log('==============================================================');
+    console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
+    console.log('==============================================================');
+    console.log('pending=0');
+    console.log('no pending comment');
+    console.log('==============================================================');
+    return 0;
+  }
+
+  const data = {
+    status: nextStatus,
+  };
+  if (typeof notes === 'string') {
+    data.moderation_notes = notes;
+  }
+
+  const updated = await strapi.entityService.update(UID, next.id, {
+    data,
+    fields: [
+      'comment_id',
+      'status',
+      'moderation_notes',
+      'reviewed_at',
+      'reviewed_by',
+      'blog_post_ref',
+      'source',
+    ],
+  });
+
+  console.log('==============================================================');
+  console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
+  console.log('==============================================================');
+  console.log(`mode=set-next`);
+  console.log(`comment_id=${updated.comment_id}`);
+  console.log(`from=${next.status} to=${updated.status}`);
+  console.log(`source=${updated.source} post=${updated.blog_post_ref}`);
+  console.log(`reviewed_at=${updated.reviewed_at || 'n/a'}`);
+  console.log(`reviewed_by=${updated.reviewed_by || 'n/a'}`);
+  console.log(`moderation_notes=${updated.moderation_notes || ''}`);
+  console.log('==============================================================');
+  return 0;
+};
+
 const main = async () => {
   const argv = process.argv.slice(2);
   const command = String(argv[0] || '').trim().toLowerCase();
@@ -200,6 +321,14 @@ const main = async () => {
     }
     if (command === 'set') {
       await setCommentStatus(strapi, argv.slice(1));
+      return;
+    }
+    if (command === 'next') {
+      await printNextPending(strapi);
+      return;
+    }
+    if (command === 'set-next') {
+      await setNextPendingStatus(strapi, argv.slice(1));
       return;
     }
     throw new Error(`Unknown command: ${command}`);
