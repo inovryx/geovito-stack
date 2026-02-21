@@ -133,6 +133,72 @@ const dashboardCopy = {
   accessAdmin: translate(ui, 'dashboard.accessAdmin', {}, 'Admin'),
   accessEditor: translate(ui, 'dashboard.accessEditor', {}, 'Editor'),
   accessMember: translate(ui, 'dashboard.accessMember', {}, 'Member'),
+  roleGovernanceTitle: translate(ui, 'dashboard.roleGovernanceTitle', {}, 'Role governance'),
+  roleGovernanceBody: translate(
+    ui,
+    'dashboard.roleGovernanceBody',
+    {},
+    'Role mapping for owner/admin/editor/member and where permissions are managed.'
+  ),
+  roleGovernanceCurrent: translate(ui, 'dashboard.roleGovernanceCurrent', {}, 'Current role'),
+  roleGovernanceScope: translate(ui, 'dashboard.roleGovernanceScope', {}, 'Scope'),
+  roleGovernancePolicy: translate(ui, 'dashboard.roleGovernancePolicy', {}, 'Policy'),
+  roleGovernanceOwnerScope: translate(
+    ui,
+    'dashboard.roleGovernanceOwnerScope',
+    {},
+    'Full stack governance and production operations.'
+  ),
+  roleGovernanceOwnerPolicy: translate(
+    ui,
+    'dashboard.roleGovernanceOwnerPolicy',
+    {},
+    'Can assign/revoke admin and editor responsibilities.'
+  ),
+  roleGovernanceAdminScope: translate(
+    ui,
+    'dashboard.roleGovernanceAdminScope',
+    {},
+    'Operational admin controls and moderation oversight.'
+  ),
+  roleGovernanceAdminPolicy: translate(
+    ui,
+    'dashboard.roleGovernanceAdminPolicy',
+    {},
+    'Can manage editors and moderation workflows.'
+  ),
+  roleGovernanceEditorScope: translate(
+    ui,
+    'dashboard.roleGovernanceEditorScope',
+    {},
+    'Editorial workflows, locale progress, and comment moderation.'
+  ),
+  roleGovernanceEditorPolicy: translate(
+    ui,
+    'dashboard.roleGovernanceEditorPolicy',
+    {},
+    'Cannot assign roles; escalation via admin/owner only.'
+  ),
+  roleGovernanceMemberScope: translate(
+    ui,
+    'dashboard.roleGovernanceMemberScope',
+    {},
+    'Personal profile and own engagement visibility.'
+  ),
+  roleGovernanceMemberPolicy: translate(
+    ui,
+    'dashboard.roleGovernanceMemberPolicy',
+    {},
+    'Role changes require owner/admin action.'
+  ),
+  roleGovernanceManageRoles: translate(ui, 'dashboard.roleGovernanceManageRoles', {}, 'Manage roles'),
+  roleGovernanceManageUsers: translate(ui, 'dashboard.roleGovernanceManageUsers', {}, 'Manage users'),
+  roleGovernanceLimited: translate(
+    ui,
+    'dashboard.roleGovernanceLimited',
+    {},
+    'Role management links are visible for owner/admin only.'
+  ),
   capabilityModeration: translate(ui, 'dashboard.capabilityModeration', {}, 'Moderation view'),
   capabilityLocale: translate(ui, 'dashboard.capabilityLocale', {}, 'Translation progress'),
   capabilityAdminTools: translate(ui, 'dashboard.capabilityAdminTools', {}, 'Admin tools links'),
@@ -275,6 +341,40 @@ const dashboardCopy = {
       </article>
 
       <article class="card panel gv-stack">
+        <h2>{dashboardCopy.roleGovernanceTitle}</h2>
+        <p class="small">{dashboardCopy.roleGovernanceBody}</p>
+        <p class="dashboard-kpi">
+          <span>{dashboardCopy.roleGovernanceCurrent}</span>
+          <strong data-dashboard-governance-role>{dashboardCopy.accessMember}</strong>
+        </p>
+        <p class="small"><strong>{dashboardCopy.roleGovernanceScope}:</strong> <span data-dashboard-governance-scope>{dashboardCopy.roleGovernanceMemberScope}</span></p>
+        <p class="small"><strong>{dashboardCopy.roleGovernancePolicy}:</strong> <span data-dashboard-governance-policy>{dashboardCopy.roleGovernanceMemberPolicy}</span></p>
+        <div class="dashboard-actions">
+          <a
+            class="ui-button ui-button-secondary ui-button-sm"
+            href={`${strapiAdminUrl}/settings/users-permissions/roles`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-dashboard-admin-link
+            hidden
+          >
+            <span class="ui-button-label">{dashboardCopy.roleGovernanceManageRoles}</span>
+          </a>
+          <a
+            class="ui-button ui-button-secondary ui-button-sm"
+            href={`${strapiAdminUrl}/settings/users-permissions/users`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-dashboard-admin-link
+            hidden
+          >
+            <span class="ui-button-label">{dashboardCopy.roleGovernanceManageUsers}</span>
+          </a>
+        </div>
+        <p class="small" data-dashboard-governance-limited>{dashboardCopy.roleGovernanceLimited}</p>
+      </article>
+
+      <article class="card panel gv-stack">
         <h2>{dashboardCopy.quickTitle}</h2>
         <p class="small">{dashboardCopy.quickBody}</p>
         <div class="dashboard-actions">
@@ -350,6 +450,10 @@ const dashboardCopy = {
       const loginAtNode = document.querySelector('[data-dashboard-loginat]');
       const preferredNode = document.querySelector('[data-dashboard-preferred]');
       const roleNode = document.querySelector('[data-dashboard-role]');
+      const governanceRoleNode = document.querySelector('[data-dashboard-governance-role]');
+      const governanceScopeNode = document.querySelector('[data-dashboard-governance-scope]');
+      const governancePolicyNode = document.querySelector('[data-dashboard-governance-policy]');
+      const governanceLimitedNoteNode = document.querySelector('[data-dashboard-governance-limited]');
       const capModerationNode = document.querySelector('[data-dashboard-cap-moderation]');
       const capLocaleNode = document.querySelector('[data-dashboard-cap-locale]');
       const capAdminNode = document.querySelector('[data-dashboard-cap-admin]');
@@ -430,6 +534,32 @@ const dashboardCopy = {
 
       const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
 
+      const getGovernanceCopy = (role) => {
+        const normalized = String(role || '').toLowerCase();
+        if (normalized === 'owner') {
+          return {
+            scope: dashboardCopy.roleGovernanceOwnerScope,
+            policy: dashboardCopy.roleGovernanceOwnerPolicy,
+          };
+        }
+        if (normalized === 'admin') {
+          return {
+            scope: dashboardCopy.roleGovernanceAdminScope,
+            policy: dashboardCopy.roleGovernanceAdminPolicy,
+          };
+        }
+        if (normalized === 'editor') {
+          return {
+            scope: dashboardCopy.roleGovernanceEditorScope,
+            policy: dashboardCopy.roleGovernanceEditorPolicy,
+          };
+        }
+        return {
+          scope: dashboardCopy.roleGovernanceMemberScope,
+          policy: dashboardCopy.roleGovernanceMemberPolicy,
+        };
+      };
+
       const inferRole = (userPayload, session) => {
         const roleRaw = String(
           userPayload?.role?.type ||
@@ -468,6 +598,13 @@ const dashboardCopy = {
               ? dashboardCopy.accessEditor
               : dashboardCopy.accessMember;
         setText(roleNode, roleLabel);
+        setText(governanceRoleNode, roleLabel);
+
+        const governanceCopy = getGovernanceCopy(
+          isOwner ? 'owner' : isAdmin ? 'admin' : isEditor ? 'editor' : 'member'
+        );
+        setText(governanceScopeNode, governanceCopy.scope);
+        setText(governancePolicyNode, governanceCopy.policy);
 
         setText(capModerationNode, isEditor ? dashboardCopy.capabilityEnabled : dashboardCopy.capabilityDisabled);
         setText(capLocaleNode, isEditor ? dashboardCopy.capabilityEnabled : dashboardCopy.capabilityDisabled);
@@ -484,6 +621,10 @@ const dashboardCopy = {
 
         if (toNode(controlNote)) {
           toNode(controlNote).hidden = isAdmin;
+        }
+
+        if (toNode(governanceLimitedNoteNode)) {
+          toNode(governanceLimitedNoteNode).hidden = isAdmin;
         }
 
         if (toNode(moderationWrapNode)) {
