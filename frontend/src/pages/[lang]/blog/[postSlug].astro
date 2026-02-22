@@ -50,6 +50,7 @@ if (!resolution.output || !resolution.complete) {
 const title = resolution.output.seo?.metaTitle || resolution.output.title || post.post_id;
 const description = resolution.output.seo?.metaDescription || resolution.output.excerpt || '';
 const isMockView = post.mock === true;
+const isApprovedUserPost = post.content_source !== 'user' || post.submission_state === 'approved';
 
 const canonicalPath =
   resolution.complete.canonical_path ||
@@ -66,8 +67,12 @@ for (const language of SUPPORTED_LANGUAGES) {
 const languageLinks = buildLanguageLinks(languagePathMap);
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(canonicalPath);
-const robots = isMockView ? 'noindex,nofollow' : resolution.indexable ? 'index,follow' : 'noindex,nofollow';
+const robots =
+  isMockView || !isApprovedUserPost ? 'noindex,nofollow' : resolution.indexable ? 'index,follow' : 'noindex,nofollow';
 const loginPath = pathForLanguage(lang, 'login');
+const creatorUsername =
+  post.content_source === 'user' ? String(post.owner_username_snapshot || '').trim().toLowerCase() : '';
+const creatorProfilePath = creatorUsername ? `/u/${creatorUsername}/` : null;
 const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim();
 const turnstileEnabled = turnstileSiteKey.length > 0;
 const strapiPublicBase = resolveStrapiBaseUrl({
@@ -147,6 +152,13 @@ const blogEngagementCopy = {
   }
 
   <section class="card panel gv-card gv-stack">
+  {
+    creatorProfilePath ? (
+      <p class="small gv-caption">
+        <strong>Creator:</strong> <a href={creatorProfilePath}>@{creatorUsername}</a>
+      </p>
+    ) : null
+  }
   <h1 class="gv-h1">{resolution.output.title}</h1>
   <p class="small gv-body">{resolution.output.excerpt}</p>
   <p class="gv-caption">

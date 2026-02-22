@@ -1,0 +1,130 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../lib/pageHelpers';
+import { getCreatorProfileByUsername, getCreatorPostsByUsername, getCreatorProfiles } from '../../../lib/strapi';
+import { getUiMessages } from '../../../lib/uiLanguage';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const profiles = await getCreatorProfiles();
+  const usernames = Array.from(
+    new Set(
+      profiles
+        .map((entry) => String(entry.username || '').trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+
+  return usernames.map((username) => ({
+    params: { username },
+  }));
+}
+
+const username = String(Astro.params.username || '').trim().toLowerCase();
+if (!username) {
+  throw new Error('username is required.');
+}
+
+const ui = getUiMessages('en');
+const profile = await getCreatorProfileByUsername(username);
+const creatorFeed = await getCreatorPostsByUsername(username, 'en');
+const posts = Array.isArray(creatorFeed.posts) ? creatorFeed.posts : [];
+
+if (!profile) {
+  throw new Error(`creator profile not found: ${username}`);
+}
+
+const languagePath = `/u/${username}/`;
+const languageLinks = buildLanguageLinks(
+  Object.fromEntries(SUPPORTED_LANGUAGES.map((lang) => [lang, languagePath])) as Record<string, string>
+);
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(languagePath);
+const title = `${profile.display_name || `@${username}`} • Geovito`;
+const description = profile.bio || `Mini-site for @${username} on Geovito`;
+const stats = profile.stats || { posts_count: 0, countries_count: 0, cities_count: 0 };
+const avatarUrl = profile.avatar?.url || null;
+---
+
+<MainLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage="en"
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <section class="card panel gv-card gv-stack">
+    <div class="gv-row gv-row--between gv-row--wrap">
+      <div class="gv-stack">
+        <p class="gv-caption">Creator mini-site</p>
+        <h1 class="gv-h1">{profile.display_name || `@${username}`}</h1>
+        <p class="small">@{profile.username}</p>
+      </div>
+      {
+        avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={profile.display_name || profile.username}
+            width="88"
+            height="88"
+            loading="lazy"
+            decoding="async"
+            style="border-radius:999px;object-fit:cover;border:1px solid var(--line-soft);"
+          />
+        ) : null
+      }
+    </div>
+
+    <p class="gv-body">{profile.bio || 'This creator has not added a bio yet.'}</p>
+
+    <nav class="gv-row gv-row--gap" aria-label="Creator navigation">
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/`}>Home</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/posts/`}>Posts</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/about/`}>About</a>
+    </nav>
+  </section>
+
+  <section class="card panel gv-card gv-stack">
+    <h2 class="gv-h2">Citizen ID (basic)</h2>
+    <div class="grid grid-3">
+      <article class="card">
+        <p class="gv-caption">Posts</p>
+        <p class="gv-h3">{stats.posts_count ?? 0}</p>
+      </article>
+      <article class="card">
+        <p class="gv-caption">Countries</p>
+        <p class="gv-h3">{stats.countries_count ?? 0}</p>
+      </article>
+      <article class="card">
+        <p class="gv-caption">Cities</p>
+        <p class="gv-h3">{stats.cities_count ?? 0}</p>
+      </article>
+    </div>
+    <p class="small">Share link: <code>{canonical}</code></p>
+  </section>
+
+  <section class="card panel gv-card gv-stack">
+    <h2 class="gv-h2">Latest approved posts</h2>
+    {
+      posts.length > 0 ? (
+        <ul class="gv-stack">
+          {posts.slice(0, 8).map((post) => (
+            <li class="card">
+              <a href={String(post.url_path || '#')}>
+                <strong>{String(post.title || post.post_id || 'Untitled')}</strong>
+              </a>
+              <p class="small">{String(post.excerpt || '')}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="small">No approved posts yet.</p>
+      )
+    }
+  </section>
+</MainLayout>

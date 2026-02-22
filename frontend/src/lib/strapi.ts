@@ -56,6 +56,13 @@ export type BlogPost = {
   canonical_language: 'en' | 'tr' | 'de' | 'es' | 'ru' | 'zh-cn';
   translations: LocalizedContent[];
   related_place_refs?: string[];
+  content_source?: 'editorial' | 'user';
+  owner_user_id?: number | null;
+  owner_username_snapshot?: string | null;
+  submission_state?: 'draft' | 'submitted' | 'approved' | 'rejected' | 'spam' | 'deleted';
+  moderation_notes?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: number | null;
   related_places?: Array<{
     id: number;
     place_id: string;
@@ -63,6 +70,27 @@ export type BlogPost = {
   published_on?: string;
   mock: boolean;
   tags?: string[];
+};
+
+export type CreatorProfile = {
+  id: number;
+  documentId?: string;
+  owner_user_id: number;
+  username: string;
+  display_name: string;
+  bio?: string | null;
+  accent_color?: 'ocean' | 'coral' | 'moss' | 'slate' | 'sand' | 'plum';
+  visibility: 'public' | 'members' | 'private';
+  citizen_card_enabled?: boolean;
+  social_links?: Record<string, unknown> | null;
+  avatar?: {
+    id?: number;
+    url?: string;
+    alternativeText?: string | null;
+    width?: number | null;
+    height?: number | null;
+    formats?: Record<string, unknown> | null;
+  } | null;
 };
 
 export type UiPage = {
@@ -112,6 +140,7 @@ const CF_ACCESS_CLIENT_SECRET =
 const CF_ACCESS_HEADERS_ENABLED = Boolean(CF_ACCESS_CLIENT_ID && CF_ACCESS_CLIENT_SECRET);
 let atlasPlacesCachePromise: Promise<AtlasPlace[]> | null = null;
 let regionGroupsCachePromise: Promise<RegionGroup[]> | null = null;
+let creatorProfilesCachePromise: Promise<CreatorProfile[]> | null = null;
 
 const normalizeBaseUrl = (baseUrl: string) => baseUrl.replace(/\/$/, '');
 
@@ -238,6 +267,83 @@ export const getBlogPosts = async () => {
   });
 
   return asEntityArray<BlogPost>(payload);
+};
+
+export const getCreatorProfiles = async () => {
+  if (!creatorProfilesCachePromise) {
+    creatorProfilesCachePromise = (async () => {
+      try {
+        const payload = await fetchJson('/api/creators', {
+          limit: '300',
+        });
+        const rows = Array.isArray(payload?.data) ? payload.data : [];
+        return rows
+          .map((entry) => entry as CreatorProfile)
+          .filter((entry) => String(entry?.username || '').trim().length > 0);
+      } catch (error) {
+        const message = String((error as Error)?.message || '');
+        if (
+          message.includes('Strapi request failed (401)') ||
+          message.includes('Strapi request failed (403)') ||
+          message.includes('Strapi request failed (404)')
+        ) {
+          return [];
+        }
+        throw error;
+      }
+    })();
+  }
+
+  return creatorProfilesCachePromise;
+};
+
+export const getCreatorProfileByUsername = async (username: string) => {
+  const normalized = String(username || '').trim().toLowerCase();
+  if (!normalized) return null;
+
+  try {
+    const payload = await fetchJson(`/api/creators/${encodeURIComponent(normalized)}`);
+    const entity = payload?.data || null;
+    if (!entity || typeof entity !== 'object') return null;
+    return entity as CreatorProfile & {
+      stats?: {
+        posts_count: number;
+        countries_count: number;
+        cities_count: number;
+      };
+      links?: Record<string, string>;
+    };
+  } catch (error) {
+    const message = String((error as Error)?.message || '');
+    if (message.includes('Strapi request failed (404)')) {
+      return null;
+    }
+    throw error;
+  }
+};
+
+export const getCreatorPostsByUsername = async (username: string, preferredLanguage = 'en') => {
+  const normalized = String(username || '').trim().toLowerCase();
+  if (!normalized) return { profile: null, posts: [] as Array<Record<string, unknown>> };
+
+  try {
+    const payload = await fetchJson(`/api/creators/${encodeURIComponent(normalized)}/posts`, {
+      lang: String(preferredLanguage || 'en').trim().toLowerCase(),
+      limit: '60',
+    });
+
+    const data = payload?.data || {};
+    return {
+      profile: (data.profile || null) as (CreatorProfile & { stats?: Record<string, number> }) | null,
+      posts: Array.isArray(data.posts) ? data.posts : [],
+    };
+  } catch (error) {
+    const message = String((error as Error)?.message || '');
+    if (message.includes('Strapi request failed (404)')) {
+      return { profile: null, posts: [] as Array<Record<string, unknown>> };
+    }
+    throw error;
+  }
 };
 
 export const getUiPage = async (pageKey: string) => {

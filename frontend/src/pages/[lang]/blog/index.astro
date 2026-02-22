@@ -24,6 +24,10 @@ const hasMockContent = posts.some((post) => post.mock === true);
 
 const entries = posts
   .map((post) => {
+    if (post.content_source === 'user' && post.submission_state !== 'approved') {
+      return null;
+    }
+
     const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
     const requested = resolved.requested;
     const complete = resolved.complete;

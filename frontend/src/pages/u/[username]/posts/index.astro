@@ -1,0 +1,90 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import { SUPPORTED_LANGUAGES } from '../../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../../lib/pageHelpers';
+import { getCreatorPostsByUsername, getCreatorProfiles } from '../../../../lib/strapi';
+import { getUiMessages } from '../../../../lib/uiLanguage';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const profiles = await getCreatorProfiles();
+  const usernames = Array.from(
+    new Set(
+      profiles
+        .map((entry) => String(entry.username || '').trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+
+  return usernames.map((username) => ({
+    params: { username },
+  }));
+}
+
+const username = String(Astro.params.username || '').trim().toLowerCase();
+if (!username) {
+  throw new Error('username is required.');
+}
+
+const ui = getUiMessages('en');
+const payload = await getCreatorPostsByUsername(username, 'en');
+if (!payload.profile) {
+  throw new Error(`creator profile not found: ${username}`);
+}
+
+const profile = payload.profile;
+const posts = Array.isArray(payload.posts) ? payload.posts : [];
+const languagePath = `/u/${username}/posts/`;
+const languageLinks = buildLanguageLinks(
+  Object.fromEntries(SUPPORTED_LANGUAGES.map((lang) => [lang, languagePath])) as Record<string, string>
+);
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(languagePath);
+---
+
+<MainLayout
+  title={`@${username} posts • Geovito`}
+  description={`Approved posts from @${username}`}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage="en"
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <section class="card panel gv-card gv-stack">
+    <p class="gv-caption">Creator posts</p>
+    <h1 class="gv-h1">{profile.display_name || `@${username}`}</h1>
+    <nav class="gv-row gv-row--gap" aria-label="Creator navigation">
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/`}>Home</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/posts/`}>Posts</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/about/`}>About</a>
+    </nav>
+  </section>
+
+  <section class="card panel gv-card gv-stack">
+    <h2 class="gv-h2">Approved and published</h2>
+    {
+      posts.length > 0 ? (
+        <ul class="gv-stack">
+          {posts.map((post) => (
+            <li class="card">
+              <a href={String(post.url_path || '#')}>
+                <strong>{String(post.title || post.post_id || 'Untitled')}</strong>
+              </a>
+              <p class="small">
+                {String(post.excerpt || '')}
+              </p>
+              <p class="gv-caption">
+                {String(post.language || 'en').toUpperCase()} • {String(post.published_on || '')}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="small">No approved posts yet.</p>
+      )
+    }
+  </section>
+</MainLayout>

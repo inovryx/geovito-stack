@@ -1,7 +1,7 @@
 import { ATLAS_CONTENT_LANGUAGES } from './languages';
 import { buildIndexableLanguagePathMap } from './indexGate';
 import { absoluteUrl } from './pageHelpers';
-import { getAtlasPlaces, getRegionGroups } from './strapi';
+import { getAtlasPlaces, getBlogPosts, getRegionGroups } from './strapi';
 
 const resolveChunkSize = () => {
   const rawValue = Number(import.meta.env.SITEMAP_CHUNK_SIZE || 5000);
@@ -35,7 +35,7 @@ const chunkArray = <T>(items: T[], size: number) => {
 };
 
 export const buildAtlasSitemapChunks = async () => {
-  const [places, regionGroups] = await Promise.all([getAtlasPlaces(), getRegionGroups()]);
+  const [places, regionGroups, blogPosts] = await Promise.all([getAtlasPlaces(), getRegionGroups(), getBlogPosts()]);
   const byLanguage = new Map<string, Set<string>>();
 
   for (const language of ATLAS_CONTENT_LANGUAGES) {
@@ -66,6 +66,28 @@ export const buildAtlasSitemapChunks = async () => {
     }
   }
 
+  const ugcIndexableEnUrls = new Set<string>();
+  for (const post of blogPosts) {
+    if (post?.mock === true) continue;
+    if (post?.content_source !== 'user') continue;
+    if (post?.submission_state !== 'approved') continue;
+
+    const translations = Array.isArray(post?.translations) ? post.translations : [];
+    const enComplete = translations.find(
+      (entry) =>
+        String(entry?.language || '').trim().toLowerCase() === 'en' &&
+        entry?.status === 'complete' &&
+        entry?.runtime_translation !== true &&
+        entry?.indexable !== false
+    );
+    const slug = String(enComplete?.slug || '').trim();
+    if (!slug) continue;
+
+    const canonicalPath = String(enComplete?.canonical_path || '').trim();
+    const resolvedPath = canonicalPath || `/en/blog/${slug}/`;
+    ugcIndexableEnUrls.add(absoluteUrl(resolvedPath));
+  }
+
   const chunks: SitemapChunk[] = [];
 
   for (const language of ATLAS_CONTENT_LANGUAGES) {
@@ -80,6 +102,20 @@ export const buildAtlasSitemapChunks = async () => {
       chunks.push({
         bucket: `atlas-${language}-${chunk}`,
         language,
+        chunk,
+        urls,
+      });
+    });
+  }
+
+  if (ugcIndexableEnUrls.size > 0) {
+    const sorted = Array.from(ugcIndexableEnUrls).sort((left, right) => left.localeCompare(right));
+    const segmented = chunkArray(sorted, SITEMAP_CHUNK_SIZE);
+    segmented.forEach((urls, chunkIndex) => {
+      const chunk = chunkIndex + 1;
+      chunks.push({
+        bucket: `ugc-en-${chunk}`,
+        language: 'en',
         chunk,
         urls,
       });

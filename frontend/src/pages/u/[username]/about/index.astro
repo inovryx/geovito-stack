@@ -1,0 +1,88 @@
+---
+import MainLayout from '../../../../layouts/MainLayout.astro';
+import { SUPPORTED_LANGUAGES } from '../../../../lib/languages';
+import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../../lib/pageHelpers';
+import { getCreatorProfileByUsername, getCreatorProfiles } from '../../../../lib/strapi';
+import { getUiMessages } from '../../../../lib/uiLanguage';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const profiles = await getCreatorProfiles();
+  const usernames = Array.from(
+    new Set(
+      profiles
+        .map((entry) => String(entry.username || '').trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+
+  return usernames.map((username) => ({
+    params: { username },
+  }));
+}
+
+const username = String(Astro.params.username || '').trim().toLowerCase();
+if (!username) {
+  throw new Error('username is required.');
+}
+
+const ui = getUiMessages('en');
+const profile = await getCreatorProfileByUsername(username);
+if (!profile) {
+  throw new Error(`creator profile not found: ${username}`);
+}
+
+const languagePath = `/u/${username}/about/`;
+const languageLinks = buildLanguageLinks(
+  Object.fromEntries(SUPPORTED_LANGUAGES.map((lang) => [lang, languagePath])) as Record<string, string>
+);
+const alternates = toAlternates(languageLinks);
+const canonical = absoluteUrl(languagePath);
+const socialLinks = profile.social_links && typeof profile.social_links === 'object' ? profile.social_links : null;
+---
+
+<MainLayout
+  title={`About @${username} • Geovito`}
+  description={profile.bio || `About @${username}`}
+  canonical={canonical}
+  robots="noindex,nofollow"
+  currentLanguage="en"
+  languageLinks={languageLinks}
+  alternates={alternates}
+  ui={ui}
+>
+  <section class="card panel gv-card gv-stack">
+    <p class="gv-caption">Creator profile</p>
+    <h1 class="gv-h1">{profile.display_name || `@${username}`}</h1>
+    <p class="small">@{profile.username}</p>
+    <nav class="gv-row gv-row--gap" aria-label="Creator navigation">
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/`}>Home</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/posts/`}>Posts</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={`/u/${username}/about/`}>About</a>
+    </nav>
+  </section>
+
+  <section class="card panel gv-card gv-stack">
+    <h2 class="gv-h2">About</h2>
+    <p class="gv-body">{profile.bio || 'No biography provided yet.'}</p>
+    <p class="small">Visibility: {String(profile.visibility || 'public')}</p>
+  </section>
+
+  <section class="card panel gv-card gv-stack">
+    <h2 class="gv-h2">Citizen card status</h2>
+    <p class="small">{profile.citizen_card_enabled === false ? 'Disabled' : 'Enabled'}</p>
+    <p class="small">Posts: {Number(profile.stats?.posts_count || 0)}</p>
+    <p class="small">Countries: {Number(profile.stats?.countries_count || 0)}</p>
+    <p class="small">Cities: {Number(profile.stats?.cities_count || 0)}</p>
+  </section>
+
+  {
+    socialLinks ? (
+      <section class="card panel gv-card gv-stack">
+        <h2 class="gv-h2">Social links</h2>
+        <pre class="gv-caption">{JSON.stringify(socialLinks, null, 2)}</pre>
+      </section>
+    ) : null
+  }
+</MainLayout>
