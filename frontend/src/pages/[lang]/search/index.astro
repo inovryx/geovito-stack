@@ -22,6 +22,7 @@ type SearchItem = {
   status: string;
   countryCode: string | null;
   placeType: string | null;
+  keywords: string[];
 };
 
 export async function getStaticPaths() {
@@ -51,6 +52,21 @@ const mapPlaceKind = (placeType: string, cityLikeLevels: string[]): Exclude<Sear
   return 'city';
 };
 
+const COUNTRY_QUERY_ALIASES: Record<string, string[]> = {
+  TR: ['turkiye', 'tuerkiye', 'turkey'],
+  US: ['usa', 'united states', 'america', 'abd'],
+  DE: ['germany', 'deutschland', 'almanya'],
+  ES: ['spain', 'espana', 'espania'],
+  RU: ['russia', 'rusya', 'rossiya'],
+  CN: ['china', 'cin', 'zhongguo'],
+};
+
+const getCountryAliases = (countryCode: string | null | undefined): string[] => {
+  const normalized = String(countryCode || '').trim().toUpperCase();
+  if (!normalized) return [];
+  return COUNTRY_QUERY_ALIASES[normalized] || [];
+};
+
 const placeItems: SearchItem[] = places
   .map((place) => {
     const resolved = resolveTranslation(place.translations, lang, place.canonical_language);
@@ -64,6 +80,23 @@ const placeItems: SearchItem[] = places
         ? place.country_profile.city_like_levels
         : DEFAULT_CITY_LIKE_LEVELS;
 
+    const keywords = Array.from(
+      new Set(
+        [
+          place.place_id,
+          place.country_code,
+          place.place_type,
+          place.region,
+          ...getCountryAliases(place.country_code),
+          ...(Array.isArray(place.translations)
+            ? place.translations.flatMap((translation) => [translation.title, translation.slug])
+            : []),
+        ]
+          .map((value) => String(value || '').trim())
+          .filter(Boolean)
+      )
+    );
+
     return {
       id: `atlas:${place.place_id}`,
       kind: mapPlaceKind(place.place_type, cityLikeLevels),
@@ -74,6 +107,7 @@ const placeItems: SearchItem[] = places
       status: requested?.status || 'missing',
       countryCode: place.country_code,
       placeType: place.place_type,
+      keywords,
     } as SearchItem;
   })
   .filter(Boolean) as SearchItem[];
@@ -95,6 +129,20 @@ const regionItems: SearchItem[] = groups
       status: requested?.status || 'missing',
       countryCode: group.country_code,
       placeType: null,
+      keywords: Array.from(
+        new Set(
+          [
+            group.region_key,
+            group.country_code,
+            ...getCountryAliases(group.country_code),
+            ...(Array.isArray(group.translations)
+              ? group.translations.flatMap((translation) => [translation.title, translation.slug])
+              : []),
+          ]
+            .map((value) => String(value || '').trim())
+            .filter(Boolean)
+        )
+      ),
     } as SearchItem;
   })
   .filter(Boolean) as SearchItem[];
@@ -118,6 +166,19 @@ const blogItems: SearchItem[] = posts
       status: requested?.status || 'missing',
       countryCode: null,
       placeType: null,
+      keywords: Array.from(
+        new Set(
+          [
+            post.post_id,
+            ...(Array.isArray(post.tags) ? post.tags : []),
+            ...(Array.isArray(post.translations)
+              ? post.translations.flatMap((translation) => [translation.title, translation.slug])
+              : []),
+          ]
+            .map((value) => String(value || '').trim())
+            .filter(Boolean)
+        )
+      ),
     } as SearchItem;
   })
   .filter(Boolean) as SearchItem[];
@@ -309,7 +370,34 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
 
       if (!resultsRoot || !skeleton || !emptyState || !meta || !sortSelect) return;
 
-      const toLower = (text) => String(text || '').toLowerCase();
+      const SPECIAL_CHAR_MAP = {
+        ı: 'i',
+        İ: 'i',
+        ß: 'ss',
+        æ: 'ae',
+        Æ: 'ae',
+        œ: 'oe',
+        Œ: 'oe',
+        ø: 'o',
+        Ø: 'o',
+        đ: 'd',
+        Đ: 'd',
+        ł: 'l',
+        Ł: 'l',
+      };
+
+      const normalizeText = (text) =>
+        String(text || '')
+          .replace(/[ıİßæÆœŒøØđĐłŁ]/g, (char) => SPECIAL_CHAR_MAP[char] || char)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}]+/gu, ' ')
+          .trim();
+
+      const toLower = (text) => normalizeText(text);
+      const tokenize = (text) => toLower(text).split(/\s+/).filter(Boolean);
+      const compact = (text) => toLower(text).replace(/\s+/g, '');
       const parseDate = (value) => {
         if (!value) return 0;
         const ts = new Date(value).getTime();
@@ -323,27 +411,202 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
         return String(a.id || '').localeCompare(String(b.id || ''));
       };
 
-      const scoreItem = (item, query) => {
-        if (!query) return 0;
-        const tokens = query.split(/\s+/).filter(Boolean);
-        if (!tokens.length) return 0;
-
+      const buildSearchIndex = (item) => {
         const title = toLower(item.title);
         const excerpt = toLower(item.excerpt);
-        const full = `${title} ${excerpt} ${toLower(item.countryCode || '')} ${toLower(item.placeType || '')}`;
+        const keywords = Array.isArray(item.keywords) ? item.keywords.map((value) => toLower(value)).filter(Boolean) : [];
+        const phrase = `${title} ${excerpt} ${toLower(item.countryCode || '')} ${toLower(item.placeType || '')} ${keywords.join(' ')}`.trim();
+        const words = phrase.split(/\s+/).filter(Boolean);
 
-        let score = 0;
-        const joined = tokens.join(' ');
-        if (title.includes(joined)) score += 10;
-        if (full.includes(joined)) score += 6;
+        return {
+          title,
+          excerpt,
+          keywords,
+          phrase,
+          words,
+          titleCompact: compact(title),
+          phraseCompact: compact(phrase),
+          keywordCompacts: keywords.map((value) => compact(value)).filter(Boolean),
+        };
+      };
 
-        for (const token of tokens) {
-          if (title.includes(token)) score += 3;
-          if (excerpt.includes(token)) score += 1;
-          if (full.includes(token)) score += 1;
+      const indexedPayload = payload.map((item) => ({
+        item,
+        idx: buildSearchIndex(item),
+      }));
+
+      const QUERY_EXPANSIONS = {
+        nyc: ['new york city', 'new york'],
+        newyork: ['new york city', 'new york'],
+        usa: ['united states', 'us', 'abd'],
+        us: ['united states', 'usa', 'abd'],
+        abd: ['united states', 'usa', 'us'],
+        tr: ['turkiye', 'turkey'],
+        de: ['germany', 'deutschland'],
+        es: ['spain', 'espana'],
+        ru: ['russia', 'rusya'],
+      };
+
+      const KIND_SCORE_BOOST = {
+        country: 16,
+        city: 14,
+        landmark: 12,
+        region: 10,
+        blog: 6,
+      };
+
+      const STATUS_SCORE_BOOST = {
+        complete: 10,
+        draft: 4,
+        missing: 0,
+      };
+
+      const isOneEditAway = (left, right) => {
+        if (!left || !right) return false;
+        if (left === right) return true;
+        if (Math.abs(left.length - right.length) > 1) return false;
+
+        let i = 0;
+        let j = 0;
+        let edits = 0;
+
+        while (i < left.length && j < right.length) {
+          if (left[i] === right[j]) {
+            i += 1;
+            j += 1;
+            continue;
+          }
+
+          edits += 1;
+          if (edits > 1) return false;
+
+          if (left.length > right.length) {
+            i += 1;
+          } else if (right.length > left.length) {
+            j += 1;
+          } else {
+            i += 1;
+            j += 1;
+          }
         }
 
-        return score;
+        if (i < left.length || j < right.length) edits += 1;
+        return edits <= 1;
+      };
+
+      const buildQueryVariants = (query) => {
+        const normalized = toLower(query);
+        if (!normalized) return [];
+
+        const tokens = tokenize(normalized);
+        const variants = new Set([normalized]);
+
+        const directExpansions = QUERY_EXPANSIONS[normalized] || [];
+        directExpansions.forEach((value) => variants.add(toLower(value)));
+
+        tokens.forEach((token, tokenIndex) => {
+          const expandedTokens = QUERY_EXPANSIONS[token] || [];
+          expandedTokens.forEach((value) => {
+            const normalizedValue = toLower(value);
+            variants.add(normalizedValue);
+            const nextTokens = [...tokens];
+            nextTokens[tokenIndex] = normalizedValue;
+            variants.add(nextTokens.join(' '));
+          });
+        });
+
+        return Array.from(variants).filter(Boolean);
+      };
+
+      const scoreIndexedEntry = (entry, queryVariants) => {
+        if (!Array.isArray(queryVariants) || queryVariants.length === 0) return 0;
+
+        const { title, excerpt, keywords, phrase, words, titleCompact, phraseCompact, keywordCompacts } = entry.idx;
+        let bestScore = 0;
+
+        for (const query of queryVariants) {
+          const tokens = tokenize(query);
+          if (!tokens.length) continue;
+
+          const joined = tokens.join(' ');
+          const joinedCompact = compact(joined);
+          let score = 0;
+
+          if (title === joined) score += 120;
+          else if (title.startsWith(joined)) score += 90;
+          else if (title.includes(joined)) score += 64;
+
+          if (titleCompact === joinedCompact) score += 48;
+          else if (titleCompact.startsWith(joinedCompact)) score += 32;
+          else if (titleCompact.includes(joinedCompact)) score += 18;
+
+          if (phrase.includes(joined)) score += 22;
+          if (phraseCompact.includes(joinedCompact)) score += 14;
+
+          let tokenPrefixHits = 0;
+          let tokenExactHits = 0;
+          let tokenWeakHits = 0;
+
+          for (const token of tokens) {
+            if (!token) continue;
+            let tokenHit = false;
+
+            if (words.some((word) => word === token)) {
+              score += 28;
+              tokenExactHits += 1;
+              tokenHit = true;
+            }
+
+            if (words.some((word) => word.startsWith(token))) {
+              score += 20;
+              tokenPrefixHits += 1;
+              tokenHit = true;
+            }
+
+            if (title.includes(token)) {
+              score += 8;
+              tokenHit = true;
+            }
+
+            if (excerpt.includes(token)) {
+              score += 4;
+              tokenHit = true;
+            }
+
+            if (keywords.some((value) => value.includes(token))) {
+              score += 10;
+              tokenHit = true;
+            }
+
+            if (keywordCompacts.some((value) => value.includes(token)) || phraseCompact.includes(token)) {
+              score += 5;
+              tokenHit = true;
+            }
+
+            if (!tokenHit && token.length >= 4 && words.some((word) => isOneEditAway(word, token))) {
+              score += 6;
+              tokenHit = true;
+            }
+
+            if (!tokenHit) {
+              tokenWeakHits += 1;
+            }
+          }
+
+          if (tokenWeakHits === 0) score += 24;
+          if (tokenExactHits === tokens.length) score += 20;
+          if (tokenPrefixHits >= Math.max(1, Math.floor(tokens.length / 2))) score += 10;
+
+          if (score > bestScore) {
+            bestScore = score;
+          }
+        }
+
+        if (bestScore === 0) return 0;
+
+        const kindBoost = KIND_SCORE_BOOST[entry.item.kind] || 0;
+        const statusBoost = STATUS_SCORE_BOOST[String(entry.item.status || '').toLowerCase()] || 0;
+        return bestScore + kindBoost + statusBoost;
       };
 
       const params = new URLSearchParams(window.location.search);
@@ -389,22 +652,24 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
 
       const render = () => {
         const loweredQuery = toLower(state.query);
+        const queryVariants = buildQueryVariants(state.query);
 
-        const scored = payload
-          .map((item) => ({ item, score: scoreItem(item, loweredQuery) }))
-          .filter((entry) => {
-            if (state.kind !== 'all' && entry.item.kind !== state.kind) return false;
-            if (!loweredQuery) return true;
-            return entry.score > 0;
-          });
+        const queryMatched = indexedPayload
+          .map((entry) => ({
+            item: entry.item,
+            score: scoreIndexedEntry(entry, queryVariants),
+          }))
+          .filter((entry) => (!loweredQuery ? true : entry.score > 0));
+
+        const scored = queryMatched.filter((entry) => (state.kind !== 'all' ? entry.item.kind === state.kind : true));
 
         const counts = {
-          all: payload.length,
-          country: payload.filter((entry) => entry.kind === 'country').length,
-          city: payload.filter((entry) => entry.kind === 'city').length,
-          landmark: payload.filter((entry) => entry.kind === 'landmark').length,
-          region: payload.filter((entry) => entry.kind === 'region').length,
-          blog: payload.filter((entry) => entry.kind === 'blog').length,
+          all: queryMatched.length,
+          country: queryMatched.filter((entry) => entry.item.kind === 'country').length,
+          city: queryMatched.filter((entry) => entry.item.kind === 'city').length,
+          landmark: queryMatched.filter((entry) => entry.item.kind === 'landmark').length,
+          region: queryMatched.filter((entry) => entry.item.kind === 'region').length,
+          blog: queryMatched.filter((entry) => entry.item.kind === 'blog').length,
         };
 
         Object.entries(counts).forEach(([kind, count]) => {
@@ -436,12 +701,12 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
             .map(({ item }) => {
               const dateText = item.publishedOn ? escapeHtml(item.publishedOn) : uiText.unknownDate;
               return `
-                <article class="card gv-card search-result-item">
+                <article class="card gv-card search-result-item" data-search-result-item data-kind="${escapeHtml(item.kind)}">
                   <div class="search-result-head">
                     <span class="search-kind-badge">${escapeHtml(item.kind)}</span>
                     <span class="status-pill">${escapeHtml(item.status || 'missing')}</span>
                   </div>
-                  <a class="search-result-title" href="${escapeHtml(item.href)}" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</a>
+                  <a class="search-result-title" data-search-result-title href="${escapeHtml(item.href)}" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</a>
                   <p class="small search-result-excerpt">${escapeHtml(item.excerpt || '')}</p>
                   <div class="search-result-meta">
                     ${item.countryCode ? `<span class="small">${escapeHtml(item.countryCode)}</span>` : ''}
