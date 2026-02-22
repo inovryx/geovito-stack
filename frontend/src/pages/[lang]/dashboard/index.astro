@@ -737,8 +737,7 @@ const dashboardCopy = {
                 <div class="dashboard-owner-widget-actions">
                   <a
                     class="ui-button ui-button-secondary ui-button-sm"
-                    href="#dashboard-editorial-moderation"
-                    data-dashboard-section-pill
+                    href={`${accountPath}?commentState=pending#comments`}
                     data-dashboard-owner-widget-action="moderation"
                   >
                     <span class="ui-button-label">{dashboardCopy.activityActionModeration}</span>
@@ -935,7 +934,6 @@ const dashboardCopy = {
       let activityHistory = [];
       let activityTickTimer = null;
       let sectionSyncFrame = null;
-      const editorialModerationHref = '#dashboard-editorial-moderation';
       const editorialLocaleHref = '#dashboard-editorial-locale';
       const ACTIVITY_HISTORY_STORAGE_KEY = 'geovito_dashboard_activity_history_v1';
       const ACTIVITY_HISTORY_LIMIT = 20;
@@ -947,6 +945,7 @@ const dashboardCopy = {
         owner: 3,
       };
       const accountLocaleBasePath = String(accountPath || '').trim() || '/en/account/';
+      const accountCommentPendingHref = `${accountLocaleBasePath}?commentState=pending#comments`;
       let laneCollapsedState = {};
 
       const toNode = (value) => (value instanceof HTMLElement ? value : null);
@@ -1385,7 +1384,7 @@ const dashboardCopy = {
               level: 'warn',
               message: dashboardCopy.activityPending.replace('{count}', String(ownerPendingCount)),
               actionLabel: dashboardCopy.activityActionModeration,
-              actionHref: editorialModerationHref,
+              actionHref: accountCommentPendingHref,
               ts: nowTs,
             });
           }
@@ -1397,7 +1396,7 @@ const dashboardCopy = {
                 .replace('{count}', String(ownerStalePendingCount))
                 .replace('{hours}', String(moderationStaleThresholdHours)),
               actionLabel: dashboardCopy.activityActionModeration,
-              actionHref: editorialModerationHref,
+              actionHref: accountCommentPendingHref,
               ts: nowTs,
             });
           }

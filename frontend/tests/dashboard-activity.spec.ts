@@ -441,7 +441,7 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(ownerReleaseAction).toBeVisible();
       await expect(ownerReleaseAction).toHaveAttribute('href', /LAUNCH_RUNBOOK\.md$/);
       await expect(ownerModerationAction).toBeVisible();
-      await expect(ownerModerationAction).toHaveAttribute('href', '#dashboard-editorial-moderation');
+      await expect(ownerModerationAction).toHaveAttribute('href', /\/en\/account\/\?commentState=pending#comments$/);
       await expect(ownerLocaleAction).toBeVisible();
       await expect(ownerLocaleAction).toHaveAttribute('href', '#dashboard-editorial-locale');
       await expect(ownerReleaseBadge).toBeHidden();
@@ -666,9 +666,7 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(moderationBadge).toHaveAttribute('title', /7$/);
   await expect(localeBadge).toHaveAttribute('title', /2$/);
 
-  await moderationAction.click();
-  await expect(page).toHaveURL(/#dashboard-editorial-moderation$/);
-  await expect(page.locator('[data-dashboard-section-pill][href="#dashboard-editorial"]').first()).toHaveClass(/is-active/);
+  await expect(moderationAction).toHaveAttribute('href', /\/en\/account\/\?commentState=pending#comments$/);
   await localeAction.click();
   await expect(page).toHaveURL(/#dashboard-editorial-locale$/);
   await expect(localeAction).toHaveAttribute('href', '#dashboard-editorial-locale');
