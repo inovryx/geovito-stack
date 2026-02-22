@@ -404,6 +404,9 @@ dashboardRoleCases.forEach((roleCase) => {
     const ownerReleaseAction = page.locator('[data-dashboard-owner-widget-action="release"]');
     const ownerModerationAction = page.locator('[data-dashboard-owner-widget-action="moderation"]');
     const ownerLocaleAction = page.locator('[data-dashboard-owner-widget-action="locale"]');
+    const ownerReleaseBadge = page.locator('[data-dashboard-owner-widget-badge="release"]');
+    const ownerModerationBadge = page.locator('[data-dashboard-owner-widget-badge="moderation"]');
+    const ownerLocaleBadge = page.locator('[data-dashboard-owner-widget-badge="locale"]');
 
     if (roleCase.expectEditorialLane) {
       await expect(editorialLane).toBeVisible();
@@ -438,6 +441,9 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(ownerModerationAction).toHaveAttribute('href', '#dashboard-editorial');
       await expect(ownerLocaleAction).toBeVisible();
       await expect(ownerLocaleAction).toHaveAttribute('href', '#dashboard-editorial');
+      await expect(ownerReleaseBadge).toBeHidden();
+      await expect(ownerModerationBadge).toBeHidden();
+      await expect(ownerLocaleBadge).toBeHidden();
     } else {
       await expect(ownerCards).toHaveCount(0);
       await expect(ownerReleaseWidget).toBeHidden();
@@ -446,6 +452,9 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(ownerReleaseAction).toBeHidden();
       await expect(ownerModerationAction).toBeHidden();
       await expect(ownerLocaleAction).toBeHidden();
+      await expect(ownerReleaseBadge).toBeHidden();
+      await expect(ownerModerationBadge).toBeHidden();
+      await expect(ownerLocaleBadge).toBeHidden();
     }
 
     if (roleCase.expectAdminLinks) {
@@ -612,6 +621,9 @@ test('dashboard owner widgets show warning states when signals are present', asy
   const localeWidget = page.locator('[data-dashboard-owner-widget="locale"]');
   const moderationAction = page.locator('[data-dashboard-owner-widget-action="moderation"]');
   const localeAction = page.locator('[data-dashboard-owner-widget-action="locale"]');
+  const releaseBadge = page.locator('[data-dashboard-owner-widget-badge="release"]');
+  const moderationBadge = page.locator('[data-dashboard-owner-widget-badge="moderation"]');
+  const localeBadge = page.locator('[data-dashboard-owner-widget-badge="locale"]');
 
   await expect(releaseWidget).toHaveAttribute('data-state', 'warn');
   await expect(moderationWidget).toHaveAttribute('data-state', 'warn');
@@ -619,6 +631,9 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('owner77');
   await expect(page.locator('[data-dashboard-owner-widget-moderation-detail]')).toContainText('older than 24h');
   await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
+  await expect(releaseBadge).toHaveText('4');
+  await expect(moderationBadge).toHaveText('1');
+  await expect(localeBadge).toHaveText('2');
 
   await moderationAction.click();
   await expect(page).toHaveURL(/#dashboard-editorial$/);

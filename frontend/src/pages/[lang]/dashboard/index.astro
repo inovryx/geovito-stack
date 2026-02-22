@@ -711,6 +711,7 @@ const dashboardCopy = {
                     data-dashboard-owner-widget-action="release"
                   >
                     <span class="ui-button-label">{dashboardCopy.activityActionRunbook}</span>
+                    <span class="dashboard-owner-widget-badge" data-dashboard-owner-widget-badge="release" hidden>0</span>
                   </a>
                 </div>
               </article>
@@ -728,6 +729,7 @@ const dashboardCopy = {
                     data-dashboard-owner-widget-action="moderation"
                   >
                     <span class="ui-button-label">{dashboardCopy.activityActionModeration}</span>
+                    <span class="dashboard-owner-widget-badge" data-dashboard-owner-widget-badge="moderation" hidden>0</span>
                   </a>
                 </div>
               </article>
@@ -745,6 +747,7 @@ const dashboardCopy = {
                     data-dashboard-owner-widget-action="locale"
                   >
                     <span class="ui-button-label">{dashboardCopy.activityActionTranslations}</span>
+                    <span class="dashboard-owner-widget-badge" data-dashboard-owner-widget-badge="locale" hidden>0</span>
                   </a>
                 </div>
               </article>
@@ -892,6 +895,9 @@ const dashboardCopy = {
       const ownerWidgetLocaleNode = document.querySelector('[data-dashboard-owner-widget="locale"]');
       const ownerWidgetLocaleStateNode = document.querySelector('[data-dashboard-owner-widget-locale-state]');
       const ownerWidgetLocaleDetailNode = document.querySelector('[data-dashboard-owner-widget-locale-detail]');
+      const ownerWidgetReleaseBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="release"]');
+      const ownerWidgetModerationBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="moderation"]');
+      const ownerWidgetLocaleBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="locale"]');
       const activityFeedNode = document.querySelector('[data-dashboard-activity-feed]');
       const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
@@ -945,6 +951,19 @@ const dashboardCopy = {
         }
         setText(statusNode, statusText);
         setText(detailNode, detailText);
+      };
+
+      const setOwnerWidgetBadge = (badgeNode, value) => {
+        const badge = toNode(badgeNode);
+        if (!badge) return;
+        const count = Number(value || 0);
+        if (!Number.isFinite(count) || count <= 0) {
+          badge.hidden = true;
+          badge.textContent = '0';
+          return;
+        }
+        badge.hidden = false;
+        badge.textContent = String(Math.round(count));
       };
 
       const normalizeActivityEvent = (event) => {
@@ -1179,6 +1198,8 @@ const dashboardCopy = {
         const moderationHasStale = ownerStalePendingCount > 0;
         const localeHasGaps = ownerLocaleGapCount > 0;
         const localeNeedsDeploy = ownerLocaleDeployCount > 0;
+        const localeIssueCount = Math.max(0, Number(ownerLocaleGapCount) + Number(ownerLocaleDeployCount));
+        const releaseIssueCount = Number(moderationHasPending) + Number(moderationHasStale) + Number(localeHasGaps) + Number(localeNeedsDeploy);
 
         const releaseState = !hasReleaseSha
           ? 'unknown'
@@ -1202,6 +1223,7 @@ const dashboardCopy = {
           releaseStatusText,
           releaseDetailText
         );
+        setOwnerWidgetBadge(ownerWidgetReleaseBadgeNode, releaseIssueCount);
 
         const moderationState = moderationHasStale
           ? 'warn'
@@ -1228,6 +1250,7 @@ const dashboardCopy = {
               : dashboardCopy.activityLevelOk,
           moderationDetailText
         );
+        setOwnerWidgetBadge(ownerWidgetModerationBadgeNode, ownerPendingCount);
 
         const localeState = localeHasGaps
           ? 'warn'
@@ -1254,6 +1277,7 @@ const dashboardCopy = {
               : dashboardCopy.activityLevelOk,
           localeDetailText
         );
+        setOwnerWidgetBadge(ownerWidgetLocaleBadgeNode, localeIssueCount);
       };
 
       const refreshOwnerFingerprint = async () => {
@@ -2424,6 +2448,21 @@ const dashboardCopy = {
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
+  }
+
+  .dashboard-owner-widget-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.28rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brand) 72%, #ffffff);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .dashboard-owner-widget[data-state='ok'] {
