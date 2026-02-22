@@ -913,6 +913,8 @@ const dashboardCopy = {
       let ownerPendingCount = 0;
       let ownerStalePendingCount = 0;
       let ownerLocaleGapCount = 0;
+      let ownerLocaleMissingCount = 0;
+      let ownerLocaleUntranslatedCount = 0;
       let ownerLocaleDeployCount = 0;
       let ownerFingerprintSha = '';
       let lastActivityHasErrors = false;
@@ -1217,6 +1219,8 @@ const dashboardCopy = {
         const moderationHasPending = ownerPendingCount > 0;
         const moderationHasStale = ownerStalePendingCount > 0;
         const localeHasGaps = ownerLocaleGapCount > 0;
+        const localeHasMissing = ownerLocaleMissingCount > 0;
+        const localeHasUntranslated = ownerLocaleUntranslatedCount > 0;
         const localeNeedsDeploy = ownerLocaleDeployCount > 0;
         const localeIssueCount = Math.max(0, Number(ownerLocaleGapCount) + Number(ownerLocaleDeployCount));
         const releaseIssueCount = Number(moderationHasPending) + Number(moderationHasStale) + Number(localeHasGaps) + Number(localeNeedsDeploy);
@@ -1278,9 +1282,9 @@ const dashboardCopy = {
           criticalThreshold: 5,
         });
 
-        const localeState = localeHasGaps
+        const localeState = localeHasMissing
           ? 'warn'
-          : localeNeedsDeploy
+          : localeHasUntranslated || localeNeedsDeploy
             ? 'info'
             : 'ok';
         let localeDetailText = dashboardCopy.activityAllClear;
@@ -1917,6 +1921,8 @@ const dashboardCopy = {
         ownerStalePendingCount = 0;
         moderationStaleThresholdHours = DEFAULT_STALE_PENDING_HOURS;
         ownerLocaleGapCount = 0;
+        ownerLocaleMissingCount = 0;
+        ownerLocaleUntranslatedCount = 0;
         ownerLocaleDeployCount = 0;
         ownerFingerprintSha = '';
         setText(ownerPendingNode, '0');
@@ -2053,20 +2059,28 @@ const dashboardCopy = {
 
             const coverage = Number(currentRow?.coverage_percent || 0);
             const gapLocalesRaw = Number(summary?.locales_with_gaps);
+            const missingLocalesRaw = Number(summary?.locales_with_missing);
+            const untranslatedLocalesRaw = Number(summary?.locales_with_untranslated);
             const deployRequiredRaw = Number(summary?.deploy_required_count);
             const hasGapContract = Number.isFinite(gapLocalesRaw);
+            const hasMissingContract = Number.isFinite(missingLocalesRaw);
+            const hasUntranslatedContract = Number.isFinite(untranslatedLocalesRaw);
             const hasDeployContract = Number.isFinite(deployRequiredRaw);
             const gapLocales = normalizeCount(gapLocalesRaw, 0);
+            const missingLocales = normalizeCount(missingLocalesRaw, 0);
+            const untranslatedLocales = normalizeCount(untranslatedLocalesRaw, 0);
             const deployRequired = normalizeCount(deployRequiredRaw, 0);
 
             setText(localeCoverageNode, `${Math.round(coverage * 100) / 100}%`);
             setText(localeGapsNode, String(gapLocales));
             setText(localeDeployNode, String(deployRequired));
             ownerLocaleGapCount = gapLocales;
+            ownerLocaleMissingCount = missingLocales;
+            ownerLocaleUntranslatedCount = untranslatedLocales;
             ownerLocaleDeployCount = deployRequired;
             setText(ownerLocaleGapsNode, String(ownerLocaleGapCount));
             setText(ownerLocaleDeployNode, String(ownerLocaleDeployCount));
-            if (!hasGapContract || !hasDeployContract) {
+            if (!hasGapContract || !hasMissingContract || !hasUntranslatedContract || !hasDeployContract) {
               hadErrors = true;
             }
           } else if (response.status === 401 || response.status === 403) {
@@ -2074,6 +2088,8 @@ const dashboardCopy = {
               toNode(localeNote).hidden = false;
             }
             ownerLocaleGapCount = 0;
+            ownerLocaleMissingCount = 0;
+            ownerLocaleUntranslatedCount = 0;
             ownerLocaleDeployCount = 0;
             setText(ownerLocaleGapsNode, '0');
             setText(ownerLocaleDeployNode, '0');

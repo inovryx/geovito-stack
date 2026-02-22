@@ -663,6 +663,144 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(localeAction).toHaveAttribute('href', '#dashboard-editorial-locale');
 });
 
+test('dashboard locale widget uses info state when only untranslated locales are pending', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run untranslated-only locale smoke once on desktop');
+  test.skip(!OWNER_EMAIL_HINT, 'PUBLIC_OWNER_EMAIL is required to resolve owner role');
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 89,
+        username: 'owner-user',
+        email: OWNER_EMAIL_HINT,
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-21T08:00:00.000Z',
+        role: {
+          type: 'authenticated',
+          name: 'Authenticated',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/moderation\/list\?status=all&limit=40$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [],
+        meta: {
+          summary: {
+            pending_total: 0,
+            stale_pending_total: 0,
+            oldest_pending_hours: 0,
+            stale_threshold_hours: 24,
+          },
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 2,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_gaps: 1,
+            locales_with_missing: 0,
+            locales_with_untranslated: 1,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+            {
+              ui_locale: 'tr',
+              status: 'draft',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 194,
+              missing_keys: 0,
+              untranslated_keys: 6,
+              coverage_percent: 97,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'owner88',
+        build_sha_full: 'owner88deadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-21T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt, email]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'owner-user',
+        email,
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-21T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT, OWNER_EMAIL_HINT]);
+
+  await page.goto('/en/dashboard/');
+  await dismissConsentBanner(page);
+
+  await expect(page.locator('[data-dashboard-owner-widget="release"]')).toHaveAttribute('data-state', 'warn');
+  await expect(page.locator('[data-dashboard-owner-widget="moderation"]')).toHaveAttribute('data-state', 'ok');
+  await expect(page.locator('[data-dashboard-owner-widget="locale"]')).toHaveAttribute('data-state', 'info');
+  await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
+  await expect(page.locator('[data-dashboard-owner-widget-badge="locale"]')).toHaveText('1');
+});
+
 test('dashboard lane collapse state persists between reloads', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'Run lane collapse smoke once on desktop');
 
