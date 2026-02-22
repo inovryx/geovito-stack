@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import StateBanner from '../../components/StateBanner.astro';
+import EmbedGallery from '../../components/content/EmbedGallery.astro';
 import { resolveTranslation } from '../../lib/languageState';
 import { getUiPage } from '../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../lib/languages';
@@ -91,6 +92,7 @@ const robots = !hasRenderableContent
         ) : (
           <p>{translate(ui, 'uiPage.noBody')}</p>
         )}
+        <EmbedGallery embeds={resolution?.output?.embeds} ui={ui} />
 
         {resolution?.requested?.status !== 'complete' && !runtimeMode ? (
           <p>

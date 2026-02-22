@@ -33,6 +33,11 @@
     "body": {
       "type": "richtext"
     },
+    "embeds": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.embed-item"
+    },
     "last_reviewed_at": {
       "type": "datetime"
     },

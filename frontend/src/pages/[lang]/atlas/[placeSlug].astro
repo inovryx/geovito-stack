@@ -12,6 +12,7 @@ import Badge from '../../../components/ui/Badge.astro';
 import BadgeGroup from '../../../components/ui/BadgeGroup.astro';
 import Card from '../../../components/ui/Card.astro';
 import EmptyState from '../../../components/ui/EmptyState.astro';
+import EmbedGallery from '../../../components/content/EmbedGallery.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getAtlasPlaces, getBlogPosts, type AtlasPlace } from '../../../lib/strapi';
 import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
@@ -369,6 +370,7 @@ const tocSections = [
           ) : (
             <p class="gv-body">{translate(ui, 'atlas.noBody')}</p>
           )}
+          <EmbedGallery embeds={resolution.output.embeds} ui={ui} />
 
           {
             resolution.requested?.status !== 'complete' && !runtimeMode ? (

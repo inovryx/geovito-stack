@@ -2,6 +2,7 @@
 
 const { DEFAULT_LANGUAGE } = require('./constants');
 const { enforceLanguageState } = require('./rules');
+const { normalizeEmbedsForTranslations } = require('../content-embeds');
 
 const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object || {}, key);
 
@@ -35,6 +36,7 @@ const fetchExisting = async (uid, where) => {
 const validateCreate = (event, contextLabel) => {
   const data = event.params?.data || {};
   enforceLanguageState(data, { contextLabel });
+  normalizeEmbedsForTranslations(data.translations, { contextLabel });
   event.params.data = data;
 };
 
@@ -57,6 +59,7 @@ const validateUpdate = async (event, uid, contextLabel) => {
     contextLabel,
     requireCanonicalComplete: hasOwn(data, 'publishedAt') && Boolean(data.publishedAt),
   });
+  normalizeEmbedsForTranslations(merged.translations, { contextLabel });
 
   if (hasOwn(data, 'translations')) {
     event.params.data.translations = merged.translations;

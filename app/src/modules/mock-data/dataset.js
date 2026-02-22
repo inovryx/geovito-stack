@@ -18,36 +18,53 @@ const completeTranslation = ({
   slug,
   excerpt,
   body,
+  embeds,
   canonicalPath,
   lastReviewedAt = '2026-02-08T00:00:00.000Z',
-}) => ({
-  language,
-  status: 'complete',
-  title,
-  slug,
-  excerpt,
-  body,
-  canonical_path: canonicalPath,
-  runtime_translation: false,
-  indexable: true,
-  last_reviewed_at: lastReviewedAt,
-  seo: {
-    metaTitle: title,
-    metaDescription: excerpt,
-  },
-});
+}) => {
+  const translation = {
+    language,
+    status: 'complete',
+    title,
+    slug,
+    excerpt,
+    body,
+    canonical_path: canonicalPath,
+    runtime_translation: false,
+    indexable: true,
+    last_reviewed_at: lastReviewedAt,
+    seo: {
+      metaTitle: title,
+      metaDescription: excerpt,
+    },
+  };
 
-const draftTranslation = ({ language, title, slug, excerpt, body }) => ({
-  language,
-  status: 'draft',
-  title,
-  slug,
-  excerpt,
-  body,
-  runtime_translation: false,
-  indexable: false,
-  last_reviewed_at: null,
-});
+  if (Array.isArray(embeds) && embeds.length > 0) {
+    translation.embeds = embeds.slice(0, 8);
+  }
+
+  return translation;
+};
+
+const draftTranslation = ({ language, title, slug, excerpt, body, embeds }) => {
+  const translation = {
+    language,
+    status: 'draft',
+    title,
+    slug,
+    excerpt,
+    body,
+    runtime_translation: false,
+    indexable: false,
+    last_reviewed_at: null,
+  };
+
+  if (Array.isArray(embeds) && embeds.length > 0) {
+    translation.embeds = embeds.slice(0, 8);
+  }
+
+  return translation;
+};
 
 const buildTranslations = (input) =>
   SUPPORTED_LANGUAGES.map((language) => {
@@ -359,6 +376,15 @@ const atlasPlaces = [
         slug: 'new-york-city',
         excerpt: 'Mock city profile for New York City.',
         body: 'Mock city entry for New York City.',
+        embeds: [
+          {
+            provider: 'youtube',
+            source_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            title: 'NYC skyline sample',
+            caption: 'Mock YouTube embed for atlas city page QA.',
+            start_seconds: 12,
+          },
+        ],
         canonicalPath: '/en/atlas/new-york-city',
       },
       de: {
@@ -639,6 +665,15 @@ const blogPosts = [
         slug: 'plan-3-day-europe-city-break',
         excerpt: 'Practical sequence for short city trips with low planning overhead.',
         body: 'This is mock editorial content for a short Europe city break guide.',
+        embeds: [
+          {
+            provider: 'youtube',
+            source_url: 'https://youtu.be/dQw4w9WgXcQ',
+            title: 'City break planning video',
+            caption: 'Mock YouTube video embed on blog post.',
+            start_seconds: 8,
+          },
+        ],
         canonicalPath: '/en/blog/plan-3-day-europe-city-break',
       },
       de: {
@@ -662,6 +697,14 @@ const blogPosts = [
         slug: 'neighborhood-food-walks-no-tourist-traps',
         excerpt: 'A repeatable approach to finding better local food spots.',
         body: 'This is mock editorial content for food-oriented neighborhood walks.',
+        embeds: [
+          {
+            provider: 'facebook',
+            source_url: 'https://www.facebook.com/watch/?v=10153231379946729',
+            title: 'Neighborhood walk clip',
+            caption: 'Mock Facebook embed for content pipeline verification.',
+          },
+        ],
         canonicalPath: '/en/blog/neighborhood-food-walks-no-tourist-traps',
       },
       es: {

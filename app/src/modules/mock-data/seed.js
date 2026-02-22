@@ -10,6 +10,7 @@ const {
   countryProfiles,
   regionGroups,
 } = require('./dataset');
+const { isSupportedSystemPageKey } = require('../ui-pages/constants');
 
 const now = () => new Date();
 
@@ -49,6 +50,9 @@ const upsert = async (strapiInstance, uid, uniqueField, uniqueValue, payload, op
 
 const seedUiPages = async (strapiInstance) => {
   for (const page of uiPages) {
+    if (!isSupportedSystemPageKey(page.page_key)) {
+      continue;
+    }
     await upsert(strapiInstance, 'api::ui-page.ui-page', 'page_key', page.page_key, page, {
       publish: true,
     });

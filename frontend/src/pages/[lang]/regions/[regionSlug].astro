@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
+import EmbedGallery from '../../../components/content/EmbedGallery.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getRegionGroups, getAtlasPlaces, type AtlasPlace, type RegionGroup } from '../../../lib/strapi';
 import { DEFAULT_LANGUAGE, isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
@@ -215,6 +216,7 @@ const memberLinks = memberPlaces
 
   <section class="card prose-card">
     {resolution.output.body ? <article class="prose-body" data-ev-root="off" set:html={resolution.output.body}></article> : <p>{translate(ui, 'regions.noBody')}</p>}
+    <EmbedGallery embeds={resolution.output.embeds} ui={ui} />
   </section>
 
   {
