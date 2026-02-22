@@ -127,6 +127,11 @@ const dashboardCopy = {
   localeCoverage: translate(ui, 'dashboard.localeCoverage', {}, 'Coverage ({lang})'),
   localeGapLocales: translate(ui, 'dashboard.localeGapLocales', {}, 'Locales with gaps'),
   localeDeployRequired: translate(ui, 'dashboard.localeDeployRequired', {}, 'Locales pending deploy'),
+  localeListTitle: translate(ui, 'dashboard.localeListTitle', {}, 'Locales needing attention'),
+  localeListEmpty: translate(ui, 'dashboard.localeListEmpty', {}, 'No locale gaps right now.'),
+  localeListMissingLabel: translate(ui, 'dashboard.localeListMissingLabel', {}, 'missing'),
+  localeListUntranslatedLabel: translate(ui, 'dashboard.localeListUntranslatedLabel', {}, 'untranslated'),
+  localeListDeployLabel: translate(ui, 'dashboard.localeListDeployLabel', {}, 'deploy'),
   localeLimited: translate(ui, 'dashboard.localeLimited', {}, 'Limited: editor/admin permission required'),
   quickTitle: translate(ui, 'dashboard.quickTitle', {}, 'Quick actions'),
   quickBody: translate(ui, 'dashboard.quickBody', {}, 'Open account settings or continue product workflows.'),
@@ -549,6 +554,8 @@ const dashboardCopy = {
               <p class="dashboard-kpi"><span>{dashboardCopy.localeGapLocales}</span><strong data-dashboard-locale-gaps>0</strong></p>
               <p class="dashboard-kpi"><span>{dashboardCopy.localeDeployRequired}</span><strong data-dashboard-locale-deploy>0</strong></p>
             </div>
+            <h3 class="dashboard-mini-title">{dashboardCopy.localeListTitle}</h3>
+            <ul class="dashboard-mini-list" data-dashboard-locale-list></ul>
             <p class="small" data-dashboard-locale-note hidden>{dashboardCopy.localeLimited}</p>
           </article>
         </div>
@@ -880,6 +887,7 @@ const dashboardCopy = {
       const localeCoverageNode = document.querySelector('[data-dashboard-locale-coverage]');
       const localeGapsNode = document.querySelector('[data-dashboard-locale-gaps]');
       const localeDeployNode = document.querySelector('[data-dashboard-locale-deploy]');
+      const localeListNode = document.querySelector('[data-dashboard-locale-list]');
       const ownerBuildShaNode = document.querySelector('[data-dashboard-owner-build-sha]');
       const ownerReleaseStatusNode = document.querySelector('[data-dashboard-owner-release-status]');
       const ownerPendingNode = document.querySelector('[data-dashboard-owner-pending]');
@@ -1850,6 +1858,81 @@ const dashboardCopy = {
         host.appendChild(fragment);
       };
 
+      const renderLocaleProgressRows = (rows) => {
+        const host = toNode(localeListNode);
+        if (!host) return;
+
+        host.innerHTML = '';
+
+        const sourceList = Array.isArray(rows) ? rows : [];
+        const candidates = sourceList
+          .map((item) => {
+            const localeCode = normalizeLanguage(item?.ui_locale || '').toUpperCase() || '-';
+            const missing = normalizeCount(item?.missing_keys, 0);
+            const untranslated = normalizeCount(item?.untranslated_keys, 0);
+            const deployRequired = Boolean(item?.deploy_required);
+            const coverageRaw = Number(item?.coverage_percent);
+            const coverage = Number.isFinite(coverageRaw)
+              ? Math.round(coverageRaw * 100) / 100
+              : 0;
+
+            return {
+              localeCode,
+              missing,
+              untranslated,
+              deployRequired,
+              coverage,
+            };
+          })
+          .filter((item) => item.missing > 0 || item.untranslated > 0 || item.deployRequired)
+          .sort((left, right) => {
+            if (right.missing !== left.missing) return right.missing - left.missing;
+            if (right.untranslated !== left.untranslated) return right.untranslated - left.untranslated;
+            if (Number(right.deployRequired) !== Number(left.deployRequired)) {
+              return Number(right.deployRequired) - Number(left.deployRequired);
+            }
+            if (left.coverage !== right.coverage) return left.coverage - right.coverage;
+            return left.localeCode.localeCompare(right.localeCode);
+          })
+          .slice(0, 6);
+
+        if (!candidates.length) {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          row.innerHTML = `<span>${escapeHtml(dashboardCopy.localeListEmpty)}</span>`;
+          host.appendChild(row);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        candidates.forEach((item) => {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+
+          const detailParts = [];
+          if (item.missing > 0) {
+            detailParts.push(`${item.missing} ${dashboardCopy.localeListMissingLabel}`);
+          }
+          if (item.untranslated > 0) {
+            detailParts.push(`${item.untranslated} ${dashboardCopy.localeListUntranslatedLabel}`);
+          }
+          if (item.deployRequired) {
+            detailParts.push(dashboardCopy.localeListDeployLabel);
+          }
+          if (!detailParts.length) {
+            detailParts.push(dashboardCopy.activityAllClear);
+          }
+
+          row.innerHTML = `
+            <strong>${escapeHtml(item.localeCode)} · ${escapeHtml(`${item.coverage}%`)}</strong>
+            <span>${escapeHtml(detailParts.join(' · '))}</span>
+          `;
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+      };
+
       const runModerationAction = async (session, commentId, status) => {
         if (!session?.jwt || !commentId || !status) return false;
 
@@ -1917,6 +2000,7 @@ const dashboardCopy = {
         setText(localeCoverageNode, '0%');
         setText(localeGapsNode, '0');
         setText(localeDeployNode, '0');
+        renderLocaleProgressRows([]);
         ownerPendingCount = 0;
         ownerStalePendingCount = 0;
         moderationStaleThresholdHours = DEFAULT_STALE_PENDING_HOURS;
@@ -2074,6 +2158,7 @@ const dashboardCopy = {
             setText(localeCoverageNode, `${Math.round(coverage * 100) / 100}%`);
             setText(localeGapsNode, String(gapLocales));
             setText(localeDeployNode, String(deployRequired));
+            renderLocaleProgressRows(rows);
             ownerLocaleGapCount = gapLocales;
             ownerLocaleMissingCount = missingLocales;
             ownerLocaleUntranslatedCount = untranslatedLocales;
@@ -2093,6 +2178,7 @@ const dashboardCopy = {
             ownerLocaleDeployCount = 0;
             setText(ownerLocaleGapsNode, '0');
             setText(ownerLocaleDeployNode, '0');
+            renderLocaleProgressRows([]);
           } else {
             hadErrors = true;
           }

@@ -642,6 +642,9 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('owner77');
   await expect(page.locator('[data-dashboard-owner-widget-moderation-detail]')).toContainText('older than 36h');
   await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
+  await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('TR');
+  await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('8 missing');
+  await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('deploy');
   await expect(page.locator('[data-dashboard-moderation-pending]')).toHaveText('7');
   await expect(page.locator('[data-dashboard-moderation-stale]')).toHaveText('3');
   await expect(page.locator('[data-dashboard-moderation-oldest]')).toHaveText('96h');
@@ -799,6 +802,8 @@ test('dashboard locale widget uses info state when only untranslated locales are
   await expect(page.locator('[data-dashboard-owner-widget="locale"]')).toHaveAttribute('data-state', 'info');
   await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
   await expect(page.locator('[data-dashboard-owner-widget-badge="locale"]')).toHaveText('1');
+  await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('TR');
+  await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('6 untranslated');
 });
 
 test('dashboard lane collapse state persists between reloads', async ({ page }, testInfo) => {
