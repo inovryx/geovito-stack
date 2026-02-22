@@ -8,4 +8,6 @@ echo "=============================================================="
 echo "GEOVITO PROD MODE: frontend smoke (i18n + build)"
 echo "=============================================================="
 
-docker compose run --rm frontend sh -lc "npm install && npm run i18n:check && npm run build"
+HOST_UID_GID="$(id -u):$(id -g)"
+
+docker compose run --rm --user "$HOST_UID_GID" frontend sh -lc "npm install && npm run i18n:check && npm run build"

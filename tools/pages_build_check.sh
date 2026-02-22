@@ -12,7 +12,9 @@ echo "- Root directory: frontend"
 echo "- Build command: npm ci && npm run i18n:check && npm run build"
 echo "- Output directory: dist"
 
-docker compose run --rm frontend sh -lc "cd /opt/web && npm ci && npm run i18n:check && npm run build"
+HOST_UID_GID="$(id -u):$(id -g)"
+
+docker compose run --rm --user "$HOST_UID_GID" frontend sh -lc "cd /opt/web && npm ci && npm run i18n:check && npm run build"
 
 if [[ ! -d "$ROOT_DIR/frontend/dist" ]]; then
   echo "FAIL: frontend/dist not found after build"
