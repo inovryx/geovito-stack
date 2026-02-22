@@ -336,13 +336,23 @@ const dashboardCopy = {
             <h2 class="dashboard-lane-title">{dashboardCopy.overviewTitle}</h2>
             <p class="small">{dashboardCopy.quickBody}</p>
           </div>
+          <button
+            type="button"
+            class="dashboard-lane-toggle"
+            data-dashboard-lane-toggle
+            aria-expanded="true"
+            aria-label={`Toggle ${dashboardCopy.overviewTitle}`}
+            title={`Toggle ${dashboardCopy.overviewTitle}`}
+          >
+            -
+          </button>
           <p class="dashboard-role-pill">
             <span>{dashboardCopy.accessRole}</span>
             <strong data-dashboard-role>{dashboardCopy.accessMember}</strong>
           </p>
         </header>
 
-        <div class="dashboard-grid">
+        <div class="dashboard-grid" data-dashboard-lane-content>
           <article class="card panel gv-stack">
             <h3 class="dashboard-mini-title">{dashboardCopy.overviewTitle}</h3>
             <dl class="dashboard-dl">
@@ -445,9 +455,19 @@ const dashboardCopy = {
             <h2 class="dashboard-lane-title">{dashboardCopy.localeTitle}</h2>
             <p class="small">{dashboardCopy.localeBody}</p>
           </div>
+          <button
+            type="button"
+            class="dashboard-lane-toggle"
+            data-dashboard-lane-toggle
+            aria-expanded="true"
+            aria-label={`Toggle ${dashboardCopy.localeTitle}`}
+            title={`Toggle ${dashboardCopy.localeTitle}`}
+          >
+            -
+          </button>
         </header>
 
-        <div class="dashboard-grid">
+        <div class="dashboard-grid" data-dashboard-lane-content>
           <article class="card panel gv-stack">
             <div class="gv-stack dashboard-moderation-wrap" data-dashboard-moderation-wrap hidden>
               <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
@@ -499,13 +519,23 @@ const dashboardCopy = {
             <h2 class="dashboard-lane-title">{dashboardCopy.controlTitle}</h2>
             <p class="small">{dashboardCopy.controlBody}</p>
           </div>
+          <button
+            type="button"
+            class="dashboard-lane-toggle"
+            data-dashboard-lane-toggle
+            aria-expanded="true"
+            aria-label={`Toggle ${dashboardCopy.controlTitle}`}
+            title={`Toggle ${dashboardCopy.controlTitle}`}
+          >
+            -
+          </button>
           <p class="dashboard-role-pill">
             <span>{dashboardCopy.roleGovernanceCurrent}</span>
             <strong data-dashboard-governance-role>{dashboardCopy.accessMember}</strong>
           </p>
         </header>
 
-        <div class="dashboard-grid">
+        <div class="dashboard-grid" data-dashboard-lane-content>
           <article class="card panel gv-stack">
             <h3 class="dashboard-mini-title">{dashboardCopy.roleGovernanceTitle}</h3>
             <p class="small">{dashboardCopy.roleGovernanceBody}</p>
@@ -719,6 +749,7 @@ const dashboardCopy = {
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
       const activityClearNode = document.querySelector('[data-dashboard-activity-clear]');
       const laneNodes = Array.from(document.querySelectorAll('[data-dashboard-lane]'));
+      const laneToggleButtons = Array.from(document.querySelectorAll('[data-dashboard-lane-toggle]'));
       let currentSession = null;
       let canRunModeration = false;
       let isLoading = false;
@@ -734,12 +765,14 @@ const dashboardCopy = {
       const editorialSectionHref = '#dashboard-editorial';
       const ACTIVITY_HISTORY_STORAGE_KEY = 'geovito_dashboard_activity_history_v1';
       const ACTIVITY_HISTORY_LIMIT = 20;
+      const LANE_STATE_STORAGE_KEY = 'geovito_dashboard_lane_state_v1';
       const roleRanks = {
         member: 0,
         editor: 1,
         admin: 2,
         owner: 3,
       };
+      let laneCollapsedState = {};
 
       const toNode = (value) => (value instanceof HTMLElement ? value : null);
       const setText = (node, value) => {
@@ -813,6 +846,50 @@ const dashboardCopy = {
           );
         } catch {
           // ignore storage write failures (private mode / quota)
+        }
+      };
+
+      const readLaneCollapsedState = () => {
+        try {
+          const raw = localStorage.getItem(LANE_STATE_STORAGE_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+          return parsed;
+        } catch {
+          return {};
+        }
+      };
+
+      const persistLaneCollapsedState = () => {
+        try {
+          localStorage.setItem(LANE_STATE_STORAGE_KEY, JSON.stringify(laneCollapsedState));
+        } catch {
+          // ignore storage write failures (private mode / quota)
+        }
+      };
+
+      const updateLaneCollapsedState = (laneNode, isCollapsed, { persist = true } = {}) => {
+        if (!(laneNode instanceof HTMLElement)) return;
+        const laneId = String(laneNode.id || '').trim();
+        if (!laneId) return;
+
+        laneNode.dataset.collapsed = isCollapsed ? 'true' : 'false';
+
+        const contentNode = laneNode.querySelector('[data-dashboard-lane-content]');
+        if (contentNode instanceof HTMLElement) {
+          contentNode.hidden = isCollapsed;
+        }
+
+        const toggleNode = laneNode.querySelector('[data-dashboard-lane-toggle]');
+        if (toggleNode instanceof HTMLButtonElement) {
+          toggleNode.textContent = isCollapsed ? '+' : '-';
+          toggleNode.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        }
+
+        laneCollapsedState[laneId] = Boolean(isCollapsed);
+        if (persist) {
+          persistLaneCollapsedState();
         }
       };
 
@@ -1215,6 +1292,11 @@ const dashboardCopy = {
           const minRole = String(lane.getAttribute('data-min-role') || 'member').toLowerCase();
           const minRoleRank = Number(roleRanks[minRole] ?? 0);
           lane.hidden = effectiveRoleRank < minRoleRank;
+          if (!lane.hidden) {
+            const laneId = String(lane.id || '').trim();
+            const isCollapsed = Boolean(laneCollapsedState[laneId]);
+            updateLaneCollapsedState(lane, isCollapsed, { persist: false });
+          }
         });
 
         roleGatedNodes.forEach((node) => {
@@ -1635,6 +1717,7 @@ const dashboardCopy = {
         if (toNode(authedPanel)) toNode(authedPanel).hidden = false;
 
         activityHistory = readActivityHistory();
+        laneCollapsedState = readLaneCollapsedState();
         renderActivityFeed(false, { includeLive: false, persist: false });
         startActivityTicker();
 
@@ -1665,6 +1748,16 @@ const dashboardCopy = {
             setFeedback(dashboardCopy.activityClearHistoryDone);
           });
         }
+
+        laneToggleButtons.forEach((button) => {
+          if (!(button instanceof HTMLButtonElement)) return;
+          button.addEventListener('click', () => {
+            const laneNode = button.closest('[data-dashboard-lane]');
+            if (!(laneNode instanceof HTMLElement)) return;
+            const currentlyCollapsed = laneNode.dataset.collapsed === 'true';
+            updateLaneCollapsedState(laneNode, !currentlyCollapsed, { persist: true });
+          });
+        });
 
         copyCommandButtons.forEach((button) => {
           if (!(button instanceof HTMLButtonElement)) return;
@@ -1779,6 +1872,25 @@ const dashboardCopy = {
     margin: 0;
     font-size: 1.02rem;
     font-weight: 700;
+  }
+
+  .dashboard-lane-toggle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .dashboard-lane-toggle:hover {
+    border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+    background: var(--brand-soft);
   }
 
   .dashboard-role-pill {
