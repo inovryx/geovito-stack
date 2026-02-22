@@ -566,7 +566,7 @@ const dashboardCopy = {
       </section>
 
       <section
-        class="dashboard-lane gv-stack"
+        class="dashboard-lane dashboard-lane-control gv-stack"
         id="dashboard-control"
         data-dashboard-lane
         data-min-role="admin"
@@ -593,8 +593,23 @@ const dashboardCopy = {
           </p>
         </header>
 
+        <div class="dashboard-control-strip" data-dashboard-role-gated data-min-role="admin" hidden>
+          <article class="dashboard-control-pill">
+            <span>{dashboardCopy.ownerSummaryReleaseStatus}</span>
+            <strong data-dashboard-control-release-status>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
+          </article>
+          <article class="dashboard-control-pill">
+            <span>{dashboardCopy.ownerSummaryPending}</span>
+            <strong data-dashboard-control-pending>0</strong>
+          </article>
+          <article class="dashboard-control-pill">
+            <span>{dashboardCopy.ownerSummaryLocaleGaps}</span>
+            <strong data-dashboard-control-locale-gaps>0</strong>
+          </article>
+        </div>
+
         <div class="dashboard-grid" data-dashboard-lane-content>
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-governance">
             <h3 class="dashboard-mini-title">{dashboardCopy.roleGovernanceTitle}</h3>
             <p class="small">{dashboardCopy.roleGovernanceBody}</p>
             <p class="small"><strong>{dashboardCopy.roleGovernanceScope}:</strong> <span data-dashboard-governance-scope>{dashboardCopy.roleGovernanceMemberScope}</span></p>
@@ -624,7 +639,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-governance-limited>{dashboardCopy.roleGovernanceLimited}</p>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-admin">
             <h3 class="dashboard-mini-title">{dashboardCopy.controlTitle}</h3>
             <p class="small">{dashboardCopy.controlBody}</p>
             <div class="dashboard-actions">
@@ -661,7 +676,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-activity">
             <h3 class="dashboard-mini-title">{dashboardCopy.activityTitle}</h3>
             <p class="small">{dashboardCopy.activityBody}</p>
             <div class="dashboard-activity-controls">
@@ -677,7 +692,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-activity-empty>{dashboardCopy.activityEmpty}</p>
           </article>
 
-          <article class="card panel gv-stack" data-dashboard-role-gated data-min-role="owner" hidden>
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-summary" data-dashboard-role-gated data-min-role="owner" hidden>
             <h3 class="dashboard-mini-title">{dashboardCopy.ownerSummaryTitle}</h3>
             <p class="small">{dashboardCopy.ownerSummaryBody}</p>
             <ul class="dashboard-owner-summary-list">
@@ -764,7 +779,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack" data-dashboard-role-gated data-min-role="owner" hidden>
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-ops" data-dashboard-role-gated data-min-role="owner" hidden>
             <h3 class="dashboard-mini-title">{dashboardCopy.ownerOpsTitle}</h3>
             <p class="small">{dashboardCopy.ownerOpsBody}</p>
             <div class="dashboard-command-grid">
@@ -859,6 +874,9 @@ const dashboardCopy = {
       const ownerPendingNode = document.querySelector('[data-dashboard-owner-pending]');
       const ownerLocaleGapsNode = document.querySelector('[data-dashboard-owner-locale-gaps]');
       const ownerLocaleDeployNode = document.querySelector('[data-dashboard-owner-locale-deploy]');
+      const controlReleaseStatusNode = document.querySelector('[data-dashboard-control-release-status]');
+      const controlPendingNode = document.querySelector('[data-dashboard-control-pending]');
+      const controlLocaleGapsNode = document.querySelector('[data-dashboard-control-locale-gaps]');
       const ownerRefreshedNode = document.querySelector('[data-dashboard-owner-refreshed]');
       const ownerWidgetReleaseNode = document.querySelector('[data-dashboard-owner-widget="release"]');
       const ownerWidgetReleaseStateNode = document.querySelector('[data-dashboard-owner-widget-release-state]');
@@ -1187,6 +1205,7 @@ const dashboardCopy = {
           ? dashboardCopy.ownerSummaryStatusAttention
           : dashboardCopy.ownerSummaryStatusLive;
         setText(ownerReleaseStatusNode, status);
+        setText(controlReleaseStatusNode, status);
       };
 
       const syncOwnerWidgets = () => {
@@ -1226,6 +1245,8 @@ const dashboardCopy = {
           label: dashboardCopy.ownerSummaryReleaseStatus,
           criticalThreshold: 3,
         });
+        setText(controlPendingNode, String(ownerPendingCount));
+        setText(controlLocaleGapsNode, String(ownerLocaleGapCount));
 
         const moderationState = moderationHasStale
           ? 'warn'
@@ -1986,6 +2007,9 @@ const dashboardCopy = {
         setText(ownerLocaleGapsNode, '0');
         setText(ownerLocaleDeployNode, '0');
         setText(ownerReleaseStatusNode, dashboardCopy.ownerSummaryStatusUnknown);
+        setText(controlPendingNode, '0');
+        setText(controlLocaleGapsNode, '0');
+        setText(controlReleaseStatusNode, dashboardCopy.ownerSummaryStatusUnknown);
         setText(ownerRefreshedNode, dashboardCopy.unknown);
         syncOwnerWidgets();
         lastActivityHasErrors = false;
@@ -2349,6 +2373,15 @@ const dashboardCopy = {
     padding: 0.75rem;
   }
 
+  .dashboard-lane-control {
+    border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--brand-soft) 36%, var(--surface-2)),
+      color-mix(in srgb, var(--surface-2) 72%, transparent)
+    );
+  }
+
   .dashboard-lane-head {
     display: flex;
     align-items: flex-start;
@@ -2415,6 +2448,71 @@ const dashboardCopy = {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .dashboard-control-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.3rem;
+  }
+
+  .dashboard-control-pill {
+    margin: 0;
+    display: grid;
+    gap: 0.14rem;
+    padding: 0.52rem 0.62rem;
+    border-radius: 0.72rem;
+    border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 60%, var(--surface-2));
+  }
+
+  .dashboard-control-pill span {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-control-pill strong {
+    font-size: 0.9rem;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .dashboard-control-card {
+    border-color: color-mix(in srgb, var(--brand) 18%, var(--border));
+    background: color-mix(in srgb, var(--surface) 84%, var(--brand-soft));
+  }
+
+  .dashboard-control-card .dashboard-mini-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .dashboard-control-card-governance .dashboard-mini-title::before,
+  .dashboard-control-card-admin .dashboard-mini-title::before,
+  .dashboard-control-card-activity .dashboard-mini-title::before,
+  .dashboard-control-card-summary .dashboard-mini-title::before,
+  .dashboard-control-card-ops .dashboard-mini-title::before {
+    content: '';
+    width: 0.54rem;
+    height: 0.54rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brand) 62%, #ffffff);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-soft) 68%, transparent);
+  }
+
+  .dashboard-control-card-admin .dashboard-actions,
+  .dashboard-control-card-ops .dashboard-actions {
+    gap: 0.45rem;
+  }
+
+  .dashboard-control-card-admin .ui-button,
+  .dashboard-control-card-ops .ui-button {
+    min-width: 11.2rem;
+    justify-content: center;
+  }
+
   .dashboard-dl {
     margin: 0;
     display: grid;
@@ -2478,9 +2576,9 @@ const dashboardCopy = {
     display: grid;
     gap: 0.45rem;
     padding: 0.6rem;
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 26%, var(--border));
     border-radius: 0.72rem;
-    background: var(--surface-2);
+    background: color-mix(in srgb, var(--surface-2) 86%, var(--brand-soft));
   }
 
   .dashboard-command-card strong {
@@ -2804,6 +2902,10 @@ const dashboardCopy = {
     }
 
     .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-control-strip {
       grid-template-columns: 1fr;
     }
 
