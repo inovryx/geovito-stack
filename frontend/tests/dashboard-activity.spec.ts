@@ -565,3 +565,209 @@ test('dashboard lane collapse state persists between reloads', async ({ page }, 
   await expect(memberLaneContent).toBeVisible();
   await expect(memberLaneToggle).toHaveAttribute('aria-expanded', 'true');
 });
+
+test('dashboard section nav falls back to visible lane when hash lane is hidden', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run section nav fallback smoke once on desktop');
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 44,
+        username: 'member-user',
+        email: 'member@example.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-21T08:00:00.000Z',
+        role: {
+          type: 'authenticated',
+          name: 'Authenticated',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: null, error: { message: 'forbidden' } }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'member11',
+        build_sha_full: 'member11deadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-21T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'member-user',
+        email: 'member@example.com',
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-21T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/dashboard/#dashboard-control');
+  await dismissConsentBanner(page);
+
+  const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]');
+  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]');
+
+  await expect(controlPill).toBeHidden();
+  await expect(memberPill).toHaveClass(/is-active/);
+});
+
+test('dashboard section nav tracks hash and click for admin lanes', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run section nav hash/click smoke once on desktop');
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 55,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-21T08:00:00.000Z',
+        role: {
+          type: 'admin',
+          name: 'Admin',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/moderation\/list\?status=all&limit=40$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 1,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_missing: 0,
+            locales_with_untranslated: 0,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'admin111',
+        build_sha_full: 'admin111deadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-21T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-21T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/dashboard/');
+  await dismissConsentBanner(page);
+
+  const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]');
+  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]');
+
+  await expect(controlPill).toBeVisible();
+  await expect(memberPill).toHaveClass(/is-active/);
+
+  await page.evaluate(() => {
+    window.location.hash = '#dashboard-control';
+  });
+  await expect(controlPill).toHaveClass(/is-active/);
+
+  await memberPill.click();
+  await expect(memberPill).toHaveClass(/is-active/);
+});

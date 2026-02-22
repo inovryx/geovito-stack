@@ -318,13 +318,13 @@ const dashboardCopy = {
     </div>
 
     <nav class="dashboard-section-nav" aria-label={dashboardCopy.quickTitle}>
-      <a class="dashboard-section-pill" href="#dashboard-member" data-dashboard-role-gated data-min-role="member">
+      <a class="dashboard-section-pill" href="#dashboard-member" data-dashboard-section-pill data-dashboard-role-gated data-min-role="member">
         {dashboardCopy.overviewTitle}
       </a>
-      <a class="dashboard-section-pill" href="#dashboard-editorial" data-dashboard-role-gated data-min-role="editor" hidden>
+      <a class="dashboard-section-pill" href="#dashboard-editorial" data-dashboard-section-pill data-dashboard-role-gated data-min-role="editor" hidden>
         {dashboardCopy.localeTitle}
       </a>
-      <a class="dashboard-section-pill" href="#dashboard-control" data-dashboard-role-gated data-min-role="admin" hidden>
+      <a class="dashboard-section-pill" href="#dashboard-control" data-dashboard-section-pill data-dashboard-role-gated data-min-role="admin" hidden>
         {dashboardCopy.controlTitle}
       </a>
     </nav>
@@ -748,6 +748,7 @@ const dashboardCopy = {
       const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
       const activityClearNode = document.querySelector('[data-dashboard-activity-clear]');
+      const sectionPillLinks = Array.from(document.querySelectorAll('[data-dashboard-section-pill]'));
       const laneNodes = Array.from(document.querySelectorAll('[data-dashboard-lane]'));
       const laneToggleButtons = Array.from(document.querySelectorAll('[data-dashboard-lane-toggle]'));
       let currentSession = null;
@@ -762,6 +763,7 @@ const dashboardCopy = {
       let lastActivityHasErrors = false;
       let activityHistory = [];
       let activityTickTimer = null;
+      let sectionSyncFrame = null;
       const editorialSectionHref = '#dashboard-editorial';
       const ACTIVITY_HISTORY_STORAGE_KEY = 'geovito_dashboard_activity_history_v1';
       const ACTIVITY_HISTORY_LIMIT = 20;
@@ -891,6 +893,66 @@ const dashboardCopy = {
         if (persist) {
           persistLaneCollapsedState();
         }
+      };
+
+      const getLaneFromHash = (hash) => {
+        const value = String(hash || '').trim();
+        if (!value || !value.startsWith('#')) return null;
+        const target = document.querySelector(value);
+        if (!(target instanceof HTMLElement)) return null;
+        if (!target.hasAttribute('data-dashboard-lane')) return null;
+        return target;
+      };
+
+      const isLaneVisible = (laneNode) => laneNode instanceof HTMLElement && laneNode.hidden !== true;
+
+      const getVisibleSectionLinks = () => {
+        return sectionPillLinks.filter((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return false;
+          const laneNode = getLaneFromHash(link.getAttribute('href') || '');
+          return laneNode ? isLaneVisible(laneNode) : false;
+        });
+      };
+
+      const setActiveSectionPill = (hash) => {
+        const visibleLinks = getVisibleSectionLinks();
+        sectionPillLinks.forEach((link) => {
+          if (link instanceof HTMLElement) {
+            link.classList.remove('is-active');
+          }
+        });
+
+        if (visibleLinks.length === 0) return;
+
+        const normalizedHash = String(hash || '').trim();
+        const directMatch = visibleLinks.find((link) => String(link.getAttribute('href') || '') === normalizedHash) || null;
+        const activeLink = directMatch || visibleLinks[0];
+        activeLink.classList.add('is-active');
+      };
+
+      const syncActiveSectionFromScroll = () => {
+        const visibleLanes = laneNodes.filter((lane) => lane instanceof HTMLElement && isLaneVisible(lane));
+        if (visibleLanes.length === 0) return;
+
+        let activeLane = visibleLanes[0];
+        visibleLanes.forEach((lane) => {
+          const top = lane.getBoundingClientRect().top;
+          if (top <= 180) {
+            activeLane = lane;
+          }
+        });
+
+        if (activeLane instanceof HTMLElement && activeLane.id) {
+          setActiveSectionPill(`#${activeLane.id}`);
+        }
+      };
+
+      const requestSectionSync = () => {
+        if (sectionSyncFrame !== null) return;
+        sectionSyncFrame = window.requestAnimationFrame(() => {
+          sectionSyncFrame = null;
+          syncActiveSectionFromScroll();
+        });
       };
 
       const mergeActivityHistory = (events) => {
@@ -1298,6 +1360,14 @@ const dashboardCopy = {
             updateLaneCollapsedState(lane, isCollapsed, { persist: false });
           }
         });
+
+        const hashLane = getLaneFromHash(window.location.hash);
+        if (hashLane && isLaneVisible(hashLane)) {
+          setActiveSectionPill(window.location.hash);
+        } else {
+          setActiveSectionPill('');
+          requestSectionSync();
+        }
 
         roleGatedNodes.forEach((node) => {
           if (!(node instanceof HTMLElement)) return;
@@ -1756,8 +1826,23 @@ const dashboardCopy = {
             if (!(laneNode instanceof HTMLElement)) return;
             const currentlyCollapsed = laneNode.dataset.collapsed === 'true';
             updateLaneCollapsedState(laneNode, !currentlyCollapsed, { persist: true });
+            requestSectionSync();
           });
         });
+
+        sectionPillLinks.forEach((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return;
+          link.addEventListener('click', () => {
+            const href = String(link.getAttribute('href') || '').trim();
+            setActiveSectionPill(href);
+          });
+        });
+
+        window.addEventListener('hashchange', () => {
+          setActiveSectionPill(window.location.hash);
+        });
+
+        window.addEventListener('scroll', requestSectionSync, { passive: true });
 
         copyCommandButtons.forEach((button) => {
           if (!(button instanceof HTMLButtonElement)) return;
@@ -1842,6 +1927,12 @@ const dashboardCopy = {
     text-decoration: none;
     border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
     background: var(--brand-soft);
+  }
+
+  .dashboard-section-pill.is-active {
+    border-color: color-mix(in srgb, var(--brand) 36%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 70%, var(--surface-2));
+    color: var(--brand-strong);
   }
 
   .dashboard-lanes {
