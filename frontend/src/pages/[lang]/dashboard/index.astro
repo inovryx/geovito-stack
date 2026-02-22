@@ -25,6 +25,7 @@ const accountPath = pathForLanguage(lang, 'account');
 const releaseCommand = 'bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test';
 const stackHealthCommand = 'bash tools/stack_health.sh';
 const smokeAccessCommand = 'bash tools/smoke_access.sh';
+const launchRunbookUrl = 'https://github.com/inovryx/geovito-stack/blob/main/docs/LAUNCH_RUNBOOK.md';
 const ownerEmailHint = String(import.meta.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
@@ -240,6 +241,49 @@ const dashboardCopy = {
   ownerOpsHealth: translate(ui, 'dashboard.ownerOpsHealth', {}, 'Stack health'),
   ownerOpsAccess: translate(ui, 'dashboard.ownerOpsAccess', {}, 'Access smoke'),
   ownerOpsCopy: translate(ui, 'dashboard.ownerOpsCopy', {}, 'Copy command'),
+  ownerSummaryTitle: translate(ui, 'dashboard.ownerSummaryTitle', {}, 'Owner summary'),
+  ownerSummaryBody: translate(
+    ui,
+    'dashboard.ownerSummaryBody',
+    {},
+    'Single-card snapshot for deployment and operational readiness.'
+  ),
+  ownerSummaryBuildSha: translate(ui, 'dashboard.ownerSummaryBuildSha', {}, 'Live build SHA'),
+  ownerSummaryReleaseStatus: translate(ui, 'dashboard.ownerSummaryReleaseStatus', {}, 'Release status'),
+  ownerSummaryPending: translate(ui, 'dashboard.ownerSummaryPending', {}, 'Pending moderation'),
+  ownerSummaryLocaleGaps: translate(ui, 'dashboard.ownerSummaryLocaleGaps', {}, 'Locale gaps'),
+  ownerSummaryLocaleDeploy: translate(ui, 'dashboard.ownerSummaryLocaleDeploy', {}, 'Locales pending deploy'),
+  ownerSummaryRefreshedAt: translate(ui, 'dashboard.ownerSummaryRefreshedAt', {}, 'Refreshed at'),
+  ownerSummaryStatusLive: translate(ui, 'dashboard.ownerSummaryStatusLive', {}, 'Live'),
+  ownerSummaryStatusAttention: translate(ui, 'dashboard.ownerSummaryStatusAttention', {}, 'Needs attention'),
+  ownerSummaryStatusUnknown: translate(ui, 'dashboard.ownerSummaryStatusUnknown', {}, 'Unknown'),
+  activityTitle: translate(ui, 'dashboard.activityTitle', {}, 'Activity feed'),
+  activityBody: translate(
+    ui,
+    'dashboard.activityBody',
+    {},
+    'Recent operational signals from moderation, locale, and release checks.'
+  ),
+  activityEmpty: translate(ui, 'dashboard.activityEmpty', {}, 'No recent activity signals.'),
+  activityLevelOk: translate(ui, 'dashboard.activityLevelOk', {}, 'OK'),
+  activityLevelInfo: translate(ui, 'dashboard.activityLevelInfo', {}, 'INFO'),
+  activityLevelWarn: translate(ui, 'dashboard.activityLevelWarn', {}, 'WARN'),
+  activityBuildLive: translate(ui, 'dashboard.activityBuildLive', {}, 'Build {sha} is live.'),
+  activityBuildUnknown: translate(ui, 'dashboard.activityBuildUnknown', {}, 'Build fingerprint unavailable.'),
+  activityPending: translate(ui, 'dashboard.activityPending', {}, '{count} comments are pending moderation.'),
+  activityPendingStale: translate(ui, 'dashboard.activityPendingStale', {}, '{count} pending comments are older than {hours}h.'),
+  activityLocaleGaps: translate(ui, 'dashboard.activityLocaleGaps', {}, '{count} locales have UI translation gaps.'),
+  activityLocaleDeploy: translate(ui, 'dashboard.activityLocaleDeploy', {}, '{count} locales are pending deploy sync.'),
+  activityAllClear: translate(ui, 'dashboard.activityAllClear', {}, 'Operational signals are clean.'),
+  activityLoadFailed: translate(ui, 'dashboard.activityLoadFailed', {}, 'Some dashboard data failed to load.'),
+  activityActionModeration: translate(ui, 'dashboard.activityActionModeration', {}, 'Moderation'),
+  activityActionTranslations: translate(ui, 'dashboard.activityActionTranslations', {}, 'Translations'),
+  activityActionRunbook: translate(ui, 'dashboard.activityActionRunbook', {}, 'Runbook'),
+  activityFilterWarnOnly: translate(ui, 'dashboard.activityFilterWarnOnly', {}, 'Show WARN only'),
+  activityWarnOnlyEmpty: translate(ui, 'dashboard.activityWarnOnlyEmpty', {}, 'No warnings right now.'),
+  activityNow: translate(ui, 'dashboard.activityNow', {}, 'just now'),
+  activityClearHistory: translate(ui, 'dashboard.activityClearHistory', {}, 'Clear history'),
+  activityClearHistoryDone: translate(ui, 'dashboard.activityClearHistoryDone', {}, 'Activity history cleared.'),
   refresh: translate(ui, 'dashboard.refresh', {}, 'Refresh'),
   loading: translate(ui, 'dashboard.loading', {}, 'Loading dashboard data...'),
   loadFailed: translate(ui, 'dashboard.loadFailed', {}, 'Some dashboard cards could not be loaded.'),
@@ -508,7 +552,7 @@ const dashboardCopy = {
               </a>
               <a
                 class="ui-button ui-button-secondary ui-button-sm"
-                href="https://github.com/inovryx/geovito-stack/blob/main/docs/LAUNCH_RUNBOOK.md"
+                href={launchRunbookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-dashboard-admin-link
@@ -527,6 +571,53 @@ const dashboardCopy = {
               </button>
             </div>
             <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.activityTitle}</h3>
+            <p class="small">{dashboardCopy.activityBody}</p>
+            <div class="dashboard-activity-controls">
+              <label class="dashboard-activity-toggle">
+                <input type="checkbox" data-dashboard-activity-warn-only />
+                <span>{dashboardCopy.activityFilterWarnOnly}</span>
+              </label>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-activity-clear>
+                <span class="ui-button-label">{dashboardCopy.activityClearHistory}</span>
+              </button>
+            </div>
+            <ul class="dashboard-activity-feed" data-dashboard-activity-feed hidden></ul>
+            <p class="small" data-dashboard-activity-empty>{dashboardCopy.activityEmpty}</p>
+          </article>
+
+          <article class="card panel gv-stack" data-dashboard-role-gated data-min-role="owner" hidden>
+            <h3 class="dashboard-mini-title">{dashboardCopy.ownerSummaryTitle}</h3>
+            <p class="small">{dashboardCopy.ownerSummaryBody}</p>
+            <ul class="dashboard-owner-summary-list">
+              <li>
+                <span>{dashboardCopy.ownerSummaryBuildSha}</span>
+                <strong data-dashboard-owner-build-sha>{dashboardCopy.unknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.ownerSummaryReleaseStatus}</span>
+                <strong data-dashboard-owner-release-status>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.ownerSummaryPending}</span>
+                <strong data-dashboard-owner-pending>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.ownerSummaryLocaleGaps}</span>
+                <strong data-dashboard-owner-locale-gaps>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.ownerSummaryLocaleDeploy}</span>
+                <strong data-dashboard-owner-locale-deploy>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.ownerSummaryRefreshedAt}</span>
+                <strong data-dashboard-owner-refreshed>{dashboardCopy.unknown}</strong>
+              </li>
+            </ul>
           </article>
 
           <article class="card panel gv-stack" data-dashboard-role-gated data-min-role="owner" hidden>
@@ -576,7 +667,7 @@ const dashboardCopy = {
     </div>
   </section>
 
-  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint }}>
+  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint, launchRunbookUrl }}>
     (() => {
       const loggedOutPanel = document.querySelector('[data-dashboard-logged-out]');
       const authedPanel = document.querySelector('[data-dashboard-authenticated]');
@@ -617,11 +708,32 @@ const dashboardCopy = {
       const localeCoverageNode = document.querySelector('[data-dashboard-locale-coverage]');
       const localeGapsNode = document.querySelector('[data-dashboard-locale-gaps]');
       const localeDeployNode = document.querySelector('[data-dashboard-locale-deploy]');
+      const ownerBuildShaNode = document.querySelector('[data-dashboard-owner-build-sha]');
+      const ownerReleaseStatusNode = document.querySelector('[data-dashboard-owner-release-status]');
+      const ownerPendingNode = document.querySelector('[data-dashboard-owner-pending]');
+      const ownerLocaleGapsNode = document.querySelector('[data-dashboard-owner-locale-gaps]');
+      const ownerLocaleDeployNode = document.querySelector('[data-dashboard-owner-locale-deploy]');
+      const ownerRefreshedNode = document.querySelector('[data-dashboard-owner-refreshed]');
+      const activityFeedNode = document.querySelector('[data-dashboard-activity-feed]');
+      const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
+      const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
+      const activityClearNode = document.querySelector('[data-dashboard-activity-clear]');
       const laneNodes = Array.from(document.querySelectorAll('[data-dashboard-lane]'));
       let currentSession = null;
       let canRunModeration = false;
       let isLoading = false;
       const STALE_PENDING_HOURS = 24;
+      let ownerPendingCount = 0;
+      let ownerStalePendingCount = 0;
+      let ownerLocaleGapCount = 0;
+      let ownerLocaleDeployCount = 0;
+      let ownerFingerprintSha = '';
+      let lastActivityHasErrors = false;
+      let activityHistory = [];
+      let activityTickTimer = null;
+      const editorialSectionHref = '#dashboard-editorial';
+      const ACTIVITY_HISTORY_STORAGE_KEY = 'geovito_dashboard_activity_history_v1';
+      const ACTIVITY_HISTORY_LIMIT = 20;
       const roleRanks = {
         member: 0,
         editor: 1,
@@ -641,6 +753,310 @@ const dashboardCopy = {
         if (!el) return;
         el.textContent = String(message || '');
         el.classList.toggle('is-error', Boolean(isError));
+      };
+
+      const normalizeActivityEvent = (event) => {
+        if (!event || typeof event !== 'object') return null;
+        const message = String(event.message || '').trim();
+        if (!message) return null;
+        const levelRaw = String(event.level || 'info').trim().toLowerCase();
+        const level =
+          levelRaw === 'warn' || levelRaw === 'ok' || levelRaw === 'info'
+            ? levelRaw
+            : 'info';
+        const actionLabel = String(event.actionLabel || '').trim();
+        const actionHref = String(event.actionHref || '').trim();
+        const tsNum = Number(event.ts);
+        const ts = Number.isFinite(tsNum) ? tsNum : Date.now();
+        return {
+          level,
+          message,
+          actionLabel: actionLabel || undefined,
+          actionHref: actionHref || undefined,
+          ts,
+        };
+      };
+
+      const dedupeActivityEvents = (events) => {
+        if (!Array.isArray(events)) return [];
+        const map = new Map();
+        events.forEach((raw) => {
+          const event = normalizeActivityEvent(raw);
+          if (!event) return;
+          const key = `${event.level}|${event.message}|${event.actionHref || ''}`;
+          const prev = map.get(key);
+          if (!prev || event.ts > prev.ts) {
+            map.set(key, event);
+          }
+        });
+        return Array.from(map.values())
+          .sort((a, b) => b.ts - a.ts)
+          .slice(0, ACTIVITY_HISTORY_LIMIT);
+      };
+
+      const readActivityHistory = () => {
+        try {
+          const raw = localStorage.getItem(ACTIVITY_HISTORY_STORAGE_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return dedupeActivityEvents(parsed);
+        } catch {
+          return [];
+        }
+      };
+
+      const persistActivityHistory = () => {
+        try {
+          localStorage.setItem(
+            ACTIVITY_HISTORY_STORAGE_KEY,
+            JSON.stringify(activityHistory.slice(0, ACTIVITY_HISTORY_LIMIT))
+          );
+        } catch {
+          // ignore storage write failures (private mode / quota)
+        }
+      };
+
+      const mergeActivityHistory = (events) => {
+        if (!Array.isArray(events) || events.length === 0) return;
+        activityHistory = dedupeActivityEvents([...events, ...activityHistory]);
+        persistActivityHistory();
+      };
+
+      const relativeFormatter = (() => {
+        try {
+          return new Intl.RelativeTimeFormat(document.documentElement.lang || 'en', { numeric: 'auto' });
+        } catch {
+          return null;
+        }
+      })();
+
+      const formatRelativeTime = (timestampMs) => {
+        if (!Number.isFinite(timestampMs)) return dashboardCopy.unknown;
+        const diffSeconds = Math.round((timestampMs - Date.now()) / 1000);
+        const absSeconds = Math.abs(diffSeconds);
+
+        if (absSeconds < 10) return dashboardCopy.activityNow;
+
+        const units = [
+          ['day', 86400],
+          ['hour', 3600],
+          ['minute', 60],
+        ];
+        for (const [unit, size] of units) {
+          if (absSeconds >= size) {
+            const value = Math.round(diffSeconds / size);
+            if (relativeFormatter) {
+              return relativeFormatter.format(value, unit);
+            }
+            return value < 0 ? `${Math.abs(value)}${String(unit).charAt(0)} ago` : `in ${value}${String(unit).charAt(0)}`;
+          }
+        }
+
+        if (relativeFormatter) {
+          return relativeFormatter.format(diffSeconds, 'second');
+        }
+        return dashboardCopy.activityNow;
+      };
+
+      const syncOwnerReleaseStatus = () => {
+        const hasSignals = ownerPendingCount > 0 || ownerLocaleGapCount > 0 || ownerLocaleDeployCount > 0;
+        const status = hasSignals
+          ? dashboardCopy.ownerSummaryStatusAttention
+          : dashboardCopy.ownerSummaryStatusLive;
+        setText(ownerReleaseStatusNode, status);
+      };
+
+      const refreshOwnerFingerprint = async () => {
+        try {
+          const response = await fetch('/.well-known/geovito-build.json', {
+            headers: { Accept: 'application/json' },
+          });
+          if (!response.ok) {
+            ownerFingerprintSha = '';
+            setText(ownerBuildShaNode, dashboardCopy.unknown);
+            return;
+          }
+          const payload = await response.json().catch(() => null);
+          const sha = String(payload?.build_sha7 || '').trim();
+          ownerFingerprintSha = sha;
+          setText(ownerBuildShaNode, sha || dashboardCopy.unknown);
+        } catch {
+          ownerFingerprintSha = '';
+          setText(ownerBuildShaNode, dashboardCopy.unknown);
+        }
+      };
+
+      const renderActivityFeed = (hasErrors = false, options = {}) => {
+        const host = toNode(activityFeedNode);
+        const empty = toNode(activityEmptyNode);
+        if (!host) return;
+
+        host.innerHTML = '';
+        const nowTs = Date.now();
+        const includeLive = !(options && options.includeLive === false);
+        const shouldPersist = !(options && options.persist === false);
+        const warnOnlyEnabled =
+          activityWarnOnlyNode instanceof HTMLInputElement && activityWarnOnlyNode.checked;
+        const events = [];
+
+        if (includeLive) {
+          if (ownerFingerprintSha) {
+            events.push({
+              level: 'info',
+              message: dashboardCopy.activityBuildLive.replace('{sha}', ownerFingerprintSha),
+              actionLabel: dashboardCopy.activityActionRunbook,
+              actionHref: launchRunbookUrl,
+              ts: nowTs,
+            });
+          } else {
+            events.push({
+              level: 'warn',
+              message: dashboardCopy.activityBuildUnknown,
+              actionLabel: dashboardCopy.activityActionRunbook,
+              actionHref: launchRunbookUrl,
+              ts: nowTs,
+            });
+          }
+
+          if (ownerPendingCount > 0) {
+            events.push({
+              level: 'warn',
+              message: dashboardCopy.activityPending.replace('{count}', String(ownerPendingCount)),
+              actionLabel: dashboardCopy.activityActionModeration,
+              actionHref: editorialSectionHref,
+              ts: nowTs,
+            });
+          }
+
+          if (ownerStalePendingCount > 0) {
+            events.push({
+              level: 'warn',
+              message: dashboardCopy.activityPendingStale
+                .replace('{count}', String(ownerStalePendingCount))
+                .replace('{hours}', String(STALE_PENDING_HOURS)),
+              actionLabel: dashboardCopy.activityActionModeration,
+              actionHref: editorialSectionHref,
+              ts: nowTs,
+            });
+          }
+
+          if (ownerLocaleGapCount > 0) {
+            events.push({
+              level: 'warn',
+              message: dashboardCopy.activityLocaleGaps.replace('{count}', String(ownerLocaleGapCount)),
+              actionLabel: dashboardCopy.activityActionTranslations,
+              actionHref: editorialSectionHref,
+              ts: nowTs,
+            });
+          }
+
+          if (ownerLocaleDeployCount > 0) {
+            events.push({
+              level: 'info',
+              message: dashboardCopy.activityLocaleDeploy.replace('{count}', String(ownerLocaleDeployCount)),
+              actionLabel: dashboardCopy.activityActionTranslations,
+              actionHref: editorialSectionHref,
+              ts: nowTs,
+            });
+          }
+
+          if (hasErrors) {
+            events.push({
+              level: 'warn',
+              message: dashboardCopy.activityLoadFailed,
+              actionLabel: dashboardCopy.activityActionRunbook,
+              actionHref: launchRunbookUrl,
+              ts: nowTs,
+            });
+          }
+
+          if (events.length <= 1 && !hasErrors && ownerPendingCount === 0 && ownerLocaleGapCount === 0 && ownerLocaleDeployCount === 0) {
+            events.push({
+              level: 'ok',
+              message: dashboardCopy.activityAllClear,
+              ts: nowTs,
+            });
+          }
+        }
+
+        const persistableEvents = includeLive
+          ? events.filter((event) => event.level !== 'ok' && event.message !== dashboardCopy.activityWarnOnlyEmpty)
+          : [];
+        if (shouldPersist && persistableEvents.length > 0) {
+          mergeActivityHistory(persistableEvents);
+        }
+
+        const sourceEvents = activityHistory.length > 0 ? activityHistory : events;
+        let visibleEvents = warnOnlyEnabled
+          ? sourceEvents.filter((event) => event.level === 'warn')
+          : sourceEvents;
+        if (warnOnlyEnabled && visibleEvents.length === 0) {
+          visibleEvents = [
+            {
+              level: 'ok',
+              message: dashboardCopy.activityWarnOnlyEmpty,
+              ts: nowTs,
+            },
+          ];
+        }
+
+        const fragment = document.createDocumentFragment();
+        visibleEvents.slice(0, 10).forEach((event) => {
+          const row = document.createElement('li');
+          row.className = `dashboard-activity-item dashboard-activity-item--${event.level}`;
+
+          const head = document.createElement('div');
+          head.className = 'dashboard-activity-head';
+
+          const badge = document.createElement('strong');
+          badge.textContent =
+            event.level === 'ok'
+              ? dashboardCopy.activityLevelOk
+              : event.level === 'warn'
+                ? dashboardCopy.activityLevelWarn
+                : dashboardCopy.activityLevelInfo;
+          head.appendChild(badge);
+
+          const time = document.createElement('time');
+          time.className = 'dashboard-activity-time';
+          time.dateTime = new Date(Number(event.ts) || nowTs).toISOString();
+          time.textContent = formatRelativeTime(Number(event.ts) || nowTs);
+          head.appendChild(time);
+
+          const text = document.createElement('span');
+          text.textContent = event.message;
+          row.appendChild(head);
+          row.appendChild(text);
+
+          if (event.actionLabel && event.actionHref) {
+            const action = document.createElement('a');
+            action.className = 'dashboard-activity-link';
+            action.textContent = event.actionLabel;
+            action.setAttribute('href', String(event.actionHref));
+            if (/^https?:\/\//.test(String(event.actionHref))) {
+              action.setAttribute('target', '_blank');
+              action.setAttribute('rel', 'noopener noreferrer');
+            }
+            row.appendChild(action);
+          }
+
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+        host.hidden = visibleEvents.length === 0;
+        if (empty) {
+          empty.hidden = visibleEvents.length > 0;
+        }
+      };
+
+      const startActivityTicker = () => {
+        if (activityTickTimer) {
+          clearInterval(activityTickTimer);
+        }
+        activityTickTimer = window.setInterval(() => {
+          renderActivityFeed(lastActivityHasErrors, { includeLive: false, persist: false });
+        }, 60000);
       };
 
       const escapeHtml = (value) =>
@@ -869,6 +1285,7 @@ const dashboardCopy = {
         setText(moderationPendingNode, String(sourceList.length));
         setText(moderationStaleNode, String(staleCount));
         setText(moderationOldestNode, `${oldestHours}h`);
+        ownerStalePendingCount = staleCount;
 
         const alertEl = toNode(moderationAlertNode);
         if (alertEl) {
@@ -1031,6 +1448,18 @@ const dashboardCopy = {
         setText(localeCoverageNode, '0%');
         setText(localeGapsNode, '0');
         setText(localeDeployNode, '0');
+        ownerPendingCount = 0;
+        ownerStalePendingCount = 0;
+        ownerLocaleGapCount = 0;
+        ownerLocaleDeployCount = 0;
+        ownerFingerprintSha = '';
+        setText(ownerPendingNode, '0');
+        setText(ownerLocaleGapsNode, '0');
+        setText(ownerLocaleDeployNode, '0');
+        setText(ownerReleaseStatusNode, dashboardCopy.ownerSummaryStatusUnknown);
+        setText(ownerRefreshedNode, dashboardCopy.unknown);
+        lastActivityHasErrors = false;
+        renderActivityFeed(lastActivityHasErrors, { includeLive: false, persist: false });
         if (toNode(localeNote)) {
           toNode(localeNote).hidden = true;
         }
@@ -1124,6 +1553,8 @@ const dashboardCopy = {
                   const bTs = new Date(String(b?.reviewed_at || b?.updated_at || b?.created_at || 0)).getTime();
                   return Number.isFinite(bTs) && Number.isFinite(aTs) ? bTs - aTs : 0;
                 });
+              ownerPendingCount = pendingItems.length;
+              setText(ownerPendingNode, String(ownerPendingCount));
               renderModerationQueue(pendingItems);
               renderModerationHistory(reviewedItems);
             } else {
@@ -1133,6 +1564,9 @@ const dashboardCopy = {
             hadErrors = true;
           }
         } else {
+          ownerPendingCount = 0;
+          ownerStalePendingCount = 0;
+          setText(ownerPendingNode, '0');
           renderModerationQueue([]);
           renderModerationHistory([]);
         }
@@ -1153,16 +1587,32 @@ const dashboardCopy = {
             setText(localeCoverageNode, `${Math.round(coverage * 100) / 100}%`);
             setText(localeGapsNode, String(gapLocales));
             setText(localeDeployNode, String(deployRequired));
+            ownerLocaleGapCount = gapLocales;
+            ownerLocaleDeployCount = deployRequired;
+            setText(ownerLocaleGapsNode, String(ownerLocaleGapCount));
+            setText(ownerLocaleDeployNode, String(ownerLocaleDeployCount));
           } else if (response.status === 401 || response.status === 403) {
             if (toNode(localeNote)) {
               toNode(localeNote).hidden = false;
             }
+            ownerLocaleGapCount = 0;
+            ownerLocaleDeployCount = 0;
+            setText(ownerLocaleGapsNode, '0');
+            setText(ownerLocaleDeployNode, '0');
           } else {
             hadErrors = true;
           }
         } catch {
           hadErrors = true;
         }
+
+        if (access.isAdmin) {
+          await refreshOwnerFingerprint();
+          setText(ownerRefreshedNode, formatDate(new Date().toISOString()));
+        }
+        syncOwnerReleaseStatus();
+        lastActivityHasErrors = hadErrors;
+        renderActivityFeed(lastActivityHasErrors);
 
         if (hadErrors) {
           setFeedback(dashboardCopy.loadFailed, true);
@@ -1184,6 +1634,10 @@ const dashboardCopy = {
         if (toNode(loggedOutPanel)) toNode(loggedOutPanel).hidden = true;
         if (toNode(authedPanel)) toNode(authedPanel).hidden = false;
 
+        activityHistory = readActivityHistory();
+        renderActivityFeed(false, { includeLive: false, persist: false });
+        startActivityTicker();
+
         await loadDashboard(session);
 
         if (refreshButton instanceof HTMLButtonElement) {
@@ -1194,6 +1648,21 @@ const dashboardCopy = {
             } finally {
               refreshButton.disabled = false;
             }
+          });
+        }
+
+        if (activityWarnOnlyNode instanceof HTMLInputElement) {
+          activityWarnOnlyNode.addEventListener('change', () => {
+            renderActivityFeed(lastActivityHasErrors, { includeLive: false, persist: false });
+          });
+        }
+
+        if (activityClearNode instanceof HTMLButtonElement) {
+          activityClearNode.addEventListener('click', () => {
+            activityHistory = [];
+            persistActivityHistory();
+            renderActivityFeed(lastActivityHasErrors, { includeLive: true, persist: false });
+            setFeedback(dashboardCopy.activityClearHistoryDone);
           });
         }
 
@@ -1420,6 +1889,131 @@ const dashboardCopy = {
     line-height: 1.35;
     color: var(--ink-muted);
     word-break: break-word;
+  }
+
+  .dashboard-owner-summary-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .dashboard-owner-summary-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 0.65rem;
+    background: var(--surface-2);
+  }
+
+  .dashboard-owner-summary-list span {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-owner-summary-list strong {
+    font-size: 0.86rem;
+    color: var(--ink);
+  }
+
+  .dashboard-activity-feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .dashboard-activity-item {
+    border: 1px solid var(--border);
+    border-radius: 0.65rem;
+    background: var(--surface-2);
+    padding: 0.5rem 0.6rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .dashboard-activity-item strong {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-activity-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .dashboard-activity-time {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-activity-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: fit-content;
+    padding: 0.18rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    font-size: 0.76rem;
+    color: var(--ink);
+  }
+
+  .dashboard-activity-toggle input {
+    margin: 0;
+  }
+
+  .dashboard-activity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-activity-item span {
+    font-size: 0.84rem;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+
+  .dashboard-activity-link {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0.16rem 0.56rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--brand) 14%, var(--surface-2));
+    color: var(--ink);
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .dashboard-activity-link:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 36%, var(--border));
+    background: color-mix(in srgb, var(--brand) 20%, var(--surface-2));
+  }
+
+  .dashboard-activity-item--warn {
+    border-color: color-mix(in srgb, #b9382f 46%, var(--border));
+  }
+
+  .dashboard-activity-item--ok {
+    border-color: color-mix(in srgb, #1f8d4c 42%, var(--border));
   }
 
   .dashboard-capabilities {
