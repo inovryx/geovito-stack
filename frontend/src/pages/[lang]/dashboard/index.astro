@@ -2052,11 +2052,12 @@ const dashboardCopy = {
             const currentRow = rows.find((row) => normalizeLanguage(row?.ui_locale) === currentLocale) || null;
 
             const coverage = Number(currentRow?.coverage_percent || 0);
-            const gapLocales = normalizeCount(
-              summary?.locales_with_gaps,
-              rows.filter((row) => Number(row?.missing_keys || 0) + Number(row?.untranslated_keys || 0) > 0).length
-            );
-            const deployRequired = normalizeCount(summary?.deploy_required_count, 0);
+            const gapLocalesRaw = Number(summary?.locales_with_gaps);
+            const deployRequiredRaw = Number(summary?.deploy_required_count);
+            const hasGapContract = Number.isFinite(gapLocalesRaw);
+            const hasDeployContract = Number.isFinite(deployRequiredRaw);
+            const gapLocales = normalizeCount(gapLocalesRaw, 0);
+            const deployRequired = normalizeCount(deployRequiredRaw, 0);
 
             setText(localeCoverageNode, `${Math.round(coverage * 100) / 100}%`);
             setText(localeGapsNode, String(gapLocales));
@@ -2065,6 +2066,9 @@ const dashboardCopy = {
             ownerLocaleDeployCount = deployRequired;
             setText(ownerLocaleGapsNode, String(ownerLocaleGapCount));
             setText(ownerLocaleDeployNode, String(ownerLocaleDeployCount));
+            if (!hasGapContract || !hasDeployContract) {
+              hadErrors = true;
+            }
           } else if (response.status === 401 || response.status === 403) {
             if (toNode(localeNote)) {
               toNode(localeNote).hidden = false;
