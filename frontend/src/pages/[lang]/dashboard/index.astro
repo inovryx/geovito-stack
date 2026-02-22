@@ -302,6 +302,45 @@ const dashboardCopy = {
   moduleModeration: translate(ui, 'dashboard.moduleModeration', {}, 'Moderation'),
   moduleTranslation: translate(ui, 'dashboard.moduleTranslation', {}, 'Translation'),
   moduleSettings: translate(ui, 'dashboard.moduleSettings', {}, 'Settings'),
+  moduleGeneralBody: translate(
+    ui,
+    'dashboard.moduleGeneralBody',
+    {},
+    'Session, profile status, and personal quick actions.'
+  ),
+  moduleModerationBody: translate(
+    ui,
+    'dashboard.moduleModerationBody',
+    {},
+    'Queue health, pending alerts, and moderation history.'
+  ),
+  moduleTranslationBody: translate(
+    ui,
+    'dashboard.moduleTranslationBody',
+    {},
+    'Locale coverage, missing keys, and deploy-required locales.'
+  ),
+  moduleSeoBody: translate(
+    ui,
+    'dashboard.moduleSeoBody',
+    {},
+    'Canonical, robots, and sitemap verification checkpoints.'
+  ),
+  moduleAdsBody: translate(
+    ui,
+    'dashboard.moduleAdsBody',
+    {},
+    'Consent-gated ad placement and CLS-safe slot policies.'
+  ),
+  moduleSettingsBody: translate(
+    ui,
+    'dashboard.moduleSettingsBody',
+    {},
+    'Account routing and role-based operational visibility.'
+  ),
+  moduleRoleMember: translate(ui, 'dashboard.moduleRoleMember', {}, 'Member'),
+  moduleRoleEditor: translate(ui, 'dashboard.moduleRoleEditor', {}, 'Editor+'),
+  moduleRoleAdmin: translate(ui, 'dashboard.moduleRoleAdmin', {}, 'Admin+'),
 };
 ---
 
@@ -400,6 +439,79 @@ const dashboardCopy = {
         {dashboardCopy.moduleSettings}
       </a>
     </nav>
+
+    <div class="dashboard-module-grid" aria-label={dashboardCopy.moduleNavTitle}>
+      <a
+        class="dashboard-module-card"
+        href="#dashboard-member"
+        data-dashboard-module-link
+        data-dashboard-role-gated
+        data-min-role="member"
+      >
+        <span class="dashboard-module-role">{dashboardCopy.moduleRoleMember}</span>
+        <strong>{dashboardCopy.moduleGeneral}</strong>
+        <p>{dashboardCopy.moduleGeneralBody}</p>
+      </a>
+      <a
+        class="dashboard-module-card"
+        href="#dashboard-member-settings"
+        data-dashboard-module-link
+        data-dashboard-role-gated
+        data-min-role="member"
+      >
+        <span class="dashboard-module-role">{dashboardCopy.moduleRoleMember}</span>
+        <strong>{dashboardCopy.moduleSettings}</strong>
+        <p>{dashboardCopy.moduleSettingsBody}</p>
+      </a>
+      <a
+        class="dashboard-module-card"
+        href="#dashboard-editorial-moderation"
+        data-dashboard-module-link
+        data-dashboard-role-gated
+        data-min-role="editor"
+        hidden
+      >
+        <span class="dashboard-module-role">{dashboardCopy.moduleRoleEditor}</span>
+        <strong>{dashboardCopy.moduleModeration}</strong>
+        <p>{dashboardCopy.moduleModerationBody}</p>
+      </a>
+      <a
+        class="dashboard-module-card"
+        href="#dashboard-editorial-locale"
+        data-dashboard-module-link
+        data-dashboard-role-gated
+        data-min-role="editor"
+        hidden
+      >
+        <span class="dashboard-module-role">{dashboardCopy.moduleRoleEditor}</span>
+        <strong>{dashboardCopy.moduleTranslation}</strong>
+        <p>{dashboardCopy.moduleTranslationBody}</p>
+      </a>
+      <a
+        class="dashboard-module-card"
+        href="#dashboard-control-seo"
+        data-dashboard-module-link
+        data-dashboard-role-gated
+        data-min-role="admin"
+        hidden
+      >
+        <span class="dashboard-module-role">{dashboardCopy.moduleRoleAdmin}</span>
+        <strong>{dashboardCopy.moduleSeo}</strong>
+        <p>{dashboardCopy.moduleSeoBody}</p>
+      </a>
+      <a
+        class="dashboard-module-card"
+        href="#dashboard-control-ads"
+        data-dashboard-module-link
+        data-dashboard-role-gated
+        data-min-role="admin"
+        hidden
+      >
+        <span class="dashboard-module-role">{dashboardCopy.moduleRoleAdmin}</span>
+        <strong>{dashboardCopy.moduleAds}</strong>
+        <p>{dashboardCopy.moduleAdsBody}</p>
+      </a>
+    </div>
 
     <div class="dashboard-lanes">
       <section class="dashboard-lane gv-stack" id="dashboard-member" data-dashboard-lane data-min-role="member">
@@ -1002,6 +1114,7 @@ const dashboardCopy = {
       const sectionPillLinks = Array.from(
         document.querySelectorAll('.dashboard-section-nav [data-dashboard-section-pill]')
       );
+      const moduleCardLinks = Array.from(document.querySelectorAll('[data-dashboard-module-link]'));
       const laneNodes = Array.from(document.querySelectorAll('[data-dashboard-lane]'));
       const laneToggleButtons = Array.from(document.querySelectorAll('[data-dashboard-lane-toggle]'));
       let currentSession = null;
@@ -1075,6 +1188,7 @@ const dashboardCopy = {
         '#dashboard-moderation': '#dashboard-editorial-moderation',
         '#dashboard-translation': '#dashboard-editorial-locale',
         '#dashboard-seo': '#dashboard-control',
+        '#dashboard-control-seo': '#dashboard-control',
         '#dashboard-ads': '#dashboard-control-ads',
       };
       const accountLocaleBasePath = String(accountPath || '').trim() || '/en/account/';
@@ -1258,7 +1372,16 @@ const dashboardCopy = {
 
       const setActiveSectionPill = (hash) => {
         const visibleLinks = getVisibleSectionLinks();
+        const visibleModuleCards = moduleCardLinks.filter((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return false;
+          return !link.hidden;
+        });
         sectionPillLinks.forEach((link) => {
+          if (link instanceof HTMLElement) {
+            link.classList.remove('is-active');
+          }
+        });
+        moduleCardLinks.forEach((link) => {
           if (link instanceof HTMLElement) {
             link.classList.remove('is-active');
           }
@@ -1274,13 +1397,28 @@ const dashboardCopy = {
         });
         if (matchingLinks.length > 0) {
           matchingLinks.forEach((link) => link.classList.add('is-active'));
+        } else {
+          const fallbackHref = String(visibleLinks[0].getAttribute('href') || '').trim();
+          visibleLinks
+            .filter((link) => String(link.getAttribute('href') || '') === fallbackHref)
+            .forEach((link) => link.classList.add('is-active'));
+        }
+
+        if (visibleModuleCards.length === 0) return;
+
+        const matchingModuleCards = visibleModuleCards.filter((link) => {
+          const href = String(link.getAttribute('href') || '');
+          return href === requestedHash || resolveModuleHash(href) === normalizedHash;
+        });
+        if (matchingModuleCards.length > 0) {
+          matchingModuleCards.forEach((link) => link.classList.add('is-active'));
           return;
         }
 
-        const fallbackHref = String(visibleLinks[0].getAttribute('href') || '').trim();
-        visibleLinks
-          .filter((link) => String(link.getAttribute('href') || '') === fallbackHref)
-          .forEach((link) => link.classList.add('is-active'));
+        const fallbackCard = visibleModuleCards[0];
+        if (fallbackCard instanceof HTMLElement) {
+          fallbackCard.classList.add('is-active');
+        }
       };
 
       const getAllowedModules = (roleRank) => {
@@ -2576,6 +2714,63 @@ const dashboardCopy = {
     color: var(--brand-strong);
   }
 
+  .dashboard-module-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .dashboard-module-card {
+    display: grid;
+    gap: 0.28rem;
+    padding: 0.58rem 0.68rem;
+    border: 1px solid var(--border);
+    border-radius: 0.74rem;
+    background: var(--surface-2);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .dashboard-module-card:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 22%, var(--surface-2));
+  }
+
+  .dashboard-module-card strong {
+    font-size: 0.88rem;
+    line-height: 1.2;
+  }
+
+  .dashboard-module-card p {
+    margin: 0;
+    font-size: 0.77rem;
+    line-height: 1.32;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-module-role {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    min-height: 1.15rem;
+    padding: 0 0.42rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 55%, var(--surface-2));
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--brand-strong);
+    font-weight: 700;
+  }
+
+  .dashboard-module-card.is-active {
+    border-color: color-mix(in srgb, var(--brand) 44%, var(--border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 24%, transparent);
+    background: color-mix(in srgb, var(--brand-soft) 44%, var(--surface-2));
+  }
+
   .dashboard-lanes {
     display: grid;
     gap: 0.95rem;
@@ -3117,6 +3312,10 @@ const dashboardCopy = {
     }
 
     .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-module-grid {
       grid-template-columns: 1fr;
     }
 

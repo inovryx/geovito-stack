@@ -19,13 +19,16 @@
 ## Completed
 - Header-only global site navigation pattern is active.
 - Dashboard module links in left sidebar are role-gated.
+- Dashboard center area now has a role-aware module card grid (General/Settings/Moderation/Translation/SEO/Ads) for direct module jumps.
 - Hash routing is stable and backward compatible:
   - Legacy hashes are mapped to canonical dashboard targets.
   - Section pill and sidebar active states stay consistent.
+- Direct SEO module target (`#dashboard-control-seo`) is supported while preserving legacy control hashes.
 - General module keeps role-allowed lanes visible by default.
 - Left sidebar in dashboard mode is cleaner:
   - Added dashboard session card (identity + role + account actions).
   - Language/auth blocks are hidden in authenticated dashboard context.
+  - Fallback rule hides any legacy duplicate sidebar navigation block in dashboard-auth context.
 
 ## Next Steps
 - Unify visual hierarchy for dashboard cards (spacing, heading cadence, KPI density).

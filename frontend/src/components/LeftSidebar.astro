@@ -80,7 +80,7 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
         </a>
       </li>
       <li>
-        <a class="small-link" href={`${dashboardPath}#dashboard-control`} data-auth-dashboard-link data-min-role="admin" hidden>
+        <a class="small-link" href={`${dashboardPath}#dashboard-control-seo`} data-auth-dashboard-link data-min-role="admin" hidden>
           {dashboardModuleSeo}
         </a>
       </li>
@@ -596,5 +596,10 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
 
 .left-sidebar-stack.is-dashboard-auth .sidebar-language-switch {
     display: none;
+}
+
+.left-sidebar-stack.is-dashboard-auth :global(.app-nav),
+.left-sidebar-stack.is-dashboard-auth :global(.sidebar-nav-main) {
+    display: none !important;
 }
 </style>
