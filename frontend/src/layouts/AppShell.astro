@@ -193,6 +193,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
         if (!(shellLayout instanceof HTMLElement)) return;
         const hasSession = Boolean(readAuthSession());
         root.classList.toggle('shell-guest-reading', isReadingRoute && !hasSession);
+        root.classList.toggle('shell-dashboard-route', isDashboardRoute);
         root.classList.toggle('shell-dashboard-auth', isDashboardRoute && hasSession);
       };
 

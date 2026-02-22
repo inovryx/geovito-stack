@@ -627,11 +627,11 @@ html.shell-guest-reading .shell-layout.no-tools {
   grid-template-columns: minmax(0, 1fr);
 }
 
-html.shell-dashboard-auth .desktop-tablet-column .app-nav {
+html.shell-dashboard-route .desktop-tablet-column .app-nav {
   display: none;
 }
 
-html.shell-dashboard-auth .mobile-drawer-nav {
+html.shell-dashboard-route .mobile-drawer-nav {
   display: none;
 }
 

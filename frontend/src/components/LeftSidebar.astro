@@ -65,9 +65,15 @@ const dashboardModuleTranslation = translate(ui, 'dashboard.moduleTranslation', 
 const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'Settings');
 const dashboardSessionTitle = translate(ui, 'dashboard.overviewTitle', {}, 'Session overview');
 const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity', {}, 'Identity');
+const isDashboardRoute = (() => {
+  const parts = String(Astro.url.pathname || '')
+    .split('/')
+    .filter(Boolean);
+  return parts.length >= 2 && parts[1] === 'dashboard';
+})();
 ---
 
-<div class="left-sidebar-stack">
+<div class={`left-sidebar-stack ${isDashboardRoute ? 'is-dashboard-route' : ''}`}>
   <section
     class="sidebar-block sidebar-dashboard-modules gv-card bg-surface border-border"
     data-auth-dashboard-shell
@@ -584,37 +590,37 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
     display: none;
 }
 
-.left-sidebar-stack.is-dashboard-auth {
+.left-sidebar-stack.is-dashboard-route {
     gap: 0.62rem;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules {
+.left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules {
     order: 1;
     border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
     background: color-mix(in srgb, var(--brand-soft) 42%, var(--surface-strong));
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-session {
+.left-sidebar-stack.is-dashboard-route .sidebar-dashboard-session {
     order: 2;
     border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
     background: color-mix(in srgb, var(--brand-soft) 36%, var(--surface-strong));
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-session .sidebar-auth-row {
+.left-sidebar-stack.is-dashboard-route .sidebar-dashboard-session .sidebar-auth-row {
     margin-top: 0.25rem;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules-list {
+.left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list {
     gap: 0.3rem;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules-list .small-link {
+.left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list .small-link {
     font-size: 0.92rem;
     display: inline-block;
     line-height: 1.25;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules-list .small-link.is-active {
+.left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list .small-link.is-active {
     font-weight: 700;
     color: var(--brand-strong);
     text-decoration: underline;
@@ -622,7 +628,7 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
     text-underline-offset: 2px;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-admin-tools .small-link.is-active {
+.left-sidebar-stack.is-dashboard-route .sidebar-admin-tools .small-link.is-active {
     font-weight: 700;
     color: var(--brand-strong);
     text-decoration: underline;
@@ -630,30 +636,30 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
     text-underline-offset: 2px;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-workspace {
+.left-sidebar-stack.is-dashboard-route .sidebar-workspace {
     order: 3;
     border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
     background: color-mix(in srgb, var(--brand-soft) 54%, var(--surface-strong));
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-workspace-list .small-link {
+.left-sidebar-stack.is-dashboard-route .sidebar-workspace-list .small-link {
     font-size: 0.93rem;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-auth-links {
+.left-sidebar-stack.is-dashboard-route .sidebar-auth-links {
     display: none;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-admin-tools {
+.left-sidebar-stack.is-dashboard-route .sidebar-admin-tools {
     order: 4;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-language-switch {
+.left-sidebar-stack.is-dashboard-route .sidebar-language-switch {
     display: none;
 }
 
-.left-sidebar-stack.is-dashboard-auth :global(.app-nav),
-.left-sidebar-stack.is-dashboard-auth :global(.sidebar-nav-main) {
+.left-sidebar-stack.is-dashboard-route :global(.app-nav),
+.left-sidebar-stack.is-dashboard-route :global(.sidebar-nav-main) {
     display: none !important;
 }
 </style>
