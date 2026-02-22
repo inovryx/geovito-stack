@@ -953,17 +953,29 @@ const dashboardCopy = {
         setText(detailNode, detailText);
       };
 
-      const setOwnerWidgetBadge = (badgeNode, value) => {
+      const setOwnerWidgetBadge = (badgeNode, value, options = {}) => {
         const badge = toNode(badgeNode);
         if (!badge) return;
+        const label = String(options?.label || '').trim();
+        const criticalThresholdRaw = Number(options?.criticalThreshold);
+        const criticalThreshold = Number.isFinite(criticalThresholdRaw) ? criticalThresholdRaw : 5;
         const count = Number(value || 0);
         if (!Number.isFinite(count) || count <= 0) {
           badge.hidden = true;
           badge.textContent = '0';
+          badge.removeAttribute('data-level');
+          badge.removeAttribute('title');
+          badge.removeAttribute('aria-label');
           return;
         }
+        const rounded = Math.round(count);
+        const isCritical = rounded >= criticalThreshold;
+        const tooltip = label ? `${label}: ${rounded}` : String(rounded);
         badge.hidden = false;
-        badge.textContent = String(Math.round(count));
+        badge.textContent = String(rounded);
+        badge.dataset.level = isCritical ? 'critical' : 'default';
+        badge.title = tooltip;
+        badge.setAttribute('aria-label', tooltip);
       };
 
       const normalizeActivityEvent = (event) => {
@@ -1223,7 +1235,10 @@ const dashboardCopy = {
           releaseStatusText,
           releaseDetailText
         );
-        setOwnerWidgetBadge(ownerWidgetReleaseBadgeNode, releaseIssueCount);
+        setOwnerWidgetBadge(ownerWidgetReleaseBadgeNode, releaseIssueCount, {
+          label: dashboardCopy.ownerSummaryReleaseStatus,
+          criticalThreshold: 3,
+        });
 
         const moderationState = moderationHasStale
           ? 'warn'
@@ -1250,7 +1265,10 @@ const dashboardCopy = {
               : dashboardCopy.activityLevelOk,
           moderationDetailText
         );
-        setOwnerWidgetBadge(ownerWidgetModerationBadgeNode, ownerPendingCount);
+        setOwnerWidgetBadge(ownerWidgetModerationBadgeNode, ownerPendingCount, {
+          label: dashboardCopy.ownerSummaryPending,
+          criticalThreshold: 5,
+        });
 
         const localeState = localeHasGaps
           ? 'warn'
@@ -1277,7 +1295,10 @@ const dashboardCopy = {
               : dashboardCopy.activityLevelOk,
           localeDetailText
         );
-        setOwnerWidgetBadge(ownerWidgetLocaleBadgeNode, localeIssueCount);
+        setOwnerWidgetBadge(ownerWidgetLocaleBadgeNode, localeIssueCount, {
+          label: dashboardCopy.ownerSummaryLocaleGaps,
+          criticalThreshold: 5,
+        });
       };
 
       const refreshOwnerFingerprint = async () => {
@@ -2463,6 +2484,10 @@ const dashboardCopy = {
     font-size: 0.68rem;
     font-weight: 700;
     line-height: 1;
+  }
+
+  .dashboard-owner-widget-badge[data-level='critical'] {
+    background: #b9382f;
   }
 
   .dashboard-owner-widget[data-state='ok'] {

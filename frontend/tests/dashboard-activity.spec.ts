@@ -634,6 +634,12 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(releaseBadge).toHaveText('4');
   await expect(moderationBadge).toHaveText('1');
   await expect(localeBadge).toHaveText('2');
+  await expect(releaseBadge).toHaveAttribute('data-level', 'critical');
+  await expect(moderationBadge).toHaveAttribute('data-level', 'default');
+  await expect(localeBadge).toHaveAttribute('data-level', 'default');
+  await expect(releaseBadge).toHaveAttribute('title', /4$/);
+  await expect(moderationBadge).toHaveAttribute('title', /1$/);
+  await expect(localeBadge).toHaveAttribute('title', /2$/);
 
   await moderationAction.click();
   await expect(page).toHaveURL(/#dashboard-editorial$/);
