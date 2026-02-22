@@ -288,7 +288,7 @@ const accountCopy = {
     <p class="small account-feedback" data-account-comments-feedback aria-live="polite"></p>
   </section>
 
-  <section class="card panel gv-stack" data-account-locale-progress hidden>
+  <section class="card panel gv-stack" id="locale-progress" data-account-locale-progress hidden>
     <div class="account-comments-head">
       <div>
         <h2>{accountCopy.localeProgressTitle}</h2>
@@ -521,6 +521,11 @@ const accountCopy = {
         if (normalized === 'missing' || normalized === 'untranslated') return normalized;
         return 'all';
       };
+      const queryParams = new URLSearchParams(window.location.search);
+      const initialLocaleFromQuery = normalizeLanguage(queryParams.get('locale') || '');
+      const initialPreviewState = normalizePreviewState(queryParams.get('state') || 'all');
+      let localeProgressFocusLocale = initialLocaleFromQuery;
+      let localeProgressFocusPending = Boolean(initialLocaleFromQuery);
       const getCurrentPreviewState = () => normalizePreviewState(localeProgressFilterSelect.value);
       const getPreviewCacheKey = (localeCode, state) => `${normalizeLanguage(localeCode)}:${normalizePreviewState(state)}`;
       const localeProgressByLocale = new Map();
@@ -712,6 +717,20 @@ const accountCopy = {
         for (const node of nodes) {
           if (!(node instanceof HTMLElement)) continue;
           const current = normalizeLanguage(node.getAttribute('data-account-locale-preview'));
+          if (current === normalized) {
+            return node;
+          }
+        }
+        return null;
+      };
+
+      const findLocaleItemNode = (localeCode) => {
+        const normalized = normalizeLanguage(localeCode);
+        if (!normalized) return null;
+        const nodes = localeProgressList.querySelectorAll('[data-account-locale-item]');
+        for (const node of nodes) {
+          if (!(node instanceof HTMLElement)) continue;
+          const current = normalizeLanguage(node.getAttribute('data-account-locale-item'));
           if (current === normalized) {
             return node;
           }
@@ -975,6 +994,7 @@ const accountCopy = {
 
           const li = document.createElement('li');
           li.className = 'account-comment-item';
+          li.setAttribute('data-account-locale-item', locale);
           if (missing > 0 || untranslated > 0) {
             li.classList.add('account-locale-item-needs-work');
           }
@@ -1022,6 +1042,43 @@ const accountCopy = {
         }
 
         localeProgressList.appendChild(fragment);
+      };
+
+      const applyLocaleProgressFocus = () => {
+        const targetLocale = normalizeLanguage(localeProgressFocusLocale);
+        if (!targetLocale) {
+          localeProgressFocusPending = false;
+          return;
+        }
+
+        const nodes = localeProgressList.querySelectorAll('[data-account-locale-item]');
+        for (const node of nodes) {
+          if (node instanceof HTMLElement) {
+            node.classList.remove('account-locale-item-focus');
+          }
+        }
+
+        const targetNode = findLocaleItemNode(targetLocale);
+        if (!(targetNode instanceof HTMLElement)) {
+          localeProgressFocusPending = false;
+          return;
+        }
+
+        targetNode.classList.add('account-locale-item-focus');
+        targetNode.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+        const toggleButton = targetNode.querySelector('[data-account-locale-preview-toggle]');
+        const previewNode = findLocalePreviewNode(targetLocale);
+        if (
+          localeProgressFocusPending &&
+          toggleButton instanceof HTMLButtonElement &&
+          previewNode instanceof HTMLElement &&
+          previewNode.hidden
+        ) {
+          loadLocalePreview(targetLocale, previewNode, toggleButton);
+        }
+
+        localeProgressFocusPending = false;
       };
 
       const renderLocalePreview = (previewNode, rows) => {
@@ -1169,6 +1226,7 @@ const accountCopy = {
           setLocaleFilterSummary();
           updateSelectOptionLabels();
           updateLanguageHealth();
+          applyLocaleProgressFocus();
           setLocaleProgressFeedback('');
         } catch {
           localeProgressByLocale.clear();
@@ -1327,6 +1385,8 @@ const accountCopy = {
 
       localeProgressFilterSelect.addEventListener('change', () => {
         localePreviewCache.clear();
+        localeProgressFocusLocale = '';
+        localeProgressFocusPending = false;
         setLocaleFilterSummary();
         const previewNodes = localeProgressList.querySelectorAll('[data-account-locale-preview]');
         for (const node of previewNodes) {
@@ -1371,6 +1431,11 @@ const accountCopy = {
         }
       });
 
+      if (initialPreviewState === 'missing' || initialPreviewState === 'untranslated') {
+        localeProgressFilterSelect.value = initialPreviewState;
+      } else {
+        localeProgressFilterSelect.value = 'all';
+      }
       updateSelectOptionLabels();
       updateLanguageHealth();
       loadPreference();
@@ -1513,6 +1578,11 @@ const accountCopy = {
 
   .account-locale-item-needs-work {
     border-color: color-mix(in srgb, var(--warning) 58%, var(--border));
+  }
+
+  .account-locale-item-focus {
+    border-color: color-mix(in srgb, var(--brand) 62%, var(--border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
   }
 
   .account-locale-actions {

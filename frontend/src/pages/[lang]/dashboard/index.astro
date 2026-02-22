@@ -846,7 +846,7 @@ const dashboardCopy = {
     </footer>
   </section>
 
-  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint, launchRunbookUrl }}>
+  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint, launchRunbookUrl, accountPath }}>
     (() => {
       const loggedOutPanel = document.querySelector('[data-dashboard-logged-out]');
       const authedPanel = document.querySelector('[data-dashboard-authenticated]');
@@ -940,6 +940,7 @@ const dashboardCopy = {
         admin: 2,
         owner: 3,
       };
+      const accountLocaleBasePath = String(accountPath || '').trim() || '/en/account/';
       let laneCollapsedState = {};
 
       const toNode = (value) => (value instanceof HTMLElement ? value : null);
@@ -1908,6 +1909,12 @@ const dashboardCopy = {
         candidates.forEach((item) => {
           const row = document.createElement('li');
           row.className = 'dashboard-mini-item';
+          const previewState = item.missing > 0
+            ? 'missing'
+            : item.untranslated > 0
+              ? 'untranslated'
+              : 'all';
+          const localeHref = `${accountLocaleBasePath}?locale=${encodeURIComponent(item.localeCode.toLowerCase())}&state=${encodeURIComponent(previewState)}#locale-progress`;
 
           const detailParts = [];
           if (item.missing > 0) {
@@ -1924,7 +1931,7 @@ const dashboardCopy = {
           }
 
           row.innerHTML = `
-            <strong>${escapeHtml(item.localeCode)} · ${escapeHtml(`${item.coverage}%`)}</strong>
+            <strong><a href="${escapeHtml(localeHref)}" data-dashboard-locale-link>${escapeHtml(item.localeCode)} · ${escapeHtml(`${item.coverage}%`)}</a></strong>
             <span>${escapeHtml(detailParts.join(' · '))}</span>
           `;
           fragment.appendChild(row);
@@ -2785,6 +2792,17 @@ const dashboardCopy = {
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--ink-muted);
+  }
+
+  .dashboard-mini-item strong a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed color-mix(in srgb, var(--brand) 45%, transparent);
+  }
+
+  .dashboard-mini-item strong a:hover {
+    color: var(--brand);
+    border-bottom-style: solid;
   }
 
   .dashboard-mini-item span {

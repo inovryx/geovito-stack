@@ -645,6 +645,10 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('TR');
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('8 missing');
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('deploy');
+  await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item [data-dashboard-locale-link]').first()).toHaveAttribute(
+    'href',
+    /\/en\/account\/\?locale=tr&state=missing#locale-progress$/
+  );
   await expect(page.locator('[data-dashboard-moderation-pending]')).toHaveText('7');
   await expect(page.locator('[data-dashboard-moderation-stale]')).toHaveText('3');
   await expect(page.locator('[data-dashboard-moderation-oldest]')).toHaveText('96h');
@@ -804,6 +808,10 @@ test('dashboard locale widget uses info state when only untranslated locales are
   await expect(page.locator('[data-dashboard-owner-widget-badge="locale"]')).toHaveText('1');
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('TR');
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('6 untranslated');
+  await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item [data-dashboard-locale-link]').first()).toHaveAttribute(
+    'href',
+    /\/en\/account\/\?locale=tr&state=untranslated#locale-progress$/
+  );
 });
 
 test('dashboard lane collapse state persists between reloads', async ({ page }, testInfo) => {
