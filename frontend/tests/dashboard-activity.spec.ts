@@ -395,6 +395,9 @@ dashboardRoleCases.forEach((roleCase) => {
     const moderationPanel = page.locator('[data-dashboard-moderation-wrap]');
     const ownerCards = page.locator('[data-dashboard-role-gated][data-min-role="owner"]:visible');
     const visibleAdminLinks = page.locator('[data-dashboard-admin-link]:visible');
+    const quickLocale = page.locator('[data-dashboard-quick-id="locale-progress"]');
+    const quickControl = page.locator('[data-dashboard-quick-id="control"]');
+    const quickOwnerOps = page.locator('[data-dashboard-quick-id="owner-ops"]');
 
     if (roleCase.expectEditorialLane) {
       await expect(editorialLane).toBeVisible();
@@ -424,6 +427,24 @@ dashboardRoleCases.forEach((roleCase) => {
       expect(await visibleAdminLinks.count()).toBeGreaterThan(0);
     } else {
       await expect(visibleAdminLinks).toHaveCount(0);
+    }
+
+    if (roleCase.expectEditorialLane) {
+      await expect(quickLocale).toBeVisible();
+    } else {
+      await expect(quickLocale).toBeHidden();
+    }
+
+    if (roleCase.expectAdminLane) {
+      await expect(quickControl).toBeVisible();
+    } else {
+      await expect(quickControl).toBeHidden();
+    }
+
+    if (roleCase.expectOwnerCards) {
+      await expect(quickOwnerOps).toBeVisible();
+    } else {
+      await expect(quickOwnerOps).toBeHidden();
     }
   });
 });
@@ -642,8 +663,8 @@ test('dashboard section nav falls back to visible lane when hash lane is hidden'
   await page.goto('/en/dashboard/#dashboard-control');
   await dismissConsentBanner(page);
 
-  const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]');
-  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]');
+  const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]').first();
+  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
 
   await expect(controlPill).toBeHidden();
   await expect(memberPill).toHaveClass(/is-active/);
@@ -757,8 +778,8 @@ test('dashboard section nav tracks hash and click for admin lanes', async ({ pag
   await page.goto('/en/dashboard/');
   await dismissConsentBanner(page);
 
-  const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]');
-  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]');
+  const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]').first();
+  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
 
   await expect(controlPill).toBeVisible();
   await expect(memberPill).toHaveClass(/is-active/);
