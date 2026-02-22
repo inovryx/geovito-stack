@@ -22,6 +22,9 @@ const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage('en', 'dashboard'));
 const loginPath = pathForLanguage(lang, 'login');
 const accountPath = pathForLanguage(lang, 'account');
+const releaseCommand = 'bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test';
+const stackHealthCommand = 'bash tools/stack_health.sh';
+const smokeAccessCommand = 'bash tools/smoke_access.sh';
 const ownerEmailHint = String(import.meta.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
@@ -226,6 +229,17 @@ const dashboardCopy = {
   controlReleaseCopied: translate(ui, 'dashboard.controlReleaseCopied', {}, 'Release command copied.'),
   controlReleaseCopyFailed: translate(ui, 'dashboard.controlReleaseCopyFailed', {}, 'Clipboard blocked. Copy manually.'),
   controlLimited: translate(ui, 'dashboard.controlLimited', {}, 'Admin links are visible for owner/admin roles only.'),
+  ownerOpsTitle: translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations'),
+  ownerOpsBody: translate(
+    ui,
+    'dashboard.ownerOpsBody',
+    {},
+    'Runbook-grade commands for deployment validation and infrastructure checks.'
+  ),
+  ownerOpsRelease: translate(ui, 'dashboard.ownerOpsRelease', {}, 'Release + smoke'),
+  ownerOpsHealth: translate(ui, 'dashboard.ownerOpsHealth', {}, 'Stack health'),
+  ownerOpsAccess: translate(ui, 'dashboard.ownerOpsAccess', {}, 'Access smoke'),
+  ownerOpsCopy: translate(ui, 'dashboard.ownerOpsCopy', {}, 'Copy command'),
   refresh: translate(ui, 'dashboard.refresh', {}, 'Refresh'),
   loading: translate(ui, 'dashboard.loading', {}, 'Loading dashboard data...'),
   loadFailed: translate(ui, 'dashboard.loadFailed', {}, 'Some dashboard cards could not be loaded.'),
@@ -260,9 +274,15 @@ const dashboardCopy = {
     </div>
 
     <nav class="dashboard-section-nav" aria-label={dashboardCopy.quickTitle}>
-      <a class="dashboard-section-pill" href="#dashboard-member">{dashboardCopy.overviewTitle}</a>
-      <a class="dashboard-section-pill" href="#dashboard-editorial">{dashboardCopy.localeTitle}</a>
-      <a class="dashboard-section-pill" href="#dashboard-control">{dashboardCopy.controlTitle}</a>
+      <a class="dashboard-section-pill" href="#dashboard-member" data-dashboard-role-gated data-min-role="member">
+        {dashboardCopy.overviewTitle}
+      </a>
+      <a class="dashboard-section-pill" href="#dashboard-editorial" data-dashboard-role-gated data-min-role="editor" hidden>
+        {dashboardCopy.localeTitle}
+      </a>
+      <a class="dashboard-section-pill" href="#dashboard-control" data-dashboard-role-gated data-min-role="admin" hidden>
+        {dashboardCopy.controlTitle}
+      </a>
     </nav>
 
     <div class="dashboard-lanes">
@@ -496,11 +516,60 @@ const dashboardCopy = {
               >
                 <span class="ui-button-label">{dashboardCopy.controlRunbook}</span>
               </a>
-              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-copy-release hidden>
+              <button
+                type="button"
+                class="ui-button ui-button-secondary ui-button-sm"
+                data-dashboard-copy-command
+                data-command-value={releaseCommand}
+                hidden
+              >
                 <span class="ui-button-label">{dashboardCopy.controlRelease}</span>
               </button>
             </div>
             <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
+          </article>
+
+          <article class="card panel gv-stack" data-dashboard-role-gated data-min-role="owner" hidden>
+            <h3 class="dashboard-mini-title">{dashboardCopy.ownerOpsTitle}</h3>
+            <p class="small">{dashboardCopy.ownerOpsBody}</p>
+            <div class="dashboard-command-grid">
+              <div class="dashboard-command-card">
+                <strong>{dashboardCopy.ownerOpsRelease}</strong>
+                <code>{releaseCommand}</code>
+                <button
+                  type="button"
+                  class="ui-button ui-button-secondary ui-button-sm"
+                  data-dashboard-copy-command
+                  data-command-value={releaseCommand}
+                >
+                  <span class="ui-button-label">{dashboardCopy.ownerOpsCopy}</span>
+                </button>
+              </div>
+              <div class="dashboard-command-card">
+                <strong>{dashboardCopy.ownerOpsHealth}</strong>
+                <code>{stackHealthCommand}</code>
+                <button
+                  type="button"
+                  class="ui-button ui-button-secondary ui-button-sm"
+                  data-dashboard-copy-command
+                  data-command-value={stackHealthCommand}
+                >
+                  <span class="ui-button-label">{dashboardCopy.ownerOpsCopy}</span>
+                </button>
+              </div>
+              <div class="dashboard-command-card">
+                <strong>{dashboardCopy.ownerOpsAccess}</strong>
+                <code>{smokeAccessCommand}</code>
+                <button
+                  type="button"
+                  class="ui-button ui-button-secondary ui-button-sm"
+                  data-dashboard-copy-command
+                  data-command-value={smokeAccessCommand}
+                >
+                  <span class="ui-button-label">{dashboardCopy.ownerOpsCopy}</span>
+                </button>
+              </div>
+            </div>
           </article>
         </div>
       </section>
@@ -516,7 +585,8 @@ const dashboardCopy = {
       const localeNote = document.querySelector('[data-dashboard-locale-note]');
       const controlNote = document.querySelector('[data-dashboard-control-note]');
       const adminLinks = Array.from(document.querySelectorAll('[data-dashboard-admin-link]'));
-      const copyReleaseButton = document.querySelector('[data-dashboard-copy-release]');
+      const copyCommandButtons = Array.from(document.querySelectorAll('[data-dashboard-copy-command]'));
+      const roleGatedNodes = Array.from(document.querySelectorAll('[data-dashboard-role-gated]'));
       const moderationWrapNode = document.querySelector('[data-dashboard-moderation-wrap]');
       const moderationListNode = document.querySelector('[data-dashboard-moderation-list]');
       const moderationHistoryNode = document.querySelector('[data-dashboard-moderation-history]');
@@ -707,9 +777,10 @@ const dashboardCopy = {
           link.hidden = !isAdmin;
         });
 
-        if (copyReleaseButton instanceof HTMLElement) {
-          copyReleaseButton.hidden = !isAdmin;
-        }
+        copyCommandButtons.forEach((button) => {
+          if (!(button instanceof HTMLElement)) return;
+          button.hidden = !isAdmin;
+        });
 
         if (toNode(controlNote)) {
           toNode(controlNote).hidden = isAdmin;
@@ -728,6 +799,13 @@ const dashboardCopy = {
           const minRole = String(lane.getAttribute('data-min-role') || 'member').toLowerCase();
           const minRoleRank = Number(roleRanks[minRole] ?? 0);
           lane.hidden = effectiveRoleRank < minRoleRank;
+        });
+
+        roleGatedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          const minRole = String(node.getAttribute('data-min-role') || 'member').toLowerCase();
+          const minRoleRank = Number(roleRanks[minRole] ?? 0);
+          node.hidden = effectiveRoleRank < minRoleRank;
         });
 
         return {
@@ -1119,9 +1197,11 @@ const dashboardCopy = {
           });
         }
 
-        if (copyReleaseButton instanceof HTMLButtonElement) {
-          copyReleaseButton.addEventListener('click', async () => {
-            const command = 'bash tools/release_deploy_smoke.sh --with-moderation --with-ui-locale-sync --with-ui-locale-progress';
+        copyCommandButtons.forEach((button) => {
+          if (!(button instanceof HTMLButtonElement)) return;
+          button.addEventListener('click', async () => {
+            const command = String(button.dataset.commandValue || '').trim();
+            if (!command) return;
             try {
               await navigator.clipboard.writeText(command);
               setFeedback(dashboardCopy.controlReleaseCopied);
@@ -1129,7 +1209,7 @@ const dashboardCopy = {
               setFeedback(`${dashboardCopy.controlReleaseCopyFailed} ${command}`, true);
             }
           });
-        }
+        });
 
         if (moderationListNode instanceof HTMLElement) {
           moderationListNode.addEventListener('click', async (event) => {
@@ -1314,6 +1394,34 @@ const dashboardCopy = {
     gap: 0.5rem;
   }
 
+  .dashboard-command-grid {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-command-card {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 0.72rem;
+    background: var(--surface-2);
+  }
+
+  .dashboard-command-card strong {
+    font-size: 0.83rem;
+    color: var(--ink);
+  }
+
+  .dashboard-command-card code {
+    display: block;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: var(--ink-muted);
+    word-break: break-word;
+  }
+
   .dashboard-capabilities {
     list-style: none;
     margin: 0;
@@ -1408,6 +1516,10 @@ const dashboardCopy = {
     }
 
     .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-command-grid {
       grid-template-columns: 1fr;
     }
 
