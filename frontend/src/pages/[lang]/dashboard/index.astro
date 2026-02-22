@@ -908,7 +908,8 @@ const dashboardCopy = {
       let currentSession = null;
       let canRunModeration = false;
       let isLoading = false;
-      const STALE_PENDING_HOURS = 24;
+      const DEFAULT_STALE_PENDING_HOURS = 24;
+      let moderationStaleThresholdHours = DEFAULT_STALE_PENDING_HOURS;
       let ownerPendingCount = 0;
       let ownerStalePendingCount = 0;
       let ownerLocaleGapCount = 0;
@@ -936,6 +937,12 @@ const dashboardCopy = {
         const el = toNode(node);
         if (!el) return;
         el.textContent = String(value ?? '');
+      };
+
+      const normalizeCount = (value, fallback = 0) => {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+        return Math.round(parsed);
       };
 
       const setFeedback = (message, isError = false) => {
@@ -1250,7 +1257,7 @@ const dashboardCopy = {
         if (moderationHasStale) {
           moderationDetailText = dashboardCopy.activityPendingStale
             .replace('{count}', String(ownerStalePendingCount))
-            .replace('{hours}', String(STALE_PENDING_HOURS));
+            .replace('{hours}', String(moderationStaleThresholdHours));
         } else if (moderationHasPending) {
           moderationDetailText = dashboardCopy.activityPending.replace('{count}', String(ownerPendingCount));
         }
@@ -1369,7 +1376,7 @@ const dashboardCopy = {
               level: 'warn',
               message: dashboardCopy.activityPendingStale
                 .replace('{count}', String(ownerStalePendingCount))
-                .replace('{hours}', String(STALE_PENDING_HOURS)),
+                .replace('{hours}', String(moderationStaleThresholdHours)),
               actionLabel: dashboardCopy.activityActionModeration,
               actionHref: editorialModerationHref,
               ts: nowTs,
@@ -1703,15 +1710,15 @@ const dashboardCopy = {
         host.appendChild(fragment);
       };
 
-      const renderModerationQueue = (items) => {
+      const renderModerationQueue = (items, summary = null) => {
         const host = toNode(moderationListNode);
         if (!host) return;
 
         host.innerHTML = '';
 
         const sourceList = Array.isArray(items) ? items : [];
-        let staleCount = 0;
-        let oldestHours = 0;
+        let derivedStaleCount = 0;
+        let derivedOldestHours = 0;
         const nowMs = Date.now();
 
         sourceList.forEach((item) => {
@@ -1727,11 +1734,20 @@ const dashboardCopy = {
           if (!Number.isFinite(createdMs) || createdMs <= 0) return;
 
           const ageHours = Math.max(0, Math.floor((nowMs - createdMs) / 3600000));
-          if (ageHours > oldestHours) oldestHours = ageHours;
-          if (ageHours >= STALE_PENDING_HOURS) staleCount += 1;
+          if (ageHours > derivedOldestHours) derivedOldestHours = ageHours;
+          if (ageHours >= moderationStaleThresholdHours) derivedStaleCount += 1;
         });
 
-        setText(moderationPendingNode, String(sourceList.length));
+        const summaryThreshold = normalizeCount(summary?.stale_threshold_hours, 0);
+        if (summaryThreshold > 0) {
+          moderationStaleThresholdHours = summaryThreshold;
+        }
+
+        const pendingCount = normalizeCount(summary?.pending_total, sourceList.length);
+        const staleCount = normalizeCount(summary?.stale_pending_total, derivedStaleCount);
+        const oldestHours = normalizeCount(summary?.oldest_pending_hours, derivedOldestHours);
+
+        setText(moderationPendingNode, String(pendingCount));
         setText(moderationStaleNode, String(staleCount));
         setText(moderationOldestNode, `${oldestHours}h`);
         ownerStalePendingCount = staleCount;
@@ -1742,7 +1758,7 @@ const dashboardCopy = {
             alertEl.hidden = false;
             alertEl.textContent = dashboardCopy.moderationQueueStaleAlert
               .replace('{count}', String(staleCount))
-              .replace('{hours}', String(STALE_PENDING_HOURS));
+              .replace('{hours}', String(moderationStaleThresholdHours));
           } else {
             alertEl.hidden = true;
             alertEl.textContent = '';
@@ -1899,6 +1915,7 @@ const dashboardCopy = {
         setText(localeDeployNode, '0');
         ownerPendingCount = 0;
         ownerStalePendingCount = 0;
+        moderationStaleThresholdHours = DEFAULT_STALE_PENDING_HOURS;
         ownerLocaleGapCount = 0;
         ownerLocaleDeployCount = 0;
         ownerFingerprintSha = '';
@@ -1995,6 +2012,10 @@ const dashboardCopy = {
             if (response.ok) {
               const payload = await response.json().catch(() => ({}));
               const items = Array.isArray(payload?.data) ? payload.data : [];
+              const summary =
+                payload?.meta?.summary && typeof payload.meta.summary === 'object'
+                  ? payload.meta.summary
+                  : null;
               const pendingItems = items.filter((item) => String(item?.status || '').toLowerCase() === 'pending');
               const reviewedItems = items
                 .filter((item) => String(item?.status || '').toLowerCase() !== 'pending')
@@ -2003,9 +2024,9 @@ const dashboardCopy = {
                   const bTs = new Date(String(b?.reviewed_at || b?.updated_at || b?.created_at || 0)).getTime();
                   return Number.isFinite(bTs) && Number.isFinite(aTs) ? bTs - aTs : 0;
                 });
-              ownerPendingCount = pendingItems.length;
+              ownerPendingCount = normalizeCount(summary?.pending_total, pendingItems.length);
               setText(ownerPendingNode, String(ownerPendingCount));
-              renderModerationQueue(pendingItems);
+              renderModerationQueue(pendingItems, summary);
               renderModerationHistory(reviewedItems);
             } else {
               hadErrors = true;
@@ -2031,8 +2052,11 @@ const dashboardCopy = {
             const currentRow = rows.find((row) => normalizeLanguage(row?.ui_locale) === currentLocale) || null;
 
             const coverage = Number(currentRow?.coverage_percent || 0);
-            const gapLocales = rows.filter((row) => Number(row?.missing_keys || 0) + Number(row?.untranslated_keys || 0) > 0).length;
-            const deployRequired = Number(summary?.deploy_required_count || 0);
+            const gapLocales = normalizeCount(
+              summary?.locales_with_gaps,
+              rows.filter((row) => Number(row?.missing_keys || 0) + Number(row?.untranslated_keys || 0) > 0).length
+            );
+            const deployRequired = normalizeCount(summary?.deploy_required_count, 0);
 
             setText(localeCoverageNode, `${Math.round(coverage * 100) / 100}%`);
             setText(localeGapsNode, String(gapLocales));

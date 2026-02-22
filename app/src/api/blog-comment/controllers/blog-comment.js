@@ -81,12 +81,67 @@ const parseIntSafe = (value, fallback, min, max) => {
   return Math.min(Math.max(parsed, min), max);
 };
 
+const MODERATION_STALE_HOURS = parseIntSafe(
+  process.env.BLOG_COMMENT_MODERATION_STALE_HOURS,
+  24,
+  1,
+  24 * 30
+);
+
 const normalizeSortOrder = (value) => (String(value || '').toLowerCase() === 'asc' ? 'asc' : 'desc');
 const normalizeLower = (value) => String(value || '').trim().toLowerCase();
 const normalizeCommentStatus = (value) => {
   const normalized = normalizeLower(value);
   if (!normalized) return null;
   return COMMENT_STATUS_SET.has(normalized) ? normalized : null;
+};
+
+const normalizeNonNegativeInt = (value, fallback = 0) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return Math.round(parsed);
+};
+
+const buildModerationSummary = async (strapi, staleHours = MODERATION_STALE_HOURS) => {
+  const thresholdMs = Date.now() - staleHours * 60 * 60 * 1000;
+  const thresholdIso = new Date(thresholdMs).toISOString();
+
+  const [pendingTotal, stalePendingTotal, oldestPendingEntries] = await Promise.all([
+    strapi.entityService.count(UID, {
+      filters: { status: BLOG_COMMENT_STATUS.PENDING },
+    }),
+    strapi.entityService.count(UID, {
+      filters: {
+        status: BLOG_COMMENT_STATUS.PENDING,
+        createdAt: { $lt: thresholdIso },
+      },
+    }),
+    strapi.entityService.findMany(UID, {
+      publicationState: 'preview',
+      filters: { status: BLOG_COMMENT_STATUS.PENDING },
+      fields: ['createdAt'],
+      sort: ['createdAt:asc'],
+      limit: 1,
+    }),
+  ]);
+
+  const oldestCreatedAt = Array.isArray(oldestPendingEntries)
+    ? oldestPendingEntries[0]?.createdAt
+    : null;
+  let oldestPendingHours = 0;
+  if (oldestCreatedAt) {
+    const oldestMs = new Date(String(oldestCreatedAt)).getTime();
+    if (Number.isFinite(oldestMs) && oldestMs > 0) {
+      oldestPendingHours = Math.max(0, Math.floor((Date.now() - oldestMs) / (60 * 60 * 1000)));
+    }
+  }
+
+  return {
+    stale_threshold_hours: staleHours,
+    pending_total: normalizeNonNegativeInt(pendingTotal),
+    stale_pending_total: normalizeNonNegativeInt(stalePendingTotal),
+    oldest_pending_hours: normalizeNonNegativeInt(oldestPendingHours),
+  };
 };
 
 const findCommentByCommentId = async (strapi, commentId) => {
@@ -397,11 +452,29 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
       limit,
     });
 
+    let summary = null;
+    try {
+      summary = await buildModerationSummary(strapi);
+    } catch (error) {
+      await log(
+        'blog',
+        'WARN',
+        'blog.comment.moderation.summary.failed',
+        'Failed to compute moderation summary',
+        {
+          user_id: identity.user.id,
+          error: error instanceof Error ? error.message : String(error || 'unknown_error'),
+        },
+        { request_id: requestId, actor }
+      );
+    }
+
     ctx.body = {
       data: Array.isArray(entries) ? entries.map(toModerationComment) : [],
       meta: {
         limit,
         status: status || 'all',
+        summary,
       },
     };
   },

@@ -539,6 +539,14 @@ test('dashboard owner widgets show warning states when signals are present', asy
             updated_at: '2026-01-01T12:00:00.000Z',
           },
         ],
+        meta: {
+          summary: {
+            pending_total: 7,
+            stale_pending_total: 3,
+            oldest_pending_hours: 96,
+            stale_threshold_hours: 36,
+          },
+        },
       }),
     });
   });
@@ -629,16 +637,19 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(moderationWidget).toHaveAttribute('data-state', 'warn');
   await expect(localeWidget).toHaveAttribute('data-state', 'warn');
   await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('owner77');
-  await expect(page.locator('[data-dashboard-owner-widget-moderation-detail]')).toContainText('older than 24h');
+  await expect(page.locator('[data-dashboard-owner-widget-moderation-detail]')).toContainText('older than 36h');
   await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
+  await expect(page.locator('[data-dashboard-moderation-pending]')).toHaveText('7');
+  await expect(page.locator('[data-dashboard-moderation-stale]')).toHaveText('3');
+  await expect(page.locator('[data-dashboard-moderation-oldest]')).toHaveText('96h');
   await expect(releaseBadge).toHaveText('4');
-  await expect(moderationBadge).toHaveText('1');
+  await expect(moderationBadge).toHaveText('7');
   await expect(localeBadge).toHaveText('2');
   await expect(releaseBadge).toHaveAttribute('data-level', 'critical');
-  await expect(moderationBadge).toHaveAttribute('data-level', 'default');
+  await expect(moderationBadge).toHaveAttribute('data-level', 'critical');
   await expect(localeBadge).toHaveAttribute('data-level', 'default');
   await expect(releaseBadge).toHaveAttribute('title', /4$/);
-  await expect(moderationBadge).toHaveAttribute('title', /1$/);
+  await expect(moderationBadge).toHaveAttribute('title', /7$/);
   await expect(localeBadge).toHaveAttribute('title', /2$/);
 
   await moderationAction.click();
