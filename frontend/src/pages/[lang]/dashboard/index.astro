@@ -1191,6 +1191,7 @@ const dashboardCopy = {
         '#dashboard-control-seo': '#dashboard-control',
         '#dashboard-ads': '#dashboard-control-ads',
       };
+      const DASHBOARD_NAV_SYNC_EVENT = 'geovito:dashboard-nav-sync';
       const accountLocaleBasePath = String(accountPath || '').trim() || '/en/account/';
       const accountCommentPendingHref = `${accountLocaleBasePath}?commentState=pending#comments`;
       let laneCollapsedState = {};
@@ -1365,7 +1366,7 @@ const dashboardCopy = {
       };
 
       const resolveModuleHash = (hash) => {
-        const normalizedHash = String(hash || '').trim();
+        const normalizedHash = String(hash || '').trim().toLowerCase();
         if (!normalizedHash) return '';
         return String(moduleHashAliases[normalizedHash] || normalizedHash);
       };
@@ -1480,8 +1481,8 @@ const dashboardCopy = {
           }
         });
 
-        const normalizedCurrentHash = resolveModuleHash(window.location.hash);
-        if (syncHash && module.hash && module.hash !== normalizedCurrentHash) {
+        const currentHash = String(window.location.hash || '').trim();
+        if (syncHash && module.hash && module.hash !== currentHash) {
           try {
             history.replaceState(null, '', module.hash);
           } catch {
@@ -1489,6 +1490,16 @@ const dashboardCopy = {
           }
         }
         setActiveSectionPill(hash || module.hash);
+
+        try {
+          window.dispatchEvent(
+            new CustomEvent(DASHBOARD_NAV_SYNC_EVENT, {
+              detail: { hash: String(module.hash || hash || '') },
+            })
+          );
+        } catch {
+          window.dispatchEvent(new Event(DASHBOARD_NAV_SYNC_EVENT));
+        }
 
         if (focusTarget) {
           const targetId = String(module.focusId || module.laneId || '').trim();
@@ -1501,6 +1512,23 @@ const dashboardCopy = {
         }
 
         return module;
+      };
+
+      const applyHashNavigation = (hash, options = {}) => {
+        const requestedHash = String(hash || '').trim();
+        if (!requestedHash.startsWith('#')) return null;
+        const syncHash = options.syncHash !== false;
+        if (syncHash) {
+          try {
+            history.replaceState(null, '', requestedHash);
+          } catch {
+            // no-op
+          }
+        }
+        return applyModuleView(requestedHash, {
+          syncHash: false,
+          focusTarget: options.focusTarget === true,
+        });
       };
 
       const syncActiveSectionFromScroll = () => {
@@ -1964,7 +1992,8 @@ const dashboardCopy = {
         return 'member';
       };
 
-      const applyAccessView = (role) => {
+      const applyAccessView = (role, options = {}) => {
+        const syncHash = options.syncHash !== false;
         const normalizedRole = String(role || 'member').toLowerCase();
         const isOwner = normalizedRole === 'owner';
         const isAdmin = isOwner || normalizedRole === 'admin';
@@ -2023,7 +2052,7 @@ const dashboardCopy = {
         });
 
         currentRoleRank = effectiveRoleRank;
-        const activeModule = applyModuleView(window.location.hash, { syncHash: true, focusTarget: false });
+        const activeModule = applyModuleView(window.location.hash, { syncHash, focusTarget: false });
         if (!activeModule) {
           setActiveSectionPill('');
         }
@@ -2323,7 +2352,7 @@ const dashboardCopy = {
         setText(statusNode, dashboardCopy.statusActive);
         setText(createdNode, dashboardCopy.unknown);
         setText(preferredNode, normalizeLanguage(document.documentElement.lang || 'en').toUpperCase());
-        applyAccessView('member');
+        applyAccessView('member', { syncHash: false });
         renderRecentComments([]);
         renderModerationQueue([]);
         renderModerationHistory([]);
@@ -2610,12 +2639,17 @@ const dashboardCopy = {
             const href = String(link.getAttribute('href') || '').trim();
             if (!href.startsWith('#')) return;
             event.preventDefault();
-            try {
-              history.replaceState(null, '', href);
-            } catch {
-              // no-op
-            }
-            applyModuleView(href, { syncHash: false, focusTarget: true });
+            applyHashNavigation(href, { syncHash: true, focusTarget: true });
+          });
+        });
+
+        moduleCardLinks.forEach((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return;
+          link.addEventListener('click', (event) => {
+            const href = String(link.getAttribute('href') || '').trim();
+            if (!href.startsWith('#')) return;
+            event.preventDefault();
+            applyHashNavigation(href, { syncHash: true, focusTarget: true });
           });
         });
 
