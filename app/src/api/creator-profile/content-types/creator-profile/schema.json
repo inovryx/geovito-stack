@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "creator_profiles",
+  "info": {
+    "singularName": "creator-profile",
+    "pluralName": "creator-profiles",
+    "displayName": "Creator Profile",
+    "description": "Public creator mini-site profile linked to a single authenticated user"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "owner_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "required": true,
+      "unique": true
+    },
+    "username": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 3,
+      "maxLength": 50
+    },
+    "display_name": {
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "bio": {
+      "type": "text",
+      "maxLength": 2000
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "accent_color": {
+      "type": "enumeration",
+      "enum": ["ocean", "coral", "moss", "slate", "sand", "plum"],
+      "default": "ocean"
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": ["public", "members", "private"],
+      "default": "public",
+      "required": true
+    },
+    "citizen_card_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "social_links": {
+      "type": "json"
+    }
+  }
+}
