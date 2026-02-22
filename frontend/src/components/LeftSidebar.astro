@@ -20,7 +20,7 @@ const dashboardPath = `/${currentLanguage}/dashboard/`;
 const accountPath = `/${currentLanguage}/account/`;
 const accountCommentsPath = `${accountPath}?commentState=pending#comments`;
 const accountLocalePath = `${accountPath}#locale-progress`;
-const dashboardEditorialPath = `${dashboardPath}#dashboard-editorial`;
+const dashboardEditorialPath = `${dashboardPath}#dashboard-editorial-moderation`;
 const dashboardControlPath = `${dashboardPath}#dashboard-control`;
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
@@ -55,9 +55,56 @@ const workspaceLocaleLabel = translate(ui, 'dashboard.quickLocale', {}, 'Open tr
 const workspaceModerationLabel = translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue');
 const workspaceControlLabel = translate(ui, 'dashboard.controlTitle', {}, 'Control center');
 const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations');
+const dashboardModuleTitle = translate(ui, 'dashboard.moduleNavTitle', {}, 'Dashboard modules');
+const dashboardModuleGeneral = translate(ui, 'dashboard.moduleGeneral', {}, 'General');
+const dashboardModuleSeo = translate(ui, 'dashboard.moduleSeo', {}, 'SEO');
+const dashboardModuleAds = translate(ui, 'dashboard.moduleAds', {}, 'Ads');
+const dashboardModuleModeration = translate(ui, 'dashboard.moduleModeration', {}, 'Moderation');
+const dashboardModuleTranslation = translate(ui, 'dashboard.moduleTranslation', {}, 'Translation');
+const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'Settings');
 ---
 
 <div class="left-sidebar-stack">
+  <section
+    class="sidebar-block sidebar-dashboard-modules gv-card bg-surface border-border"
+    data-auth-dashboard-shell
+    hidden
+  >
+    <h2 class="sidebar-title">{dashboardModuleTitle}</h2>
+    <ul class="sidebar-admin-list sidebar-dashboard-modules-list">
+      <li>
+        <a class="small-link" href={`${dashboardPath}#dashboard-member`} data-auth-dashboard-link data-min-role="member">
+          {dashboardModuleGeneral}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={`${dashboardPath}#dashboard-control`} data-auth-dashboard-link data-min-role="admin" hidden>
+          {dashboardModuleSeo}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={`${dashboardPath}#dashboard-control-ads`} data-auth-dashboard-link data-min-role="admin" hidden>
+          {dashboardModuleAds}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={`${dashboardPath}#dashboard-editorial-moderation`} data-auth-dashboard-link data-min-role="editor" hidden>
+          {dashboardModuleModeration}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={`${dashboardPath}#dashboard-editorial-locale`} data-auth-dashboard-link data-min-role="editor" hidden>
+          {dashboardModuleTranslation}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={`${dashboardPath}#dashboard-member-settings`} data-auth-dashboard-link data-min-role="member">
+          {dashboardModuleSettings}
+        </a>
+      </li>
+    </ul>
+  </section>
+
   <section class="sidebar-block sidebar-language-switch gv-card bg-surface border-border">
     <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
     <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
@@ -154,12 +201,12 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
     </p>
     <ul class="sidebar-admin-list">
       <li>
-        <a class="small-link" href={`${dashboardPath}#moderation`} data-auth-admin-link data-min-role="editor" hidden>
+        <a class="small-link" href={`${dashboardPath}#dashboard-editorial-moderation`} data-auth-admin-link data-min-role="editor" hidden>
           {adminModerationLabel}
         </a>
       </li>
       <li>
-        <a class="small-link" href={`${dashboardPath}#locale-progress`} data-auth-admin-link data-min-role="editor" hidden>
+        <a class="small-link" href={`${dashboardPath}#dashboard-editorial-locale`} data-auth-admin-link data-min-role="editor" hidden>
           {adminLocaleLabel}
         </a>
       </li>
@@ -223,13 +270,15 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
       owner: 3,
     };
 
-    const isWorkspaceLinkActive = (href) => {
+    const isSidebarLinkActive = (href, fallbackWhenNoHash = false) => {
       const value = String(href || '').trim();
       if (!value) return false;
       try {
         const target = new URL(value, window.location.origin);
         const current = new URL(window.location.href);
         if (target.pathname !== current.pathname) return false;
+        if (!target.hash) return true;
+        if (!current.hash && fallbackWhenNoHash) return true;
         if (target.hash && target.hash !== current.hash) return false;
         return true;
       } catch {
@@ -359,7 +408,24 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
           const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
           node.hidden = roleRank < minRank;
           const href = node.getAttribute('href') || '';
-          node.classList.toggle('is-active', !node.hidden && isWorkspaceLinkActive(href));
+          node.classList.toggle('is-active', !node.hidden && isSidebarLinkActive(href));
+        });
+      });
+
+      document.querySelectorAll('[data-auth-dashboard-shell]').forEach((shell) => {
+        if (!(shell instanceof HTMLElement)) return;
+
+        shell.hidden = !session || !isDashboardRoute;
+        if (!session || !isDashboardRoute) return;
+
+        shell.querySelectorAll('[data-auth-dashboard-link]').forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          const minRole = normalize(node.getAttribute('data-min-role') || 'member');
+          const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
+          node.hidden = roleRank < minRank;
+          const href = node.getAttribute('href') || '';
+          const fallbackWhenNoHash = href.endsWith('#dashboard-member');
+          node.classList.toggle('is-active', !node.hidden && isSidebarLinkActive(href, fallbackWhenNoHash));
         });
       });
     };
@@ -397,6 +463,10 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
       }
     });
 
+    window.addEventListener('hashchange', () => {
+      void applyAuthState();
+    });
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init, { once: true });
       return;
@@ -421,8 +491,32 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
     gap: 0.62rem;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-workspace {
+.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules {
     order: 1;
+    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 42%, var(--surface-strong));
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules-list {
+    gap: 0.3rem;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules-list .small-link {
+    font-size: 0.92rem;
+    display: inline-block;
+    line-height: 1.25;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules-list .small-link.is-active {
+    font-weight: 700;
+    color: var(--brand-strong);
+    text-decoration: underline;
+    text-decoration-thickness: 1.4px;
+    text-underline-offset: 2px;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-workspace {
+    order: 2;
     border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
     background: color-mix(in srgb, var(--brand-soft) 54%, var(--surface-strong));
 }
@@ -432,14 +526,14 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
 }
 
 .left-sidebar-stack.is-dashboard-auth .sidebar-auth-links {
-    order: 2;
-}
-
-.left-sidebar-stack.is-dashboard-auth .sidebar-admin-tools {
     order: 3;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-language-switch {
+.left-sidebar-stack.is-dashboard-auth .sidebar-admin-tools {
     order: 4;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-language-switch {
+    order: 5;
 }
 </style>
