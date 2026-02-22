@@ -19,6 +19,10 @@ const loginPath = `/${currentLanguage}/login/`;
 const registerPath = `/${currentLanguage}/register/`;
 const dashboardPath = `/${currentLanguage}/dashboard/`;
 const accountPath = `/${currentLanguage}/account/`;
+const accountCommentsPath = `${accountPath}?commentState=pending#comments`;
+const accountLocalePath = `${accountPath}#locale-progress`;
+const dashboardEditorialPath = `${dashboardPath}#dashboard-editorial`;
+const dashboardControlPath = `${dashboardPath}#dashboard-control`;
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
   PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
@@ -45,6 +49,13 @@ const accessOwnerLabel = translate(ui, 'dashboard.accessOwner', {}, 'Owner');
 const adminModerationLabel = translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue');
 const adminLocaleLabel = translate(ui, 'dashboard.localeTitle', {}, 'Translation visibility');
 const adminControlLabel = translate(ui, 'dashboard.controlAdmin', {}, 'Open Strapi admin');
+const workspaceTitle = translate(ui, 'dashboard.workspaceTitle', {}, 'Workspace');
+const workspaceHint = translate(ui, 'dashboard.workspaceHint', {}, 'Personal and role-based shortcuts.');
+const workspaceCommentsLabel = translate(ui, 'dashboard.quickComments', {}, 'Open my comment queue');
+const workspaceLocaleLabel = translate(ui, 'dashboard.quickLocale', {}, 'Open translation progress');
+const workspaceModerationLabel = translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue');
+const workspaceControlLabel = translate(ui, 'dashboard.controlTitle', {}, 'Control center');
+const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations');
 ---
 
 <div class="left-sidebar-stack">
@@ -84,6 +95,52 @@ const adminControlLabel = translate(ui, 'dashboard.controlAdmin', {}, 'Open Stra
       <a href={accountPath} class="small-link">{accountLabel}</a>
       <button type="button" class="small-link sidebar-auth-logout" data-auth-logout>{logoutLabel}</button>
     </div>
+  </section>
+
+  <section
+    class="sidebar-block sidebar-workspace gv-card bg-surface border-border"
+    data-auth-workspace-shell
+    hidden
+  >
+    <h2 class="sidebar-title">{workspaceTitle}</h2>
+    <p class="small sidebar-workspace-hint">{workspaceHint}</p>
+    <ul class="sidebar-admin-list sidebar-workspace-list">
+      <li>
+        <a class="small-link" href={dashboardPath} data-auth-workspace-link data-min-role="member">
+          {dashboardLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={accountPath} data-auth-workspace-link data-min-role="member">
+          {accountLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={accountCommentsPath} data-auth-workspace-link data-min-role="member">
+          {workspaceCommentsLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={accountLocalePath} data-auth-workspace-link data-min-role="editor" hidden>
+          {workspaceLocaleLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={dashboardEditorialPath} data-auth-workspace-link data-min-role="editor" hidden>
+          {workspaceModerationLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={dashboardControlPath} data-auth-workspace-link data-min-role="admin" hidden>
+          {workspaceControlLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={dashboardControlPath} data-auth-workspace-link data-min-role="owner" hidden>
+          {workspaceOwnerOpsLabel}
+        </a>
+      </li>
+    </ul>
   </section>
 
   <section
@@ -162,6 +219,20 @@ const adminControlLabel = translate(ui, 'dashboard.controlAdmin', {}, 'Open Stra
       editor: 1,
       admin: 2,
       owner: 3,
+    };
+
+    const isWorkspaceLinkActive = (href) => {
+      const value = String(href || '').trim();
+      if (!value) return false;
+      try {
+        const target = new URL(value, window.location.origin);
+        const current = new URL(window.location.href);
+        if (target.pathname !== current.pathname) return false;
+        if (target.hash && target.hash !== current.hash) return false;
+        return true;
+      } catch {
+        return false;
+      }
     };
 
     const inferRole = (payload, session, ownerHint) => {
@@ -265,6 +336,22 @@ const adminControlLabel = translate(ui, 'dashboard.controlAdmin', {}, 'Open Stra
           const minRole = normalize(node.getAttribute('data-min-role') || 'member');
           const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
           node.hidden = roleRank < minRank;
+        });
+      });
+
+      document.querySelectorAll('[data-auth-workspace-shell]').forEach((shell) => {
+        if (!(shell instanceof HTMLElement)) return;
+
+        shell.hidden = !session;
+        if (!session) return;
+
+        shell.querySelectorAll('[data-auth-workspace-link]').forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          const minRole = normalize(node.getAttribute('data-min-role') || 'member');
+          const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
+          node.hidden = roleRank < minRank;
+          const href = node.getAttribute('href') || '';
+          node.classList.toggle('is-active', !node.hidden && isWorkspaceLinkActive(href));
         });
       });
     };

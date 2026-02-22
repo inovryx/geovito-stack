@@ -705,6 +705,28 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
   gap: 0.38rem;
 }
 
+.sidebar-workspace-hint {
+  margin: 0 0 0.4rem;
+  color: var(--ink-muted);
+}
+
+.sidebar-workspace-list {
+  gap: 0.3rem;
+}
+
+.sidebar-workspace-list .small-link {
+  display: inline-block;
+  line-height: 1.25;
+}
+
+.sidebar-workspace-list .small-link.is-active {
+  font-weight: 700;
+  color: var(--brand-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1.4px;
+  text-underline-offset: 2px;
+}
+
 .small-link {
   font-size: 0.88rem;
 }

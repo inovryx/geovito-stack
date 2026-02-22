@@ -22,7 +22,6 @@ const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage('en', 'dashboard'));
 const loginPath = pathForLanguage(lang, 'login');
 const accountPath = pathForLanguage(lang, 'account');
-const homePath = pathForLanguage(lang, '');
 const releaseCommand = 'bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test';
 const stackHealthCommand = 'bash tools/stack_health.sh';
 const smokeAccessCommand = 'bash tools/smoke_access.sh';
@@ -143,9 +142,6 @@ const dashboardCopy = {
   quickOwnerOps: translate(ui, 'dashboard.quickOwnerOps', {}, 'Open owner operations'),
   quickAtlas: translate(ui, 'dashboard.quickAtlas', {}, 'Go to atlas'),
   quickBlog: translate(ui, 'dashboard.quickBlog', {}, 'Go to blog'),
-  navHome: translate(ui, 'nav.home', {}, 'Home'),
-  navAtlas: translate(ui, 'nav.atlas', {}, 'Atlas'),
-  navBlog: translate(ui, 'nav.blog', {}, 'Blog'),
   accessTitle: translate(ui, 'dashboard.accessTitle', {}, 'Access level'),
   accessBody: translate(
     ui,
@@ -814,43 +810,6 @@ const dashboardCopy = {
       </section>
     </div>
 
-    <footer class="dashboard-footer card panel gv-stack">
-      <h3 class="dashboard-mini-title">{dashboardCopy.quickTitle}</h3>
-      <div class="dashboard-footer-links">
-        <a class="dashboard-section-pill" href={homePath} data-dashboard-role-gated data-min-role="member">
-          {dashboardCopy.navHome}
-        </a>
-        <a class="dashboard-section-pill" href={pathForLanguage(lang, 'atlas')} data-dashboard-role-gated data-min-role="member">
-          {dashboardCopy.navAtlas}
-        </a>
-        <a class="dashboard-section-pill" href={pathForLanguage(lang, 'blog')} data-dashboard-role-gated data-min-role="member">
-          {dashboardCopy.navBlog}
-        </a>
-        <a class="dashboard-section-pill" href={accountPath} data-dashboard-role-gated data-min-role="member">
-          {dashboardCopy.quickAccount}
-        </a>
-        <a
-          class="dashboard-section-pill"
-          href="#dashboard-editorial"
-          data-dashboard-section-pill
-          data-dashboard-role-gated
-          data-min-role="editor"
-          hidden
-        >
-          {dashboardCopy.localeTitle}
-        </a>
-        <a
-          class="dashboard-section-pill"
-          href="#dashboard-control"
-          data-dashboard-section-pill
-          data-dashboard-role-gated
-          data-min-role="admin"
-          hidden
-        >
-          {dashboardCopy.controlTitle}
-        </a>
-      </div>
-    </footer>
   </section>
 
   <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint, launchRunbookUrl, accountPath }}>
@@ -2504,16 +2463,6 @@ const dashboardCopy = {
   }
 
   .dashboard-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .dashboard-footer {
-    border-style: dashed;
-  }
-
-  .dashboard-footer-links {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
