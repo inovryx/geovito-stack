@@ -52,6 +52,7 @@ Tools:
 - `tools/export_blog_documents.sh`
 - `tools/suggest_internal_links.js`
 - `tools/suggest_internal_links.sh`
+- `tools/search_contract_check.sh`
 
 ## 8) Internal Link Suggestions (Offline)
 Link suggestions are generated offline from exported data:
@@ -64,3 +65,22 @@ Link suggestions are generated offline from exported data:
 - real-time crawler import indexing
 - import execution hooks
 - AI provider dependent ranking
+
+## 10) Current On-site Search Behavior (Frontend v1)
+Current `/[lang]/search` behavior is client-side and non-canonical:
+- query normalization removes case/diacritic noise
+- special-character normalization also handles locale edge chars (`ı`, `ß`, `æ`, etc.)
+- scoring prefers exact title, then prefix, then token matches
+- query variants expand common aliases (`nyc`, `abd`, `usa`, etc.) for stronger recall
+- lightweight typo tolerance supports one-character miss for longer terms (example: `berln` -> `berlin`)
+- search corpus includes title/excerpt plus safe keywords:
+  - slug
+  - place_id/post_id
+  - country_code
+  - tags (blog)
+- tie-breaking favors Atlas discoverability before contributory content when scores are equal-range
+- country alias hints are included for discoverability (example: `ABD` -> `United States`)
+- partial token matches are supported (example: `york` -> `New York`)
+- filter chip counts are query-scoped (reflect current query match set)
+
+This layer is for UX discoverability only. Canonical indexing/ranking remains domain contracts + future indexer service.

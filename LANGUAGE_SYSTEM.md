@@ -64,7 +64,19 @@ Deploy reminder:
 ```bash
 bash tools/ui_locale_publish.sh
 ```
-  This reads `STRAPI_API_TOKEN` from `~/.config/geovito/secrets.env` (or `UI_LOCALE_SECRET_FILE`).
+  This reads `STRAPI_API_TOKEN` from `~/.config/geovito/ui_locale.env` (or `UI_LOCALE_SECRET_FILE`).
+
+Progress metadata (reference: EN by default):
+- Each `ui-locale` stores:
+  - `total_keys`, `translated_keys`, `missing_keys`, `untranslated_keys`, `coverage_percent`
+  - `missing_examples[]`, `untranslated_examples[]`
+- Import/export scripts recompute these counts against the reference locale.
+- Translation-progress report artifact is written to:
+  - `artifacts/ui-locale-progress.json`
+
+Reference preview endpoints (token/auth required):
+- `GET /api/ui-locales/meta/progress`
+- `GET /api/ui-locales/meta/:localeKey/reference-preview?state=missing|untranslated|translated|all&limit=50&offset=0`
 
 ## 3) Atlas Content Languages (Authoring + SEO)
 Atlas locales:
@@ -79,6 +91,32 @@ Authoring and SEO policy:
 - TR is allowed as an editorial authoring locale.
 - EN remains canonical SEO locale for index eligibility.
 - Non-EN routes can render fallback/runtimes for UX, but stay noindex.
+
+## 3.1) UI Page Content Languages (About / Rules / Help)
+These are content pages (not UI label dictionary entries).
+
+Model:
+- Strapi `ui-page` (per page key, with localized `translations[]`)
+- Page keys currently fixed to:
+  - `about`, `rules`, `help`
+
+URL strategy:
+- Stable per language:
+  - `/en/about`
+  - `/tr/about`
+  - `/de/help`
+- Translation slug is normalized to `page_key` for consistency and long-term link stability.
+
+Fallback + SEO behavior:
+- If requested language translation is `complete`, that language page renders and can be indexed.
+- If requested language is `missing/draft`, EN complete is used as fallback content:
+  - `robots=noindex,nofollow`
+  - canonical points to best complete version (typically EN)
+  - fallback banner is shown
+
+Editorial progress APIs (admin/auth):
+- `GET /api/ui-pages/meta/progress`
+- `GET /api/ui-pages/meta/:pageKey/reference-preview?locale=tr`
 
 ## 4) Indexing Rules (Atlas + RegionGroup)
 Strict gate:

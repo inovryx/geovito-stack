@@ -5,6 +5,8 @@ BASE_URL="${BASE_URL:-}"
 BASE_URL="${BASE_URL%/}"
 EXPECTED_SHA7="${EXPECTED_SHA7:-}"
 EXPECTED_SHA="${EXPECTED_SHA:-}"
+CF_ACCESS_CLIENT_ID="${CF_ACCESS_CLIENT_ID:-}"
+CF_ACCESS_CLIENT_SECRET="${CF_ACCESS_CLIENT_SECRET:-}"
 
 TMP_DIR="$(mktemp -d)"
 cleanup() { rm -rf "$TMP_DIR"; }
@@ -13,6 +15,29 @@ trap cleanup EXIT
 fail() {
   echo "FAIL: $1"
   exit 1
+}
+
+access_hint() {
+  cat <<'EOF'
+Cloudflare Access korumasi acik olabilir.
+Service token ile tekrar calistir:
+  CF_ACCESS_CLIENT_ID=... CF_ACCESS_CLIENT_SECRET=... BASE_URL=https://geovito.com bash tools/post_deploy_smoke.sh
+EOF
+}
+
+fail_with_access_hint_if_needed() {
+  local code="$1"
+  local label="$2"
+  if [[ "$code" == "401" || "$code" == "403" ]]; then
+    echo "FAIL: ${label} status ${code}"
+    access_hint
+    exit 1
+  fi
+}
+
+looks_like_access_gate_body() {
+  local file="$1"
+  grep -Eqi 'cloudflare access|one-time pin|cf-access|<!doctype html|<html' "$file"
 }
 
 fetch() {
@@ -66,6 +91,15 @@ normalize_url() {
   echo "$value"
 }
 
+curl_auth_args=()
+if [[ -n "$CF_ACCESS_CLIENT_ID" || -n "$CF_ACCESS_CLIENT_SECRET" ]]; then
+  if [[ -z "$CF_ACCESS_CLIENT_ID" || -z "$CF_ACCESS_CLIENT_SECRET" ]]; then
+    fail "CF_ACCESS_CLIENT_ID ve CF_ACCESS_CLIENT_SECRET birlikte verilmelidir."
+  fi
+  curl_auth_args+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}")
+  curl_auth_args+=(-H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
+fi
+
 echo "=============================================================="
 echo "GEOVITO POST-DEPLOY SMOKE"
 echo "BASE_URL=${BASE_URL}"
@@ -77,11 +111,19 @@ fi
 
 # 1) build fingerprint
 fingerprint_file="$TMP_DIR/build_fingerprint.json"
-code="$(fetch "${BASE_URL}/.well-known/geovito-build.json" "$fingerprint_file")"
+code="$(fetch "${BASE_URL}/.well-known/geovito-build.json" "$fingerprint_file" "${curl_auth_args[@]}")"
+fail_with_access_hint_if_needed "$code" "/.well-known/geovito-build.json"
 [[ "$code" == "200" ]] || fail "build fingerprint status ${code}"
 
 build_sha7="$(extract_json_string "$fingerprint_file" "build_sha7")"
-[[ -n "$build_sha7" ]] || fail "build fingerprint missing build_sha7"
+if [[ -z "$build_sha7" ]]; then
+  if looks_like_access_gate_body "$fingerprint_file"; then
+    echo "FAIL: build fingerprint response is not API JSON (possible Access gate page)"
+    access_hint
+    exit 1
+  fi
+  fail "build fingerprint missing build_sha7"
+fi
 
 if [[ -n "$EXPECTED_SHA7" ]]; then
   expected7="$(normalize_sha7 "$EXPECTED_SHA7")"
@@ -99,14 +141,16 @@ echo "PASS: /.well-known/geovito-build.json -> 200 (build_sha7=${build_sha7})"
 
 # 2) sitemap
 sitemap_file="$TMP_DIR/sitemap.xml"
-code="$(fetch "${BASE_URL}/sitemap.xml" "$sitemap_file")"
+code="$(fetch "${BASE_URL}/sitemap.xml" "$sitemap_file" "${curl_auth_args[@]}")"
+fail_with_access_hint_if_needed "$code" "/sitemap.xml"
 [[ "$code" == "200" ]] || fail "sitemap.xml status ${code}"
 echo "PASS: /sitemap.xml -> 200"
 
 # 3) pilot EN indexable
 pilot_en="/en/atlas/italy-pilot/"
 pilot_en_file="$TMP_DIR/pilot_en.html"
-code="$(fetch "${BASE_URL}${pilot_en}" "$pilot_en_file")"
+code="$(fetch "${BASE_URL}${pilot_en}" "$pilot_en_file" "${curl_auth_args[@]}")"
+fail_with_access_hint_if_needed "$code" "${pilot_en}"
 [[ "$code" == "200" ]] || fail "pilot EN status ${code}"
 assert_contains "$pilot_en_file" 'meta name="robots" content="index,follow"' "pilot EN robots not index,follow"
 pilot_en_canonical="$(extract_canonical "$pilot_en_file")"
@@ -119,7 +163,8 @@ echo "PASS: ${pilot_en} -> indexable + canonical self"
 # 4) pilot non-EN fallback
 pilot_de="/de/atlas/italy-pilot/"
 pilot_de_file="$TMP_DIR/pilot_de.html"
-code="$(fetch "${BASE_URL}${pilot_de}" "$pilot_de_file")"
+code="$(fetch "${BASE_URL}${pilot_de}" "$pilot_de_file" "${curl_auth_args[@]}")"
+fail_with_access_hint_if_needed "$code" "${pilot_de}"
 [[ "$code" == "200" ]] || fail "pilot DE status ${code}"
 assert_contains "$pilot_de_file" 'meta name="robots" content="noindex,nofollow"' "pilot DE robots not noindex,nofollow"
 pilot_de_canonical="$(extract_canonical "$pilot_de_file")"

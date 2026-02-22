@@ -40,13 +40,24 @@ Core principles:
 ### UI/System
 - Model: `api::ui-page.ui-page`
 - About/Rules/Help and similar pages
+- Page-based key model (`page_key`), currently: `about`, `rules`, `help`
+- URL pattern is stable: `/:lang/:page_key` (e.g. `/tr/about`, `/en/help`)
+- Translation slugs/canonical paths are normalized to the page key per language
 - UI language text is Strapi-managed (ui-locale) and exported at build-time
+- Editorial progress endpoints:
+  - `GET /api/ui-pages/meta/progress`
+  - `GET /api/ui-pages/meta/:pageKey/reference-preview?locale=tr`
 
 ### UI Locale
 - Model: `api::ui-locale.ui-locale`
 - One record per UI locale (`en`, `tr`, `de`, `es`, `ru`, `zh-cn`, `fr`, ...)
 - Locale field: `ui_locale` (avoid Strapi reserved `locale` key)
 - JSON strings exported into `frontend/src/i18n/*.json` at build-time
+- EN is reference locale by default (`reference_locale=en`)
+- Translation progress metadata stored per locale (`missing_keys`, `untranslated_keys`, `coverage_percent`, examples)
+- Reference preview endpoints:
+  - `GET /api/ui-locales/meta/progress`
+  - `GET /api/ui-locales/meta/:localeKey/reference-preview`
 - UI locale set is independent from Atlas locale set.
 - Atlas content still falls back to EN when requested UI locale is not available in Atlas translations.
 
