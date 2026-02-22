@@ -56,14 +56,16 @@ const workspaceLocaleLabel = translate(ui, 'dashboard.quickLocale', {}, 'Open tr
 const workspaceModerationLabel = translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue');
 const workspaceControlLabel = translate(ui, 'dashboard.controlTitle', {}, 'Control center');
 const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations');
+const siteNavigationTitle = translate(ui, 'layout.siteNavigationTitle', {}, 'Site navigation');
 ---
 
 <div class="left-sidebar-stack">
-  <section class="sidebar-block gv-card bg-surface border-border">
+  <section class="sidebar-block sidebar-nav-main gv-card bg-surface border-border">
+    <h2 class="sidebar-title sidebar-nav-main-title">{siteNavigationTitle}</h2>
     <Nav currentLanguage={currentLanguage} ui={ui} />
   </section>
 
-  <section class="sidebar-block gv-card bg-surface border-border">
+  <section class="sidebar-block sidebar-language-switch gv-card bg-surface border-border">
     <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
     <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
   </section>
@@ -190,6 +192,13 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
     if (window.__geovitoAuthSidebarBound) return;
     window.__geovitoAuthSidebarBound = true;
 
+    const isDashboardRoute = (() => {
+      const parts = String(window.location.pathname || '')
+        .split('/')
+        .filter(Boolean);
+      return parts.length >= 2 && parts[1] === 'dashboard';
+    })();
+
     const readSession = () => {
       try {
         const fromLocal = localStorage.getItem('geovito_auth_session');
@@ -285,6 +294,12 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
       const session = readSession();
       const role = session ? await resolveSessionRole(session) : 'member';
       const roleRank = Number(roleOrder[role] ?? 0);
+
+      document.querySelectorAll('.left-sidebar-stack').forEach((stack) => {
+        if (!(stack instanceof HTMLElement)) return;
+        stack.classList.toggle('is-dashboard-mode', isDashboardRoute);
+        stack.classList.toggle('is-dashboard-auth', isDashboardRoute && Boolean(session));
+      });
 
       document.querySelectorAll('[data-auth-shell]').forEach((shell) => {
         if (!(shell instanceof HTMLElement)) return;
@@ -403,5 +418,45 @@ const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Own
     color: var(--ink-muted);
     cursor: default;
     text-decoration: none;
+}
+
+.sidebar-nav-main-title {
+    display: none;
+}
+
+.left-sidebar-stack.is-dashboard-auth {
+    gap: 0.62rem;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-workspace {
+    order: 1;
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 54%, var(--surface-strong));
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-workspace-list .small-link {
+    font-size: 0.93rem;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-auth-links {
+    order: 2;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-admin-tools {
+    order: 3;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-nav-main {
+    order: 4;
+    opacity: 0.92;
+    border-style: dashed;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-nav-main-title {
+    display: block;
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-language-switch {
+    order: 5;
 }
 </style>
