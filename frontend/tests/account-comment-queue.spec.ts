@@ -275,3 +275,131 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect.poll(() => previewStates.filter((state) => state === 'missing').length).toBeGreaterThanOrEqual(2);
   await expect(page.locator('[data-account-locale-progress-feedback]')).toContainText('CSV exported for TR');
 });
+
+test('account commentState query pre-filters comment queue and focuses comments section', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run queue query-filter smoke once on desktop');
+
+  await page.route(/\/api\/users\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 42,
+        username: 'olmysweet',
+        email: 'ali.koc.00@gmail.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-01T10:20:00.000Z',
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [
+          {
+            comment_id: 'comment-pending',
+            body: 'Pending comment body',
+            language: 'en',
+            source: 'registered',
+            status: 'pending',
+            blog_post_ref: 'post-city-queue',
+            moderation_notes: null,
+            created_at: '2026-02-20T12:00:00.000Z',
+            updated_at: '2026-02-20T12:00:00.000Z',
+          },
+          {
+            comment_id: 'comment-approved',
+            body: 'Approved comment body',
+            language: 'en',
+            source: 'registered',
+            status: 'approved',
+            blog_post_ref: 'post-city-queue',
+            moderation_notes: 'Approved',
+            created_at: '2026-02-20T11:00:00.000Z',
+            updated_at: '2026-02-20T11:05:00.000Z',
+          },
+        ],
+        meta: {
+          limit: 30,
+          status: 'all',
+          counts: {
+            pending: 1,
+            approved: 1,
+            rejected: 0,
+            spam: 0,
+            deleted: 0,
+          },
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 1,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_missing: 0,
+            locales_with_untranslated: 0,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    const payload = {
+      jwt,
+      username: 'olmysweet',
+      email: 'ali.koc.00@gmail.com',
+      confirmed: true,
+      blocked: false,
+      loginAt: '2026-02-20T12:10:00.000Z',
+    };
+    localStorage.setItem('geovito_auth_session', JSON.stringify(payload));
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/account/?commentState=pending#comments');
+
+  await expect(page.locator('[data-account-comments]')).toBeVisible();
+  await expect(page.locator('[data-account-comments]')).toHaveClass(/account-comments-focus/);
+  await expect(page.locator('[data-account-comments-filter]')).toHaveValue('pending');
+  await expect(page.locator('[data-account-comments-list] .account-comment-item')).toHaveCount(1);
+  await expect(page.locator('[data-account-comments-list]')).toContainText('pending');
+  await expect(page.locator('[data-account-comments-list]')).not.toContainText('approved');
+
+  await page.selectOption('[data-account-comments-filter]', 'all');
+  await expect(page.locator('[data-account-comments]')).not.toHaveClass(/account-comments-focus/);
+  await expect(page.locator('[data-account-comments-list] .account-comment-item')).toHaveCount(2);
+});

@@ -62,6 +62,13 @@ const accountCopy = {
   commentsRejected: translate(ui, 'account.commentsRejected', {}, 'Rejected'),
   commentsSpam: translate(ui, 'account.commentsSpam', {}, 'Spam'),
   commentsNone: translate(ui, 'account.commentsNone', {}, 'No comments yet.'),
+  commentsFilterLabel: translate(ui, 'account.commentsFilterLabel', {}, 'Queue filter'),
+  commentsFilterAll: translate(ui, 'account.commentsFilterAll', {}, 'All statuses'),
+  commentsFilterPending: translate(ui, 'account.commentsFilterPending', {}, 'Pending only'),
+  commentsFilterApproved: translate(ui, 'account.commentsFilterApproved', {}, 'Approved only'),
+  commentsFilterRejected: translate(ui, 'account.commentsFilterRejected', {}, 'Rejected only'),
+  commentsFilterSpam: translate(ui, 'account.commentsFilterSpam', {}, 'Spam only'),
+  commentsFilterEmpty: translate(ui, 'account.commentsFilterEmpty', {}, 'No comments found for this filter.'),
   commentsRefresh: translate(ui, 'account.commentsRefresh', {}, 'Refresh comments'),
   commentsLoading: translate(ui, 'account.commentsLoading', {}, 'Loading comments...'),
   commentsLoadFailed: translate(ui, 'account.commentsLoadFailed', {}, 'Could not load comments right now.'),
@@ -257,12 +264,22 @@ const accountCopy = {
     <p class="small account-feedback" data-account-profile-feedback aria-live="polite"></p>
   </section>
 
-  <section class="card panel gv-stack" data-account-comments hidden>
+  <section class="card panel gv-stack" id="comments" data-account-comments hidden>
     <div class="account-comments-head">
       <div>
         <h2>{accountCopy.commentsTitle}</h2>
         <p class="small">{accountCopy.commentsDescription}</p>
       </div>
+      <label class="account-field account-inline-field account-comments-filter">
+        <span>{accountCopy.commentsFilterLabel}</span>
+        <select data-account-comments-filter>
+          <option value="all">{accountCopy.commentsFilterAll}</option>
+          <option value="pending">{accountCopy.commentsFilterPending}</option>
+          <option value="approved">{accountCopy.commentsFilterApproved}</option>
+          <option value="rejected">{accountCopy.commentsFilterRejected}</option>
+          <option value="spam">{accountCopy.commentsFilterSpam}</option>
+        </select>
+      </label>
       <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-comments-refresh>
         <span class="ui-button-label">{accountCopy.commentsRefresh}</span>
       </button>
@@ -426,6 +443,7 @@ const accountCopy = {
       const commentsEmpty = document.querySelector('[data-account-comments-empty]');
       const commentsFeedback = document.querySelector('[data-account-comments-feedback]');
       const commentsRefreshButton = document.querySelector('[data-account-comments-refresh]');
+      const commentsFilterSelect = document.querySelector('[data-account-comments-filter]');
       const commentsCountPending = document.querySelector('[data-account-comments-pending]');
       const commentsCountApproved = document.querySelector('[data-account-comments-approved]');
       const commentsCountRejected = document.querySelector('[data-account-comments-rejected]');
@@ -483,6 +501,7 @@ const accountCopy = {
         !(commentsEmpty instanceof HTMLElement) ||
         !(commentsFeedback instanceof HTMLElement) ||
         !(commentsRefreshButton instanceof HTMLButtonElement) ||
+        !(commentsFilterSelect instanceof HTMLSelectElement) ||
         !(commentsCountPending instanceof HTMLElement) ||
         !(commentsCountApproved instanceof HTMLElement) ||
         !(commentsCountRejected instanceof HTMLElement) ||
@@ -521,11 +540,22 @@ const accountCopy = {
         if (normalized === 'missing' || normalized === 'untranslated') return normalized;
         return 'all';
       };
+      const normalizeCommentState = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (normalized === 'pending' || normalized === 'approved' || normalized === 'rejected' || normalized === 'spam') {
+          return normalized;
+        }
+        return 'all';
+      };
       const queryParams = new URLSearchParams(window.location.search);
+      const initialCommentState = normalizeCommentState(queryParams.get('commentState') || 'all');
       const initialLocaleFromQuery = normalizeLanguage(queryParams.get('locale') || '');
       const initialPreviewState = normalizePreviewState(queryParams.get('state') || 'all');
+      let commentsAllItems = [];
+      let commentsFocusPending = initialCommentState !== 'all' || window.location.hash === '#comments';
       let localeProgressFocusLocale = initialLocaleFromQuery;
       let localeProgressFocusPending = Boolean(initialLocaleFromQuery);
+      const getCurrentCommentState = () => normalizeCommentState(commentsFilterSelect.value);
       const getCurrentPreviewState = () => normalizePreviewState(localeProgressFilterSelect.value);
       const getPreviewCacheKey = (localeCode, state) => `${normalizeLanguage(localeCode)}:${normalizePreviewState(state)}`;
       const localeProgressByLocale = new Map();
@@ -939,6 +969,30 @@ const accountCopy = {
         commentsList.appendChild(fragment);
       };
 
+      const applyCommentsFilter = (items) => {
+        const state = getCurrentCommentState();
+        const list = Array.isArray(items) ? items : [];
+        if (state === 'all') return list;
+        return list.filter((item) => normalizeCommentState(item?.status) === state);
+      };
+
+      const renderCommentsForCurrentFilter = () => {
+        const filtered = applyCommentsFilter(commentsAllItems);
+        renderComments(filtered);
+        if (filtered.length === 0 && commentsAllItems.length > 0 && getCurrentCommentState() !== 'all') {
+          setCommentsFeedback(accountCopy.commentsFilterEmpty);
+          return;
+        }
+        setCommentsFeedback('');
+      };
+
+      const applyCommentsFocus = () => {
+        if (!commentsFocusPending) return;
+        commentsPanel.classList.add('account-comments-focus');
+        commentsPanel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        commentsFocusPending = false;
+      };
+
       const loadComments = async () => {
         setCommentsFeedback(accountCopy.commentsLoading);
         try {
@@ -952,18 +1006,21 @@ const accountCopy = {
           const payload = await response.json().catch(() => ({}));
           if (!response.ok) {
             const message = payload?.error?.message || accountCopy.commentsLoadFailed;
-            renderComments([]);
+            commentsAllItems = [];
+            renderCommentsForCurrentFilter();
             setCommentsCounts(null);
             setCommentsFeedback(message, true);
             return;
           }
 
           const items = Array.isArray(payload?.data) ? payload.data : [];
-          renderComments(items);
+          commentsAllItems = items;
+          renderCommentsForCurrentFilter();
           setCommentsCounts(payload?.meta);
-          setCommentsFeedback('');
+          applyCommentsFocus();
         } catch {
-          renderComments([]);
+          commentsAllItems = [];
+          renderCommentsForCurrentFilter();
           setCommentsCounts(null);
           setCommentsFeedback(accountCopy.commentsLoadFailed, true);
         }
@@ -1351,6 +1408,12 @@ const accountCopy = {
         loadComments();
       });
 
+      commentsFilterSelect.addEventListener('change', () => {
+        commentsFocusPending = false;
+        commentsPanel.classList.remove('account-comments-focus');
+        renderCommentsForCurrentFilter();
+      });
+
       localeProgressRefreshButton.addEventListener('click', () => {
         loadLocaleProgress();
       });
@@ -1431,6 +1494,7 @@ const accountCopy = {
         }
       });
 
+      commentsFilterSelect.value = initialCommentState;
       if (initialPreviewState === 'missing' || initialPreviewState === 'untranslated') {
         localeProgressFilterSelect.value = initialPreviewState;
       } else {
@@ -1578,6 +1642,11 @@ const accountCopy = {
 
   .account-locale-item-needs-work {
     border-color: color-mix(in srgb, var(--warning) 58%, var(--border));
+  }
+
+  .account-comments-focus {
+    border-color: color-mix(in srgb, var(--brand) 62%, var(--border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
   }
 
   .account-locale-item-focus {

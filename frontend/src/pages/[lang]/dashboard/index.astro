@@ -438,7 +438,13 @@ const dashboardCopy = {
               <a class="ui-button ui-button-secondary ui-button-sm" href={accountPath} data-dashboard-quick-id="account" data-dashboard-role-gated data-min-role="member">
                 <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
               </a>
-              <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#comments`} data-dashboard-quick-id="comments" data-dashboard-role-gated data-min-role="member">
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href={`${accountPath}?commentState=pending#comments`}
+                data-dashboard-quick-id="comments"
+                data-dashboard-role-gated
+                data-min-role="member"
+              >
                 <span class="ui-button-label">{dashboardCopy.quickComments}</span>
               </a>
               <a

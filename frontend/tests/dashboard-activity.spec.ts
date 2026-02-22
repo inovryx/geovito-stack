@@ -398,6 +398,7 @@ dashboardRoleCases.forEach((roleCase) => {
     const ownerCards = page.locator('[data-dashboard-role-gated][data-min-role="owner"]:visible');
     const visibleAdminLinks = page.locator('[data-dashboard-admin-link]:visible');
     const quickLocale = page.locator('[data-dashboard-quick-id="locale-progress"]');
+    const quickComments = page.locator('[data-dashboard-quick-id="comments"]');
     const quickControl = page.locator('[data-dashboard-quick-id="control"]');
     const quickOwnerOps = page.locator('[data-dashboard-quick-id="owner-ops"]');
     const ownerReleaseWidget = page.locator('[data-dashboard-owner-widget="release"]');
@@ -470,6 +471,9 @@ dashboardRoleCases.forEach((roleCase) => {
     } else {
       await expect(quickLocale).toBeHidden();
     }
+
+    await expect(quickComments).toBeVisible();
+    await expect(quickComments).toHaveAttribute('href', /\/en\/account\/\?commentState=pending#comments$/);
 
     if (roleCase.expectAdminLane) {
       await expect(quickControl).toBeVisible();
