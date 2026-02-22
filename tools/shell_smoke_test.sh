@@ -263,7 +263,7 @@ check_contains "/en/blog/neighborhood-food-walks-no-tourist-traps/" "facebook\\.
 check_contains "/en/blog/plan-3-day-europe-city-break/" "rel=\"[^\"]*(noopener[^\"]*noreferrer[^\"]*nofollow|noopener[^\"]*nofollow[^\"]*noreferrer|noreferrer[^\"]*noopener[^\"]*nofollow|noreferrer[^\"]*nofollow[^\"]*noopener|nofollow[^\"]*noopener[^\"]*noreferrer|nofollow[^\"]*noreferrer[^\"]*noopener)[^\"]*\"" "Embed source link rel policy"
 
 check_page "/en/account/" "200" "noindex,nofollow" "https://www.geovito.com/en/account/" "none"
-check_page "/en/dashboard/" "200" "noindex" "https://www.geovito.com/en/login/" "none"
+check_page "/en/dashboard/" "200" "noindex,nofollow" "https://www.geovito.com/en/dashboard/" "none"
 
 check_page "/de/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock,fallback"
 check_page "/tr/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock"
