@@ -210,7 +210,7 @@ const headerNav = [
                 ? currentPath === normalizePath(href)
                 : currentPath.startsWith(normalizePath(href));
               return (
-                <a class={`site-header-nav-link ${isActive ? 'is-active' : ''}`} href={href}>
+                <a class={`site-header-nav-link ${isActive ? 'is-active' : ''}`} href={href} aria-current={isActive ? 'page' : undefined}>
                   {label}
                 </a>
               );

@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import LeftSidebar from '../components/LeftSidebar.astro';
 import RightTools from '../components/RightTools.astro';
+import Nav from '../components/Nav.astro';
 import Accordion from '../components/ui/Accordion.astro';
 import Icon from '../components/Icon.astro';
 import { translate } from '../lib/uiLanguage';
@@ -129,6 +130,10 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
     </div>
 
     <div class="mobile-drawer-scroll">
+      <div class="mobile-drawer-nav">
+        <h2 class="sidebar-title">{t('layout.mainNavigation', 'Navigation')}</h2>
+        <Nav currentLanguage={currentLanguage} ui={ui} />
+      </div>
       <LeftSidebar currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
       {
         showTools ? (

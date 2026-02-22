@@ -1137,6 +1137,7 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
   gap: 0.75rem;
 }
 
+.mobile-drawer-nav,
 .mobile-drawer-tools {
   border: 1px solid var(--border);
   border-radius: var(--gv-radius-sm);

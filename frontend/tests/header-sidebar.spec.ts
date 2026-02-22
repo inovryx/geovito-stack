@@ -38,20 +38,20 @@ test('desktop sidebar can collapse to icon-only and persists after reload', asyn
   const toggle = page.locator('[data-sidebar-toggle]').first();
   await expect(toggle).toBeVisible();
 
-  const firstNavLink = page.locator('.desktop-tablet-column .app-nav-link').first();
-  await expect(firstNavLink).toHaveAttribute('aria-label', /Home/i);
-
-  const firstLabel = page.locator('.desktop-tablet-column .app-nav-link .nav-link-label').first();
-  await expect(firstLabel).toBeVisible();
+  const languageBlock = page.locator('.desktop-tablet-column .sidebar-language-switch');
+  const authBlock = page.locator('.desktop-tablet-column .sidebar-auth-links');
+  await expect(languageBlock).toBeVisible();
+  await expect(authBlock).toBeVisible();
 
   await toggle.click();
   await expect(page.locator('html')).toHaveClass(/sidebar-compact/);
-  await expect(firstLabel).toBeHidden();
-  await expect(page.locator('.desktop-tablet-column .app-nav-link .gv-icon-wrap').first()).toBeVisible();
+  await expect(languageBlock).toBeVisible();
+  await expect(authBlock).toBeHidden();
 
   await page.reload();
   await expect(page.locator('html')).toHaveClass(/sidebar-compact/);
-  await expect(page.locator('.desktop-tablet-column .app-nav-link .nav-link-label').first()).toBeHidden();
+  await expect(page.locator('.desktop-tablet-column .sidebar-language-switch')).toBeVisible();
+  await expect(page.locator('.desktop-tablet-column .sidebar-auth-links')).toBeHidden();
 });
 
 test('mobile drawer traps focus, closes on ESC, and restores focus to opener', async ({ page }, testInfo) => {
@@ -93,8 +93,8 @@ test('active nav and current pagination item expose aria-current', async ({ page
   await page.goto('/en/atlas/');
   await expect(page.locator('[data-atlas-skeleton]')).toBeHidden();
 
-  await expect(page.locator('.desktop-tablet-column .app-nav-link[aria-current="page"]')).toHaveCount(1);
-  await expect(page.locator('.desktop-tablet-column .app-nav-link[aria-current="page"]')).toHaveAttribute('href', /\/en\/atlas\/$/);
+  await expect(page.locator('.site-header-nav .site-header-nav-link[aria-current="page"]')).toHaveCount(1);
+  await expect(page.locator('.site-header-nav .site-header-nav-link[aria-current="page"]')).toHaveAttribute('href', /\/en\/atlas\/$/);
 
   await expect(page.locator('[data-atlas-page-link][aria-current="page"]')).toHaveCount(1);
 });

@@ -1,5 +1,4 @@
 ---
-import Nav from './Nav.astro';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import { translate } from '../lib/uiLanguage';
 import { resolveStrapiBaseUrl } from '../lib/strapiConfig';
@@ -56,15 +55,9 @@ const workspaceLocaleLabel = translate(ui, 'dashboard.quickLocale', {}, 'Open tr
 const workspaceModerationLabel = translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue');
 const workspaceControlLabel = translate(ui, 'dashboard.controlTitle', {}, 'Control center');
 const workspaceOwnerOpsLabel = translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations');
-const siteNavigationTitle = translate(ui, 'layout.siteNavigationTitle', {}, 'Site navigation');
 ---
 
 <div class="left-sidebar-stack">
-  <section class="sidebar-block sidebar-nav-main gv-card bg-surface border-border">
-    <h2 class="sidebar-title sidebar-nav-main-title">{siteNavigationTitle}</h2>
-    <Nav currentLanguage={currentLanguage} ui={ui} />
-  </section>
-
   <section class="sidebar-block sidebar-language-switch gv-card bg-surface border-border">
     <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
     <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
@@ -446,17 +439,7 @@ const siteNavigationTitle = translate(ui, 'layout.siteNavigationTitle', {}, 'Sit
     order: 3;
 }
 
-.left-sidebar-stack.is-dashboard-auth .sidebar-nav-main {
-    order: 4;
-    opacity: 0.92;
-    border-style: dashed;
-}
-
-.left-sidebar-stack.is-dashboard-auth .sidebar-nav-main-title {
-    display: block;
-}
-
 .left-sidebar-stack.is-dashboard-auth .sidebar-language-switch {
-    order: 5;
+    order: 4;
 }
 </style>
