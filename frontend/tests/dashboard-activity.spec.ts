@@ -410,6 +410,51 @@ dashboardRoleCases.forEach((roleCase) => {
     const ownerReleaseBadge = page.locator('[data-dashboard-owner-widget-badge="release"]');
     const ownerModerationBadge = page.locator('[data-dashboard-owner-widget-badge="moderation"]');
     const ownerLocaleBadge = page.locator('[data-dashboard-owner-widget-badge="locale"]');
+    const sidebarMemberModuleLink = page
+      .locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-member"]')
+      .first();
+    const sidebarSettingsModuleLink = page
+      .locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-member-settings"]')
+      .first();
+    const sidebarModerationModuleLink = page
+      .locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-editorial-moderation"]')
+      .first();
+    const sidebarTranslationModuleLink = page
+      .locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-editorial-locale"]')
+      .first();
+    const sidebarSeoModuleLink = page
+      .locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-control"]')
+      .first();
+    const sidebarAdsModuleLink = page
+      .locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-control-ads"]')
+      .first();
+    const sidebarWorkspaceDashboard = page
+      .locator('.desktop-tablet-column [data-auth-workspace-link][href="/en/dashboard/"]')
+      .first();
+    const sidebarWorkspaceAccount = page
+      .locator('.desktop-tablet-column [data-auth-workspace-link][href="/en/account/"]')
+      .first();
+    const sidebarWorkspaceComments = page
+      .locator('.desktop-tablet-column [data-auth-workspace-link][href="/en/account/?commentState=pending#comments"]')
+      .first();
+    const sidebarWorkspaceLocale = page
+      .locator('.desktop-tablet-column [data-auth-workspace-link][href="/en/account/#locale-progress"]')
+      .first();
+    const sidebarAdminModeration = page
+      .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-moderation"]')
+      .first();
+    const sidebarAdminTranslation = page
+      .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-locale"]')
+      .first();
+    const sidebarAdminSeo = page
+      .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-control"]')
+      .first();
+    const sidebarAdminAds = page
+      .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-control-ads"]')
+      .first();
+    const sidebarAdminStrapi = page
+      .locator('.desktop-tablet-column [data-auth-admin-link][target="_blank"]')
+      .first();
 
     if (roleCase.expectEditorialLane) {
       await expect(editorialLane).toBeVisible();
@@ -485,6 +530,40 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(quickOwnerOps).toBeVisible();
     } else {
       await expect(quickOwnerOps).toBeHidden();
+    }
+
+    await expect(sidebarMemberModuleLink).toBeVisible();
+    await expect(sidebarSettingsModuleLink).toBeVisible();
+    await expect(sidebarWorkspaceDashboard).toBeVisible();
+    await expect(sidebarWorkspaceAccount).toBeVisible();
+    await expect(sidebarWorkspaceComments).toBeVisible();
+
+    if (roleCase.expectEditorialLane) {
+      await expect(sidebarModerationModuleLink).toBeVisible();
+      await expect(sidebarTranslationModuleLink).toBeVisible();
+      await expect(sidebarWorkspaceLocale).toBeVisible();
+      await expect(sidebarAdminModeration).toBeVisible();
+      await expect(sidebarAdminTranslation).toBeVisible();
+    } else {
+      await expect(sidebarModerationModuleLink).toBeHidden();
+      await expect(sidebarTranslationModuleLink).toBeHidden();
+      await expect(sidebarWorkspaceLocale).toBeHidden();
+      await expect(sidebarAdminModeration).toBeHidden();
+      await expect(sidebarAdminTranslation).toBeHidden();
+    }
+
+    if (roleCase.expectAdminLane) {
+      await expect(sidebarSeoModuleLink).toBeVisible();
+      await expect(sidebarAdsModuleLink).toBeVisible();
+      await expect(sidebarAdminSeo).toBeVisible();
+      await expect(sidebarAdminAds).toBeVisible();
+      await expect(sidebarAdminStrapi).toBeVisible();
+    } else {
+      await expect(sidebarSeoModuleLink).toBeHidden();
+      await expect(sidebarAdsModuleLink).toBeHidden();
+      await expect(sidebarAdminSeo).toBeHidden();
+      await expect(sidebarAdminAds).toBeHidden();
+      await expect(sidebarAdminStrapi).toBeHidden();
     }
   });
 });
@@ -1160,6 +1239,128 @@ test('dashboard section nav tracks hash and click for admin lanes', async ({ pag
 
   await memberPill.click();
   await expect(memberPill).toHaveClass(/is-active/);
+});
+
+test('dashboard hash alias keeps sidebar links active on canonical seo lane', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run hash alias active-state smoke once on desktop');
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 62,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-01T10:20:00.000Z',
+        role: {
+          type: 'admin',
+          name: 'Admin',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/moderation\/list\?status=all&limit=40$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 1,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_gaps: 0,
+            locales_with_missing: 0,
+            locales_with_untranslated: 0,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'seoalias',
+        build_sha_full: 'seoaliasdeadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-20T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-20T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/dashboard/#dashboard-control-seo');
+  await dismissConsentBanner(page);
+
+  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
+  await expect(controlPill).toBeVisible();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-control');
+
+  await controlPill.click();
+  await expect(
+    page.locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-control"]').first()
+  ).toHaveClass(/is-active/);
+  await expect(
+    page.locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-control"]').first()
+  ).toHaveClass(/is-active/);
 });
 
 test('dashboard auth mode keeps site navigation header-only', async ({ page }, testInfo) => {
