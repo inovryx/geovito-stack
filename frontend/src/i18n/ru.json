@@ -1,250 +1,65 @@
 {
-  "site": {
-    "brand": "Geovito"
-  },
-  "nav": {
-    "home": "Glavnaya",
-    "atlas": "Atlas",
-    "regions": "Regiony",
-    "blog": "Blog",
-    "about": "O proekte",
-    "rules": "Pravila",
-    "help": "Pomoshch",
-    "account": "Account"
-  },
-  "footer": {
-    "privacy": "Konfidentsialnost",
-    "cookies": "Cookie",
-    "terms": "Usloviya"
-  },
-  "language": {
-    "switcherAria": "Vybor yazyka"
-  },
   "ads": {
     "label": "Реклама"
   },
-  "consent": {
-    "title": "Nastroiki konfidentsialnosti",
-    "desc": "Neobyazatelnye nastroiki analitiki i reklamy vklyuchayutsya tolko s vashego razresheniya. Neobkhodimye funktsii vsegda aktivny.",
-    "acceptAll": "Prinyat vse",
-    "rejectAll": "Otklonit vse",
-    "customize": "Nastroit",
-    "manage": "Upravlyat soglasiem",
-    "modalTitle": "Nastroit soglasie",
-    "necessary": "Neobkhodimo",
-    "analytics": "Analitika",
-    "ads": "Reklama",
-    "alwaysOn": "Vsegda vklyucheno",
-    "save": "Sokhranit nastroiki",
-    "close": "Zakryt",
-    "updated": "Soglasie obnovleno",
-    "learnMore": "Uznat bolshe",
-    "openSettings": "Otkryt nastroiki soglasiya"
+  "nav": {
+    "blog": "Blog",
+    "help": "Pomoshch",
+    "home": "Glavnaya",
+    "about": "O proekte",
+    "atlas": "Atlas",
+    "rules": "Pravila",
+    "account": "Account",
+    "regions": "Regiony"
   },
-  "legal": {
-    "lastUpdated": "Poslednee obnovlenie",
-    "enFallbackNotice": "Eta yuridicheskaya stranitsa poka dostupna na angliyskom, lokalizatsii gotovyatsya.",
-    "privacy": {
-      "title": "Politika konfidentsialnosti"
+  "ops": {
+    "kpi": {
+      "clicks": "Clicks (7d)",
+      "earnings": "Earnings (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "impressions": "Impressions (7d)"
     },
-    "cookies": {
-      "title": "Politika cookie",
-      "openConsentCta": "Vy mozhete obnovit nastroiki analitiki i reklamy v lyuboy moment."
+    "empty": {
+      "desc": "Run the metrics collector locally, then refresh this page.",
+      "title": "No metrics collected yet"
     },
-    "terms": {
-      "title": "Usloviya ispolzovaniya"
+    "title": "Ops Metrics",
+    "disabled": {
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
+      "title": "Ops metrics viewer is disabled in this mode"
+    },
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "providers": {
+      "ok": "OK",
+      "error": "Error",
+      "title": "Provider status",
+      "notConfigured": "Not configured"
     }
   },
-  "errorPage": {
-    "title": "Chto-to poshlo ne tak",
-    "description": "Na stranitse voznikla nepredvidennaya oshibka. Vy mozhete vernutsya na glavnuyu ili izmenit nastroiki soglasiya.",
-    "homeCta": "Na glavnuyu",
-    "consentCta": "Otkryt nastroiki soglasiya",
-    "reportCta": "Soobshit o probleme",
-    "reportDisabled": "Vklyuchite soglasie na analitiku, chtoby otpravit otchet ob oshibke.",
-    "reportReady": "Vy mozhete soobshit ob etoy probleme.",
-    "reportSent": "Otchet ob oshibke otpravlen.",
-    "inlineFallback": "Chast interaktivnykh elementov vremenno nedostupna."
-  },
   "auth": {
-    "registerDisabledTitle": "Registration is disabled",
     "registerDisabledBody": "Account creation is paused in this environment.",
     "registerDisabledHint": "Registration is currently disabled.",
-    "login": "Login",
-    "logout": "Logout",
-    "signedInAs": "Signed in",
-    "register": "Register",
-    "email": "Email",
-    "emailPlaceholder": "you@example.com",
-    "password": "Password",
-    "passwordPlaceholder": "Min 8 characters",
-    "backToLogin": "Back to login",
-    "forgotPassword": "Forgot password?",
-    "forgotPasswordTitle": "Forgot password",
-    "forgotPasswordDescription": "Request a password reset link for your account email.",
-    "sendResetLink": "Send reset link",
-    "forgotPasswordEmailRequired": "Email is required.",
-    "forgotPasswordSending": "Sending reset instructions...",
-    "forgotPasswordRequestFailed": "Could not process your request right now. Please try again.",
-    "forgotPasswordSuccessRedirect": "If this email exists, reset instructions were sent. Redirecting to login...",
-    "resetPasswordTitle": "Reset password",
-    "resetPasswordDescription": "Set a new password using your reset token.",
-    "newPassword": "New password",
-    "passwordConfirm": "Confirm password",
-    "passwordConfirmPlaceholder": "Repeat your password",
-    "updatePassword": "Update password",
-    "requestNewResetLink": "Request a new reset link",
-    "resetTokenMissing": "Reset token is missing. Please request a new reset link.",
-    "resetPasswordRequired": "Password and confirmation are required.",
-    "resetPasswordLength": "Password must be at least 8 characters.",
-    "resetPasswordMismatch": "Password confirmation does not match.",
-    "resetPasswordUpdating": "Updating password...",
-    "resetPasswordFailed": "Password reset failed. Please request a new link.",
-    "resetPasswordSuccessRedirect": "Password updated. Redirecting to login...",
-    "networkError": "Network error. Please try again.",
-    "turnstileRequired": "Please complete the captcha challenge.",
-    "loginRequired": "Email and password are required.",
-    "loginTrying": "Trying to sign in...",
-    "loginFailed": "Login failed. Please check your credentials and try again.",
-    "loginStorageError": "Session could not be saved in your browser.",
-    "loginSuccessRedirect": "Login successful. Redirecting...",
-    "registerRequired": "Username, email and password are required.",
-    "registerCreating": "Creating account...",
-    "registerFailed": "Registration failed. Please try another email or username.",
-    "registerSuccess": "Registration successful. You can now log in."
-  },
-  "stateBanner": {
-    "runtime": "Pokazyvaetsya prevyu runtime-perevoda. Eta versiya ne indeksiruetsya.",
-    "fallback": "Polnyy complete-kontent na etom yazyke poka nedostupen ({language}). Pokazyvaetsya kanonicheskaya complete-versiya.",
-    "incomplete": "Kontent na etom yazyke ne complete ({language}, status: {state}). Pokazyvaetsya kanonicheskaya complete-versiya.",
-    "mock": "Na etoy stranitse pokazany MOCK DATA. Eta versiya vsegda noindex.",
-    "canonicalLink": "Pereyti k kanonicheskoy complete-versii"
-  },
-  "home": {
-    "defaultTitle": "Geovito Atlas",
-    "defaultExcerpt": "Glavnaya stranitsa na osnove Strapi.",
-    "defaultBody": "Kontent poka otsutstvuet.",
-    "atlasCountries": "Atlas (Strany)",
-    "blogSection": "Blog",
-    "noCountryDescription": "Opisanie poka otsutstvuet.",
-    "noPostSummary": "Kratkoe opisanie poka otsutstvuet.",
-    "trendingTitle": "Trending places",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
-    "noTrending": "No trending places yet."
+    "registerDisabledTitle": "Registration is disabled"
   },
   "blog": {
-    "listTitle": "Blog",
-    "listDescription": "Spisok bloga Geovito",
+    "noBody": "Kontent poka otsutstvuet.",
     "listHint": "Posty vidny, dazhe esli perevod ne complete; nepolnye varianty ne indeksiruyutsya.",
-    "noBody": "Kontent poka otsutstvuet."
+    "listTitle": "Blog",
+    "listDescription": "Spisok bloga Geovito"
   },
-  "atlas": {
-    "list": {
-      "title": "Atlas",
-      "description": "Tochki vhoda po stranam v iyerarkhii Atlas.",
-      "empty": "Stranitsy stran poka nedostupny.",
-      "emptyTitle": "Mesta ne naydeny",
-      "emptyDescription": "Poprobuyte drugoy chip-filtr, chtoby prodolzhit izuchenie atlasa.",
-      "emptyAction": "Sbrosit filtry",
-      "noSnippet": "Kratkoe opisanie poka otsutstvuet.",
-      "filterAria": "Filtr mest atlasa",
-      "stateLegendAria": "Legenda statusa yazyka",
-      "metaSummary": "Pokazano {shown} iz {total} mest",
-      "filters": {
-        "all": "Vse",
-        "country": "Strana",
-        "city": "Gorod",
-        "region": "Region",
-        "landmark": "Oriyentir"
-      },
-      "states": {
-        "complete": "complete",
-        "draft": "draft",
-        "missing": "missing"
-      },
-      "pagination": {
-        "aria": "Paginatsiya atlasa",
-        "prev": "Nazad",
-        "next": "Vpered",
-        "pageLabel": "Stranitsa {page}",
-        "pageCurrentLabel": "Tekushchaya stranitsa, {page}"
-      }
-    },
-    "section": {
-      "overview": "Obzor",
-      "quickFacts": "Bystrye fakty",
-      "hierarchy": "Iyerarkhiya",
-      "travelEssentials": "Travel essentials",
-      "relatedPosts": "Svyazannye posty",
-      "nearbyPlaces": "Mesta ryadom"
-    },
-    "quickFacts": {
-      "population": "Naselenie",
-      "coordinates": "Koordinaty",
-      "timezone": "Chasovoy poyas",
-      "currency": "Valyuta",
-      "language": "Yazyk",
-      "elevation": "Vysota"
-    },
-    "toc": {
-      "title": "Na etoy stranitse",
-      "aria": "Na etoy stranitse"
-    },
-    "hierarchy": {
-      "noParent": "Roditelskiy obekt otsutstvuet",
-      "noChildren": "Dochernie obekty otsutstvuyut",
-      "moreChildren": "+{count} dopolnitelnykh dochernikh obektov",
-      "badgesAria": "Status i tip obekta"
-    },
-    "relatedPosts": {
-      "empty": "Svyazannykh postov poka net"
-    },
-    "travelEssentials": {
-      "visa": "Viza",
-      "flights": "Reysy",
-      "currency": "Valyuta",
-      "helper": {
-        "noOrigin": "Vyberite punkt vyleta, chtoby otsenit varianty reysov."
-      },
-      "comingSoon": "Skoro"
-    },
-    "meta": {
-      "placeId": "place_id",
-      "type": "tip",
-      "country": "strana",
-      "region": "region",
-      "coordinates": "koordinaty",
-      "notAvailable": "nedostupno",
-      "languageStatus": "status yazyka"
-    },
-    "links": {
-      "breadcrumb": "Iyerarkhiya",
-      "parent": "Roditelskiy obekt",
-      "children": "Dochernie obekty",
-      "related": "Svyazannye obekty",
-      "relatedBlog": "Svyazannye blog-posty",
-      "noParent": "Roditelskiy obekt otsutstvuet.",
-      "noChildren": "Dochernie obekty ne naydeny.",
-      "noRelated": "Svyazannye obekty ne naydeny.",
-      "noRelatedBlog": "Svyazannye blog-posty ne naydeny."
-    },
-    "noBody": "Kontent poka otsutstvuet."
-  },
-  "regions": {
-    "list": {
-      "title": "Regiony",
-      "description": "Stranitsy regionalnykh grupp po stranam bez izmeneniya bazovoy iyerarkhii.",
-      "empty": "Regionalnye gruppy poka otsutstvuyut."
-    },
-    "meta": {
-      "title": "Metadannye regiona",
-      "regionKey": "region key",
-      "country": "strana",
-      "memberCount": "kolichestvo uchastnikov"
-    },
-    "members": "Mesta-uchastniki",
-    "noMembers": "Mesta-uchastniki ne naydeny.",
-    "noBody": "Kontent poka otsutstvuet."
+  "home": {
+    "noTrending": "No trending places yet.",
+    "blogSection": "Blog",
+    "defaultBody": "Kontent poka otsutstvuet.",
+    "defaultTitle": "Geovito Atlas",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noPostSummary": "Kratkoe opisanie poka otsutstvuet.",
+    "trendingTitle": "Trending places",
+    "atlasCountries": "Atlas (Strany)",
+    "defaultExcerpt": "Glavnaya stranitsa na osnove Strapi.",
+    "noCountryDescription": "Opisanie poka otsutstvuet."
   },
   "post": {
     "meta": {
@@ -253,118 +68,211 @@
     },
     "noBody": "Kontent poka otsutstvuet."
   },
+  "site": {
+    "brand": "Geovito"
+  },
+  "atlas": {
+    "toc": {
+      "aria": "Na etoy stranitse",
+      "title": "Na etoy stranitse"
+    },
+    "list": {
+      "empty": "Stranitsy stran poka nedostupny.",
+      "title": "Atlas",
+      "states": {
+        "draft": "draft",
+        "missing": "missing",
+        "complete": "complete"
+      },
+      "filters": {
+        "all": "Vse",
+        "city": "Gorod",
+        "region": "Region",
+        "country": "Strana",
+        "landmark": "Oriyentir"
+      },
+      "noSnippet": "Kratkoe opisanie poka otsutstvuet.",
+      "emptyTitle": "Mesta ne naydeny",
+      "filterAria": "Filtr mest atlasa",
+      "pagination": {
+        "aria": "Paginatsiya atlasa",
+        "next": "Vpered",
+        "prev": "Nazad",
+        "pageLabel": "Stranitsa {page}",
+        "pageCurrentLabel": "Tekushchaya stranitsa, {page}"
+      },
+      "description": "Tochki vhoda po stranam v iyerarkhii Atlas.",
+      "emptyAction": "Sbrosit filtry",
+      "metaSummary": "Pokazano {shown} iz {total} mest",
+      "stateLegendAria": "Legenda statusa yazyka",
+      "emptyDescription": "Poprobuyte drugoy chip-filtr, chtoby prodolzhit izuchenie atlasa."
+    },
+    "meta": {
+      "type": "tip",
+      "region": "region",
+      "country": "strana",
+      "placeId": "place_id",
+      "coordinates": "koordinaty",
+      "notAvailable": "nedostupno",
+      "languageStatus": "status yazyka"
+    },
+    "links": {
+      "parent": "Roditelskiy obekt",
+      "related": "Svyazannye obekty",
+      "children": "Dochernie obekty",
+      "noParent": "Roditelskiy obekt otsutstvuet.",
+      "noRelated": "Svyazannye obekty ne naydeny.",
+      "breadcrumb": "Iyerarkhiya",
+      "noChildren": "Dochernie obekty ne naydeny.",
+      "relatedBlog": "Svyazannye blog-posty",
+      "noRelatedBlog": "Svyazannye blog-posty ne naydeny."
+    },
+    "noBody": "Kontent poka otsutstvuet.",
+    "section": {
+      "overview": "Obzor",
+      "hierarchy": "Iyerarkhiya",
+      "quickFacts": "Bystrye fakty",
+      "nearbyPlaces": "Mesta ryadom",
+      "relatedPosts": "Svyazannye posty",
+      "travelEssentials": "Travel essentials"
+    },
+    "hierarchy": {
+      "noParent": "Roditelskiy obekt otsutstvuet",
+      "badgesAria": "Status i tip obekta",
+      "noChildren": "Dochernie obekty otsutstvuyut",
+      "moreChildren": "+{count} dopolnitelnykh dochernikh obektov"
+    },
+    "quickFacts": {
+      "currency": "Valyuta",
+      "language": "Yazyk",
+      "timezone": "Chasovoy poyas",
+      "elevation": "Vysota",
+      "population": "Naselenie",
+      "coordinates": "Koordinaty"
+    },
+    "relatedPosts": {
+      "empty": "Svyazannykh postov poka net"
+    },
+    "travelEssentials": {
+      "visa": "Viza",
+      "helper": {
+        "noOrigin": "Vyberite punkt vyleta, chtoby otsenit varianty reysov."
+      },
+      "flights": "Reysy",
+      "currency": "Valyuta",
+      "comingSoon": "Skoro"
+    }
+  },
+  "embed": {
+    "openSource": "Otkryt istochnik video",
+    "sectionTitle": "Video"
+  },
+  "legal": {
+    "terms": {
+      "title": "Usloviya ispolzovaniya"
+    },
+    "cookies": {
+      "title": "Politika cookie",
+      "openConsentCta": "Vy mozhete obnovit nastroiki analitiki i reklamy v lyuboy moment."
+    },
+    "privacy": {
+      "title": "Politika konfidentsialnosti"
+    },
+    "lastUpdated": "Poslednee obnovlenie",
+    "enFallbackNotice": "Eta yuridicheskaya stranitsa poka dostupna na angliyskom, lokalizatsii gotovyatsya."
+  },
+  "footer": {
+    "terms": "Usloviya",
+    "cookies": "Cookie",
+    "privacy": "Konfidentsialnost"
+  },
   "uiPage": {
     "noBody": "Kontent poka otsutstvuet.",
     "notFoundTitle": "Stranitsa nedostupna",
     "notFoundDescription": "Etoy sistemnoy stranitsy poka net v Strapi."
   },
   "account": {
+    "roles": {
+      "user": "Authenticated user: rezerv dlya budushchikh blog-submission i profile-funktsiy.",
+      "editor": "Editor/Admin: proverka i publikatsiya Atlas i Blog kontenta.",
+      "public": "Public: chtenie Atlas/Blog/UI i otpravka Atlas-predlozheniy."
+    },
     "title": "Account",
-    "description": "Obolochka akkaunta seychas rabotaet v read-only rezhime.",
-    "authStateTitle": "Status avtorizatsii",
-    "authStateBody": "Seychas pokazana versiya bez vhoda. Public-registratsiya i personalnye dannye akkaunta soznatelno otklyucheny na etom etape.",
     "loginCta": "Otkryt admin-login",
     "rolesTitle": "Granitsy roley",
-    "roles": {
-      "public": "Public: chtenie Atlas/Blog/UI i otpravka Atlas-predlozheniy.",
-      "user": "Authenticated user: rezerv dlya budushchikh blog-submission i profile-funktsiy.",
-      "editor": "Editor/Admin: proverka i publikatsiya Atlas i Blog kontenta."
-    },
-    "loginRequiredTitle": "Login required",
-    "loginRequiredBody": "You need to login before managing account preferences.",
-    "profileTitle": "Profile overview",
-    "profileDescription": "Basic account identity pulled from your authenticated session.",
-    "profileUsername": "Username",
-    "profileEmail": "Email",
-    "profileCreatedAt": "Member since",
-    "profileStatus": "Status",
-    "profileStatusActive": "Active",
-    "profileStatusPending": "Pending confirmation",
-    "profileStatusBlocked": "Blocked",
-    "profileUnknown": "Unknown",
-    "profileSyncFallback": "Could not refresh profile from API. Showing local session snapshot.",
-    "languageTitle": "Site language preference",
-    "languageDescription": "This preference is saved to your account profile and overrides browser language.",
-    "preferredLanguage": "Preferred site language",
-    "savePreference": "Save preference",
-    "loadedPreference": "Loaded your saved preference.",
-    "chooseSupportedLanguage": "Please choose a supported language.",
-    "savingPreference": "Saving preference...",
-    "preferenceSaveFailed": "Failed to save preference.",
-    "preferenceSavedRedirect": "Preference saved. Redirecting...",
-    "preferenceNetworkError": "Network error while saving preference.",
-    "passwordTitle": "Change password",
-    "passwordDescription": "Update your account password. Use a strong password with at least 8 characters.",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "passwordConfirm": "Confirm new password",
-    "changePassword": "Change password",
-    "passwordRequired": "All password fields are required.",
-    "passwordLength": "New password must be at least 8 characters.",
-    "passwordMismatch": "Password confirmation does not match.",
-    "passwordSameAsCurrent": "New password must be different from current password.",
-    "passwordSaving": "Updating password...",
-    "passwordSaveFailed": "Could not update password. Please verify your current password.",
-    "passwordSaved": "Password updated successfully.",
-    "passwordNetworkError": "Network error while updating password.",
-    "commentsTitle": "My comment queue",
-    "commentsDescription": "Track moderation status of your recent blog comments.",
-    "commentsPending": "Pending",
-    "commentsApproved": "Approved",
-    "commentsRejected": "Rejected",
-    "commentsSpam": "Spam",
-    "commentsNone": "No comments yet.",
-    "commentsRefresh": "Refresh comments",
-    "commentsLoading": "Loading comments...",
-    "commentsLoadFailed": "Could not load comments right now.",
-    "commentsPostRef": "Post",
-    "commentsStatus": "Status",
-    "commentsModerationNote": "Moderation note"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "description": "Bezopasnaya dashboard-obolochka dlya editorial potoka.",
-    "readOnlyTitle": "Rezhim tolko chteniya",
-    "readOnlyBody": "Vidzhety dashboard ostayutsya ogranichennymi, poka user-submission funktsii ne vklyucheny.",
-    "dataTitle": "Planiruemye moduli",
-    "items": {
-      "blogDrafts": "Moi blog-chernoviki (future)",
-      "submissions": "Moi Atlas-predlozheniya (future)",
-      "savedPlaces": "Sokhranennye mesta/watchlist (future)"
-    },
-    "loginCta": "Pereyti v account-shell"
-  },
-  "ops": {
-    "title": "Ops Metrics",
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
-    "kpi": {
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "clicks": "Clicks (7d)",
-      "impressions": "Impressions (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "earnings": "Earnings (7d)"
-    },
-    "providers": {
-      "title": "Provider status",
-      "ok": "OK",
-      "notConfigured": "Not configured",
-      "error": "Error"
-    },
-    "empty": {
-      "title": "No metrics collected yet",
-      "desc": "Run the metrics collector locally, then refresh this page."
-    },
-    "disabled": {
-      "title": "Ops metrics viewer is disabled in this mode",
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
-    }
-  },
-  "embed": {
-    "sectionTitle": "Video",
-    "openSource": "Otkryt istochnik video"
+    "description": "Obolochka akkaunta seychas rabotaet v read-only rezhime.",
+    "authStateBody": "Seychas pokazana versiya bez vhoda. Public-registratsiya i personalnye dannye akkaunta soznatelno otklyucheny na etom etape.",
+    "authStateTitle": "Status avtorizatsii"
   },
   "actions": {
     "previewOnDemand": "Otkryt prevyu perevoda po zaprosu (noindex)"
+  },
+  "consent": {
+    "ads": "Reklama",
+    "desc": "Neobyazatelnye nastroiki analitiki i reklamy vklyuchayutsya tolko s vashego razresheniya. Neobkhodimye funktsii vsegda aktivny.",
+    "save": "Sokhranit nastroiki",
+    "close": "Zakryt",
+    "title": "Nastroiki konfidentsialnosti",
+    "manage": "Upravlyat soglasiem",
+    "updated": "Soglasie obnovleno",
+    "alwaysOn": "Vsegda vklyucheno",
+    "acceptAll": "Prinyat vse",
+    "analytics": "Analitika",
+    "customize": "Nastroit",
+    "learnMore": "Uznat bolshe",
+    "necessary": "Neobkhodimo",
+    "rejectAll": "Otklonit vse",
+    "modalTitle": "Nastroit soglasie",
+    "openSettings": "Otkryt nastroiki soglasiya"
+  },
+  "regions": {
+    "list": {
+      "empty": "Regionalnye gruppy poka otsutstvuyut.",
+      "title": "Regiony",
+      "description": "Stranitsy regionalnykh grupp po stranam bez izmeneniya bazovoy iyerarkhii."
+    },
+    "meta": {
+      "title": "Metadannye regiona",
+      "country": "strana",
+      "regionKey": "region key",
+      "memberCount": "kolichestvo uchastnikov"
+    },
+    "noBody": "Kontent poka otsutstvuet.",
+    "members": "Mesta-uchastniki",
+    "noMembers": "Mesta-uchastniki ne naydeny."
+  },
+  "language": {
+    "switcherAria": "Vybor yazyka"
+  },
+  "dashboard": {
+    "items": {
+      "blogDrafts": "Moi blog-chernoviki (future)",
+      "savedPlaces": "Sokhranennye mesta/watchlist (future)",
+      "submissions": "Moi Atlas-predlozheniya (future)"
+    },
+    "title": "Dashboard",
+    "loginCta": "Pereyti v account-shell",
+    "dataTitle": "Planiruemye moduli",
+    "description": "Bezopasnaya dashboard-obolochka dlya editorial potoka.",
+    "readOnlyBody": "Vidzhety dashboard ostayutsya ogranichennymi, poka user-submission funktsii ne vklyucheny.",
+    "readOnlyTitle": "Rezhim tolko chteniya"
+  },
+  "errorPage": {
+    "title": "Chto-to poshlo ne tak",
+    "homeCta": "Na glavnuyu",
+    "reportCta": "Soobshit o probleme",
+    "consentCta": "Otkryt nastroiki soglasiya",
+    "reportSent": "Otchet ob oshibke otpravlen.",
+    "description": "Na stranitse voznikla nepredvidennaya oshibka. Vy mozhete vernutsya na glavnuyu ili izmenit nastroiki soglasiya.",
+    "reportReady": "Vy mozhete soobshit ob etoy probleme.",
+    "inlineFallback": "Chast interaktivnykh elementov vremenno nedostupna.",
+    "reportDisabled": "Vklyuchite soglasie na analitiku, chtoby otpravit otchet ob oshibke."
+  },
+  "stateBanner": {
+    "mock": "Na etoy stranitse pokazany MOCK DATA. Eta versiya vsegda noindex.",
+    "runtime": "Pokazyvaetsya prevyu runtime-perevoda. Eta versiya ne indeksiruetsya.",
+    "fallback": "Polnyy complete-kontent na etom yazyke poka nedostupen ({language}). Pokazyvaetsya kanonicheskaya complete-versiya.",
+    "incomplete": "Kontent na etom yazyke ne complete ({language}, status: {state}). Pokazyvaetsya kanonicheskaya complete-versiya.",
+    "canonicalLink": "Pereyti k kanonicheskoy complete-versii"
   }
 }

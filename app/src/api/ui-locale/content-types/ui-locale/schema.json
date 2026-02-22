@@ -23,9 +23,39 @@
       "default": "draft",
       "required": true
     },
+    "reference_locale": {
+      "type": "string",
+      "default": "en"
+    },
     "strings": {
       "type": "json",
       "required": true
+    },
+    "total_keys": {
+      "type": "integer",
+      "default": 0
+    },
+    "translated_keys": {
+      "type": "integer",
+      "default": 0
+    },
+    "missing_keys": {
+      "type": "integer",
+      "default": 0
+    },
+    "untranslated_keys": {
+      "type": "integer",
+      "default": 0
+    },
+    "coverage_percent": {
+      "type": "decimal",
+      "default": 0
+    },
+    "missing_examples": {
+      "type": "json"
+    },
+    "untranslated_examples": {
+      "type": "json"
     },
     "deploy_required": {
       "type": "boolean",

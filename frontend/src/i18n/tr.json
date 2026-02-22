@@ -1,250 +1,65 @@
 {
-  "site": {
-    "brand": "Geovito"
-  },
-  "nav": {
-    "home": "Home",
-    "atlas": "Atlas",
-    "regions": "Regions",
-    "blog": "Blog",
-    "about": "About",
-    "rules": "Rules",
-    "help": "Help",
-    "account": "Account"
-  },
-  "footer": {
-    "privacy": "Gizlilik",
-    "cookies": "Cerezler",
-    "terms": "Kullanim Sartlari"
-  },
-  "language": {
-    "switcherAria": "Language selector"
-  },
   "ads": {
     "label": "Reklam"
   },
-  "consent": {
-    "title": "Gizlilik tercihleri",
-    "desc": "Istege bagli analiz ve reklam ayarlari sadece izninizle kullanilir. Gerekli ozellikler her zaman acik kalir.",
-    "acceptAll": "Tumunu kabul et",
-    "rejectAll": "Tumunu reddet",
-    "customize": "Ozellestir",
-    "manage": "Izinleri yonet",
-    "modalTitle": "Izinleri ozellestir",
-    "necessary": "Gerekli",
-    "analytics": "Analiz",
-    "ads": "Reklam",
-    "alwaysOn": "Her zaman acik",
-    "save": "Tercihleri kaydet",
-    "close": "Kapat",
-    "updated": "Izinler guncellendi",
-    "learnMore": "Daha fazla bilgi",
-    "openSettings": "Izin ayarlarini ac"
+  "nav": {
+    "blog": "Blog",
+    "help": "Help",
+    "home": "Home",
+    "about": "About",
+    "atlas": "Atlas",
+    "rules": "Rules",
+    "account": "Account",
+    "regions": "Regions"
   },
-  "legal": {
-    "lastUpdated": "Son guncelleme",
-    "enFallbackNotice": "Bu yasal sayfa su an Ingilizce yayinlaniyor, yerel diller hazirlaniyor.",
-    "privacy": {
-      "title": "Gizlilik Politikasi"
+  "ops": {
+    "kpi": {
+      "clicks": "Clicks (7d)",
+      "earnings": "Earnings (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "impressions": "Impressions (7d)"
     },
-    "cookies": {
-      "title": "Cerez Politikasi",
-      "openConsentCta": "Analiz ve reklam izinlerinizi istediginiz zaman guncelleyebilirsiniz."
+    "empty": {
+      "desc": "Run the metrics collector locally, then refresh this page.",
+      "title": "No metrics collected yet"
     },
-    "terms": {
-      "title": "Kullanim Sartlari"
+    "title": "Ops Metrics",
+    "disabled": {
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
+      "title": "Ops metrics viewer is disabled in this mode"
+    },
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "providers": {
+      "ok": "OK",
+      "error": "Error",
+      "title": "Provider status",
+      "notConfigured": "Not configured"
     }
   },
-  "errorPage": {
-    "title": "Bir seyler ters gitti",
-    "description": "Sayfada beklenmedik bir sorun olustu. Ana sayfaya donebilir veya izin ayarlarinizi guncelleyebilirsiniz.",
-    "homeCta": "Ana sayfaya don",
-    "consentCta": "Izin ayarlarini ac",
-    "reportCta": "Sorunu bildir",
-    "reportDisabled": "Hata raporu gondermek icin analiz iznini etkinlestirin.",
-    "reportReady": "Bu sorunu raporlayabilirsiniz.",
-    "reportSent": "Sorun raporu gonderildi.",
-    "inlineFallback": "Bazi etkilesimli kontroller gecici olarak kullanilamiyor."
-  },
   "auth": {
-    "registerDisabledTitle": "Kayit kapali",
-    "registerDisabledBody": "Bu ortamda yeni hesap olusturma gecici olarak durduruldu.",
-    "registerDisabledHint": "Kayit su anda devre disi.",
-    "login": "Giris yap",
-    "logout": "Cikis yap",
-    "signedInAs": "Oturum acik",
-    "register": "Kayit ol",
-    "email": "Email",
-    "emailPlaceholder": "you@example.com",
-    "password": "Sifre",
-    "passwordPlaceholder": "En az 8 karakter",
-    "backToLogin": "Giris sayfasina don",
-    "forgotPassword": "Sifremi unuttum",
-    "forgotPasswordTitle": "Sifremi unuttum",
-    "forgotPasswordDescription": "Hesap e-postaniz icin sifre sifirlama baglantisi isteyin.",
-    "sendResetLink": "Sifirlama baglantisini gonder",
-    "forgotPasswordEmailRequired": "E-posta zorunludur.",
-    "forgotPasswordSending": "Sifirlama talimati gonderiliyor...",
-    "forgotPasswordRequestFailed": "Su anda isteginiz islenemedi. Lutfen tekrar deneyin.",
-    "forgotPasswordSuccessRedirect": "Bu e-posta varsa sifirlama talimati gonderildi. Giris sayfasina yonlendiriliyorsunuz...",
-    "resetPasswordTitle": "Sifreyi sifirla",
-    "resetPasswordDescription": "Sifirlama kodu ile yeni sifrenizi belirleyin.",
-    "newPassword": "Yeni sifre",
-    "passwordConfirm": "Sifre tekrari",
-    "passwordConfirmPlaceholder": "Sifrenizi tekrar girin",
-    "updatePassword": "Sifreyi guncelle",
-    "requestNewResetLink": "Yeni sifirlama baglantisi iste",
-    "resetTokenMissing": "Sifirlama kodu eksik. Lutfen yeni bir sifirlama baglantisi isteyin.",
-    "resetPasswordRequired": "Sifre ve sifre tekrari zorunludur.",
-    "resetPasswordLength": "Sifre en az 8 karakter olmalidir.",
-    "resetPasswordMismatch": "Sifre tekrari eslesmiyor.",
-    "resetPasswordUpdating": "Sifre guncelleniyor...",
-    "resetPasswordFailed": "Sifre sifirlama basarisiz. Lutfen yeni bir baglanti isteyin.",
-    "resetPasswordSuccessRedirect": "Sifre guncellendi. Giris sayfasina yonlendiriliyorsunuz...",
-    "networkError": "Ag hatasi olustu. Lutfen tekrar deneyin.",
-    "turnstileRequired": "Lutfen captcha dogrulamasini tamamlayin.",
-    "loginRequired": "Email ve sifre zorunludur.",
-    "loginTrying": "Giris deneniyor...",
-    "loginFailed": "Giris basarisiz. Bilgilerinizi kontrol edip tekrar deneyin.",
-    "loginStorageError": "Oturum tarayicida kaydedilemedi.",
-    "loginSuccessRedirect": "Giris basarili. Yonlendiriliyorsunuz...",
-    "registerRequired": "Kullanici adi, email ve sifre zorunludur.",
-    "registerCreating": "Kayit olusturuluyor...",
-    "registerFailed": "Kayit basarisiz. Farkli bir email veya kullanici adi deneyin.",
-    "registerSuccess": "Kayit basarili. Simdi giris yapabilirsiniz."
-  },
-  "stateBanner": {
-    "runtime": "Runtime translation preview is shown. This view is not indexed.",
-    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
-    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
-    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
-    "canonicalLink": "Go to canonical complete version"
-  },
-  "home": {
-    "defaultTitle": "Geovito Atlas",
-    "defaultExcerpt": "Strapi-driven homepage.",
-    "defaultBody": "No body content yet.",
-    "atlasCountries": "Atlas (Countries)",
-    "blogSection": "Blog",
-    "noCountryDescription": "No description yet.",
-    "noPostSummary": "No summary yet.",
-    "trendingTitle": "Trending places",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
-    "noTrending": "No trending places yet."
+    "registerDisabledBody": "Account creation is paused in this environment.",
+    "registerDisabledHint": "Registration is currently disabled.",
+    "registerDisabledTitle": "Registration is disabled"
   },
   "blog": {
-    "listTitle": "Blog",
-    "listDescription": "Geovito blog list",
+    "noBody": "No content body yet.",
     "listHint": "Posts are visible even when translation is not complete; incomplete variants are not indexable.",
-    "noBody": "No content body yet."
+    "listTitle": "Blog",
+    "listDescription": "Geovito blog list"
   },
-  "atlas": {
-    "list": {
-      "title": "Atlas",
-      "description": "Country-level entry points in the Atlas hierarchy.",
-      "empty": "No countries are available yet.",
-      "emptyTitle": "No places found",
-      "emptyDescription": "Try another filter chip to continue exploring the atlas.",
-      "emptyAction": "Reset filters",
-      "noSnippet": "No summary yet.",
-      "filterAria": "Filter atlas places",
-      "stateLegendAria": "Language state legend",
-      "metaSummary": "Showing {shown} of {total} places",
-      "filters": {
-        "all": "All",
-        "country": "Country",
-        "city": "City",
-        "region": "Region",
-        "landmark": "Landmark"
-      },
-      "states": {
-        "complete": "complete",
-        "draft": "draft",
-        "missing": "missing"
-      },
-      "pagination": {
-        "aria": "Atlas pagination",
-        "prev": "Prev",
-        "next": "Next",
-        "pageLabel": "Page {page}",
-        "pageCurrentLabel": "Current page, {page}"
-      }
-    },
-    "section": {
-      "overview": "Genel Bakis",
-      "quickFacts": "Hizli Bilgiler",
-      "hierarchy": "Hiyerarsi",
-      "travelEssentials": "Seyahat Temelleri",
-      "relatedPosts": "Ilgili Blog Yazilari",
-      "nearbyPlaces": "Yakin Yerler"
-    },
-    "quickFacts": {
-      "population": "Nufus",
-      "coordinates": "Koordinatlar",
-      "timezone": "Saat Dilimi",
-      "currency": "Para Birimi",
-      "language": "Dil",
-      "elevation": "Rakim"
-    },
-    "toc": {
-      "title": "Bu sayfada",
-      "aria": "Bu sayfada"
-    },
-    "hierarchy": {
-      "noParent": "Ust yer yok",
-      "noChildren": "Alt yer yok",
-      "moreChildren": "+{count} daha fazla alt yer",
-      "badgesAria": "Yer durumu ve turu"
-    },
-    "relatedPosts": {
-      "empty": "Henuz ilgili yazi yok"
-    },
-    "travelEssentials": {
-      "visa": "Vize",
-      "flights": "Ucuslar",
-      "currency": "Para Birimi",
-      "helper": {
-        "noOrigin": "Ucus tahmini icin bir cikis noktasi secin."
-      },
-      "comingSoon": "Yakinda"
-    },
-    "meta": {
-      "placeId": "place_id",
-      "type": "type",
-      "country": "country",
-      "region": "region",
-      "coordinates": "coordinates",
-      "notAvailable": "not available",
-      "languageStatus": "language status"
-    },
-    "links": {
-      "breadcrumb": "Hierarchy",
-      "parent": "Parent place",
-      "children": "Child places",
-      "related": "Related places",
-      "relatedBlog": "Related blog posts",
-      "noParent": "No parent place.",
-      "noChildren": "No child places found.",
-      "noRelated": "No related places found.",
-      "noRelatedBlog": "No related blog posts found."
-    },
-    "noBody": "No content body yet."
-  },
-  "regions": {
-    "list": {
-      "title": "Regions",
-      "description": "Country-specific regional group pages without changing core parent chains.",
-      "empty": "No region groups are available yet."
-    },
-    "meta": {
-      "title": "Region metadata",
-      "regionKey": "region key",
-      "country": "country",
-      "memberCount": "member count"
-    },
-    "members": "Member places",
-    "noMembers": "No member places found.",
-    "noBody": "No content body yet."
+  "home": {
+    "noTrending": "No trending places yet.",
+    "blogSection": "Blog",
+    "defaultBody": "No body content yet.",
+    "defaultTitle": "Geovito Atlas",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noPostSummary": "No summary yet.",
+    "trendingTitle": "Trending places",
+    "atlasCountries": "Atlas (Countries)",
+    "defaultExcerpt": "Strapi-driven homepage.",
+    "noCountryDescription": "No description yet."
   },
   "post": {
     "meta": {
@@ -253,118 +68,211 @@
     },
     "noBody": "No content body yet."
   },
+  "site": {
+    "brand": "Geovito"
+  },
+  "atlas": {
+    "toc": {
+      "aria": "Bu sayfada",
+      "title": "Bu sayfada"
+    },
+    "list": {
+      "empty": "No countries are available yet.",
+      "title": "Atlas",
+      "states": {
+        "draft": "draft",
+        "missing": "missing",
+        "complete": "complete"
+      },
+      "filters": {
+        "all": "All",
+        "city": "City",
+        "region": "Region",
+        "country": "Country",
+        "landmark": "Landmark"
+      },
+      "noSnippet": "No summary yet.",
+      "emptyTitle": "No places found",
+      "filterAria": "Filter atlas places",
+      "pagination": {
+        "aria": "Atlas pagination",
+        "next": "Next",
+        "prev": "Prev",
+        "pageLabel": "Page {page}",
+        "pageCurrentLabel": "Current page, {page}"
+      },
+      "description": "Country-level entry points in the Atlas hierarchy.",
+      "emptyAction": "Reset filters",
+      "metaSummary": "Showing {shown} of {total} places",
+      "stateLegendAria": "Language state legend",
+      "emptyDescription": "Try another filter chip to continue exploring the atlas."
+    },
+    "meta": {
+      "type": "type",
+      "region": "region",
+      "country": "country",
+      "placeId": "place_id",
+      "coordinates": "coordinates",
+      "notAvailable": "not available",
+      "languageStatus": "language status"
+    },
+    "links": {
+      "parent": "Parent place",
+      "related": "Related places",
+      "children": "Child places",
+      "noParent": "No parent place.",
+      "noRelated": "No related places found.",
+      "breadcrumb": "Hierarchy",
+      "noChildren": "No child places found.",
+      "relatedBlog": "Related blog posts",
+      "noRelatedBlog": "No related blog posts found."
+    },
+    "noBody": "No content body yet.",
+    "section": {
+      "overview": "Genel Bakis",
+      "hierarchy": "Hiyerarsi",
+      "quickFacts": "Hizli Bilgiler",
+      "nearbyPlaces": "Yakin Yerler",
+      "relatedPosts": "Ilgili Blog Yazilari",
+      "travelEssentials": "Seyahat Temelleri"
+    },
+    "hierarchy": {
+      "noParent": "Ust yer yok",
+      "badgesAria": "Yer durumu ve turu",
+      "noChildren": "Alt yer yok",
+      "moreChildren": "+{count} daha fazla alt yer"
+    },
+    "quickFacts": {
+      "currency": "Para Birimi",
+      "language": "Dil",
+      "timezone": "Saat Dilimi",
+      "elevation": "Rakim",
+      "population": "Nufus",
+      "coordinates": "Koordinatlar"
+    },
+    "relatedPosts": {
+      "empty": "Henuz ilgili yazi yok"
+    },
+    "travelEssentials": {
+      "visa": "Vize",
+      "helper": {
+        "noOrigin": "Ucus tahmini icin bir cikis noktasi secin."
+      },
+      "flights": "Ucuslar",
+      "currency": "Para Birimi",
+      "comingSoon": "Yakinda"
+    }
+  },
+  "embed": {
+    "openSource": "Kaynak videoyu ac",
+    "sectionTitle": "Videolar"
+  },
+  "legal": {
+    "terms": {
+      "title": "Kullanim Sartlari"
+    },
+    "cookies": {
+      "title": "Cerez Politikasi",
+      "openConsentCta": "Analiz ve reklam izinlerinizi istediginiz zaman guncelleyebilirsiniz."
+    },
+    "privacy": {
+      "title": "Gizlilik Politikasi"
+    },
+    "lastUpdated": "Son guncelleme",
+    "enFallbackNotice": "Bu yasal sayfa su an Ingilizce yayinlaniyor, yerel diller hazirlaniyor."
+  },
+  "footer": {
+    "terms": "Kullanim Sartlari",
+    "cookies": "Cerezler",
+    "privacy": "Gizlilik"
+  },
   "uiPage": {
     "noBody": "No content body yet.",
     "notFoundTitle": "Page not available",
     "notFoundDescription": "This system page does not exist in Strapi yet."
   },
   "account": {
-    "title": "Account",
-    "description": "User account shell is active in read-only mode for now.",
-    "authStateTitle": "Authentication status",
-    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
-    "loginCta": "Giris sayfasina git",
-    "rolesTitle": "Role boundaries",
     "roles": {
-      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions.",
       "user": "Authenticated user: reserved for future blog submissions and profile features.",
-      "editor": "Editor/Admin: review and publish Atlas and Blog content."
+      "editor": "Editor/Admin: review and publish Atlas and Blog content.",
+      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions."
     },
-    "loginRequiredTitle": "Giris gerekli",
-    "loginRequiredBody": "Hesap ayarlarini yonetmeden once giris yapmalisiniz.",
-    "profileTitle": "Profil ozeti",
-    "profileDescription": "Kimlik bilgileriniz oturum ve API verileri ile gosterilir.",
-    "profileUsername": "Kullanici adi",
-    "profileEmail": "E-posta",
-    "profileCreatedAt": "Uyelik tarihi",
-    "profileStatus": "Durum",
-    "profileStatusActive": "Aktif",
-    "profileStatusPending": "Onay bekliyor",
-    "profileStatusBlocked": "Engelli",
-    "profileUnknown": "Bilinmiyor",
-    "profileSyncFallback": "Profil API verisi alinamadi. Yerel oturum goruntusu gosteriliyor.",
-    "languageTitle": "Site dili tercihi",
-    "languageDescription": "Bu tercih hesap profilinize kaydedilir ve tarayici dilinin onune gecer.",
-    "preferredLanguage": "Tercih edilen site dili",
-    "savePreference": "Tercihi kaydet",
-    "loadedPreference": "Kayitli tercihiniz yuklendi.",
-    "chooseSupportedLanguage": "Lutfen desteklenen bir dil secin.",
-    "savingPreference": "Tercih kaydediliyor...",
-    "preferenceSaveFailed": "Tercih kaydedilemedi.",
-    "preferenceSavedRedirect": "Tercih kaydedildi. Yonlendiriliyorsunuz...",
-    "preferenceNetworkError": "Tercih kaydedilirken ag hatasi olustu.",
-    "passwordTitle": "Sifre degistir",
-    "passwordDescription": "Hesap sifrenizi guncelleyin. En az 8 karakterden olusan guclu bir sifre kullanin.",
-    "currentPassword": "Mevcut sifre",
-    "newPassword": "Yeni sifre",
-    "passwordConfirm": "Yeni sifre tekrari",
-    "changePassword": "Sifreyi degistir",
-    "passwordRequired": "Tum sifre alanlari zorunludur.",
-    "passwordLength": "Yeni sifre en az 8 karakter olmali.",
-    "passwordMismatch": "Sifre tekrari eslesmiyor.",
-    "passwordSameAsCurrent": "Yeni sifre mevcut sifreden farkli olmalidir.",
-    "passwordSaving": "Sifre guncelleniyor...",
-    "passwordSaveFailed": "Sifre guncellenemedi. Mevcut sifrenizi kontrol edin.",
-    "passwordSaved": "Sifre basariyla guncellendi.",
-    "passwordNetworkError": "Sifre guncellenirken ag hatasi olustu.",
-    "commentsTitle": "Yorum kuyrugum",
-    "commentsDescription": "Son blog yorumlarinizin moderasyon durumunu takip edin.",
-    "commentsPending": "Beklemede",
-    "commentsApproved": "Onaylandi",
-    "commentsRejected": "Reddedildi",
-    "commentsSpam": "Spam",
-    "commentsNone": "Henuz yorum yok.",
-    "commentsRefresh": "Yorumlari yenile",
-    "commentsLoading": "Yorumlar yukleniyor...",
-    "commentsLoadFailed": "Yorumlar su anda yuklenemedi.",
-    "commentsPostRef": "Yazi",
-    "commentsStatus": "Durum",
-    "commentsModerationNote": "Moderasyon notu"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "description": "Editorial-safe user dashboard shell.",
-    "readOnlyTitle": "Read-only mode",
-    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
-    "dataTitle": "Planned modules",
-    "items": {
-      "blogDrafts": "My blog drafts (future)",
-      "submissions": "My Atlas suggestions (future self-view)",
-      "savedPlaces": "Saved places/watchlist (future)"
-    },
-    "loginCta": "Go to account shell"
-  },
-  "ops": {
-    "title": "Ops Metrics",
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
-    "kpi": {
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "clicks": "Clicks (7d)",
-      "impressions": "Impressions (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "earnings": "Earnings (7d)"
-    },
-    "providers": {
-      "title": "Provider status",
-      "ok": "OK",
-      "notConfigured": "Not configured",
-      "error": "Error"
-    },
-    "empty": {
-      "title": "No metrics collected yet",
-      "desc": "Run the metrics collector locally, then refresh this page."
-    },
-    "disabled": {
-      "title": "Ops metrics viewer is disabled in this mode",
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
-    }
-  },
-  "embed": {
-    "sectionTitle": "Videolar",
-    "openSource": "Kaynak videoyu ac"
+    "title": "Account",
+    "loginCta": "Open admin login",
+    "rolesTitle": "Role boundaries",
+    "description": "User account shell is active in read-only mode for now.",
+    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
+    "authStateTitle": "Authentication status"
   },
   "actions": {
     "previewOnDemand": "Open on-demand translation preview (noindex)"
+  },
+  "consent": {
+    "ads": "Reklam",
+    "desc": "Istege bagli analiz ve reklam ayarlari sadece izninizle kullanilir. Gerekli ozellikler her zaman acik kalir.",
+    "save": "Tercihleri kaydet",
+    "close": "Kapat",
+    "title": "Gizlilik tercihleri",
+    "manage": "Izinleri yonet",
+    "updated": "Izinler guncellendi",
+    "alwaysOn": "Her zaman acik",
+    "acceptAll": "Tumunu kabul et",
+    "analytics": "Analiz",
+    "customize": "Ozellestir",
+    "learnMore": "Daha fazla bilgi",
+    "necessary": "Gerekli",
+    "rejectAll": "Tumunu reddet",
+    "modalTitle": "Izinleri ozellestir",
+    "openSettings": "Izin ayarlarini ac"
+  },
+  "regions": {
+    "list": {
+      "empty": "No region groups are available yet.",
+      "title": "Regions",
+      "description": "Country-specific regional group pages without changing core parent chains."
+    },
+    "meta": {
+      "title": "Region metadata",
+      "country": "country",
+      "regionKey": "region key",
+      "memberCount": "member count"
+    },
+    "noBody": "No content body yet.",
+    "members": "Member places",
+    "noMembers": "No member places found."
+  },
+  "language": {
+    "switcherAria": "Language selector"
+  },
+  "dashboard": {
+    "items": {
+      "blogDrafts": "My blog drafts (future)",
+      "savedPlaces": "Saved places/watchlist (future)",
+      "submissions": "My Atlas suggestions (future self-view)"
+    },
+    "title": "Dashboard",
+    "loginCta": "Go to account shell",
+    "dataTitle": "Planned modules",
+    "description": "Editorial-safe user dashboard shell.",
+    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
+    "readOnlyTitle": "Read-only mode"
+  },
+  "errorPage": {
+    "title": "Bir seyler ters gitti",
+    "homeCta": "Ana sayfaya don",
+    "reportCta": "Sorunu bildir",
+    "consentCta": "Izin ayarlarini ac",
+    "reportSent": "Sorun raporu gonderildi.",
+    "description": "Sayfada beklenmedik bir sorun olustu. Ana sayfaya donebilir veya izin ayarlarinizi guncelleyebilirsiniz.",
+    "reportReady": "Bu sorunu raporlayabilirsiniz.",
+    "inlineFallback": "Bazi etkilesimli kontroller gecici olarak kullanilamiyor.",
+    "reportDisabled": "Hata raporu gondermek icin analiz iznini etkinlestirin."
+  },
+  "stateBanner": {
+    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
+    "runtime": "Runtime translation preview is shown. This view is not indexed.",
+    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
+    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
+    "canonicalLink": "Go to canonical complete version"
   }
 }

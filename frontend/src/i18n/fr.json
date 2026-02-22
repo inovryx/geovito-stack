@@ -1,250 +1,65 @@
 {
-  "site": {
-    "brand": "Geovito"
-  },
-  "nav": {
-    "home": "Home",
-    "atlas": "Atlas",
-    "regions": "Regions",
-    "blog": "Blog",
-    "about": "About",
-    "rules": "Rules",
-    "help": "Help",
-    "account": "Account"
-  },
-  "footer": {
-    "privacy": "Privacy",
-    "cookies": "Cookies",
-    "terms": "Terms"
-  },
-  "language": {
-    "switcherAria": "Language selector"
-  },
   "ads": {
     "label": "Advertisement"
   },
-  "consent": {
-    "title": "Privacy preferences",
-    "desc": "We use optional analytics and ads settings only with your permission. Necessary features are always on.",
-    "acceptAll": "Accept all",
-    "rejectAll": "Reject all",
-    "customize": "Customize",
-    "manage": "Manage consent",
-    "modalTitle": "Customize consent",
-    "necessary": "Necessary",
-    "analytics": "Analytics",
-    "ads": "Ads",
-    "alwaysOn": "Always on",
-    "save": "Save preferences",
-    "close": "Close",
-    "updated": "Consent updated",
-    "learnMore": "Learn more",
-    "openSettings": "Open consent settings"
+  "nav": {
+    "blog": "Blog",
+    "help": "Help",
+    "home": "Home",
+    "about": "About",
+    "atlas": "Atlas",
+    "rules": "Rules",
+    "account": "Account",
+    "regions": "Regions"
   },
-  "legal": {
-    "lastUpdated": "Last updated",
-    "enFallbackNotice": "This legal page is currently published in English while localized versions are in progress.",
-    "privacy": {
-      "title": "Privacy Policy"
+  "ops": {
+    "kpi": {
+      "clicks": "Clicks (7d)",
+      "earnings": "Earnings (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "impressions": "Impressions (7d)"
     },
-    "cookies": {
-      "title": "Cookie Policy",
-      "openConsentCta": "Update analytics and ads consent preferences at any time."
+    "empty": {
+      "desc": "Run the metrics collector locally, then refresh this page.",
+      "title": "No metrics collected yet"
     },
-    "terms": {
-      "title": "Terms of Use"
+    "title": "Ops Metrics",
+    "disabled": {
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
+      "title": "Ops metrics viewer is disabled in this mode"
+    },
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "providers": {
+      "ok": "OK",
+      "error": "Error",
+      "title": "Provider status",
+      "notConfigured": "Not configured"
     }
   },
-  "errorPage": {
-    "title": "Something went wrong",
-    "description": "The page hit an unexpected problem. You can go back home or adjust consent settings.",
-    "homeCta": "Back to home",
-    "consentCta": "Open consent settings",
-    "reportCta": "Report issue",
-    "reportDisabled": "Enable analytics consent to send an error report.",
-    "reportReady": "You can report this issue.",
-    "reportSent": "Issue report sent.",
-    "inlineFallback": "Some interactive controls are temporarily unavailable."
-  },
   "auth": {
-    "registerDisabledTitle": "Registration is disabled",
     "registerDisabledBody": "Account creation is paused in this environment.",
     "registerDisabledHint": "Registration is currently disabled.",
-    "login": "Login",
-    "logout": "Logout",
-    "signedInAs": "Signed in",
-    "register": "Register",
-    "email": "Email",
-    "emailPlaceholder": "you@example.com",
-    "password": "Password",
-    "passwordPlaceholder": "Min 8 characters",
-    "backToLogin": "Back to login",
-    "forgotPassword": "Forgot password?",
-    "forgotPasswordTitle": "Forgot password",
-    "forgotPasswordDescription": "Request a password reset link for your account email.",
-    "sendResetLink": "Send reset link",
-    "forgotPasswordEmailRequired": "Email is required.",
-    "forgotPasswordSending": "Sending reset instructions...",
-    "forgotPasswordRequestFailed": "Could not process your request right now. Please try again.",
-    "forgotPasswordSuccessRedirect": "If this email exists, reset instructions were sent. Redirecting to login...",
-    "resetPasswordTitle": "Reset password",
-    "resetPasswordDescription": "Set a new password using your reset token.",
-    "newPassword": "New password",
-    "passwordConfirm": "Confirm password",
-    "passwordConfirmPlaceholder": "Repeat your password",
-    "updatePassword": "Update password",
-    "requestNewResetLink": "Request a new reset link",
-    "resetTokenMissing": "Reset token is missing. Please request a new reset link.",
-    "resetPasswordRequired": "Password and confirmation are required.",
-    "resetPasswordLength": "Password must be at least 8 characters.",
-    "resetPasswordMismatch": "Password confirmation does not match.",
-    "resetPasswordUpdating": "Updating password...",
-    "resetPasswordFailed": "Password reset failed. Please request a new link.",
-    "resetPasswordSuccessRedirect": "Password updated. Redirecting to login...",
-    "networkError": "Network error. Please try again.",
-    "turnstileRequired": "Please complete the captcha challenge.",
-    "loginRequired": "Email and password are required.",
-    "loginTrying": "Trying to sign in...",
-    "loginFailed": "Login failed. Please check your credentials and try again.",
-    "loginStorageError": "Session could not be saved in your browser.",
-    "loginSuccessRedirect": "Login successful. Redirecting...",
-    "registerRequired": "Username, email and password are required.",
-    "registerCreating": "Creating account...",
-    "registerFailed": "Registration failed. Please try another email or username.",
-    "registerSuccess": "Registration successful. You can now log in."
-  },
-  "stateBanner": {
-    "runtime": "Runtime translation preview is shown. This view is not indexed.",
-    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
-    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
-    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
-    "canonicalLink": "Go to canonical complete version"
-  },
-  "home": {
-    "defaultTitle": "Geovito Atlas",
-    "defaultExcerpt": "Strapi-driven homepage.",
-    "defaultBody": "No body content yet.",
-    "atlasCountries": "Atlas (Countries)",
-    "blogSection": "Blog",
-    "noCountryDescription": "No description yet.",
-    "noPostSummary": "No summary yet.",
-    "trendingTitle": "Trending places",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
-    "noTrending": "No trending places yet."
+    "registerDisabledTitle": "Registration is disabled"
   },
   "blog": {
-    "listTitle": "Blog",
-    "listDescription": "Geovito blog list",
+    "noBody": "No content body yet.",
     "listHint": "Posts are visible even when translation is not complete; incomplete variants are not indexable.",
-    "noBody": "No content body yet."
+    "listTitle": "Blog",
+    "listDescription": "Geovito blog list"
   },
-  "atlas": {
-    "list": {
-      "title": "Atlas",
-      "description": "Country-level entry points in the Atlas hierarchy.",
-      "empty": "No countries are available yet.",
-      "emptyTitle": "No places found",
-      "emptyDescription": "Try another filter chip to continue exploring the atlas.",
-      "emptyAction": "Reset filters",
-      "noSnippet": "No summary yet.",
-      "filterAria": "Filter atlas places",
-      "stateLegendAria": "Language state legend",
-      "metaSummary": "Showing {shown} of {total} places",
-      "filters": {
-        "all": "All",
-        "country": "Country",
-        "city": "City",
-        "region": "Region",
-        "landmark": "Landmark"
-      },
-      "states": {
-        "complete": "complete",
-        "draft": "draft",
-        "missing": "missing"
-      },
-      "pagination": {
-        "aria": "Atlas pagination",
-        "prev": "Prev",
-        "next": "Next",
-        "pageLabel": "Page {page}",
-        "pageCurrentLabel": "Current page, {page}"
-      }
-    },
-    "section": {
-      "overview": "Overview",
-      "quickFacts": "Quick Facts",
-      "hierarchy": "Hierarchy",
-      "travelEssentials": "Travel Essentials",
-      "relatedPosts": "Related Posts",
-      "nearbyPlaces": "Nearby Places"
-    },
-    "quickFacts": {
-      "population": "Population",
-      "coordinates": "Coordinates",
-      "timezone": "Timezone",
-      "currency": "Currency",
-      "language": "Language",
-      "elevation": "Elevation"
-    },
-    "toc": {
-      "title": "On this page",
-      "aria": "On this page"
-    },
-    "hierarchy": {
-      "noParent": "No parent place",
-      "noChildren": "No child places",
-      "moreChildren": "+{count} more children",
-      "badgesAria": "Place state and type"
-    },
-    "relatedPosts": {
-      "empty": "No related posts yet"
-    },
-    "travelEssentials": {
-      "visa": "Visa",
-      "flights": "Flights",
-      "currency": "Currency",
-      "helper": {
-        "noOrigin": "Select an origin to estimate flights."
-      },
-      "comingSoon": "Coming soon"
-    },
-    "meta": {
-      "placeId": "place_id",
-      "type": "type",
-      "country": "country",
-      "region": "region",
-      "coordinates": "coordinates",
-      "notAvailable": "not available",
-      "languageStatus": "language status"
-    },
-    "links": {
-      "breadcrumb": "Hierarchy",
-      "parent": "Parent place",
-      "children": "Child places",
-      "related": "Related places",
-      "relatedBlog": "Related blog posts",
-      "noParent": "No parent place.",
-      "noChildren": "No child places found.",
-      "noRelated": "No related places found.",
-      "noRelatedBlog": "No related blog posts found."
-    },
-    "noBody": "No content body yet."
-  },
-  "regions": {
-    "list": {
-      "title": "Regions",
-      "description": "Country-specific regional group pages without changing core parent chains.",
-      "empty": "No region groups are available yet."
-    },
-    "meta": {
-      "title": "Region metadata",
-      "regionKey": "region key",
-      "country": "country",
-      "memberCount": "member count"
-    },
-    "members": "Member places",
-    "noMembers": "No member places found.",
-    "noBody": "No content body yet."
+  "home": {
+    "noTrending": "No trending places yet.",
+    "blogSection": "Blog",
+    "defaultBody": "No body content yet.",
+    "defaultTitle": "Geovito Atlas",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noPostSummary": "No summary yet.",
+    "trendingTitle": "Trending places",
+    "atlasCountries": "Atlas (Countries)",
+    "defaultExcerpt": "Strapi-driven homepage.",
+    "noCountryDescription": "No description yet."
   },
   "post": {
     "meta": {
@@ -253,118 +68,211 @@
     },
     "noBody": "No content body yet."
   },
+  "site": {
+    "brand": "Geovito"
+  },
+  "atlas": {
+    "toc": {
+      "aria": "On this page",
+      "title": "On this page"
+    },
+    "list": {
+      "empty": "No countries are available yet.",
+      "title": "Atlas",
+      "states": {
+        "draft": "draft",
+        "missing": "missing",
+        "complete": "complete"
+      },
+      "filters": {
+        "all": "All",
+        "city": "City",
+        "region": "Region",
+        "country": "Country",
+        "landmark": "Landmark"
+      },
+      "noSnippet": "No summary yet.",
+      "emptyTitle": "No places found",
+      "filterAria": "Filter atlas places",
+      "pagination": {
+        "aria": "Atlas pagination",
+        "next": "Next",
+        "prev": "Prev",
+        "pageLabel": "Page {page}",
+        "pageCurrentLabel": "Current page, {page}"
+      },
+      "description": "Country-level entry points in the Atlas hierarchy.",
+      "emptyAction": "Reset filters",
+      "metaSummary": "Showing {shown} of {total} places",
+      "stateLegendAria": "Language state legend",
+      "emptyDescription": "Try another filter chip to continue exploring the atlas."
+    },
+    "meta": {
+      "type": "type",
+      "region": "region",
+      "country": "country",
+      "placeId": "place_id",
+      "coordinates": "coordinates",
+      "notAvailable": "not available",
+      "languageStatus": "language status"
+    },
+    "links": {
+      "parent": "Parent place",
+      "related": "Related places",
+      "children": "Child places",
+      "noParent": "No parent place.",
+      "noRelated": "No related places found.",
+      "breadcrumb": "Hierarchy",
+      "noChildren": "No child places found.",
+      "relatedBlog": "Related blog posts",
+      "noRelatedBlog": "No related blog posts found."
+    },
+    "noBody": "No content body yet.",
+    "section": {
+      "overview": "Overview",
+      "hierarchy": "Hierarchy",
+      "quickFacts": "Quick Facts",
+      "nearbyPlaces": "Nearby Places",
+      "relatedPosts": "Related Posts",
+      "travelEssentials": "Travel Essentials"
+    },
+    "hierarchy": {
+      "noParent": "No parent place",
+      "badgesAria": "Place state and type",
+      "noChildren": "No child places",
+      "moreChildren": "+{count} more children"
+    },
+    "quickFacts": {
+      "currency": "Currency",
+      "language": "Language",
+      "timezone": "Timezone",
+      "elevation": "Elevation",
+      "population": "Population",
+      "coordinates": "Coordinates"
+    },
+    "relatedPosts": {
+      "empty": "No related posts yet"
+    },
+    "travelEssentials": {
+      "visa": "Visa",
+      "helper": {
+        "noOrigin": "Select an origin to estimate flights."
+      },
+      "flights": "Flights",
+      "currency": "Currency",
+      "comingSoon": "Coming soon"
+    }
+  },
+  "embed": {
+    "openSource": "Open source video",
+    "sectionTitle": "Videos"
+  },
+  "legal": {
+    "terms": {
+      "title": "Terms of Use"
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "openConsentCta": "Update analytics and ads consent preferences at any time."
+    },
+    "privacy": {
+      "title": "Privacy Policy"
+    },
+    "lastUpdated": "Last updated",
+    "enFallbackNotice": "This legal page is currently published in English while localized versions are in progress."
+  },
+  "footer": {
+    "terms": "Terms",
+    "cookies": "Cookies",
+    "privacy": "Privacy"
+  },
   "uiPage": {
     "noBody": "No content body yet.",
     "notFoundTitle": "Page not available",
     "notFoundDescription": "This system page does not exist in Strapi yet."
   },
   "account": {
+    "roles": {
+      "user": "Authenticated user: reserved for future blog submissions and profile features.",
+      "editor": "Editor/Admin: review and publish Atlas and Blog content.",
+      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions."
+    },
     "title": "Account",
-    "description": "User account shell is active in read-only mode for now.",
-    "authStateTitle": "Authentication status",
-    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
     "loginCta": "Open admin login",
     "rolesTitle": "Role boundaries",
-    "roles": {
-      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions.",
-      "user": "Authenticated user: reserved for future blog submissions and profile features.",
-      "editor": "Editor/Admin: review and publish Atlas and Blog content."
-    },
-    "loginRequiredTitle": "Login required",
-    "loginRequiredBody": "You need to login before managing account preferences.",
-    "profileTitle": "Profile overview",
-    "profileDescription": "Basic account identity pulled from your authenticated session.",
-    "profileUsername": "Username",
-    "profileEmail": "Email",
-    "profileCreatedAt": "Member since",
-    "profileStatus": "Status",
-    "profileStatusActive": "Active",
-    "profileStatusPending": "Pending confirmation",
-    "profileStatusBlocked": "Blocked",
-    "profileUnknown": "Unknown",
-    "profileSyncFallback": "Could not refresh profile from API. Showing local session snapshot.",
-    "languageTitle": "Site language preference",
-    "languageDescription": "This preference is saved to your account profile and overrides browser language.",
-    "preferredLanguage": "Preferred site language",
-    "savePreference": "Save preference",
-    "loadedPreference": "Loaded your saved preference.",
-    "chooseSupportedLanguage": "Please choose a supported language.",
-    "savingPreference": "Saving preference...",
-    "preferenceSaveFailed": "Failed to save preference.",
-    "preferenceSavedRedirect": "Preference saved. Redirecting...",
-    "preferenceNetworkError": "Network error while saving preference.",
-    "passwordTitle": "Change password",
-    "passwordDescription": "Update your account password. Use a strong password with at least 8 characters.",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "passwordConfirm": "Confirm new password",
-    "changePassword": "Change password",
-    "passwordRequired": "All password fields are required.",
-    "passwordLength": "New password must be at least 8 characters.",
-    "passwordMismatch": "Password confirmation does not match.",
-    "passwordSameAsCurrent": "New password must be different from current password.",
-    "passwordSaving": "Updating password...",
-    "passwordSaveFailed": "Could not update password. Please verify your current password.",
-    "passwordSaved": "Password updated successfully.",
-    "passwordNetworkError": "Network error while updating password.",
-    "commentsTitle": "My comment queue",
-    "commentsDescription": "Track moderation status of your recent blog comments.",
-    "commentsPending": "Pending",
-    "commentsApproved": "Approved",
-    "commentsRejected": "Rejected",
-    "commentsSpam": "Spam",
-    "commentsNone": "No comments yet.",
-    "commentsRefresh": "Refresh comments",
-    "commentsLoading": "Loading comments...",
-    "commentsLoadFailed": "Could not load comments right now.",
-    "commentsPostRef": "Post",
-    "commentsStatus": "Status",
-    "commentsModerationNote": "Moderation note"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "description": "Editorial-safe user dashboard shell.",
-    "readOnlyTitle": "Read-only mode",
-    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
-    "dataTitle": "Planned modules",
-    "items": {
-      "blogDrafts": "My blog drafts (future)",
-      "submissions": "My Atlas suggestions (future self-view)",
-      "savedPlaces": "Saved places/watchlist (future)"
-    },
-    "loginCta": "Go to account shell"
-  },
-  "ops": {
-    "title": "Ops Metrics",
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
-    "kpi": {
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "clicks": "Clicks (7d)",
-      "impressions": "Impressions (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "earnings": "Earnings (7d)"
-    },
-    "providers": {
-      "title": "Provider status",
-      "ok": "OK",
-      "notConfigured": "Not configured",
-      "error": "Error"
-    },
-    "empty": {
-      "title": "No metrics collected yet",
-      "desc": "Run the metrics collector locally, then refresh this page."
-    },
-    "disabled": {
-      "title": "Ops metrics viewer is disabled in this mode",
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
-    }
-  },
-  "embed": {
-    "sectionTitle": "Videos",
-    "openSource": "Open source video"
+    "description": "User account shell is active in read-only mode for now.",
+    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
+    "authStateTitle": "Authentication status"
   },
   "actions": {
     "previewOnDemand": "Open on-demand translation preview (noindex)"
+  },
+  "consent": {
+    "ads": "Ads",
+    "desc": "We use optional analytics and ads settings only with your permission. Necessary features are always on.",
+    "save": "Save preferences",
+    "close": "Close",
+    "title": "Privacy preferences",
+    "manage": "Manage consent",
+    "updated": "Consent updated",
+    "alwaysOn": "Always on",
+    "acceptAll": "Accept all",
+    "analytics": "Analytics",
+    "customize": "Customize",
+    "learnMore": "Learn more",
+    "necessary": "Necessary",
+    "rejectAll": "Reject all",
+    "modalTitle": "Customize consent",
+    "openSettings": "Open consent settings"
+  },
+  "regions": {
+    "list": {
+      "empty": "No region groups are available yet.",
+      "title": "Regions",
+      "description": "Country-specific regional group pages without changing core parent chains."
+    },
+    "meta": {
+      "title": "Region metadata",
+      "country": "country",
+      "regionKey": "region key",
+      "memberCount": "member count"
+    },
+    "noBody": "No content body yet.",
+    "members": "Member places",
+    "noMembers": "No member places found."
+  },
+  "language": {
+    "switcherAria": "Language selector"
+  },
+  "dashboard": {
+    "items": {
+      "blogDrafts": "My blog drafts (future)",
+      "savedPlaces": "Saved places/watchlist (future)",
+      "submissions": "My Atlas suggestions (future self-view)"
+    },
+    "title": "Dashboard",
+    "loginCta": "Go to account shell",
+    "dataTitle": "Planned modules",
+    "description": "Editorial-safe user dashboard shell.",
+    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
+    "readOnlyTitle": "Read-only mode"
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "homeCta": "Back to home",
+    "reportCta": "Report issue",
+    "consentCta": "Open consent settings",
+    "reportSent": "Issue report sent.",
+    "description": "The page hit an unexpected problem. You can go back home or adjust consent settings.",
+    "reportReady": "You can report this issue.",
+    "inlineFallback": "Some interactive controls are temporarily unavailable.",
+    "reportDisabled": "Enable analytics consent to send an error report."
+  },
+  "stateBanner": {
+    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
+    "runtime": "Runtime translation preview is shown. This view is not indexed.",
+    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
+    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
+    "canonicalLink": "Go to canonical complete version"
   }
 }

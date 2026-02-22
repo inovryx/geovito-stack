@@ -1,250 +1,65 @@
 {
-  "site": {
-    "brand": "Geovito"
-  },
-  "nav": {
-    "home": "Shouye",
-    "atlas": "Atlas",
-    "regions": "Qvyu",
-    "blog": "Boke",
-    "about": "Guanyu",
-    "rules": "Guize",
-    "help": "Bangzhu",
-    "account": "Zhanghu"
-  },
-  "footer": {
-    "privacy": "Yinsi",
-    "cookies": "Cookies",
-    "terms": "Tiaokuan"
-  },
-  "language": {
-    "switcherAria": "Yuyan xuanze"
-  },
   "ads": {
     "label": "广告"
   },
-  "consent": {
-    "title": "Yinsi xuanxiang",
-    "desc": "Kexuan de fenxi he guanggao shezhi zhiyou zai nin tongyi hou cai hui qiyong. Bixu gongneng yizhi baochi kaiqi.",
-    "acceptAll": "Quanbu tongyi",
-    "rejectAll": "Quanbu jujue",
-    "customize": "Zidingyi",
-    "manage": "Guanli tongyi",
-    "modalTitle": "Zidingyi tongyi",
-    "necessary": "Biyao",
-    "analytics": "Fenxi",
-    "ads": "Guanggao",
-    "alwaysOn": "Yizhi kaiqi",
-    "save": "Baocun xuanxiang",
-    "close": "Guanbi",
-    "updated": "Tongyi yi gengxin",
-    "learnMore": "Liaojie gengduo",
-    "openSettings": "Dakaitongyi shezhi"
+  "nav": {
+    "blog": "Boke",
+    "help": "Bangzhu",
+    "home": "Shouye",
+    "about": "Guanyu",
+    "atlas": "Atlas",
+    "rules": "Guize",
+    "account": "Zhanghu",
+    "regions": "Qvyu"
   },
-  "legal": {
-    "lastUpdated": "Zuixin gengxin",
-    "enFallbackNotice": "Gai falv yemian muqian yi yingwen fabu, duoyuyan banben zhengzaizhizuo.",
-    "privacy": {
-      "title": "Yinsi zhengce"
+  "ops": {
+    "kpi": {
+      "clicks": "Clicks (7d)",
+      "earnings": "Earnings (7d)",
+      "requests": "Cloudflare requests (7d)",
+      "sessions": "Sessions (7d)",
+      "pageviews": "Pageviews (7d)",
+      "impressions": "Impressions (7d)"
     },
-    "cookies": {
-      "title": "Cookies zhengce",
-      "openConsentCta": "Nin keyi suishi gengxin fenxi he guanggao tongyi xuanxiang."
+    "empty": {
+      "desc": "Run the metrics collector locally, then refresh this page.",
+      "title": "No metrics collected yet"
     },
-    "terms": {
-      "title": "Shiyong tiaokuan"
+    "title": "Ops Metrics",
+    "disabled": {
+      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
+      "title": "Ops metrics viewer is disabled in this mode"
+    },
+    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "providers": {
+      "ok": "OK",
+      "error": "Error",
+      "title": "Provider status",
+      "notConfigured": "Not configured"
     }
   },
-  "errorPage": {
-    "title": "Chuxian wenti",
-    "description": "Dangqian yemian fasheng le yige yiwai wenti. Nin keyi fanhui shouye huo tiaozheng tongyi shezhi.",
-    "homeCta": "Fanhui shouye",
-    "consentCta": "Dakaitongyi shezhi",
-    "reportCta": "Baogao wenti",
-    "reportDisabled": "Qing xian qiyong fenxi tongyi, zai fasong cuowu baogao.",
-    "reportReady": "Nin keyi baogao ci wenti.",
-    "reportSent": "Wenti baogao yi fasong.",
-    "inlineFallback": "Bufen jiaohu kongjian zan shi buke yong."
-  },
   "auth": {
-    "registerDisabledTitle": "Registration is disabled",
     "registerDisabledBody": "Account creation is paused in this environment.",
     "registerDisabledHint": "Registration is currently disabled.",
-    "login": "Login",
-    "logout": "Logout",
-    "signedInAs": "Signed in",
-    "register": "Register",
-    "email": "Email",
-    "emailPlaceholder": "you@example.com",
-    "password": "Password",
-    "passwordPlaceholder": "Min 8 characters",
-    "backToLogin": "Back to login",
-    "forgotPassword": "Forgot password?",
-    "forgotPasswordTitle": "Forgot password",
-    "forgotPasswordDescription": "Request a password reset link for your account email.",
-    "sendResetLink": "Send reset link",
-    "forgotPasswordEmailRequired": "Email is required.",
-    "forgotPasswordSending": "Sending reset instructions...",
-    "forgotPasswordRequestFailed": "Could not process your request right now. Please try again.",
-    "forgotPasswordSuccessRedirect": "If this email exists, reset instructions were sent. Redirecting to login...",
-    "resetPasswordTitle": "Reset password",
-    "resetPasswordDescription": "Set a new password using your reset token.",
-    "newPassword": "New password",
-    "passwordConfirm": "Confirm password",
-    "passwordConfirmPlaceholder": "Repeat your password",
-    "updatePassword": "Update password",
-    "requestNewResetLink": "Request a new reset link",
-    "resetTokenMissing": "Reset token is missing. Please request a new reset link.",
-    "resetPasswordRequired": "Password and confirmation are required.",
-    "resetPasswordLength": "Password must be at least 8 characters.",
-    "resetPasswordMismatch": "Password confirmation does not match.",
-    "resetPasswordUpdating": "Updating password...",
-    "resetPasswordFailed": "Password reset failed. Please request a new link.",
-    "resetPasswordSuccessRedirect": "Password updated. Redirecting to login...",
-    "networkError": "Network error. Please try again.",
-    "turnstileRequired": "Please complete the captcha challenge.",
-    "loginRequired": "Email and password are required.",
-    "loginTrying": "Trying to sign in...",
-    "loginFailed": "Login failed. Please check your credentials and try again.",
-    "loginStorageError": "Session could not be saved in your browser.",
-    "loginSuccessRedirect": "Login successful. Redirecting...",
-    "registerRequired": "Username, email and password are required.",
-    "registerCreating": "Creating account...",
-    "registerFailed": "Registration failed. Please try another email or username.",
-    "registerSuccess": "Registration successful. You can now log in."
-  },
-  "stateBanner": {
-    "runtime": "Dangqian xianshi runtime fanyi yulan, ci shitu buhui bei shoulu.",
-    "fallback": "Gai yuyan de complete neirong zanwei jiuxu ({language}), xianshi canon complete banben.",
-    "incomplete": "Gai yuyan neirong wei complete ({language}, zhuangtai: {state}), xianshi canon complete banben.",
-    "mock": "Dangqian yemian wei MOCK DATA, ci shitu yongyuan noindex.",
-    "canonicalLink": "Qianwang canon complete banben"
-  },
-  "home": {
-    "defaultTitle": "Geovito Atlas",
-    "defaultExcerpt": "You Strapi qudong de shouye.",
-    "defaultBody": "Zanwu zhengwen neirong.",
-    "atlasCountries": "Atlas (Guojia)",
-    "blogSection": "Boke",
-    "noCountryDescription": "Zanwu miaoshu.",
-    "noPostSummary": "Zanwu zhaiyao.",
-    "trendingTitle": "Trending places",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
-    "noTrending": "No trending places yet."
+    "registerDisabledTitle": "Registration is disabled"
   },
   "blog": {
-    "listTitle": "Boke",
-    "listDescription": "Geovito boke liebiao",
+    "noBody": "Zanwu zhengwen neirong.",
     "listHint": "Jishi fanyi wei complete ye keyi xianshi; fei complete banben buhui bei shoulu.",
-    "noBody": "Zanwu zhengwen neirong."
+    "listTitle": "Boke",
+    "listDescription": "Geovito boke liebiao"
   },
-  "atlas": {
-    "list": {
-      "title": "Atlas",
-      "description": "Atlas cengji zhong de guojia rukou yemian.",
-      "empty": "Zanwu guojia nei rong.",
-      "emptyTitle": "Wei zhaodao didian",
-      "emptyDescription": "Qiehuan qita guolv chip jixu tansuo atlas.",
-      "emptyAction": "Chongzhi guolv",
-      "noSnippet": "Zanwu zhaiyao.",
-      "filterAria": "Guolv atlas didian",
-      "stateLegendAria": "Yuyan zhuangtai shuoming",
-      "metaSummary": "Xianshi {shown}/{total} ge didian",
-      "filters": {
-        "all": "Quanbu",
-        "country": "Guojia",
-        "city": "Chengshi",
-        "region": "QvYu",
-        "landmark": "Dibiao"
-      },
-      "states": {
-        "complete": "complete",
-        "draft": "draft",
-        "missing": "missing"
-      },
-      "pagination": {
-        "aria": "Atlas fanye",
-        "prev": "Shangyiye",
-        "next": "Xiayiye",
-        "pageLabel": "Di {page} ye",
-        "pageCurrentLabel": "Dangqian ye, {page}"
-      }
-    },
-    "section": {
-      "overview": "Gaikuang",
-      "quickFacts": "Kuaisu xinxi",
-      "hierarchy": "Cengji",
-      "travelEssentials": "Lvxing gongju",
-      "relatedPosts": "Xiangguan wenzhang",
-      "nearbyPlaces": "Fujin didian"
-    },
-    "quickFacts": {
-      "population": "Renkou",
-      "coordinates": "Zuobiao",
-      "timezone": "Shiqu",
-      "currency": "Huobi",
-      "language": "Yuyan",
-      "elevation": "Haiba"
-    },
-    "toc": {
-      "title": "Benye daolan",
-      "aria": "Benye daolan"
-    },
-    "hierarchy": {
-      "noParent": "Zanwu fujidi",
-      "noChildren": "Zanwu zididi",
-      "moreChildren": "+{count} ge gengduo zididi",
-      "badgesAria": "Didian zhuangtai he leixing"
-    },
-    "relatedPosts": {
-      "empty": "Zanwu xiangguan wenzhang"
-    },
-    "travelEssentials": {
-      "visa": "Qianzheng",
-      "flights": "Hangban",
-      "currency": "Huobi",
-      "helper": {
-        "noOrigin": "Qing xuanze chufa di yi guding hangban guji."
-      },
-      "comingSoon": "Jijiang shangxian"
-    },
-    "meta": {
-      "placeId": "place_id",
-      "type": "leixing",
-      "country": "guojia",
-      "region": "quyu",
-      "coordinates": "zuobiao",
-      "notAvailable": "zanwu",
-      "languageStatus": "yuyan zhuangtai"
-    },
-    "links": {
-      "breadcrumb": "cengji",
-      "parent": "fujidi",
-      "children": "zididi",
-      "related": "xiangguan didian",
-      "relatedBlog": "xiangguan boke",
-      "noParent": "zanwu fujidi.",
-      "noChildren": "wei zhaodao zididi.",
-      "noRelated": "wei zhaodao xiangguan didian.",
-      "noRelatedBlog": "wei zhaodao xiangguan boke."
-    },
-    "noBody": "Zanwu zhengwen neirong."
-  },
-  "regions": {
-    "list": {
-      "title": "Qvyu",
-      "description": "An guojia guili de qvyu zufen yemian, bu gaibian hexin fujidi lian.",
-      "empty": "Zanwu qvyu zufen."
-    },
-    "meta": {
-      "title": "Qvyu yuan shuju",
-      "regionKey": "region key",
-      "country": "guojia",
-      "memberCount": "chengyuan shuliang"
-    },
-    "members": "chengyuan didian",
-    "noMembers": "wei zhaodao chengyuan didian.",
-    "noBody": "Zanwu zhengwen neirong."
+  "home": {
+    "noTrending": "No trending places yet.",
+    "blogSection": "Boke",
+    "defaultBody": "Zanwu zhengwen neirong.",
+    "defaultTitle": "Geovito Atlas",
+    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "noPostSummary": "Zanwu zhaiyao.",
+    "trendingTitle": "Trending places",
+    "atlasCountries": "Atlas (Guojia)",
+    "defaultExcerpt": "You Strapi qudong de shouye.",
+    "noCountryDescription": "Zanwu miaoshu."
   },
   "post": {
     "meta": {
@@ -253,118 +68,211 @@
     },
     "noBody": "Zanwu zhengwen neirong."
   },
+  "site": {
+    "brand": "Geovito"
+  },
+  "atlas": {
+    "toc": {
+      "aria": "Benye daolan",
+      "title": "Benye daolan"
+    },
+    "list": {
+      "empty": "Zanwu guojia nei rong.",
+      "title": "Atlas",
+      "states": {
+        "draft": "draft",
+        "missing": "missing",
+        "complete": "complete"
+      },
+      "filters": {
+        "all": "Quanbu",
+        "city": "Chengshi",
+        "region": "QvYu",
+        "country": "Guojia",
+        "landmark": "Dibiao"
+      },
+      "noSnippet": "Zanwu zhaiyao.",
+      "emptyTitle": "Wei zhaodao didian",
+      "filterAria": "Guolv atlas didian",
+      "pagination": {
+        "aria": "Atlas fanye",
+        "next": "Xiayiye",
+        "prev": "Shangyiye",
+        "pageLabel": "Di {page} ye",
+        "pageCurrentLabel": "Dangqian ye, {page}"
+      },
+      "description": "Atlas cengji zhong de guojia rukou yemian.",
+      "emptyAction": "Chongzhi guolv",
+      "metaSummary": "Xianshi {shown}/{total} ge didian",
+      "stateLegendAria": "Yuyan zhuangtai shuoming",
+      "emptyDescription": "Qiehuan qita guolv chip jixu tansuo atlas."
+    },
+    "meta": {
+      "type": "leixing",
+      "region": "quyu",
+      "country": "guojia",
+      "placeId": "place_id",
+      "coordinates": "zuobiao",
+      "notAvailable": "zanwu",
+      "languageStatus": "yuyan zhuangtai"
+    },
+    "links": {
+      "parent": "fujidi",
+      "related": "xiangguan didian",
+      "children": "zididi",
+      "noParent": "zanwu fujidi.",
+      "noRelated": "wei zhaodao xiangguan didian.",
+      "breadcrumb": "cengji",
+      "noChildren": "wei zhaodao zididi.",
+      "relatedBlog": "xiangguan boke",
+      "noRelatedBlog": "wei zhaodao xiangguan boke."
+    },
+    "noBody": "Zanwu zhengwen neirong.",
+    "section": {
+      "overview": "Gaikuang",
+      "hierarchy": "Cengji",
+      "quickFacts": "Kuaisu xinxi",
+      "nearbyPlaces": "Fujin didian",
+      "relatedPosts": "Xiangguan wenzhang",
+      "travelEssentials": "Lvxing gongju"
+    },
+    "hierarchy": {
+      "noParent": "Zanwu fujidi",
+      "badgesAria": "Didian zhuangtai he leixing",
+      "noChildren": "Zanwu zididi",
+      "moreChildren": "+{count} ge gengduo zididi"
+    },
+    "quickFacts": {
+      "currency": "Huobi",
+      "language": "Yuyan",
+      "timezone": "Shiqu",
+      "elevation": "Haiba",
+      "population": "Renkou",
+      "coordinates": "Zuobiao"
+    },
+    "relatedPosts": {
+      "empty": "Zanwu xiangguan wenzhang"
+    },
+    "travelEssentials": {
+      "visa": "Qianzheng",
+      "helper": {
+        "noOrigin": "Qing xuanze chufa di yi guding hangban guji."
+      },
+      "flights": "Hangban",
+      "currency": "Huobi",
+      "comingSoon": "Jijiang shangxian"
+    }
+  },
+  "embed": {
+    "openSource": "Dakai yuanshi shipin",
+    "sectionTitle": "Shipin"
+  },
+  "legal": {
+    "terms": {
+      "title": "Shiyong tiaokuan"
+    },
+    "cookies": {
+      "title": "Cookies zhengce",
+      "openConsentCta": "Nin keyi suishi gengxin fenxi he guanggao tongyi xuanxiang."
+    },
+    "privacy": {
+      "title": "Yinsi zhengce"
+    },
+    "lastUpdated": "Zuixin gengxin",
+    "enFallbackNotice": "Gai falv yemian muqian yi yingwen fabu, duoyuyan banben zhengzaizhizuo."
+  },
+  "footer": {
+    "terms": "Tiaokuan",
+    "cookies": "Cookies",
+    "privacy": "Yinsi"
+  },
   "uiPage": {
     "noBody": "Zanwu zhengwen neirong.",
     "notFoundTitle": "Yemian zanbuke yong",
     "notFoundDescription": "Gai xitong yemian zai Strapi zhong shangwei cunzai."
   },
   "account": {
+    "roles": {
+      "user": "Authenticated user: yuliu gei weilai boke tijiao he profile gongneng.",
+      "editor": "Editor/Admin: shenhe bing fabu Atlas yu Blog neirong.",
+      "public": "Public: yuedu Atlas/Blog/UI bing tijiao Atlas jianyi."
+    },
     "title": "Zhanghu",
-    "description": "Dangqian zhanghu ke yong dan wei zhidu mode.",
-    "authStateTitle": "denglu zhuangtai",
-    "authStateBody": "Dangqian wei weidenglu shell. Ben jieduan gongkai zhuce he geren zhanghu shuju jun wei guanbi.",
     "loginCta": "dakai admin denglu",
     "rolesTitle": "juese bianjie",
-    "roles": {
-      "public": "Public: yuedu Atlas/Blog/UI bing tijiao Atlas jianyi.",
-      "user": "Authenticated user: yuliu gei weilai boke tijiao he profile gongneng.",
-      "editor": "Editor/Admin: shenhe bing fabu Atlas yu Blog neirong."
-    },
-    "loginRequiredTitle": "Login required",
-    "loginRequiredBody": "You need to login before managing account preferences.",
-    "profileTitle": "Profile overview",
-    "profileDescription": "Basic account identity pulled from your authenticated session.",
-    "profileUsername": "Username",
-    "profileEmail": "Email",
-    "profileCreatedAt": "Member since",
-    "profileStatus": "Status",
-    "profileStatusActive": "Active",
-    "profileStatusPending": "Pending confirmation",
-    "profileStatusBlocked": "Blocked",
-    "profileUnknown": "Unknown",
-    "profileSyncFallback": "Could not refresh profile from API. Showing local session snapshot.",
-    "languageTitle": "Site language preference",
-    "languageDescription": "This preference is saved to your account profile and overrides browser language.",
-    "preferredLanguage": "Preferred site language",
-    "savePreference": "Save preference",
-    "loadedPreference": "Loaded your saved preference.",
-    "chooseSupportedLanguage": "Please choose a supported language.",
-    "savingPreference": "Saving preference...",
-    "preferenceSaveFailed": "Failed to save preference.",
-    "preferenceSavedRedirect": "Preference saved. Redirecting...",
-    "preferenceNetworkError": "Network error while saving preference.",
-    "passwordTitle": "Change password",
-    "passwordDescription": "Update your account password. Use a strong password with at least 8 characters.",
-    "currentPassword": "Current password",
-    "newPassword": "New password",
-    "passwordConfirm": "Confirm new password",
-    "changePassword": "Change password",
-    "passwordRequired": "All password fields are required.",
-    "passwordLength": "New password must be at least 8 characters.",
-    "passwordMismatch": "Password confirmation does not match.",
-    "passwordSameAsCurrent": "New password must be different from current password.",
-    "passwordSaving": "Updating password...",
-    "passwordSaveFailed": "Could not update password. Please verify your current password.",
-    "passwordSaved": "Password updated successfully.",
-    "passwordNetworkError": "Network error while updating password.",
-    "commentsTitle": "My comment queue",
-    "commentsDescription": "Track moderation status of your recent blog comments.",
-    "commentsPending": "Pending",
-    "commentsApproved": "Approved",
-    "commentsRejected": "Rejected",
-    "commentsSpam": "Spam",
-    "commentsNone": "No comments yet.",
-    "commentsRefresh": "Refresh comments",
-    "commentsLoading": "Loading comments...",
-    "commentsLoadFailed": "Could not load comments right now.",
-    "commentsPostRef": "Post",
-    "commentsStatus": "Status",
-    "commentsModerationNote": "Moderation note"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "description": "Mianxiang bianji liucheng de anquan dashboard shell.",
-    "readOnlyTitle": "zhi du mode",
-    "readOnlyBody": "zai yonghu tijiao gongneng qiyong qian, dashboard zujian baochi jianhua.",
-    "dataTitle": "jihua zhong de mokuai",
-    "items": {
-      "blogDrafts": "wo de boke caogao (future)",
-      "submissions": "wo de Atlas jianyi (future)",
-      "savedPlaces": "shoucang didian/watchlist (future)"
-    },
-    "loginCta": "qianwang zhanghu shell"
-  },
-  "ops": {
-    "title": "Ops Metrics",
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
-    "kpi": {
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "clicks": "Clicks (7d)",
-      "impressions": "Impressions (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "earnings": "Earnings (7d)"
-    },
-    "providers": {
-      "title": "Provider status",
-      "ok": "OK",
-      "notConfigured": "Not configured",
-      "error": "Error"
-    },
-    "empty": {
-      "title": "No metrics collected yet",
-      "desc": "Run the metrics collector locally, then refresh this page."
-    },
-    "disabled": {
-      "title": "Ops metrics viewer is disabled in this mode",
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment."
-    }
-  },
-  "embed": {
-    "sectionTitle": "Shipin",
-    "openSource": "Dakai yuanshi shipin"
+    "description": "Dangqian zhanghu ke yong dan wei zhidu mode.",
+    "authStateBody": "Dangqian wei weidenglu shell. Ben jieduan gongkai zhuce he geren zhanghu shuju jun wei guanbi.",
+    "authStateTitle": "denglu zhuangtai"
   },
   "actions": {
     "previewOnDemand": "Dakai anxu fanyi yulan (noindex)"
+  },
+  "consent": {
+    "ads": "Guanggao",
+    "desc": "Kexuan de fenxi he guanggao shezhi zhiyou zai nin tongyi hou cai hui qiyong. Bixu gongneng yizhi baochi kaiqi.",
+    "save": "Baocun xuanxiang",
+    "close": "Guanbi",
+    "title": "Yinsi xuanxiang",
+    "manage": "Guanli tongyi",
+    "updated": "Tongyi yi gengxin",
+    "alwaysOn": "Yizhi kaiqi",
+    "acceptAll": "Quanbu tongyi",
+    "analytics": "Fenxi",
+    "customize": "Zidingyi",
+    "learnMore": "Liaojie gengduo",
+    "necessary": "Biyao",
+    "rejectAll": "Quanbu jujue",
+    "modalTitle": "Zidingyi tongyi",
+    "openSettings": "Dakaitongyi shezhi"
+  },
+  "regions": {
+    "list": {
+      "empty": "Zanwu qvyu zufen.",
+      "title": "Qvyu",
+      "description": "An guojia guili de qvyu zufen yemian, bu gaibian hexin fujidi lian."
+    },
+    "meta": {
+      "title": "Qvyu yuan shuju",
+      "country": "guojia",
+      "regionKey": "region key",
+      "memberCount": "chengyuan shuliang"
+    },
+    "noBody": "Zanwu zhengwen neirong.",
+    "members": "chengyuan didian",
+    "noMembers": "wei zhaodao chengyuan didian."
+  },
+  "language": {
+    "switcherAria": "Yuyan xuanze"
+  },
+  "dashboard": {
+    "items": {
+      "blogDrafts": "wo de boke caogao (future)",
+      "savedPlaces": "shoucang didian/watchlist (future)",
+      "submissions": "wo de Atlas jianyi (future)"
+    },
+    "title": "Dashboard",
+    "loginCta": "qianwang zhanghu shell",
+    "dataTitle": "jihua zhong de mokuai",
+    "description": "Mianxiang bianji liucheng de anquan dashboard shell.",
+    "readOnlyBody": "zai yonghu tijiao gongneng qiyong qian, dashboard zujian baochi jianhua.",
+    "readOnlyTitle": "zhi du mode"
+  },
+  "errorPage": {
+    "title": "Chuxian wenti",
+    "homeCta": "Fanhui shouye",
+    "reportCta": "Baogao wenti",
+    "consentCta": "Dakaitongyi shezhi",
+    "reportSent": "Wenti baogao yi fasong.",
+    "description": "Dangqian yemian fasheng le yige yiwai wenti. Nin keyi fanhui shouye huo tiaozheng tongyi shezhi.",
+    "reportReady": "Nin keyi baogao ci wenti.",
+    "inlineFallback": "Bufen jiaohu kongjian zan shi buke yong.",
+    "reportDisabled": "Qing xian qiyong fenxi tongyi, zai fasong cuowu baogao."
+  },
+  "stateBanner": {
+    "mock": "Dangqian yemian wei MOCK DATA, ci shitu yongyuan noindex.",
+    "runtime": "Dangqian xianshi runtime fanyi yulan, ci shitu buhui bei shoulu.",
+    "fallback": "Gai yuyan de complete neirong zanwei jiuxu ({language}), xianshi canon complete banben.",
+    "incomplete": "Gai yuyan neirong wei complete ({language}, zhuangtai: {state}), xianshi canon complete banben.",
+    "canonicalLink": "Qianwang canon complete banben"
   }
 }

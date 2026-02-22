@@ -5,7 +5,7 @@
     "singularName": "ui-page",
     "pluralName": "ui-pages",
     "displayName": "UI Page",
-    "description": "System/UI content pages such as home, about, rules and help"
+    "description": "System/UI content pages with stable page_key routing (about, rules, help)"
   },
   "options": {
     "draftAndPublish": true
