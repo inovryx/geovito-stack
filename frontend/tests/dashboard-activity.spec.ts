@@ -187,7 +187,9 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Build abc1234 is live.');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('comments are pending moderation');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('locales have UI translation gaps');
-  await expect(page.locator('[data-dashboard-activity-feed] .dashboard-activity-link', { hasText: 'Runbook' })).toBeVisible();
+  await expect(
+    page.locator('[data-dashboard-activity-feed] .dashboard-activity-link', { hasText: 'Runbook' }).first()
+  ).toBeVisible();
   await expect(
     page.locator('[data-dashboard-activity-feed] .dashboard-activity-link', { hasText: 'Moderation' }).first()
   ).toBeVisible();

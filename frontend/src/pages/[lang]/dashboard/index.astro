@@ -77,6 +77,29 @@ const dashboardCopy = {
   commentsPending: translate(ui, 'dashboard.commentsPending', {}, 'Pending'),
   commentsApproved: translate(ui, 'dashboard.commentsApproved', {}, 'Approved'),
   commentsRejected: translate(ui, 'dashboard.commentsRejected', {}, 'Rejected/Spam'),
+  creatorTitle: translate(ui, 'dashboard.creatorTitle', {}, 'Creator profile'),
+  creatorBody: translate(
+    ui,
+    'dashboard.creatorBody',
+    {},
+    'Public mini-site link, draft queue, and submit status for your UGC posts.'
+  ),
+  creatorUsername: translate(ui, 'dashboard.creatorUsername', {}, 'Username'),
+  creatorVisibility: translate(ui, 'dashboard.creatorVisibility', {}, 'Visibility'),
+  creatorDrafts: translate(ui, 'dashboard.creatorDrafts', {}, 'Drafts'),
+  creatorSubmitted: translate(ui, 'dashboard.creatorSubmitted', {}, 'Submitted'),
+  creatorApproved: translate(ui, 'dashboard.creatorApproved', {}, 'Approved'),
+  creatorPublicLink: translate(ui, 'dashboard.creatorPublicLink', {}, 'Public profile'),
+  creatorNoProfile: translate(
+    ui,
+    'dashboard.creatorNoProfile',
+    {},
+    'No creator profile found yet. Open account settings to create one.'
+  ),
+  creatorCopyLink: translate(ui, 'dashboard.creatorCopyLink', {}, 'Copy profile link'),
+  creatorCopyLinkSuccess: translate(ui, 'dashboard.creatorCopyLinkSuccess', {}, 'Profile link copied.'),
+  creatorCopyLinkFailed: translate(ui, 'dashboard.creatorCopyLinkFailed', {}, 'Clipboard blocked. Copy manually.'),
+  creatorModerationInbox: translate(ui, 'dashboard.creatorModerationInbox', {}, 'Moderation inbox'),
   moderationQueueTitle: translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue'),
   moderationQueueBody: translate(
     ui,
@@ -584,6 +607,58 @@ const dashboardCopy = {
             <ul class="dashboard-mini-list" data-dashboard-comments-recent hidden></ul>
           </article>
 
+          <article class="card panel gv-stack" id="dashboard-member-creator">
+            <h3 class="dashboard-mini-title">{dashboardCopy.creatorTitle}</h3>
+            <p class="small">{dashboardCopy.creatorBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.creatorUsername}</span>
+                <strong data-dashboard-creator-username>-</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.creatorVisibility}</span>
+                <strong data-dashboard-creator-visibility>-</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.creatorDrafts}</span>
+                <strong data-dashboard-creator-drafts>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.creatorSubmitted}</span>
+                <strong data-dashboard-creator-submitted>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.creatorApproved}</span>
+                <strong data-dashboard-creator-approved>0</strong>
+              </p>
+            </div>
+            <p class="small" data-dashboard-creator-profile-note>{dashboardCopy.creatorNoProfile}</p>
+            <p class="small" data-dashboard-creator-link-wrap hidden>
+              <span>{dashboardCopy.creatorPublicLink}: </span>
+              <a href="#" data-dashboard-creator-link target="_blank" rel="noopener noreferrer">/u/</a>
+            </p>
+            <div class="dashboard-actions">
+              <button
+                type="button"
+                class="ui-button ui-button-secondary ui-button-sm"
+                data-dashboard-copy-creator-link
+                hidden
+              >
+                <span class="ui-button-label">{dashboardCopy.creatorCopyLink}</span>
+              </button>
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href="#dashboard-editorial-moderation"
+                data-dashboard-section-pill
+                data-dashboard-role-gated
+                data-min-role="editor"
+                hidden
+              >
+                <span class="ui-button-label">{dashboardCopy.creatorModerationInbox}</span>
+              </a>
+            </div>
+          </article>
+
           <article class="card panel gv-stack">
             <h3 class="dashboard-mini-title">{dashboardCopy.accessTitle}</h3>
             <p class="small">{dashboardCopy.accessBody}</p>
@@ -609,6 +684,15 @@ const dashboardCopy = {
             <div class="dashboard-actions">
               <a class="ui-button ui-button-secondary ui-button-sm" href={accountPath} data-dashboard-quick-id="account" data-dashboard-role-gated data-min-role="member">
                 <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
+              </a>
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href="#dashboard-member-creator"
+                data-dashboard-quick-id="creator-profile"
+                data-dashboard-role-gated
+                data-min-role="member"
+              >
+                <span class="ui-button-label">{dashboardCopy.creatorTitle}</span>
               </a>
               <a
                 class="ui-button ui-button-secondary ui-button-sm"
@@ -1082,6 +1166,15 @@ const dashboardCopy = {
       const commentsApprovedNode = document.querySelector('[data-dashboard-comments-approved]');
       const commentsRejectedNode = document.querySelector('[data-dashboard-comments-rejected]');
       const commentsRecentNode = document.querySelector('[data-dashboard-comments-recent]');
+      const creatorUsernameNode = document.querySelector('[data-dashboard-creator-username]');
+      const creatorVisibilityNode = document.querySelector('[data-dashboard-creator-visibility]');
+      const creatorDraftsNode = document.querySelector('[data-dashboard-creator-drafts]');
+      const creatorSubmittedNode = document.querySelector('[data-dashboard-creator-submitted]');
+      const creatorApprovedNode = document.querySelector('[data-dashboard-creator-approved]');
+      const creatorProfileNoteNode = document.querySelector('[data-dashboard-creator-profile-note]');
+      const creatorLinkWrapNode = document.querySelector('[data-dashboard-creator-link-wrap]');
+      const creatorLinkNode = document.querySelector('[data-dashboard-creator-link]');
+      const creatorCopyLinkButton = document.querySelector('[data-dashboard-copy-creator-link]');
       const localeCoverageNode = document.querySelector('[data-dashboard-locale-coverage]');
       const localeGapsNode = document.querySelector('[data-dashboard-locale-gaps]');
       const localeDeployNode = document.querySelector('[data-dashboard-locale-deploy]');
@@ -1129,6 +1222,7 @@ const dashboardCopy = {
       let ownerLocaleUntranslatedCount = 0;
       let ownerLocaleDeployCount = 0;
       let ownerFingerprintSha = '';
+      let creatorProfileUrl = '';
       let lastActivityHasErrors = false;
       let activityHistory = [];
       let activityTickTimer = null;
@@ -1202,6 +1296,39 @@ const dashboardCopy = {
         const el = toNode(node);
         if (!el) return;
         el.textContent = String(value ?? '');
+      };
+
+      const setCreatorProfileView = (profile, { draftCount = 0, submittedCount = 0, approvedCount = 0 } = {}) => {
+        const username = String(profile?.username || '').trim().toLowerCase();
+        const visibility = String(profile?.visibility || '').trim().toLowerCase() || dashboardCopy.unknown;
+        creatorProfileUrl = username ? `/u/${username}/` : '';
+
+        setText(creatorUsernameNode, username ? `@${username}` : '-');
+        setText(creatorVisibilityNode, visibility || '-');
+        setText(creatorDraftsNode, String(Math.max(0, Number(draftCount) || 0)));
+        setText(creatorSubmittedNode, String(Math.max(0, Number(submittedCount) || 0)));
+        setText(creatorApprovedNode, String(Math.max(0, Number(approvedCount) || 0)));
+
+        const note = toNode(creatorProfileNoteNode);
+        if (note) {
+          note.hidden = Boolean(username);
+        }
+
+        const linkWrap = toNode(creatorLinkWrapNode);
+        if (linkWrap) {
+          linkWrap.hidden = !username;
+        }
+
+        if (creatorLinkNode instanceof HTMLAnchorElement) {
+          const href = creatorProfileUrl || '#';
+          creatorLinkNode.href = href;
+          creatorLinkNode.textContent = creatorProfileUrl || '/u/';
+          creatorLinkNode.setAttribute('aria-label', href);
+        }
+
+        if (creatorCopyLinkButton instanceof HTMLButtonElement) {
+          creatorCopyLinkButton.hidden = !username;
+        }
       };
 
       const normalizeCount = (value, fallback = 0) => {
@@ -2361,6 +2488,11 @@ const dashboardCopy = {
         setText(commentsPendingNode, '0');
         setText(commentsApprovedNode, '0');
         setText(commentsRejectedNode, '0');
+        setCreatorProfileView(null, {
+          draftCount: 0,
+          submittedCount: 0,
+          approvedCount: 0,
+        });
         setText(moderationPendingNode, '0');
         setText(moderationStaleNode, '0');
         setText(moderationOldestNode, '0h');
@@ -2462,6 +2594,50 @@ const dashboardCopy = {
             renderRecentComments(items);
           } else {
             hadErrors = true;
+          }
+        } catch {
+          hadErrors = true;
+        }
+
+        let creatorProfileData = null;
+        try {
+          const response = await fetch(`${authBaseUrl}/api/creator-profile/me`, { headers: authHeaders });
+          if (response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            creatorProfileData = payload?.data && typeof payload.data === 'object' ? payload.data : null;
+          } else if (!(response.status === 404 || response.status === 405)) {
+            hadErrors = true;
+          }
+        } catch {
+          hadErrors = true;
+        }
+
+        setCreatorProfileView(creatorProfileData, {
+          draftCount: 0,
+          submittedCount: 0,
+          approvedCount: 0,
+        });
+
+        try {
+          const response = await fetch(`${authBaseUrl}/api/blog-posts/me/list?limit=120`, { headers: authHeaders });
+          if (response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            const items = Array.isArray(payload?.data) ? payload.data : [];
+            const drafts = items.filter((item) => String(item?.submission_state || '').toLowerCase() === 'draft').length;
+            const submitted = items.filter((item) => String(item?.submission_state || '').toLowerCase() === 'submitted').length;
+            const approved = items.filter((item) => String(item?.submission_state || '').toLowerCase() === 'approved').length;
+            setCreatorProfileView(creatorProfileData, {
+              draftCount: drafts,
+              submittedCount: submitted,
+              approvedCount: approved,
+            });
+          } else if (!(response.status === 404 || response.status === 405)) {
+            hadErrors = true;
+            setCreatorProfileView(creatorProfileData, {
+              draftCount: 0,
+              submittedCount: 0,
+              approvedCount: 0,
+            });
           }
         } catch {
           hadErrors = true;
@@ -2670,6 +2846,20 @@ const dashboardCopy = {
             }
           });
         });
+
+        if (creatorCopyLinkButton instanceof HTMLButtonElement) {
+          creatorCopyLinkButton.addEventListener('click', async () => {
+            const profileUrl = String(creatorProfileUrl || '').trim();
+            if (!profileUrl) return;
+            const absoluteProfileUrl = new URL(profileUrl, window.location.origin).toString();
+            try {
+              await navigator.clipboard.writeText(absoluteProfileUrl);
+              setFeedback(dashboardCopy.creatorCopyLinkSuccess);
+            } catch {
+              setFeedback(`${dashboardCopy.creatorCopyLinkFailed} ${absoluteProfileUrl}`, true);
+            }
+          });
+        }
 
         if (moderationListNode instanceof HTMLElement) {
           moderationListNode.addEventListener('click', async (event) => {
