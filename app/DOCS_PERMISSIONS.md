@@ -7,6 +7,11 @@ Allowed:
 - `atlas-place`: `find`, `findOne`
 - `atlas-place`: editorial checklist helper (`GET /api/atlas-places/:placeId/editorial-checklist`)
 - `blog-post`: `find`, `findOne`
+- `creator-profile`: `find`, `findOne` (public visibility rows only)
+- `creator-profile`: public read endpoints:
+  - `GET /api/creators`
+  - `GET /api/creators/:username`
+  - `GET /api/creators/:username/posts`
 - `blog-comment`: `find`, `findOne` (approved-only via controller filter)
 - `blog-comment`: custom submit endpoint (`POST /api/blog-comments/submit`, `auth=false`)
 - `blog-like`: public count endpoint (`GET /api/blog-likes/count/:postId`)
@@ -20,6 +25,13 @@ Allowed:
 
 Not allowed:
 - Any create/update/delete on Atlas, Blog, UI, Gazetteer, Import Batch
+- Public cannot call owner/editor UGC blog routes:
+  - `POST /api/blog-posts/me/draft`
+  - `PUT /api/blog-posts/me/draft/:postId`
+  - `POST /api/blog-posts/me/submit/:postId`
+  - `GET /api/blog-posts/me/list`
+  - `GET /api/blog-posts/moderation/list`
+  - `POST /api/blog-posts/moderation/set`
 - Public cannot toggle likes without valid Bearer JWT (`POST /api/blog-likes/toggle` -> `401`)
 - Direct mutation of Atlas data from public users
 - Any public access to `POST /api/ai/diagnostics` or `POST /api/ai/draft`
@@ -42,10 +54,21 @@ Not allowed:
   - `GET /api/user-preferences/me`
   - `PUT /api/user-preferences/me`
   These endpoints only read/write the caller's own preference record.
+- Authenticated users can access UGC owner routes when enabled:
+  - `GET /api/creator-profile/me`
+  - `PUT /api/creator-profile/me`
+  - `POST /api/blog-posts/me/draft`
+  - `PUT /api/blog-posts/me/draft/:postId`
+  - `POST /api/blog-posts/me/submit/:postId`
+  - `GET /api/blog-posts/me/list`
+  - Guard: `UGC_POST_WRITE_ENABLED=false` by default.
 
 ## Admin Panel
 - Super Admin: full access
 - Editor: moderation + content editing, no schema management
+- Editor/Admin can use UGC moderation routes:
+  - `GET /api/blog-posts/moderation/list`
+  - `POST /api/blog-posts/moderation/set`
 - Blog comment moderation transitions must follow lifecycle rules:
   - `pending -> approved|rejected|spam|deleted`
   - `approved -> rejected|spam|deleted`

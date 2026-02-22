@@ -36,6 +36,15 @@ Core principles:
 - Model: `api::blog-post.blog-post`
 - Contributory domain
 - Optional Atlas linking only; no Atlas override
+- Supports two sources: `editorial` and `user`
+- User posts are moderated through `submission_state` (`draft|submitted|approved|rejected|spam|deleted`)
+
+### Creator Profile (UGC Mini-site)
+- Model: `api::creator-profile.creator-profile`
+- One profile per authenticated user (`owner_user` + `owner_user_id`)
+- Public mini-site canonical path: `/u/{username}`
+- Optional vanity alias: `/@{username}` redirected to `/u/{username}`
+- Creator profile is noindex; only approved user posts can become indexable
 
 ### UI/System
 - Model: `api::ui-page.ui-page`
@@ -86,6 +95,7 @@ Core principles:
 ### Search
 - Derived index layer (not canonical source)
 - Atlas and Blog contracts/ranking remain separated
+- UGC posts are indexed only when moderation + language gate allows
 
 ### Import (Dormant)
 - Gazetteer/import models/contracts exist
@@ -164,6 +174,10 @@ Important:
 - `/:lang/regions/:regionSlug/`
 - `/:lang/blog/`
 - `/:lang/blog/:postSlug/`
+- `/u/:username/`
+- `/u/:username/posts/`
+- `/u/:username/about/`
+- `/@:username` -> `/u/:username` (redirect)
 - `/:lang/about|rules|help|privacy|cookies|terms`
 - `/:lang/login|register|account|dashboard`
 

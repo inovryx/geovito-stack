@@ -126,6 +126,15 @@ Strict gate:
 - Runtime preview (`?translate=1`) always `noindex,nofollow`
 - Mock pages always `noindex,nofollow` + MOCK banner
 
+UGC user-post extension:
+- `content_source=user` posts are indexable only when all are true:
+  - `submission_state=approved`
+  - `publishedAt` exists
+  - EN translation is `complete`
+  - EN translation is not runtime and `indexable!==false`
+  - `mock=false`
+- Creator profile pages (`/u/:username`) are always `noindex,nofollow`.
+
 ## 5) Banner Semantics
 Frontend keeps explicit state tokens:
 - `state-banner mock`

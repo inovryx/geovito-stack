@@ -16,6 +16,9 @@ Set the following in Cloudflare Pages project environment (Production and Previe
 - `PUBLIC_AUTH_GOOGLE_ENABLED=false` (default)
 - `PUBLIC_AUTH_FACEBOOK_ENABLED=false` (default)
 - `PUBLIC_TURNSTILE_SITE_KEY` (optional; set to enable captcha widget on auth forms)
+- `UGC_PROFILE_PUBLIC_ENABLED=true` (public creator mini-site reads)
+- `UGC_POST_WRITE_ENABLED=false` (recommended initial rollout; owner write API locked)
+- `UGC_CITIZEN_CARD_ENABLED=true` (basic card visibility on creator pages)
 - If `STRAPI_URL` is protected by Cloudflare Access, also set:
   - `CF_ACCESS_CLIENT_ID`
   - `CF_ACCESS_CLIENT_SECRET`
@@ -48,6 +51,12 @@ Strapi runtime media flags (VPS/docker):
 - `MEDIA_IMAGE_ALLOWED_INPUT_MIME=jpg,jpeg,png,webp`
 - `MEDIA_IMAGE_QUALITY` (suggested `80-85`)
 - `MEDIA_IMAGE_MAX_INPUT_BYTES`, `UPLOAD_MAX_FILE_SIZE_BYTES`
+
+UGC moderation rollout commands:
+- Backfill existing editorial posts once after deploy:
+  - `bash tools/ugc_backfill_blog_posts.sh`
+- Keep write endpoints locked until moderation flow is ready:
+  - `UGC_POST_WRITE_ENABLED=false`
 
 UI locale build-time export:
 - `ui-locale` edits require export + deploy.

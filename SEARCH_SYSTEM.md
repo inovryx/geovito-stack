@@ -27,6 +27,12 @@ Sitemap and search must stay consistent:
 - include only EN complete non-mock URLs
 - exclude non-complete and non-EN variants
 - include region pages only when indexable by same rule
+- include UGC user posts only when:
+  - `content_source=user`
+  - `submission_state=approved`
+  - `publishedAt` exists
+  - EN translation is `complete` and indexable
+- creator profile pages (`/u/:username`) are noindex and excluded from sitemap
 
 ## 5) Metadata Enrichment (Contract-safe)
 Atlas export can include:
@@ -84,3 +90,8 @@ Current `/[lang]/search` behavior is client-side and non-canonical:
 - filter chip counts are query-scoped (reflect current query match set)
 
 This layer is for UX discoverability only. Canonical indexing/ranking remains domain contracts + future indexer service.
+
+## 11) UGC Discoverability Contract
+- Blog detail author bar links to creator mini-site (`/u/:username`) for navigation only.
+- Creator mini-site does not participate in SEO indexing.
+- Approved user posts can be discoverable via normal blog URLs under language/index gate.
