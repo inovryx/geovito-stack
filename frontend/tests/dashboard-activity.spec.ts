@@ -401,6 +401,9 @@ dashboardRoleCases.forEach((roleCase) => {
     const ownerReleaseWidget = page.locator('[data-dashboard-owner-widget="release"]');
     const ownerModerationWidget = page.locator('[data-dashboard-owner-widget="moderation"]');
     const ownerLocaleWidget = page.locator('[data-dashboard-owner-widget="locale"]');
+    const ownerReleaseAction = page.locator('[data-dashboard-owner-widget-action="release"]');
+    const ownerModerationAction = page.locator('[data-dashboard-owner-widget-action="moderation"]');
+    const ownerLocaleAction = page.locator('[data-dashboard-owner-widget-action="locale"]');
 
     if (roleCase.expectEditorialLane) {
       await expect(editorialLane).toBeVisible();
@@ -429,11 +432,20 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(ownerModerationWidget).toHaveAttribute('data-state', 'ok');
       await expect(ownerLocaleWidget).toHaveAttribute('data-state', 'ok');
       await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('role123');
+      await expect(ownerReleaseAction).toBeVisible();
+      await expect(ownerReleaseAction).toHaveAttribute('href', /LAUNCH_RUNBOOK\.md$/);
+      await expect(ownerModerationAction).toBeVisible();
+      await expect(ownerModerationAction).toHaveAttribute('href', '#dashboard-editorial');
+      await expect(ownerLocaleAction).toBeVisible();
+      await expect(ownerLocaleAction).toHaveAttribute('href', '#dashboard-editorial');
     } else {
       await expect(ownerCards).toHaveCount(0);
       await expect(ownerReleaseWidget).toBeHidden();
       await expect(ownerModerationWidget).toBeHidden();
       await expect(ownerLocaleWidget).toBeHidden();
+      await expect(ownerReleaseAction).toBeHidden();
+      await expect(ownerModerationAction).toBeHidden();
+      await expect(ownerLocaleAction).toBeHidden();
     }
 
     if (roleCase.expectAdminLinks) {
@@ -598,6 +610,8 @@ test('dashboard owner widgets show warning states when signals are present', asy
   const releaseWidget = page.locator('[data-dashboard-owner-widget="release"]');
   const moderationWidget = page.locator('[data-dashboard-owner-widget="moderation"]');
   const localeWidget = page.locator('[data-dashboard-owner-widget="locale"]');
+  const moderationAction = page.locator('[data-dashboard-owner-widget-action="moderation"]');
+  const localeAction = page.locator('[data-dashboard-owner-widget-action="locale"]');
 
   await expect(releaseWidget).toHaveAttribute('data-state', 'warn');
   await expect(moderationWidget).toHaveAttribute('data-state', 'warn');
@@ -605,6 +619,11 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('owner77');
   await expect(page.locator('[data-dashboard-owner-widget-moderation-detail]')).toContainText('older than 24h');
   await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
+
+  await moderationAction.click();
+  await expect(page).toHaveURL(/#dashboard-editorial$/);
+  await expect(page.locator('[data-dashboard-section-pill][href="#dashboard-editorial"]').first()).toHaveClass(/is-active/);
+  await expect(localeAction).toHaveAttribute('href', '#dashboard-editorial');
 });
 
 test('dashboard lane collapse state persists between reloads', async ({ page }, testInfo) => {

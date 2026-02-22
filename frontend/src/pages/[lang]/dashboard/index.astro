@@ -702,6 +702,17 @@ const dashboardCopy = {
                   <strong data-dashboard-owner-widget-release-state>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
                 </header>
                 <p class="small" data-dashboard-owner-widget-release-detail>{dashboardCopy.activityBuildUnknown}</p>
+                <div class="dashboard-owner-widget-actions">
+                  <a
+                    class="ui-button ui-button-secondary ui-button-sm"
+                    href={launchRunbookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-dashboard-owner-widget-action="release"
+                  >
+                    <span class="ui-button-label">{dashboardCopy.activityActionRunbook}</span>
+                  </a>
+                </div>
               </article>
               <article class="dashboard-owner-widget" data-dashboard-owner-widget="moderation" data-state="unknown">
                 <header>
@@ -709,6 +720,16 @@ const dashboardCopy = {
                   <strong data-dashboard-owner-widget-moderation-state>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
                 </header>
                 <p class="small" data-dashboard-owner-widget-moderation-detail>{dashboardCopy.moderationQueueEmpty}</p>
+                <div class="dashboard-owner-widget-actions">
+                  <a
+                    class="ui-button ui-button-secondary ui-button-sm"
+                    href="#dashboard-editorial"
+                    data-dashboard-section-pill
+                    data-dashboard-owner-widget-action="moderation"
+                  >
+                    <span class="ui-button-label">{dashboardCopy.activityActionModeration}</span>
+                  </a>
+                </div>
               </article>
               <article class="dashboard-owner-widget" data-dashboard-owner-widget="locale" data-state="unknown">
                 <header>
@@ -716,6 +737,16 @@ const dashboardCopy = {
                   <strong data-dashboard-owner-widget-locale-state>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
                 </header>
                 <p class="small" data-dashboard-owner-widget-locale-detail>{dashboardCopy.activityAllClear}</p>
+                <div class="dashboard-owner-widget-actions">
+                  <a
+                    class="ui-button ui-button-secondary ui-button-sm"
+                    href="#dashboard-editorial"
+                    data-dashboard-section-pill
+                    data-dashboard-owner-widget-action="locale"
+                  >
+                    <span class="ui-button-label">{dashboardCopy.activityActionTranslations}</span>
+                  </a>
+                </div>
               </article>
             </div>
           </article>
@@ -2387,6 +2418,12 @@ const dashboardCopy = {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--ink-muted);
+  }
+
+  .dashboard-owner-widget-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
   }
 
   .dashboard-owner-widget[data-state='ok'] {
