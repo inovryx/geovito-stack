@@ -182,13 +182,21 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
         return parts.length === 3;
       })();
 
-      const updateGuestReadingMode = () => {
+      const isDashboardRoute = (() => {
+        const parts = String(window.location.pathname || '')
+          .split('/')
+          .filter(Boolean);
+        return parts.length >= 2 && parts[1] === 'dashboard';
+      })();
+
+      const updateShellModeClasses = () => {
         if (!(shellLayout instanceof HTMLElement)) return;
         const hasSession = Boolean(readAuthSession());
         root.classList.toggle('shell-guest-reading', isReadingRoute && !hasSession);
+        root.classList.toggle('shell-dashboard-auth', isDashboardRoute && hasSession);
       };
 
-      updateGuestReadingMode();
+      updateShellModeClasses();
       const sidebarToggles = Array.from(document.querySelectorAll('[data-sidebar-toggle]'));
 
       if (sidebarToggles.length > 0) {
@@ -255,7 +263,7 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 
       window.addEventListener('storage', (event) => {
         if (event.key === 'geovito_auth_session') {
-          updateGuestReadingMode();
+          updateShellModeClasses();
         }
       });
 
