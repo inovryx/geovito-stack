@@ -301,6 +301,7 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
       '#dashboard-control-seo': '#dashboard-control',
       '#dashboard-ads': '#dashboard-control-ads',
     };
+    const DASHBOARD_NAV_SYNC_EVENT = 'geovito:dashboard-nav-sync';
     const normalizeHash = (value) => {
       const hash = normalize(value);
       return dashboardHashAliases[hash] || hash;
@@ -370,6 +371,39 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
       }
     };
 
+    const syncSidebarActiveLinks = () => {
+      document.querySelectorAll('[data-auth-dashboard-link]').forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.hidden) {
+          node.classList.remove('is-active');
+          return;
+        }
+        const href = node.getAttribute('href') || '';
+        const fallbackWhenNoHash = href.endsWith('#dashboard-member');
+        node.classList.toggle('is-active', isSidebarLinkActive(href, fallbackWhenNoHash));
+      });
+
+      document.querySelectorAll('[data-auth-workspace-link]').forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.hidden) {
+          node.classList.remove('is-active');
+          return;
+        }
+        const href = node.getAttribute('href') || '';
+        node.classList.toggle('is-active', isSidebarLinkActive(href));
+      });
+
+      document.querySelectorAll('[data-auth-admin-link]').forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.hidden) {
+          node.classList.remove('is-active');
+          return;
+        }
+        const href = node.getAttribute('href') || '';
+        node.classList.toggle('is-active', isSidebarLinkActive(href));
+      });
+    };
+
     const applyAuthState = async () => {
       const session = readSession();
       const role = session ? await resolveSessionRole(session) : 'member';
@@ -431,8 +465,6 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
           const minRole = normalize(node.getAttribute('data-min-role') || 'member');
           const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
           node.hidden = roleRank < minRank;
-          const href = node.getAttribute('href') || '';
-          node.classList.toggle('is-active', !node.hidden && isSidebarLinkActive(href));
         });
       });
 
@@ -447,8 +479,6 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
           const minRole = normalize(node.getAttribute('data-min-role') || 'member');
           const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
           node.hidden = roleRank < minRank;
-          const href = node.getAttribute('href') || '';
-          node.classList.toggle('is-active', !node.hidden && isSidebarLinkActive(href));
         });
       });
 
@@ -487,11 +517,10 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
           const minRole = normalize(node.getAttribute('data-min-role') || 'member');
           const minRank = Number(roleOrder[minRole] ?? roleOrder.member);
           node.hidden = roleRank < minRank;
-          const href = node.getAttribute('href') || '';
-          const fallbackWhenNoHash = href.endsWith('#dashboard-member');
-          node.classList.toggle('is-active', !node.hidden && isSidebarLinkActive(href, fallbackWhenNoHash));
         });
       });
+
+      syncSidebarActiveLinks();
     };
 
     const bindLogout = () => {
@@ -528,7 +557,11 @@ const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity'
     });
 
     window.addEventListener('hashchange', () => {
-      void applyAuthState();
+      syncSidebarActiveLinks();
+    });
+
+    window.addEventListener(DASHBOARD_NAV_SYNC_EVENT, () => {
+      syncSidebarActiveLinks();
     });
 
     if (document.readyState === 'loading') {
