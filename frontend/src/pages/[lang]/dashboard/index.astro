@@ -515,7 +515,7 @@ const dashboardCopy = {
         </header>
 
         <div class="dashboard-grid" data-dashboard-lane-content>
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" id="dashboard-editorial-moderation">
             <div class="gv-stack dashboard-moderation-wrap" data-dashboard-moderation-wrap hidden>
               <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
               <p class="small">{dashboardCopy.moderationQueueBody}</p>
@@ -541,7 +541,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" id="dashboard-editorial-locale">
             <h3 class="dashboard-mini-title">{dashboardCopy.localeTitle}</h3>
             <p class="small">{dashboardCopy.localeBody}</p>
             <div class="dashboard-kpi-grid">
@@ -724,7 +724,7 @@ const dashboardCopy = {
                 <div class="dashboard-owner-widget-actions">
                   <a
                     class="ui-button ui-button-secondary ui-button-sm"
-                    href="#dashboard-editorial"
+                    href="#dashboard-editorial-moderation"
                     data-dashboard-section-pill
                     data-dashboard-owner-widget-action="moderation"
                   >
@@ -742,7 +742,7 @@ const dashboardCopy = {
                 <div class="dashboard-owner-widget-actions">
                   <a
                     class="ui-button ui-button-secondary ui-button-sm"
-                    href="#dashboard-editorial"
+                    href="#dashboard-editorial-locale"
                     data-dashboard-section-pill
                     data-dashboard-owner-widget-action="locale"
                   >
@@ -918,7 +918,8 @@ const dashboardCopy = {
       let activityHistory = [];
       let activityTickTimer = null;
       let sectionSyncFrame = null;
-      const editorialSectionHref = '#dashboard-editorial';
+      const editorialModerationHref = '#dashboard-editorial-moderation';
+      const editorialLocaleHref = '#dashboard-editorial-locale';
       const ACTIVITY_HISTORY_STORAGE_KEY = 'geovito_dashboard_activity_history_v1';
       const ACTIVITY_HISTORY_LIMIT = 20;
       const LANE_STATE_STORAGE_KEY = 'geovito_dashboard_lane_state_v1';
@@ -1358,7 +1359,7 @@ const dashboardCopy = {
               level: 'warn',
               message: dashboardCopy.activityPending.replace('{count}', String(ownerPendingCount)),
               actionLabel: dashboardCopy.activityActionModeration,
-              actionHref: editorialSectionHref,
+              actionHref: editorialModerationHref,
               ts: nowTs,
             });
           }
@@ -1370,7 +1371,7 @@ const dashboardCopy = {
                 .replace('{count}', String(ownerStalePendingCount))
                 .replace('{hours}', String(STALE_PENDING_HOURS)),
               actionLabel: dashboardCopy.activityActionModeration,
-              actionHref: editorialSectionHref,
+              actionHref: editorialModerationHref,
               ts: nowTs,
             });
           }
@@ -1380,7 +1381,7 @@ const dashboardCopy = {
               level: 'warn',
               message: dashboardCopy.activityLocaleGaps.replace('{count}', String(ownerLocaleGapCount)),
               actionLabel: dashboardCopy.activityActionTranslations,
-              actionHref: editorialSectionHref,
+              actionHref: editorialLocaleHref,
               ts: nowTs,
             });
           }
@@ -1390,7 +1391,7 @@ const dashboardCopy = {
               level: 'info',
               message: dashboardCopy.activityLocaleDeploy.replace('{count}', String(ownerLocaleDeployCount)),
               actionLabel: dashboardCopy.activityActionTranslations,
-              actionHref: editorialSectionHref,
+              actionHref: editorialLocaleHref,
               ts: nowTs,
             });
           }
@@ -2500,6 +2501,13 @@ const dashboardCopy = {
 
   .dashboard-owner-widget[data-state='info'] {
     border-color: color-mix(in srgb, var(--brand) 36%, var(--border));
+  }
+
+  #dashboard-editorial-moderation:target,
+  #dashboard-editorial-locale:target {
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
+    scroll-margin-top: 6rem;
   }
 
   .dashboard-activity-feed {

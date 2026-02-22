@@ -438,9 +438,9 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(ownerReleaseAction).toBeVisible();
       await expect(ownerReleaseAction).toHaveAttribute('href', /LAUNCH_RUNBOOK\.md$/);
       await expect(ownerModerationAction).toBeVisible();
-      await expect(ownerModerationAction).toHaveAttribute('href', '#dashboard-editorial');
+      await expect(ownerModerationAction).toHaveAttribute('href', '#dashboard-editorial-moderation');
       await expect(ownerLocaleAction).toBeVisible();
-      await expect(ownerLocaleAction).toHaveAttribute('href', '#dashboard-editorial');
+      await expect(ownerLocaleAction).toHaveAttribute('href', '#dashboard-editorial-locale');
       await expect(ownerReleaseBadge).toBeHidden();
       await expect(ownerModerationBadge).toBeHidden();
       await expect(ownerLocaleBadge).toBeHidden();
@@ -642,9 +642,11 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(localeBadge).toHaveAttribute('title', /2$/);
 
   await moderationAction.click();
-  await expect(page).toHaveURL(/#dashboard-editorial$/);
+  await expect(page).toHaveURL(/#dashboard-editorial-moderation$/);
   await expect(page.locator('[data-dashboard-section-pill][href="#dashboard-editorial"]').first()).toHaveClass(/is-active/);
-  await expect(localeAction).toHaveAttribute('href', '#dashboard-editorial');
+  await localeAction.click();
+  await expect(page).toHaveURL(/#dashboard-editorial-locale$/);
+  await expect(localeAction).toHaveAttribute('href', '#dashboard-editorial-locale');
 });
 
 test('dashboard lane collapse state persists between reloads', async ({ page }, testInfo) => {
