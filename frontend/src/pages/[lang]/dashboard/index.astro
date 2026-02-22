@@ -695,6 +695,29 @@ const dashboardCopy = {
                 <strong data-dashboard-owner-refreshed>{dashboardCopy.unknown}</strong>
               </li>
             </ul>
+            <div class="dashboard-owner-widgets">
+              <article class="dashboard-owner-widget" data-dashboard-owner-widget="release" data-state="unknown">
+                <header>
+                  <span>{dashboardCopy.ownerSummaryReleaseStatus}</span>
+                  <strong data-dashboard-owner-widget-release-state>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
+                </header>
+                <p class="small" data-dashboard-owner-widget-release-detail>{dashboardCopy.activityBuildUnknown}</p>
+              </article>
+              <article class="dashboard-owner-widget" data-dashboard-owner-widget="moderation" data-state="unknown">
+                <header>
+                  <span>{dashboardCopy.ownerSummaryPending}</span>
+                  <strong data-dashboard-owner-widget-moderation-state>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
+                </header>
+                <p class="small" data-dashboard-owner-widget-moderation-detail>{dashboardCopy.moderationQueueEmpty}</p>
+              </article>
+              <article class="dashboard-owner-widget" data-dashboard-owner-widget="locale" data-state="unknown">
+                <header>
+                  <span>{dashboardCopy.ownerSummaryLocaleGaps}</span>
+                  <strong data-dashboard-owner-widget-locale-state>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
+                </header>
+                <p class="small" data-dashboard-owner-widget-locale-detail>{dashboardCopy.activityAllClear}</p>
+              </article>
+            </div>
           </article>
 
           <article class="card panel gv-stack" data-dashboard-role-gated data-min-role="owner" hidden>
@@ -829,6 +852,15 @@ const dashboardCopy = {
       const ownerLocaleGapsNode = document.querySelector('[data-dashboard-owner-locale-gaps]');
       const ownerLocaleDeployNode = document.querySelector('[data-dashboard-owner-locale-deploy]');
       const ownerRefreshedNode = document.querySelector('[data-dashboard-owner-refreshed]');
+      const ownerWidgetReleaseNode = document.querySelector('[data-dashboard-owner-widget="release"]');
+      const ownerWidgetReleaseStateNode = document.querySelector('[data-dashboard-owner-widget-release-state]');
+      const ownerWidgetReleaseDetailNode = document.querySelector('[data-dashboard-owner-widget-release-detail]');
+      const ownerWidgetModerationNode = document.querySelector('[data-dashboard-owner-widget="moderation"]');
+      const ownerWidgetModerationStateNode = document.querySelector('[data-dashboard-owner-widget-moderation-state]');
+      const ownerWidgetModerationDetailNode = document.querySelector('[data-dashboard-owner-widget-moderation-detail]');
+      const ownerWidgetLocaleNode = document.querySelector('[data-dashboard-owner-widget="locale"]');
+      const ownerWidgetLocaleStateNode = document.querySelector('[data-dashboard-owner-widget-locale-state]');
+      const ownerWidgetLocaleDetailNode = document.querySelector('[data-dashboard-owner-widget-locale-detail]');
       const activityFeedNode = document.querySelector('[data-dashboard-activity-feed]');
       const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
@@ -873,6 +905,15 @@ const dashboardCopy = {
         if (!el) return;
         el.textContent = String(message || '');
         el.classList.toggle('is-error', Boolean(isError));
+      };
+
+      const setOwnerWidgetState = (node, state, statusNode, detailNode, statusText, detailText) => {
+        const host = toNode(node);
+        if (host) {
+          host.dataset.state = String(state || 'unknown');
+        }
+        setText(statusNode, statusText);
+        setText(detailNode, detailText);
       };
 
       const normalizeActivityEvent = (event) => {
@@ -1090,11 +1131,98 @@ const dashboardCopy = {
       };
 
       const syncOwnerReleaseStatus = () => {
-        const hasSignals = ownerPendingCount > 0 || ownerLocaleGapCount > 0 || ownerLocaleDeployCount > 0;
+        const hasSignals =
+          ownerPendingCount > 0 ||
+          ownerStalePendingCount > 0 ||
+          ownerLocaleGapCount > 0 ||
+          ownerLocaleDeployCount > 0;
         const status = hasSignals
           ? dashboardCopy.ownerSummaryStatusAttention
           : dashboardCopy.ownerSummaryStatusLive;
         setText(ownerReleaseStatusNode, status);
+      };
+
+      const syncOwnerWidgets = () => {
+        const hasReleaseSha = Boolean(ownerFingerprintSha);
+        const moderationHasPending = ownerPendingCount > 0;
+        const moderationHasStale = ownerStalePendingCount > 0;
+        const localeHasGaps = ownerLocaleGapCount > 0;
+        const localeNeedsDeploy = ownerLocaleDeployCount > 0;
+
+        const releaseState = !hasReleaseSha
+          ? 'unknown'
+          : moderationHasPending || moderationHasStale || localeHasGaps || localeNeedsDeploy
+            ? 'warn'
+            : 'ok';
+        const releaseStatusText =
+          releaseState === 'unknown'
+            ? dashboardCopy.ownerSummaryStatusUnknown
+            : releaseState === 'warn'
+              ? dashboardCopy.ownerSummaryStatusAttention
+              : dashboardCopy.ownerSummaryStatusLive;
+        const releaseDetailText = hasReleaseSha
+          ? dashboardCopy.activityBuildLive.replace('{sha}', ownerFingerprintSha)
+          : dashboardCopy.activityBuildUnknown;
+        setOwnerWidgetState(
+          ownerWidgetReleaseNode,
+          releaseState,
+          ownerWidgetReleaseStateNode,
+          ownerWidgetReleaseDetailNode,
+          releaseStatusText,
+          releaseDetailText
+        );
+
+        const moderationState = moderationHasStale
+          ? 'warn'
+          : moderationHasPending
+            ? 'info'
+            : 'ok';
+        let moderationDetailText = dashboardCopy.moderationQueueEmpty;
+        if (moderationHasStale) {
+          moderationDetailText = dashboardCopy.activityPendingStale
+            .replace('{count}', String(ownerStalePendingCount))
+            .replace('{hours}', String(STALE_PENDING_HOURS));
+        } else if (moderationHasPending) {
+          moderationDetailText = dashboardCopy.activityPending.replace('{count}', String(ownerPendingCount));
+        }
+        setOwnerWidgetState(
+          ownerWidgetModerationNode,
+          moderationState,
+          ownerWidgetModerationStateNode,
+          ownerWidgetModerationDetailNode,
+          moderationState === 'warn'
+            ? dashboardCopy.activityLevelWarn
+            : moderationState === 'info'
+              ? dashboardCopy.activityLevelInfo
+              : dashboardCopy.activityLevelOk,
+          moderationDetailText
+        );
+
+        const localeState = localeHasGaps
+          ? 'warn'
+          : localeNeedsDeploy
+            ? 'info'
+            : 'ok';
+        let localeDetailText = dashboardCopy.activityAllClear;
+        if (localeHasGaps && localeNeedsDeploy) {
+          localeDetailText = `${dashboardCopy.activityLocaleGaps.replace('{count}', String(ownerLocaleGapCount))} · ${dashboardCopy.activityLocaleDeploy.replace('{count}', String(ownerLocaleDeployCount))}`;
+        } else if (localeHasGaps) {
+          localeDetailText = dashboardCopy.activityLocaleGaps.replace('{count}', String(ownerLocaleGapCount));
+        } else if (localeNeedsDeploy) {
+          localeDetailText = dashboardCopy.activityLocaleDeploy.replace('{count}', String(ownerLocaleDeployCount));
+        }
+        setOwnerWidgetState(
+          ownerWidgetLocaleNode,
+          localeState,
+          ownerWidgetLocaleStateNode,
+          ownerWidgetLocaleDetailNode,
+          localeState === 'warn'
+            ? dashboardCopy.activityLevelWarn
+            : localeState === 'info'
+              ? dashboardCopy.activityLevelInfo
+              : dashboardCopy.activityLevelOk,
+          localeDetailText
+        );
       };
 
       const refreshOwnerFingerprint = async () => {
@@ -1702,6 +1830,7 @@ const dashboardCopy = {
         setText(ownerLocaleDeployNode, '0');
         setText(ownerReleaseStatusNode, dashboardCopy.ownerSummaryStatusUnknown);
         setText(ownerRefreshedNode, dashboardCopy.unknown);
+        syncOwnerWidgets();
         lastActivityHasErrors = false;
         renderActivityFeed(lastActivityHasErrors, { includeLive: false, persist: false });
         if (toNode(localeNote)) {
@@ -1855,6 +1984,7 @@ const dashboardCopy = {
           setText(ownerRefreshedNode, formatDate(new Date().toISOString()));
         }
         syncOwnerReleaseStatus();
+        syncOwnerWidgets();
         lastActivityHasErrors = hadErrors;
         renderActivityFeed(lastActivityHasErrors);
 
@@ -2225,6 +2355,52 @@ const dashboardCopy = {
     color: var(--ink);
   }
 
+  .dashboard-owner-widgets {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .dashboard-owner-widget {
+    border: 1px solid var(--border);
+    border-radius: 0.72rem;
+    background: var(--surface-2);
+    padding: 0.55rem 0.62rem;
+    display: grid;
+    gap: 0.32rem;
+  }
+
+  .dashboard-owner-widget header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.55rem;
+  }
+
+  .dashboard-owner-widget header span {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-owner-widget header strong {
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-owner-widget[data-state='ok'] {
+    border-color: color-mix(in srgb, #1f8d4c 38%, var(--border));
+  }
+
+  .dashboard-owner-widget[data-state='warn'] {
+    border-color: color-mix(in srgb, #b9382f 42%, var(--border));
+  }
+
+  .dashboard-owner-widget[data-state='info'] {
+    border-color: color-mix(in srgb, var(--brand) 36%, var(--border));
+  }
+
   .dashboard-activity-feed {
     list-style: none;
     margin: 0;
@@ -2423,6 +2599,10 @@ const dashboardCopy = {
     }
 
     .dashboard-dl {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-owner-widgets {
       grid-template-columns: 1fr;
     }
   }

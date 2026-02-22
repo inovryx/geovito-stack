@@ -398,6 +398,9 @@ dashboardRoleCases.forEach((roleCase) => {
     const quickLocale = page.locator('[data-dashboard-quick-id="locale-progress"]');
     const quickControl = page.locator('[data-dashboard-quick-id="control"]');
     const quickOwnerOps = page.locator('[data-dashboard-quick-id="owner-ops"]');
+    const ownerReleaseWidget = page.locator('[data-dashboard-owner-widget="release"]');
+    const ownerModerationWidget = page.locator('[data-dashboard-owner-widget="moderation"]');
+    const ownerLocaleWidget = page.locator('[data-dashboard-owner-widget="locale"]');
 
     if (roleCase.expectEditorialLane) {
       await expect(editorialLane).toBeVisible();
@@ -419,8 +422,18 @@ dashboardRoleCases.forEach((roleCase) => {
 
     if (roleCase.expectOwnerCards) {
       await expect(ownerCards).toHaveCount(2);
+      await expect(ownerReleaseWidget).toBeVisible();
+      await expect(ownerModerationWidget).toBeVisible();
+      await expect(ownerLocaleWidget).toBeVisible();
+      await expect(ownerReleaseWidget).toHaveAttribute('data-state', 'ok');
+      await expect(ownerModerationWidget).toHaveAttribute('data-state', 'ok');
+      await expect(ownerLocaleWidget).toHaveAttribute('data-state', 'ok');
+      await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('role123');
     } else {
       await expect(ownerCards).toHaveCount(0);
+      await expect(ownerReleaseWidget).toBeHidden();
+      await expect(ownerModerationWidget).toBeHidden();
+      await expect(ownerLocaleWidget).toBeHidden();
     }
 
     if (roleCase.expectAdminLinks) {
@@ -447,6 +460,151 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(quickOwnerOps).toBeHidden();
     }
   });
+});
+
+test('dashboard owner widgets show warning states when signals are present', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run owner widget warning smoke once on desktop');
+  test.skip(!OWNER_EMAIL_HINT, 'PUBLIC_OWNER_EMAIL is required to resolve owner role');
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 88,
+        username: 'owner-user',
+        email: OWNER_EMAIL_HINT,
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-21T08:00:00.000Z',
+        role: {
+          type: 'authenticated',
+          name: 'Authenticated',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/moderation\/list\?status=all&limit=40$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [
+          {
+            comment_id: 'pending-owner-1',
+            body: 'owner queue item',
+            status: 'pending',
+            source: 'guest',
+            display_name: 'guest-owner',
+            blog_post_ref: 'post-owner-signals',
+            created_at: '2026-01-01T12:00:00.000Z',
+            updated_at: '2026-01-01T12:00:00.000Z',
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 3,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_missing: 1,
+            locales_with_untranslated: 1,
+            deploy_required_count: 1,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+            {
+              ui_locale: 'tr',
+              status: 'draft',
+              reference_locale: 'en',
+              deploy_required: true,
+              total_keys: 200,
+              translated_keys: 188,
+              missing_keys: 8,
+              untranslated_keys: 4,
+              coverage_percent: 94,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'owner77',
+        build_sha_full: 'owner77deadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-21T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt, email]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'owner-user',
+        email,
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-21T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT, OWNER_EMAIL_HINT]);
+
+  await page.goto('/en/dashboard/');
+  await dismissConsentBanner(page);
+
+  const releaseWidget = page.locator('[data-dashboard-owner-widget="release"]');
+  const moderationWidget = page.locator('[data-dashboard-owner-widget="moderation"]');
+  const localeWidget = page.locator('[data-dashboard-owner-widget="locale"]');
+
+  await expect(releaseWidget).toHaveAttribute('data-state', 'warn');
+  await expect(moderationWidget).toHaveAttribute('data-state', 'warn');
+  await expect(localeWidget).toHaveAttribute('data-state', 'warn');
+  await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('owner77');
+  await expect(page.locator('[data-dashboard-owner-widget-moderation-detail]')).toContainText('older than 24h');
+  await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
 });
 
 test('dashboard lane collapse state persists between reloads', async ({ page }, testInfo) => {
