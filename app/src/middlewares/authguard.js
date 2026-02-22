@@ -23,6 +23,9 @@ const clientIpFromContext = (ctx) => {
 const routeKeyForPath = (path, method) => {
   if (method === 'POST' && path === '/api/auth/local/register') return 'register';
   if (method === 'POST' && path === '/api/auth/local') return 'login';
+  if (method === 'POST' && path === '/api/auth/forgot-password') return 'forgot_password';
+  if (method === 'POST' && path === '/api/auth/reset-password') return 'reset_password';
+  if (method === 'POST' && path === '/api/upload') return 'upload';
   if (path === '/api/connect/google' || path.startsWith('/api/connect/google/')) return 'google';
   if (path === '/api/connect/facebook' || path.startsWith('/api/connect/facebook/')) return 'facebook';
   return null;

@@ -11,6 +11,8 @@
     "develop": "strapi develop",
     "mock:seed": "node scripts/manage_mock_data.js seed",
     "mock:clear": "node scripts/manage_mock_data.js clear",
+    "oauth:providers:apply": "node scripts/configure_oauth_providers.js",
+    "oauth:providers:dry": "node scripts/configure_oauth_providers.js --dry-run",
     "profile:sanity": "node scripts/country_profile_sanity_check.js",
     "start": "strapi start",
     "strapi": "strapi",
@@ -22,6 +24,7 @@
   "dependencies": {
     "@strapi/plugin-cloud": "5.33.2",
     "@strapi/plugin-users-permissions": "5.33.2",
+    "@strapi/provider-email-nodemailer": "^5.33.2",
     "@strapi/strapi": "5.33.2",
     "better-sqlite3": "12.4.1",
     "pg": "^8.17.2",

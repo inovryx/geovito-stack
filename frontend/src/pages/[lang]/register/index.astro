@@ -31,12 +31,26 @@ const authBaseUrl = resolveStrapiBaseUrl({
 });
 const isTruthy = (value: string | undefined) =>
   ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
-const localRegisterEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_LOCAL_REGISTER_ENABLED as string | undefined || 'true');
-const googleEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_GOOGLE_ENABLED as string | undefined);
-const facebookEnabled = isTruthy(import.meta.env.PUBLIC_AUTH_FACEBOOK_ENABLED as string | undefined);
+const siteLockdownEnabled = isTruthy(
+  (import.meta.env.PUBLIC_SITE_LOCKDOWN_ENABLED as string | undefined) || process.env.PUBLIC_SITE_LOCKDOWN_ENABLED
+);
+const localRegisterEnabled =
+  !siteLockdownEnabled && isTruthy((import.meta.env.PUBLIC_AUTH_LOCAL_REGISTER_ENABLED as string | undefined) || 'true');
+const googleEnabled = !siteLockdownEnabled && isTruthy(import.meta.env.PUBLIC_AUTH_GOOGLE_ENABLED as string | undefined);
+const facebookEnabled = !siteLockdownEnabled && isTruthy(import.meta.env.PUBLIC_AUTH_FACEBOOK_ENABLED as string | undefined);
+const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim();
+const turnstileEnabled = !siteLockdownEnabled && turnstileSiteKey.length > 0;
 const googleUrl = `${authBaseUrl}/api/connect/google`;
 const facebookUrl = `${authBaseUrl}/api/connect/facebook`;
 const accountPath = pathForLanguage(lang, 'account');
+const registerMessages = {
+  required: translate(ui, 'auth.registerRequired', {}, 'Username, email and password are required.'),
+  creating: translate(ui, 'auth.registerCreating', {}, 'Creating account...'),
+  failed: translate(ui, 'auth.registerFailed', {}, 'Registration failed. Please try another email or username.'),
+  success: translate(ui, 'auth.registerSuccess', {}, 'Registration successful. You can now log in.'),
+  networkError: translate(ui, 'auth.networkError', {}, 'Network error. Please try again.'),
+  turnstileRequired: translate(ui, 'auth.turnstileRequired', {}, 'Please complete the captcha challenge.'),
+};
 ---
 
 <MainLayout
@@ -92,6 +106,14 @@ const accountPath = pathForLanguage(lang, 'account');
           />
         </label>
 
+        {
+          turnstileEnabled ? (
+            <div class="auth-turnstile">
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto"></div>
+            </div>
+          ) : null
+        }
+
         <button type="submit" class="ui-button ui-button-primary ui-button-md">
           <span class="ui-button-label">{translate(ui, 'auth.register', {}, 'Register')}</span>
         </button>
@@ -124,7 +146,11 @@ const accountPath = pathForLanguage(lang, 'account');
       }
       {
         !googleEnabled && !facebookEnabled ? (
-          <p class="small">{translate(ui, 'auth.socialDisabled', {}, 'Google/Facebook login will appear when enabled in environment settings.')}</p>
+          <p class="small">
+            {siteLockdownEnabled
+              ? translate(ui, 'auth.lockdownHint', {}, 'Test mode active')
+              : translate(ui, 'auth.socialDisabled', {}, 'Google/Facebook login will appear when enabled in environment settings.')}
+          </p>
         ) : null
       }
     </div>
@@ -143,7 +169,9 @@ const accountPath = pathForLanguage(lang, 'account');
     />
   </section>
 
-  <script is:inline define:vars={{ accountPath }}>
+  {turnstileEnabled ? <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> : null}
+
+  <script is:inline define:vars={{ accountPath, turnstileEnabled, registerMessages }}>
     (() => {
       try {
         const raw = localStorage.getItem('geovito_auth_session') || sessionStorage.getItem('geovito_auth_session');
@@ -170,6 +198,12 @@ const accountPath = pathForLanguage(lang, 'account');
         feedback.classList.toggle('is-error', isError);
       };
 
+      const readTurnstileToken = () => {
+        const tokenInput = form.querySelector('input[name="cf-turnstile-response"]');
+        if (!(tokenInput instanceof HTMLInputElement)) return '';
+        return String(tokenInput.value || '').trim();
+      };
+
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
@@ -178,11 +212,17 @@ const accountPath = pathForLanguage(lang, 'account');
         const password = String(formData.get('password') || '');
 
         if (!username || !email || !password) {
-          setFeedback('Kullanici adi, email ve sifre zorunludur.', true);
+          setFeedback(registerMessages.required, true);
           return;
         }
 
-        setFeedback('Kayit olusturuluyor...');
+        const turnstileToken = readTurnstileToken();
+        if (turnstileEnabled && !turnstileToken) {
+          setFeedback(registerMessages.turnstileRequired, true);
+          return;
+        }
+
+        setFeedback(registerMessages.creating);
         try {
           const response = await fetch(`${authBase}/api/auth/local/register`, {
             method: 'POST',
@@ -190,7 +230,12 @@ const accountPath = pathForLanguage(lang, 'account');
               'Content-Type': 'application/json',
               Accept: 'application/json',
             },
-            body: JSON.stringify({ username, email, password }),
+            body: JSON.stringify({
+              username,
+              email,
+              password,
+              'cf-turnstile-response': turnstileToken,
+            }),
           });
 
           const payload = await response.json().catch(() => ({}));
@@ -198,15 +243,15 @@ const accountPath = pathForLanguage(lang, 'account');
             const message =
               payload?.error?.message ||
               payload?.message ||
-              'Kayit basarisiz. Farkli bir email veya kullanici adi deneyin.';
+              registerMessages.failed;
             setFeedback(message, true);
             return;
           }
 
-          setFeedback('Kayit basarili. Simdi giris yapabilirsiniz.');
+          setFeedback(registerMessages.success);
           form.reset();
         } catch (error) {
-          setFeedback('Baglanti hatasi olustu. Lutfen tekrar deneyin.', true);
+          setFeedback(registerMessages.networkError, true);
         }
       });
     })();

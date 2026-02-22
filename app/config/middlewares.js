@@ -28,6 +28,7 @@ module.exports = ({ env }) => [
   'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
+  'global::turnstileguard',
   'global::mediapipeline',
   'strapi::session',
   'strapi::favicon',

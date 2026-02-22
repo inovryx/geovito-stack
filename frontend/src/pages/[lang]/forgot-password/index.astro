@@ -29,6 +29,8 @@ const authBaseUrl = resolveStrapiBaseUrl({
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
 const loginPath = pathForLanguage(lang, 'login');
+const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim();
+const turnstileEnabled = turnstileSiteKey.length > 0;
 const forgotPasswordMessages = {
   emailRequired: translate(ui, 'auth.forgotPasswordEmailRequired', {}, 'Email is required.'),
   sending: translate(ui, 'auth.forgotPasswordSending', {}, 'Sending reset instructions...'),
@@ -45,6 +47,7 @@ const forgotPasswordMessages = {
     'If this email exists, reset instructions were sent. Redirecting to login...'
   ),
   networkError: translate(ui, 'auth.networkError', {}, 'Network error. Please try again.'),
+  turnstileRequired: translate(ui, 'auth.turnstileRequired', {}, 'Please complete the captcha challenge.'),
 };
 ---
 
@@ -75,6 +78,14 @@ const forgotPasswordMessages = {
         />
       </label>
 
+      {
+        turnstileEnabled ? (
+          <div class="auth-turnstile">
+            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto"></div>
+          </div>
+        ) : null
+      }
+
       <button type="submit" class="ui-button ui-button-primary ui-button-md">
         <span class="ui-button-label">{translate(ui, 'auth.sendResetLink', {}, 'Send reset link')}</span>
       </button>
@@ -88,7 +99,9 @@ const forgotPasswordMessages = {
     </p>
   </section>
 
-  <script is:inline define:vars={{ loginPath, forgotPasswordMessages }}>
+  {turnstileEnabled ? <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> : null}
+
+  <script is:inline define:vars={{ loginPath, forgotPasswordMessages, turnstileEnabled }}>
     (() => {
       const form = document.querySelector('[data-auth-form="forgot-password"]');
       const feedback = document.querySelector('[data-auth-feedback]');
@@ -102,6 +115,12 @@ const forgotPasswordMessages = {
         feedback.classList.toggle('is-error', isError);
       };
 
+      const readTurnstileToken = () => {
+        const tokenInput = form.querySelector('input[name="cf-turnstile-response"]');
+        if (!(tokenInput instanceof HTMLInputElement)) return '';
+        return String(tokenInput.value || '').trim();
+      };
+
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
@@ -109,6 +128,12 @@ const forgotPasswordMessages = {
 
         if (!email) {
           setFeedback(forgotPasswordMessages.emailRequired, true);
+          return;
+        }
+
+        const turnstileToken = readTurnstileToken();
+        if (turnstileEnabled && !turnstileToken) {
+          setFeedback(forgotPasswordMessages.turnstileRequired, true);
           return;
         }
 
@@ -120,7 +145,10 @@ const forgotPasswordMessages = {
               'Content-Type': 'application/json',
               Accept: 'application/json',
             },
-            body: JSON.stringify({ email }),
+            body: JSON.stringify({
+              email,
+              'cf-turnstile-response': turnstileToken,
+            }),
           });
 
           const payload = await response.json().catch(() => ({}));
