@@ -62,6 +62,8 @@ const dashboardModuleAds = translate(ui, 'dashboard.moduleAds', {}, 'Ads');
 const dashboardModuleModeration = translate(ui, 'dashboard.moduleModeration', {}, 'Moderation');
 const dashboardModuleTranslation = translate(ui, 'dashboard.moduleTranslation', {}, 'Translation');
 const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'Settings');
+const dashboardSessionTitle = translate(ui, 'dashboard.overviewTitle', {}, 'Session overview');
+const dashboardSessionIdentityLabel = translate(ui, 'dashboard.overviewIdentity', {}, 'Identity');
 ---
 
 <div class="left-sidebar-stack">
@@ -103,6 +105,31 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
         </a>
       </li>
     </ul>
+  </section>
+
+  <section
+    class="sidebar-block sidebar-dashboard-session gv-card bg-surface border-border"
+    data-auth-dashboard-session
+    data-identity-label={dashboardSessionIdentityLabel}
+    data-role-prefix={adminRoleLabel}
+    data-role-member={accessMemberLabel}
+    data-role-editor={accessEditorLabel}
+    data-role-admin={accessAdminLabel}
+    data-role-owner={accessOwnerLabel}
+    hidden
+  >
+    <h2 class="sidebar-title">{dashboardSessionTitle}</h2>
+    <p class="small sidebar-auth-user" data-auth-dashboard-identity>
+      {signedInLabel}: -
+    </p>
+    <p class="small sidebar-auth-user" data-auth-dashboard-role>
+      {adminRoleLabel}: {accessMemberLabel}
+    </p>
+    <div class="sidebar-auth-row">
+      <a href={dashboardPath} class="small-link">{dashboardLabel}</a>
+      <a href={accountPath} class="small-link">{accountLabel}</a>
+      <button type="button" class="small-link sidebar-auth-logout" data-auth-logout>{logoutLabel}</button>
+    </div>
   </section>
 
   <section class="sidebar-block sidebar-language-switch gv-card bg-surface border-border">
@@ -336,6 +363,7 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
       const session = readSession();
       const role = session ? await resolveSessionRole(session) : 'member';
       const roleRank = Number(roleOrder[role] ?? 0);
+      const identity = session ? (session.username || session.email) : '';
 
       document.querySelectorAll('.left-sidebar-stack').forEach((stack) => {
         if (!(stack instanceof HTMLElement)) return;
@@ -350,7 +378,6 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
         const loggedIn = shell.querySelector('[data-auth-logged-in]');
         const userLine = shell.querySelector('[data-auth-user]');
         const signedInPrefix = shell.getAttribute('data-signed-in-label') || 'Signed in';
-        const identity = session ? (session.username || session.email) : '';
 
         if (loggedOut instanceof HTMLElement) {
           loggedOut.hidden = Boolean(session);
@@ -378,14 +405,14 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
 
         const roleNode = shell.querySelector('[data-auth-admin-role]');
         const rolePrefix = shell.getAttribute('data-role-prefix') || 'Role';
-        const roleLabelMap = {
+        const shellRoleLabelMap = {
           member: shell.getAttribute('data-role-member') || 'Member',
           editor: shell.getAttribute('data-role-editor') || 'Editor',
           admin: shell.getAttribute('data-role-admin') || 'Admin',
           owner: shell.getAttribute('data-role-owner') || 'Owner',
         };
         if (roleNode instanceof HTMLElement) {
-          roleNode.textContent = `${rolePrefix}: ${roleLabelMap[role] || roleLabelMap.member}`;
+          roleNode.textContent = `${rolePrefix}: ${shellRoleLabelMap[role] || shellRoleLabelMap.member}`;
         }
 
         shell.querySelectorAll('[data-auth-admin-link]').forEach((node) => {
@@ -410,6 +437,30 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
           const href = node.getAttribute('href') || '';
           node.classList.toggle('is-active', !node.hidden && isSidebarLinkActive(href));
         });
+      });
+
+      document.querySelectorAll('[data-auth-dashboard-session]').forEach((shell) => {
+        if (!(shell instanceof HTMLElement)) return;
+        shell.hidden = !session || !isDashboardRoute;
+        if (!session || !isDashboardRoute) return;
+
+        const identityNode = shell.querySelector('[data-auth-dashboard-identity]');
+        const roleNode = shell.querySelector('[data-auth-dashboard-role]');
+        const identityLabel = shell.getAttribute('data-identity-label') || 'Identity';
+        const rolePrefix = shell.getAttribute('data-role-prefix') || 'Role';
+        const shellRoleLabelMap = {
+          member: shell.getAttribute('data-role-member') || 'Member',
+          editor: shell.getAttribute('data-role-editor') || 'Editor',
+          admin: shell.getAttribute('data-role-admin') || 'Admin',
+          owner: shell.getAttribute('data-role-owner') || 'Owner',
+        };
+        const resolvedRoleLabel = shellRoleLabelMap[role] || shellRoleLabelMap.member;
+        if (identityNode instanceof HTMLElement) {
+          identityNode.textContent = `${identityLabel}: ${identity || '-'}`;
+        }
+        if (roleNode instanceof HTMLElement) {
+          roleNode.textContent = `${rolePrefix}: ${resolvedRoleLabel}`;
+        }
       });
 
       document.querySelectorAll('[data-auth-dashboard-shell]').forEach((shell) => {
@@ -497,6 +548,16 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
     background: color-mix(in srgb, var(--brand-soft) 42%, var(--surface-strong));
 }
 
+.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-session {
+    order: 2;
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 36%, var(--surface-strong));
+}
+
+.left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-session .sidebar-auth-row {
+    margin-top: 0.25rem;
+}
+
 .left-sidebar-stack.is-dashboard-auth .sidebar-dashboard-modules-list {
     gap: 0.3rem;
 }
@@ -516,7 +577,7 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
 }
 
 .left-sidebar-stack.is-dashboard-auth .sidebar-workspace {
-    order: 2;
+    order: 3;
     border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
     background: color-mix(in srgb, var(--brand-soft) 54%, var(--surface-strong));
 }
@@ -526,7 +587,7 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
 }
 
 .left-sidebar-stack.is-dashboard-auth .sidebar-auth-links {
-    order: 3;
+    display: none;
 }
 
 .left-sidebar-stack.is-dashboard-auth .sidebar-admin-tools {
@@ -534,6 +595,6 @@ const dashboardModuleSettings = translate(ui, 'dashboard.moduleSettings', {}, 'S
 }
 
 .left-sidebar-stack.is-dashboard-auth .sidebar-language-switch {
-    order: 5;
+    display: none;
 }
 </style>
