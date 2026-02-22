@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_likes",
+  "info": {
+    "singularName": "blog-like",
+    "pluralName": "blog-likes",
+    "displayName": "Blog Like",
+    "description": "Registered-user likes (one user per post)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "like_key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "owner_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "required": true,
+      "private": true
+    },
+    "blog_post": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-post.blog-post",
+      "required": true
+    },
+    "blog_post_ref": {
+      "type": "string",
+      "required": true
+    },
+    "client_ip_hash": {
+      "type": "string",
+      "private": true
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

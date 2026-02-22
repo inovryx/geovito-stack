@@ -1,0 +1,89 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_comments",
+  "info": {
+    "singularName": "blog-comment",
+    "pluralName": "blog-comments",
+    "displayName": "Blog Comment",
+    "description": "Blog comments with moderation workflow (guest + registered)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "comment_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "rejected", "spam", "deleted"],
+      "default": "pending",
+      "required": true
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": ["registered", "guest"],
+      "required": true
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    },
+    "language": {
+      "type": "string",
+      "default": "en"
+    },
+    "guest_display_name": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "guest_email": {
+      "type": "email",
+      "private": true
+    },
+    "owner_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "private": true
+    },
+    "owner_username": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "blog_post": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-post.blog-post",
+      "required": true
+    },
+    "blog_post_ref": {
+      "type": "string",
+      "required": true
+    },
+    "moderation_notes": {
+      "type": "text"
+    },
+    "reviewed_at": {
+      "type": "datetime"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "client_ip_hash": {
+      "type": "string",
+      "private": true
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

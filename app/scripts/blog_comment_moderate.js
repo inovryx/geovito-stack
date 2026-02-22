@@ -10,10 +10,10 @@ const VALID_STATUSES = new Set(Object.values(BLOG_COMMENT_STATUS));
 const usage = () => {
   console.log('Usage:');
   console.log('  node scripts/blog_comment_moderate.js list [--status pending] [--limit 20]');
-  console.log('  node scripts/blog_comment_moderate.js set <comment_id> <status> [--notes "text"]');
-  console.log('  node scripts/blog_comment_moderate.js next');
-  console.log('  node scripts/blog_comment_moderate.js set-next <status> [--notes "text"] [--dry-run]');
-  console.log('  node scripts/blog_comment_moderate.js bulk-set-next <status> [--limit 20] [--notes "text"] [--dry-run]');
+  console.log('  node scripts/blog_comment_moderate.js set <comment_id> <status> [--notes "text"] [--json]');
+  console.log('  node scripts/blog_comment_moderate.js next [--json]');
+  console.log('  node scripts/blog_comment_moderate.js set-next <status> [--notes "text"] [--dry-run] [--json]');
+  console.log('  node scripts/blog_comment_moderate.js bulk-set-next <status> [--limit 20] [--notes "text"] [--dry-run] [--json]');
   console.log('');
   console.log('Valid status values: pending, approved, rejected, spam, deleted');
 };
@@ -21,6 +21,10 @@ const usage = () => {
 const parseIntSafe = (value, fallback) => {
   const parsed = Number.parseInt(String(value || ''), 10);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const printJsonOutput = (payload) => {
+  console.log(`JSON_OUTPUT:${JSON.stringify(payload)}`);
 };
 
 const createAppInstance = async () => {
@@ -85,6 +89,7 @@ const findOldestPending = async (strapi) => {
 const listComments = async (strapi, argv) => {
   let status = 'pending';
   let limit = 20;
+  let jsonOutput = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
@@ -94,6 +99,8 @@ const listComments = async (strapi, argv) => {
     } else if (token === '--limit') {
       limit = parseIntSafe(argv[i + 1], 20);
       i += 1;
+    } else if (token === '--json') {
+      jsonOutput = true;
     } else if (token === '-h' || token === '--help') {
       usage();
       return 0;
@@ -124,6 +131,25 @@ const listComments = async (strapi, argv) => {
     limit: safeLimit,
   });
 
+  if (jsonOutput) {
+    printJsonOutput({
+      mode: 'list',
+      status,
+      limit: safeLimit,
+      count: entries.length,
+      comments: entries.map((item) => ({
+        comment_id: item.comment_id,
+        status: item.status,
+        source: item.source,
+        post: item.blog_post_ref,
+        created: item.createdAt,
+        reviewed_at: item.reviewed_at || null,
+        reviewed_by: item.reviewed_by || null,
+      })),
+    });
+    return 0;
+  }
+
   console.log('==============================================================');
   console.log('GEOVITO BLOG COMMENT MODERATION LIST');
   console.log('==============================================================');
@@ -151,12 +177,15 @@ const setCommentStatus = async (strapi, argv) => {
   const commentId = String(argv[0] || '').trim();
   const nextStatus = String(argv[1] || '').trim().toLowerCase();
   let notes;
+  let jsonOutput = false;
 
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--notes') {
       notes = String(argv[i + 1] || '');
       i += 1;
+    } else if (token === '--json') {
+      jsonOutput = true;
     } else if (token === '-h' || token === '--help') {
       usage();
       return 0;
@@ -197,6 +226,22 @@ const setCommentStatus = async (strapi, argv) => {
     ],
   });
 
+  if (jsonOutput) {
+    printJsonOutput({
+      mode: 'set',
+      dry_run: false,
+      comment_id: updated.comment_id,
+      from: existing.status,
+      to: updated.status,
+      source: updated.source,
+      post: updated.blog_post_ref,
+      reviewed_at: updated.reviewed_at || null,
+      reviewed_by: updated.reviewed_by || null,
+      moderation_notes: updated.moderation_notes || '',
+    });
+    return 0;
+  }
+
   console.log('==============================================================');
   console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
   console.log('==============================================================');
@@ -210,8 +255,38 @@ const setCommentStatus = async (strapi, argv) => {
   return 0;
 };
 
-const printNextPending = async (strapi) => {
+const printNextPending = async (strapi, argv) => {
+  let jsonOutput = false;
+  for (let i = 0; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (token === '--json') {
+      jsonOutput = true;
+    } else if (token === '-h' || token === '--help') {
+      usage();
+      return 0;
+    } else {
+      throw new Error(`Unknown argument: ${token}`);
+    }
+  }
+
   const next = await findOldestPending(strapi);
+
+  if (jsonOutput) {
+    printJsonOutput({
+      mode: 'next',
+      pending: next ? 1 : 0,
+      comment: next
+        ? {
+            comment_id: next.comment_id,
+            status: next.status,
+            source: next.source,
+            post: next.blog_post_ref,
+            created: next.createdAt,
+          }
+        : null,
+    });
+    return 0;
+  }
 
   console.log('==============================================================');
   console.log('GEOVITO BLOG COMMENT MODERATION NEXT');
@@ -248,6 +323,7 @@ const setNextPendingStatus = async (strapi, argv) => {
 
   let notes;
   let dryRun = false;
+  let jsonOutput = false;
   for (let i = 1; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--notes') {
@@ -255,6 +331,8 @@ const setNextPendingStatus = async (strapi, argv) => {
       i += 1;
     } else if (token === '--dry-run') {
       dryRun = true;
+    } else if (token === '--json') {
+      jsonOutput = true;
     } else if (token === '-h' || token === '--help') {
       usage();
       return 0;
@@ -265,6 +343,17 @@ const setNextPendingStatus = async (strapi, argv) => {
 
   const next = await findOldestPending(strapi);
   if (!next?.id) {
+    if (jsonOutput) {
+      printJsonOutput({
+        mode: 'set-next',
+        dry_run: dryRun,
+        pending: 0,
+        changed: false,
+        comment: null,
+      });
+      return 0;
+    }
+
     console.log('==============================================================');
     console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
     console.log('==============================================================');
@@ -276,6 +365,25 @@ const setNextPendingStatus = async (strapi, argv) => {
   }
 
   if (dryRun) {
+    if (jsonOutput) {
+      printJsonOutput({
+        mode: 'set-next',
+        dry_run: true,
+        pending: 1,
+        changed: false,
+        comment: {
+          comment_id: next.comment_id,
+          from: next.status,
+          to: nextStatus,
+          source: next.source,
+          post: next.blog_post_ref,
+          created: next.createdAt,
+        },
+        moderation_notes: typeof notes === 'string' ? notes : '',
+      });
+      return 0;
+    }
+
     console.log('==============================================================');
     console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
     console.log('==============================================================');
@@ -309,6 +417,26 @@ const setNextPendingStatus = async (strapi, argv) => {
     ],
   });
 
+  if (jsonOutput) {
+    printJsonOutput({
+      mode: 'set-next',
+      dry_run: false,
+      pending: 1,
+      changed: true,
+      comment: {
+        comment_id: updated.comment_id,
+        from: next.status,
+        to: updated.status,
+        source: updated.source,
+        post: updated.blog_post_ref,
+      },
+      reviewed_at: updated.reviewed_at || null,
+      reviewed_by: updated.reviewed_by || null,
+      moderation_notes: updated.moderation_notes || '',
+    });
+    return 0;
+  }
+
   console.log('==============================================================');
   console.log('GEOVITO BLOG COMMENT MODERATION UPDATE');
   console.log('==============================================================');
@@ -339,6 +467,7 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
   let notes;
   let limit = 20;
   let dryRun = false;
+  let jsonOutput = false;
   for (let i = 1; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--notes') {
@@ -349,6 +478,8 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
       i += 1;
     } else if (token === '--dry-run') {
       dryRun = true;
+    } else if (token === '--json') {
+      jsonOutput = true;
     } else if (token === '-h' || token === '--help') {
       usage();
       return 0;
@@ -374,6 +505,20 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
   console.log(`mode=bulk-set-next target_status=${nextStatus} limit=${safeLimit} dry_run=${dryRun}`);
 
   if (!entries.length) {
+    if (jsonOutput) {
+      printJsonOutput({
+        mode: 'bulk-set-next',
+        dry_run: dryRun,
+        target_status: nextStatus,
+        limit: safeLimit,
+        pending: 0,
+        changed: 0,
+        would_change: 0,
+        comments: [],
+      });
+      return 0;
+    }
+
     console.log('pending=0');
     console.log('changed=0');
     if (dryRun) {
@@ -384,6 +529,28 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
   }
 
   if (dryRun) {
+    if (jsonOutput) {
+      printJsonOutput({
+        mode: 'bulk-set-next',
+        dry_run: true,
+        target_status: nextStatus,
+        limit: safeLimit,
+        pending: entries.length,
+        changed: 0,
+        would_change: entries.length,
+        comments: entries.map((entry) => ({
+          comment_id: entry.comment_id,
+          from: entry.status,
+          to: nextStatus,
+          source: entry.source,
+          post: entry.blog_post_ref,
+          created: entry.createdAt,
+        })),
+        moderation_notes: typeof notes === 'string' ? notes : '',
+      });
+      return 0;
+    }
+
     console.log(`pending=${entries.length}`);
     console.log('changed=0');
     console.log(`would_change=${entries.length}`);
@@ -422,6 +589,22 @@ const setBulkNextPendingStatus = async (strapi, argv) => {
     console.log(`${item.comment_id} | from=${item.from} to=${item.to} | source=${item.source} | post=${item.post}`);
   }
   console.log('==============================================================');
+
+  if (jsonOutput) {
+    printJsonOutput({
+      mode: 'bulk-set-next',
+      dry_run: false,
+      target_status: nextStatus,
+      limit: safeLimit,
+      pending: entries.length,
+      changed: changed.length,
+      would_change: changed.length,
+      comments: changed,
+      moderation_notes: typeof notes === 'string' ? notes : '',
+    });
+    return 0;
+  }
+
   return 0;
 };
 
@@ -445,7 +628,7 @@ const main = async () => {
       return;
     }
     if (command === 'next') {
-      await printNextPending(strapi);
+      await printNextPending(strapi, argv.slice(1));
       return;
     }
     if (command === 'set-next') {

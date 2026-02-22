@@ -3,6 +3,8 @@
 const ROUTE_DOMAIN_RULES = Object.freeze([
   { prefix: '/api/atlas-places', domain: 'atlas' },
   { prefix: '/api/blog-posts', domain: 'blog' },
+  { prefix: '/api/blog-comments', domain: 'blog' },
+  { prefix: '/api/blog-likes', domain: 'blog' },
   { prefix: '/api/ui-pages', domain: 'ui' },
   { prefix: '/api/atlas-suggestions', domain: 'suggestions' },
   { prefix: '/api/gazetteer-entries', domain: 'import' },
