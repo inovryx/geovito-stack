@@ -615,6 +615,14 @@ p {
   grid-template-columns: 250px minmax(0, 1fr);
 }
 
+html.shell-dashboard-route .shell-layout.has-tools {
+  grid-template-columns: 282px minmax(0, 1fr) 296px;
+}
+
+html.shell-dashboard-route .shell-layout.no-tools {
+  grid-template-columns: 282px minmax(0, 1fr);
+}
+
 html.shell-guest-reading .desktop-tablet-column {
   display: none;
 }
@@ -2699,6 +2707,11 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
     grid-template-columns: 238px minmax(0, 1fr);
   }
 
+  html.shell-dashboard-route .shell-layout.has-tools,
+  html.shell-dashboard-route .shell-layout.no-tools {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+
   .desktop-tools-column {
     display: none;
   }
@@ -2877,41 +2890,41 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
     display: inline-flex;
   }
 
-  html.sidebar-compact .shell-layout.has-tools {
+  html.sidebar-compact:not(.shell-dashboard-route) .shell-layout.has-tools {
     grid-template-columns: 72px minmax(0, 1fr) 296px;
   }
 
-  html.sidebar-compact .shell-layout.no-tools {
+  html.sidebar-compact:not(.shell-dashboard-route) .shell-layout.no-tools {
     grid-template-columns: 72px minmax(0, 1fr);
   }
 
-  html.sidebar-compact .left-nav-card {
+  html.sidebar-compact:not(.shell-dashboard-route) .left-nav-card {
     padding: 0.62rem 0.46rem;
   }
 
-  html.sidebar-compact .left-nav-head {
+  html.sidebar-compact:not(.shell-dashboard-route) .left-nav-head {
     justify-content: center;
     margin-bottom: 0.44rem;
   }
 
-  html.sidebar-compact .left-sidebar-stack {
+  html.sidebar-compact:not(.shell-dashboard-route) .left-sidebar-stack {
     gap: 0.45rem;
   }
 
-  html.sidebar-compact .left-sidebar-stack > .sidebar-block:not(:first-child) {
+  html.sidebar-compact:not(.shell-dashboard-route) .left-sidebar-stack > .sidebar-block:not(:first-child) {
     display: none;
   }
 
-  html.sidebar-compact .app-nav-link {
+  html.sidebar-compact:not(.shell-dashboard-route) .app-nav-link {
     justify-content: center;
     padding: 0.44rem;
   }
 
-  html.sidebar-compact .nav-link-label {
+  html.sidebar-compact:not(.shell-dashboard-route) .nav-link-label {
     display: none;
   }
 
-  html.sidebar-compact .app-nav-list {
+  html.sidebar-compact:not(.shell-dashboard-route) .app-nav-list {
     justify-items: center;
   }
 
