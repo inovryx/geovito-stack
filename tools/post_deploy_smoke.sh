@@ -5,6 +5,7 @@ BASE_URL="${BASE_URL:-}"
 BASE_URL="${BASE_URL%/}"
 EXPECTED_SHA7="${EXPECTED_SHA7:-}"
 EXPECTED_SHA="${EXPECTED_SHA:-}"
+CREATOR_USERNAME="${CREATOR_USERNAME:-}"
 CF_ACCESS_CLIENT_ID="${CF_ACCESS_CLIENT_ID:-}"
 CF_ACCESS_CLIENT_SECRET="${CF_ACCESS_CLIENT_SECRET:-}"
 
@@ -49,6 +50,15 @@ fetch() {
   echo "$code"
 }
 
+fetch_no_follow() {
+  local url="$1"
+  local out="$2"
+  shift 2
+  local code
+  code="$(curl -sS --max-time 15 -D "$out" -o /dev/null -w '%{http_code}' "$@" "$url" || true)"
+  echo "$code"
+}
+
 assert_contains() {
   local file="$1"
   local pattern="$2"
@@ -88,6 +98,13 @@ normalize_sha7() {
 normalize_url() {
   local value="$1"
   value="${value%/}"
+  echo "$value"
+}
+
+normalize_username() {
+  local value="$1"
+  value="$(echo "$value" | tr '[:upper:]' '[:lower:]')"
+  value="$(echo "$value" | sed -E 's/[^a-z0-9._-]//g')"
   echo "$value"
 }
 
@@ -173,6 +190,37 @@ if [[ "$(normalize_url "$pilot_de_canonical")" != "$(normalize_url "${BASE_URL}$
   fail "pilot DE canonical not EN (got ${pilot_de_canonical})"
 fi
 echo "PASS: ${pilot_de} -> noindex + canonical EN"
+
+# 5) optional creator mini-site checks
+creator_username="$(normalize_username "$CREATOR_USERNAME")"
+if [[ -n "$creator_username" ]]; then
+  creator_home="/u/${creator_username}/"
+  creator_home_file="$TMP_DIR/creator_home.html"
+  code="$(fetch "${BASE_URL}${creator_home}" "$creator_home_file" "${curl_auth_args[@]}")"
+  fail_with_access_hint_if_needed "$code" "${creator_home}"
+  [[ "$code" == "200" ]] || fail "creator home status ${code}"
+  assert_contains "$creator_home_file" 'meta name="robots" content="noindex,nofollow"' "creator home robots not noindex,nofollow"
+  creator_canonical="$(extract_canonical "$creator_home_file")"
+  [[ -n "$creator_canonical" ]] || fail "creator home canonical missing"
+  if [[ "$(normalize_url "$creator_canonical")" != "$(normalize_url "${BASE_URL}${creator_home}")" ]]; then
+    fail "creator home canonical not self (got ${creator_canonical})"
+  fi
+  echo "PASS: ${creator_home} -> noindex + canonical self"
+
+  creator_alias="/@${creator_username}"
+  creator_alias_headers="$TMP_DIR/creator_alias_headers.txt"
+  code="$(fetch_no_follow "${BASE_URL}${creator_alias}" "$creator_alias_headers" "${curl_auth_args[@]}")"
+  fail_with_access_hint_if_needed "$code" "${creator_alias}"
+  [[ "$code" == "301" ]] || fail "creator alias status expected 301, got ${code}"
+  creator_location="$(grep -i '^location:' "$creator_alias_headers" | head -n1 | sed -E 's/^[Ll]ocation:[[:space:]]*//; s/\r$//')"
+  [[ -n "$creator_location" ]] || fail "creator alias location header missing"
+  if [[ "$(normalize_url "$creator_location")" != "$(normalize_url "${BASE_URL}${creator_home}")" ]]; then
+    fail "creator alias location mismatch (got ${creator_location})"
+  fi
+  echo "PASS: ${creator_alias} -> 301 ${creator_home}"
+else
+  echo "SKIP: creator mini-site checks (set CREATOR_USERNAME to enable)"
+fi
 
 echo "=============================================================="
 echo "PASS: Post-deploy smoke checks completed."

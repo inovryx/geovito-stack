@@ -156,6 +156,8 @@ Not:
    - `BASE_URL=https://your-deploy-url bash tools/post_deploy_smoke.sh`
    - Optional SHA pin:
      `BASE_URL=https://your-deploy-url EXPECTED_SHA7=xxxxxxx bash tools/post_deploy_smoke.sh`
+   - Optional creator mini-site checks (`/u/{username}` + `/@{username}` alias redirect, existing username required):
+     `BASE_URL=https://your-deploy-url CREATOR_USERNAME=existing_username bash tools/post_deploy_smoke.sh`
    - If Cloudflare Access is enabled:
      `CF_ACCESS_CLIENT_ID=... CF_ACCESS_CLIENT_SECRET=... BASE_URL=https://your-deploy-url bash tools/post_deploy_smoke.sh`
    - Expected: all PASS lines, exit 0.
