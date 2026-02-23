@@ -51,6 +51,12 @@ run_gate "OAuth Config Guard" bash tools/oauth_config_check.sh
 run_gate "Blog Comment State Contract" bash tools/blog_comment_state_contract_check.sh
 run_gate "Blog Engagement Policy Guard" bash tools/blog_engagement_policy_check.sh
 run_gate "Blog Engagement Smoke" bash tools/blog_engagement_smoke.sh
+if [[ "${RUN_UGC_API_CONTRACT_GATE:-false}" == "true" ]]; then
+  run_gate "UGC API Contract Check" bash tools/ugc_api_contract_check.sh
+else
+  echo "RESULT: SKIP (UGC API Contract Check) set RUN_UGC_API_CONTRACT_GATE=true to enable"
+  SUMMARY_LINES+=("SKIP | UGC API Contract Check | opt_in")
+fi
 if [[ "${RUN_BLOG_ENGAGEMENT_UI_GATE:-false}" == "true" ]]; then
   run_gate "Blog Engagement UI Playwright" bash tools/blog_engagement_ui_playwright.sh
 else

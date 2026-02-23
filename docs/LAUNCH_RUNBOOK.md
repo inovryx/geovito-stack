@@ -57,6 +57,9 @@ UGC moderation rollout commands:
   - `bash tools/ugc_backfill_blog_posts.sh`
 - Keep write endpoints locked until moderation flow is ready:
   - `UGC_POST_WRITE_ENABLED=false`
+- Contract check (owner/editor/public behavior):
+  - `bash tools/ugc_api_contract_check.sh`
+  - Optional pre-design gate hook: `RUN_UGC_API_CONTRACT_GATE=true bash tools/pre_design_gate_check.sh`
 
 UI locale build-time export:
 - `ui-locale` edits require export + deploy.

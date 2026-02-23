@@ -19,6 +19,7 @@
     "strapi": "strapi",
     "translation:bundle:export": "node scripts/manage_translation_bundle.js export",
     "translation:bundle:import": "node scripts/manage_translation_bundle.js import",
+    "ugc:contract:check": "node scripts/ugc_api_contract_check.js",
     "upgrade": "npx @strapi/upgrade latest",
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
