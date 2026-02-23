@@ -214,6 +214,8 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test`
 - Include all optional checks:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test`
+- Include creator mini-site smoke (`/u/{username}` + `/@{username}` alias):
+  - `CREATOR_USERNAME=existing_username bash tools/release_deploy_smoke.sh --with-creator-smoke`
 
 Notes:
 - `--with-account-test` runs `bash tools/account_comment_queue_test.sh`.

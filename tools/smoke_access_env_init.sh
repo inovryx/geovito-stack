@@ -16,6 +16,8 @@ fi
 cat > "$TARGET" <<'EOF'
 CF_ACCESS_CLIENT_ID='REPLACE_WITH_REAL_CLIENT_ID'
 CF_ACCESS_CLIENT_SECRET='REPLACE_WITH_REAL_CLIENT_SECRET'
+# Optional: set an existing creator username to enable /u + /@ smoke checks.
+# CREATOR_USERNAME='existing_username'
 EOF
 
 chmod 600 "$TARGET"
