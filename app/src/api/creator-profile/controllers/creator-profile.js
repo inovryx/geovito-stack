@@ -68,7 +68,7 @@ const pickTranslation = (post, preferredLanguage = 'en') => {
 const isPublishedApprovedUserPost = (post) =>
   post?.content_source === 'user' &&
   post?.submission_state === 'approved' &&
-  Boolean(post?.publishedAt) &&
+  (Boolean(post?.publishedAt) || Boolean(post?.published_on)) &&
   post?.mock !== true;
 
 const extractAvatar = (avatar) => {
@@ -254,12 +254,14 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
     }
 
     const posts = await strapi.entityService.findMany(BLOG_POST_UID, {
-      publicationState: 'live',
       filters: {
         content_source: 'user',
         owner_user_id: profile.owner_user_id,
         submission_state: 'approved',
         mock: false,
+        published_on: {
+          $notNull: true,
+        },
       },
       fields: ['id'],
       populate: {
@@ -292,12 +294,14 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
     const limit = parseLimit(ctx.query?.limit, 24, 1, 120);
 
     const posts = await strapi.entityService.findMany(BLOG_POST_UID, {
-      publicationState: 'live',
       filters: {
         content_source: 'user',
         owner_user_id: profile.owner_user_id,
         submission_state: 'approved',
         mock: false,
+        published_on: {
+          $notNull: true,
+        },
       },
       fields: [
         'post_id',
