@@ -1243,6 +1243,160 @@ test('dashboard section nav tracks hash and click for admin lanes', async ({ pag
   await expect(memberPill).toHaveClass(/is-active/);
 });
 
+test('dashboard admin tools links open matching module lanes', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run admin tools lane wiring smoke once on desktop');
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 56,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-21T08:00:00.000Z',
+        role: {
+          type: 'admin',
+          name: 'Admin',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/moderation\/list\?status=all&limit=40$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 1,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_gaps: 0,
+            locales_with_missing: 0,
+            locales_with_untranslated: 0,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'adminlan',
+        build_sha_full: 'adminlandeadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-21T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-21T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/dashboard/#dashboard-member');
+  await dismissConsentBanner(page);
+
+  const adminModerationLink = page
+    .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-moderation"]')
+    .first();
+  const adminSeoLink = page
+    .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-control"]')
+    .first();
+  const adminAdsLink = page
+    .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-control-ads"]')
+    .first();
+
+  const memberLane = page.locator('#dashboard-member');
+  const editorialLane = page.locator('#dashboard-editorial');
+  const controlLane = page.locator('#dashboard-control');
+  const moderationCard = page.locator('#dashboard-editorial-moderation');
+  const adsCard = page.locator('#dashboard-control-ads');
+  const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
+  const adsPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control-ads"]').first();
+
+  await expect(memberLane).toBeVisible();
+  await expect(adminModerationLink).toBeVisible();
+  await expect(adminSeoLink).toBeVisible();
+  await expect(adminAdsLink).toBeVisible();
+
+  await adminModerationLink.click();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-editorial-moderation');
+  await expect(editorialLane).toBeVisible();
+  await expect(memberLane).toBeHidden();
+  await expect(moderationCard).toBeVisible();
+  await expect(adminModerationLink).toHaveClass(/is-active/);
+
+  await adminSeoLink.click();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-control');
+  await expect(controlLane).toBeVisible();
+  await expect(editorialLane).toBeHidden();
+  await expect(controlPill).toHaveClass(/is-active/);
+  await expect(adminSeoLink).toHaveClass(/is-active/);
+
+  await adminAdsLink.click();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-control-ads');
+  await expect(controlLane).toBeVisible();
+  await expect(adsCard).toBeVisible();
+  await expect(adsPill).toHaveClass(/is-active/);
+  await expect(adminAdsLink).toHaveClass(/is-active/);
+});
+
 test('dashboard hash alias keeps sidebar links active on canonical seo lane', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'Run hash alias active-state smoke once on desktop');
 

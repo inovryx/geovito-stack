@@ -45,6 +45,7 @@
 - Dashboard quick actions are role-gated per matrix.
 - Playwright coverage includes:
   - role visibility gates
+  - admin tools links open matching dashboard lanes (`moderation`, `control`, `ads`)
   - fallback when requested hash lane is hidden
   - hash alias canonical behavior (`#dashboard-control-seo`)
   - header-only nav behavior on dashboard auth mode
