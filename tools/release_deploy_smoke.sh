@@ -33,7 +33,7 @@ Purpose:
   8) (Optional) Re-seed mock dataset at end (useful after purge flows)
   9) (Optional) Sync ui-locale import/export flow before release checks
   10) (Optional) Validate ui-locale progress report (strict by default)
-  11) (Optional) Validate creator mini-site + @ alias redirect in smoke stage
+  11) (Optional/Auto) Validate creator mini-site + @ alias redirect in smoke stage
 
 Notes:
   - pages deploy hook must be configured:
@@ -49,6 +49,10 @@ Env passthrough:
   CREATOR_USERNAME,
   SMOKE_BLOG_MODERATION_ARGS, COMMENT_BULK_ACTION, COMMENT_BULK_LIMIT, COMMENT_BULK_NOTES, COMMENT_BULK_DRY_RUN, COMMENT_BULK_REPORT_OUTPUT,
   UI_LOCALE_PROGRESS_REPORT, UI_LOCALE_PROGRESS_STRICT, UI_LOCALE_SYNC_BUILD_CHECK
+
+Creator smoke auto behavior:
+  - If CREATOR_USERNAME is provided (env or SMOKE_ACCESS_ENV_FILE), creator checks auto-enable.
+  - You can still force explicitly with --with-creator-smoke.
 USAGE
 }
 
@@ -115,6 +119,19 @@ while [[ $# -gt 0 ]]; do
 done
 
 EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
+SMOKE_ACCESS_ENV_FILE="${SMOKE_ACCESS_ENV_FILE:-$HOME/.config/geovito/smoke_access.env}"
+CREATOR_USERNAME="${CREATOR_USERNAME:-}"
+
+# Auto-enable creator smoke when username exists in env or smoke access env file.
+if [[ -z "$CREATOR_USERNAME" && -f "$SMOKE_ACCESS_ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$SMOKE_ACCESS_ENV_FILE"
+  CREATOR_USERNAME="${CREATOR_USERNAME:-}"
+fi
+
+if [[ -n "$CREATOR_USERNAME" && "$RUN_CREATOR_SMOKE" != "true" ]]; then
+  RUN_CREATOR_SMOKE="true"
+fi
 
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
@@ -129,18 +146,18 @@ else
 fi
 
 if [[ "$RUN_SMOKE" == "true" ]]; then
-  if [[ "$RUN_CREATOR_SMOKE" == "true" && -z "${CREATOR_USERNAME:-}" ]]; then
+  if [[ "$RUN_CREATOR_SMOKE" == "true" && -z "$CREATOR_USERNAME" ]]; then
     echo "ERROR: --with-creator-smoke requires CREATOR_USERNAME=<existing_username>"
     exit 1
   fi
 
   if [[ "$RUN_MODERATION" == "true" ]]; then
     SMOKE_RUN_BLOG_MODERATION_REPORT="true" \
-    CREATOR_USERNAME="${CREATOR_USERNAME:-}" \
+    CREATOR_USERNAME="$CREATOR_USERNAME" \
     EXPECTED_SHA7="$EXPECTED_SHA7" \
     bash tools/smoke_access.sh
   else
-    CREATOR_USERNAME="${CREATOR_USERNAME:-}" \
+    CREATOR_USERNAME="$CREATOR_USERNAME" \
     EXPECTED_SHA7="$EXPECTED_SHA7" \
     bash tools/smoke_access.sh
   fi
