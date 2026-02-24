@@ -59,7 +59,8 @@ UGC moderation rollout commands:
   - `UGC_POST_WRITE_ENABLED=false`
 - Contract check (owner/editor/public behavior):
   - `bash tools/ugc_api_contract_check.sh`
-  - Optional pre-design gate hook: `RUN_UGC_API_CONTRACT_GATE=true bash tools/pre_design_gate_check.sh`
+  - Included in pre-design gate by default: `bash tools/pre_design_gate_check.sh`
+  - Opt-out only when debugging local issues: `RUN_UGC_API_CONTRACT_GATE=false bash tools/pre_design_gate_check.sh`
 
 UI locale build-time export:
 - `ui-locale` edits require export + deploy.

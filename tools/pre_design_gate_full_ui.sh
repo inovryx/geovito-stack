@@ -4,13 +4,13 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-RUN_UGC_API_CONTRACT_GATE_VALUE="false"
+RUN_UGC_API_CONTRACT_GATE_VALUE="${RUN_UGC_API_CONTRACT_GATE:-true}"
 DRY_RUN="false"
 
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/pre_design_gate_full_ui.sh [--with-ugc-api-contract] [--dry-run]
+  bash tools/pre_design_gate_full_ui.sh [--with-ugc-api-contract] [--skip-ugc-api-contract] [--dry-run]
 
 Purpose:
   Run pre-design gate with full UI stages enabled by default:
@@ -18,7 +18,8 @@ Purpose:
     - Dashboard Activity UI Playwright
 
 Options:
-  --with-ugc-api-contract   Also enable UGC API Contract stage.
+  --with-ugc-api-contract   Force-enable UGC API Contract stage (default).
+  --skip-ugc-api-contract   Disable UGC API Contract stage.
   --dry-run                 Print resolved env/command and exit.
   -h, --help                Show this help.
 USAGE
@@ -28,6 +29,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --with-ugc-api-contract)
       RUN_UGC_API_CONTRACT_GATE_VALUE="true"
+      shift
+      ;;
+    --skip-ugc-api-contract)
+      RUN_UGC_API_CONTRACT_GATE_VALUE="false"
       shift
       ;;
     --dry-run)
