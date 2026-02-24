@@ -51,4 +51,5 @@
 
 ## Verification Commands
 - `bash tools/pages_build_check.sh`
+- `bash tools/dashboard_activity_ui_playwright.sh`
 - `docker run --rm --network=host -u "$(id -u):$(id -g)" -v "$PWD":/work -w /work/frontend mcr.microsoft.com/playwright:v1.49.1-jammy bash -lc "corepack pnpm@9.15.4 install --frozen-lockfile && corepack pnpm@9.15.4 exec playwright test tests/dashboard-activity.spec.ts --project=desktop --reporter=line"`

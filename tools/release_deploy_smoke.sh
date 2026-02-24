@@ -9,6 +9,7 @@ RUN_SMOKE="true"
 RUN_MODERATION="false"
 RUN_ACCOUNT_TEST="false"
 RUN_BLOG_ENGAGEMENT_TEST="false"
+RUN_DASHBOARD_TEST="false"
 RUN_COMMENT_BULK_ACTION="false"
 RUN_MOCK_RESEED="false"
 RUN_UI_LOCALE_SYNC="false"
@@ -18,7 +19,7 @@ RUN_CREATOR_SMOKE="false"
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--with-dashboard-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
 
 Purpose:
   Single command release verification:
@@ -27,11 +28,12 @@ Purpose:
   3) (Optional) Run blog moderation stale-pending guard
   4) (Optional) Run account comment queue Playwright smoke
   5) (Optional) Run blog engagement Playwright smoke (auto-seed if needed)
-  6) (Optional) Run bulk moderation action on oldest pending comments
-  7) (Optional) Re-seed mock dataset at end (useful after purge flows)
-  8) (Optional) Sync ui-locale import/export flow before release checks
-  9) (Optional) Validate ui-locale progress report (strict by default)
-  10) (Optional) Validate creator mini-site + @ alias redirect in smoke stage
+  6) (Optional) Run dashboard activity Playwright smoke
+  7) (Optional) Run bulk moderation action on oldest pending comments
+  8) (Optional) Re-seed mock dataset at end (useful after purge flows)
+  9) (Optional) Sync ui-locale import/export flow before release checks
+  10) (Optional) Validate ui-locale progress report (strict by default)
+  11) (Optional) Validate creator mini-site + @ alias redirect in smoke stage
 
 Notes:
   - pages deploy hook must be configured:
@@ -72,6 +74,10 @@ while [[ $# -gt 0 ]]; do
       RUN_BLOG_ENGAGEMENT_TEST="true"
       shift
       ;;
+    --with-dashboard-test)
+      RUN_DASHBOARD_TEST="true"
+      shift
+      ;;
     --with-comment-bulk-action)
       RUN_COMMENT_BULK_ACTION="true"
       shift
@@ -109,7 +115,7 @@ EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
 echo "expected_sha7=${EXPECTED_SHA7}"
-echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_sync=${RUN_UI_LOCALE_SYNC} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS} run_creator_smoke=${RUN_CREATOR_SMOKE}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_dashboard_test=${RUN_DASHBOARD_TEST} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_sync=${RUN_UI_LOCALE_SYNC} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS} run_creator_smoke=${RUN_CREATOR_SMOKE}"
 echo "=============================================================="
 
 if [[ "$RUN_DEPLOY" == "true" ]]; then
@@ -148,6 +154,12 @@ if [[ "$RUN_BLOG_ENGAGEMENT_TEST" == "true" ]]; then
   bash tools/blog_engagement_ui_playwright.sh
 else
   echo "INFO: skipped blog engagement ui test stage (use --with-blog-engagement-test)"
+fi
+
+if [[ "$RUN_DASHBOARD_TEST" == "true" ]]; then
+  bash tools/dashboard_activity_ui_playwright.sh
+else
+  echo "INFO: skipped dashboard activity ui test stage (use --with-dashboard-test)"
 fi
 
 if [[ "$RUN_COMMENT_BULK_ACTION" == "true" ]]; then
