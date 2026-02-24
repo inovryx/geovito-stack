@@ -243,6 +243,13 @@ Pre-design gate icinde blog engagement UI adimini da kosmak istersen:
 Pre-design gate icinde dashboard activity UI adimini da kosmak istersen:
 - `RUN_DASHBOARD_UI_GATE=true bash tools/pre_design_gate_check.sh`
 
+Pre-design gate icinde iki UI adimini tek komutla kosmak istersen:
+- `bash tools/pre_design_gate_full_ui.sh`
+- Dry run:
+- `bash tools/pre_design_gate_full_ui.sh --dry-run`
+- UGC API contract adimini da eklemek istersen:
+- `bash tools/pre_design_gate_full_ui.sh --with-ugc-api-contract`
+
 Pre-design gate icinde bulk yorum moderasyon aksiyonu kosmak istersen:
 - `RUN_COMMENT_BULK_GATE=true COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 COMMENT_BULK_NOTES="pre-design bulk" bash tools/pre_design_gate_check.sh`
 - dry-run preview:
