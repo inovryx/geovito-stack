@@ -63,6 +63,12 @@ else
   echo "RESULT: SKIP (Blog Engagement UI Playwright) set RUN_BLOG_ENGAGEMENT_UI_GATE=true to enable"
   SUMMARY_LINES+=("SKIP | Blog Engagement UI Playwright | opt_in")
 fi
+if [[ "${RUN_DASHBOARD_UI_GATE:-false}" == "true" ]]; then
+  run_gate "Dashboard Activity UI Playwright" bash tools/dashboard_activity_ui_playwright.sh
+else
+  echo "RESULT: SKIP (Dashboard Activity UI Playwright) set RUN_DASHBOARD_UI_GATE=true to enable"
+  SUMMARY_LINES+=("SKIP | Dashboard Activity UI Playwright | opt_in")
+fi
 if [[ "${RUN_COMMENT_BULK_GATE:-false}" == "true" ]]; then
   COMMENT_BULK_ACTION_VALUE="${COMMENT_BULK_ACTION:-}"
   COMMENT_BULK_LIMIT_VALUE="${COMMENT_BULK_LIMIT:-10}"
