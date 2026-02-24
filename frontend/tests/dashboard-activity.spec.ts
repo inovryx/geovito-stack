@@ -1623,9 +1623,9 @@ test('dashboard auth mode keeps site navigation header-only', async ({ page }, t
   await expect(page.locator('html')).toHaveClass(/shell-dashboard-auth/);
 
   const desktopSidebarNav = page.locator('.desktop-tablet-column .app-nav');
-  if ((await desktopSidebarNav.count()) > 0) {
-    await expect(desktopSidebarNav.first()).toBeHidden();
-  }
+  const mobileDrawerNav = page.locator('.mobile-drawer-nav');
+  await expect(desktopSidebarNav).toHaveCount(0);
+  await expect(mobileDrawerNav).toHaveCount(0);
 
   await expect(page.locator('.desktop-tablet-column [data-auth-dashboard-shell]').first()).toBeVisible();
   await expect(

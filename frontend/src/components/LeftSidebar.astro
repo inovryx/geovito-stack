@@ -7,9 +7,10 @@ interface Props {
   currentLanguage: string;
   languageLinks: Record<string, string>;
   ui: Record<string, unknown>;
+  hideSiteNavigation?: boolean;
 }
 
-const { currentLanguage, languageLinks, ui } = Astro.props as Props;
+const { currentLanguage, languageLinks, ui, hideSiteNavigation = false } = Astro.props as Props;
 const isTruthy = (value: string | undefined) => ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
 const siteLockdownEnabled = isTruthy(
   (import.meta.env.PUBLIC_SITE_LOCKDOWN_ENABLED as string | undefined) || process.env.PUBLIC_SITE_LOCKDOWN_ENABLED
@@ -71,9 +72,14 @@ const isDashboardRoute = (() => {
     .filter(Boolean);
   return parts.length >= 2 && parts[1] === 'dashboard';
 })();
+const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
 ---
 
-<div class={`left-sidebar-stack ${isDashboardRoute ? 'is-dashboard-route' : ''}`}>
+<div
+  class={`left-sidebar-stack ${isDashboardRoute ? 'is-dashboard-route' : ''} ${
+    hideSiteNavigationResolved ? 'hide-site-navigation' : ''
+  }`}
+>
   <section
     class="sidebar-block sidebar-dashboard-modules gv-card bg-surface border-border"
     data-auth-dashboard-shell
@@ -658,8 +664,8 @@ const isDashboardRoute = (() => {
     display: none;
 }
 
-.left-sidebar-stack.is-dashboard-route :global(.app-nav),
-.left-sidebar-stack.is-dashboard-route :global(.sidebar-nav-main) {
+.left-sidebar-stack.hide-site-navigation :global(.app-nav),
+.left-sidebar-stack.hide-site-navigation :global(.sidebar-nav-main) {
     display: none !important;
 }
 </style>

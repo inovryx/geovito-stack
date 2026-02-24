@@ -40,6 +40,15 @@ const {
   hasCustomTools = false,
 } = Astro.props as Props;
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
+const canonicalPathname = (() => {
+  try {
+    return new URL(canonical).pathname;
+  } catch {
+    return String(canonical || '');
+  }
+})();
+const canonicalSegments = canonicalPathname.split('/').filter(Boolean);
+const isDashboardCanonicalRoute = canonicalSegments.length >= 2 && canonicalSegments[1] === 'dashboard';
 ---
 
 <BaseLayout
@@ -71,7 +80,12 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
             <span class="sr-only" data-sidebar-toggle-label>{t('layout.collapseSidebar', 'Collapse sidebar')}</span>
           </button>
         </div>
-        <LeftSidebar currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
+        <LeftSidebar
+          currentLanguage={currentLanguage}
+          languageLinks={languageLinks}
+          ui={ui}
+          hideSiteNavigation={isDashboardCanonicalRoute}
+        />
       </div>
     </aside>
 
@@ -130,11 +144,20 @@ const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
     </div>
 
     <div class="mobile-drawer-scroll">
-      <div class="mobile-drawer-nav">
-        <h2 class="sidebar-title">{t('layout.mainNavigation', 'Navigation')}</h2>
-        <Nav currentLanguage={currentLanguage} ui={ui} />
-      </div>
-      <LeftSidebar currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
+      {
+        !isDashboardCanonicalRoute ? (
+          <div class="mobile-drawer-nav">
+            <h2 class="sidebar-title">{t('layout.mainNavigation', 'Navigation')}</h2>
+            <Nav currentLanguage={currentLanguage} ui={ui} />
+          </div>
+        ) : null
+      }
+      <LeftSidebar
+        currentLanguage={currentLanguage}
+        languageLinks={languageLinks}
+        ui={ui}
+        hideSiteNavigation={isDashboardCanonicalRoute}
+      />
       {
         showTools ? (
           <div class="mobile-drawer-tools">
