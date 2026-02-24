@@ -9,7 +9,7 @@ RUN_SMOKE="true"
 RUN_MODERATION="false"
 RUN_ACCOUNT_TEST="false"
 RUN_BLOG_ENGAGEMENT_TEST="false"
-RUN_DASHBOARD_TEST="false"
+RUN_DASHBOARD_TEST="true"
 RUN_COMMENT_BULK_ACTION="false"
 RUN_MOCK_RESEED="false"
 RUN_UI_LOCALE_SYNC="false"
@@ -19,7 +19,7 @@ RUN_CREATOR_SMOKE="false"
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--with-dashboard-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
 
 Purpose:
   Single command release verification:
@@ -28,7 +28,7 @@ Purpose:
   3) (Optional) Run blog moderation stale-pending guard
   4) (Optional) Run account comment queue Playwright smoke
   5) (Optional) Run blog engagement Playwright smoke (auto-seed if needed)
-  6) (Optional) Run dashboard activity Playwright smoke
+  6) (Default) Run dashboard activity Playwright smoke
   7) (Optional) Run bulk moderation action on oldest pending comments
   8) (Optional) Re-seed mock dataset at end (useful after purge flows)
   9) (Optional) Sync ui-locale import/export flow before release checks
@@ -76,6 +76,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --with-dashboard-test)
       RUN_DASHBOARD_TEST="true"
+      shift
+      ;;
+    --skip-dashboard-test)
+      RUN_DASHBOARD_TEST="false"
       shift
       ;;
     --with-comment-bulk-action)
@@ -159,7 +163,7 @@ fi
 if [[ "$RUN_DASHBOARD_TEST" == "true" ]]; then
   bash tools/dashboard_activity_ui_playwright.sh
 else
-  echo "INFO: skipped dashboard activity ui test stage (use --with-dashboard-test)"
+  echo "INFO: skipped dashboard activity ui test stage (--skip-dashboard-test)"
 fi
 
 if [[ "$RUN_COMMENT_BULK_ACTION" == "true" ]]; then
