@@ -6,6 +6,7 @@ import { getBlogPosts } from '../../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
+import { isPostInReview, isPostVisibleOnSite } from '../../../lib/ugcPostRules';
 
 export async function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map((language) => ({
@@ -24,26 +25,34 @@ const hasMockContent = posts.some((post) => post.mock === true);
 
 const entries = posts
   .map((post) => {
-    if (post.content_source === 'user' && post.submission_state !== 'approved') {
+    if (!isPostVisibleOnSite(post)) {
       return null;
     }
 
     const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
     const requested = resolved.requested;
     const complete = resolved.complete;
+    const canonicalTranslation =
+      Array.isArray(post.translations) && post.translations.length > 0
+        ? post.translations.find(
+            (entry) =>
+              String(entry?.language || '').toLowerCase() === String(post.canonical_language || 'en').toLowerCase()
+          ) || post.translations[0]
+        : null;
+    const output = resolved.output || (isPostInReview(post) ? requested || canonicalTranslation : null);
+    const slug = requested?.slug || complete?.slug || canonicalTranslation?.slug || '';
 
-    if (!complete?.slug || !resolved.output) {
+    if (!slug || !output) {
       return null;
     }
 
-    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
-
     return {
       post_id: post.post_id,
-      title: resolved.output.title || post.post_id,
-      excerpt: resolved.output.excerpt || '',
+      title: output.title || post.post_id,
+      excerpt: output.excerpt || '',
       href: `/${lang}/blog/${slug}/`,
       status: requested?.status || 'missing',
+      inReview: isPostInReview(post),
     };
   })
   .filter(Boolean);
@@ -77,6 +86,7 @@ const robots = hasMockContent ? 'noindex,nofollow' : 'index,follow';
             <h2>{entry?.title}</h2>
           </a>
           <span class="status-pill">{entry?.status}</span>
+          {entry?.inReview ? <span class="status-pill">In review</span> : null}
           <p class="small">{entry?.excerpt}</p>
         </article>
       ))

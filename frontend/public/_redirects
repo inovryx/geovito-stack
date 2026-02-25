@@ -1,1 +1,3 @@
-/@* /u/:splat 301
+# Dynamic profile alias redirects are handled in app routes:
+# - /@username -> /{lang}/@username/ (307)
+# - /u/:username/* remains as internal mirror routes

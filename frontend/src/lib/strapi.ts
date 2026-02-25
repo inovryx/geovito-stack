@@ -60,6 +60,8 @@ export type BlogPost = {
   owner_user_id?: number | null;
   owner_username_snapshot?: string | null;
   submission_state?: 'draft' | 'submitted' | 'approved' | 'rejected' | 'spam' | 'deleted';
+  site_visibility?: 'visible' | 'hidden';
+  original_language?: 'en' | 'tr' | 'de' | 'es' | 'ru' | 'zh-cn';
   moderation_notes?: string | null;
   reviewed_at?: string | null;
   reviewed_by?: number | null;
@@ -91,6 +93,13 @@ export type CreatorProfile = {
     height?: number | null;
     formats?: Record<string, unknown> | null;
   } | null;
+  links?: {
+    share?: string;
+    profile?: string;
+    posts?: string;
+    about?: string;
+    mirror_profile?: string;
+  };
 };
 
 export type UiPage = {
@@ -261,9 +270,9 @@ export const getBlogPosts = async () => {
     'populate[0]': 'translations',
     'populate[1]': 'translations.embeds',
     'populate[2]': 'related_places',
+    publicationState: 'preview',
     'pagination[pageSize]': '200',
-    'filters[publishedAt][$notNull]': 'true',
-    sort: 'published_on:desc',
+    sort: 'updatedAt:desc',
   });
 
   return asEntityArray<BlogPost>(payload);

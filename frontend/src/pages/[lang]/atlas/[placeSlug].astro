@@ -21,6 +21,7 @@ import { buildIndexableLanguagePathMap, resolveIndexGate } from '../../../lib/in
 import { chooseSlugForLanguage } from '../../../lib/slugResolver';
 import { resolveBlogPlaceRefs } from '../../../lib/mockRelations';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
+import { isPostInReview, isPostVisibleOnSite } from '../../../lib/ugcPostRules';
 
 export async function getStaticPaths() {
   const places = await getAtlasPlaces();
@@ -198,7 +199,7 @@ const nearbyLinks = allPlaces
 
 const relatedBlogLinks = allPosts
   .filter((post) => {
-    if (!post.published_on) return false;
+    if (!isPostVisibleOnSite(post)) return false;
     const refs = resolveBlogPlaceRefs(post);
     if (refs.includes(place.place_id)) return true;
     if (!Array.isArray(post.related_places) || post.related_places.length === 0) return false;
@@ -208,16 +209,24 @@ const relatedBlogLinks = allPosts
     const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
     const requested = resolved.requested;
     const complete = resolved.complete;
-    if (!resolved.output || !complete?.slug) return null;
+    const canonicalTranslation =
+      Array.isArray(post.translations) && post.translations.length > 0
+        ? post.translations.find(
+            (entry) =>
+              String(entry?.language || '').toLowerCase() === String(post.canonical_language || 'en').toLowerCase()
+          ) || post.translations[0]
+        : null;
+    const output = resolved.output || (isPostInReview(post) ? requested || canonicalTranslation : null);
+    const slug = requested?.slug || complete?.slug || canonicalTranslation?.slug || '';
+    if (!output || !slug) return null;
 
-    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
     const statusKey = normalizeState(requested?.status || 'missing');
     return {
       post_id: post.post_id,
-      title: resolved.output.title || post.post_id,
+      title: output.title || post.post_id,
       href: pathForLanguage(lang, `blog/${slug}`),
       statusKey,
-      statusLabel: stateLabel(statusKey),
+      statusLabel: isPostInReview(post) ? `${stateLabel(statusKey)} · in review` : stateLabel(statusKey),
       published_on: post.published_on,
     };
   })

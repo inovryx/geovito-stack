@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
-import { SUPPORTED_LANGUAGES, pathForLanguage } from '../../../../lib/languages';
+import { SUPPORTED_LANGUAGES, isSupportedLanguage, pathForLanguage } from '../../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../../lib/pageHelpers';
 import { getCreatorPostsByUsername, getCreatorProfiles } from '../../../../lib/strapi';
 import { getUiMessages } from '../../../../lib/uiLanguage';
@@ -17,9 +17,16 @@ export async function getStaticPaths() {
     )
   );
 
-  return usernames.map((username) => ({
-    params: { username },
-  }));
+  return SUPPORTED_LANGUAGES.flatMap((language) =>
+    usernames.map((username) => ({
+      params: { lang: language, username },
+    }))
+  );
+}
+
+const lang = String(Astro.params.lang || '').trim().toLowerCase();
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
 }
 
 const username = String(Astro.params.username || '').trim().toLowerCase();
@@ -27,8 +34,8 @@ if (!username) {
   throw new Error('username is required.');
 }
 
-const ui = getUiMessages('en');
-const payload = await getCreatorPostsByUsername(username, 'en');
+const ui = getUiMessages(lang);
+const payload = await getCreatorPostsByUsername(username, lang);
 if (!payload.profile) {
   throw new Error(`creator profile not found: ${username}`);
 }
@@ -37,19 +44,19 @@ const profile = payload.profile;
 const posts = Array.isArray(payload.posts) ? payload.posts : [];
 const languageLinks = buildLanguageLinks(
   Object.fromEntries(
-    SUPPORTED_LANGUAGES.map((lang) => [lang, pathForLanguage(lang, `@${username}/posts`)])
+    SUPPORTED_LANGUAGES.map((language) => [language, pathForLanguage(language, `@${username}/posts`)])
   ) as Record<string, string>
 );
 const alternates = toAlternates(languageLinks);
-const canonical = absoluteUrl(pathForLanguage('en', `@${username}/posts`));
+const canonical = absoluteUrl(pathForLanguage(lang, `@${username}/posts`));
 ---
 
 <MainLayout
   title={`@${username} posts • Geovito`}
-  description={`Approved posts from @${username}`}
+  description={`Visible posts from @${username}`}
   canonical={canonical}
   robots="noindex,nofollow"
-  currentLanguage="en"
+  currentLanguage={lang}
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
@@ -58,14 +65,14 @@ const canonical = absoluteUrl(pathForLanguage('en', `@${username}/posts`));
     <p class="gv-caption">Creator posts</p>
     <h1 class="gv-h1">{profile.display_name || `@${username}`}</h1>
     <nav class="gv-row gv-row--gap" aria-label="Creator navigation">
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage('en', `@${username}`)}>Home</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage('en', `@${username}/posts`)}>Posts</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage('en', `@${username}/about`)}>About</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}`)}>Home</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/posts`)}>Posts</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/about`)}>About</a>
     </nav>
   </section>
 
   <section class="card panel gv-card gv-stack">
-    <h2 class="gv-h2">Approved and published</h2>
+    <h2 class="gv-h2">Visible posts</h2>
     {
       posts.length > 0 ? (
         <ul class="gv-stack">
@@ -74,17 +81,25 @@ const canonical = absoluteUrl(pathForLanguage('en', `@${username}/posts`));
               <a href={String(post.url_path || '#')}>
                 <strong>{String(post.title || post.post_id || 'Untitled')}</strong>
               </a>
-              <p class="small">
-                {String(post.excerpt || '')}
-              </p>
+              <p class="small">{String(post.excerpt || '')}</p>
               <p class="gv-caption">
-                {String(post.language || 'en').toUpperCase()} • {String(post.published_on || '')}
+                {String(post.language || 'en').toUpperCase()}
+                {' · '}
+                {String(post.published_on || '') || '—'}
+                {
+                  String(post.submission_state || '').toLowerCase() === 'submitted' ? (
+                    <>
+                      {' · '}
+                      <span class="status-pill">In review</span>
+                    </>
+                  ) : null
+                }
               </p>
             </li>
           ))}
         </ul>
       ) : (
-        <p class="small">No approved posts yet.</p>
+        <p class="small">No visible posts yet.</p>
       )
     }
   </section>

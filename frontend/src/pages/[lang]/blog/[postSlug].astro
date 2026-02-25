@@ -10,6 +10,12 @@ import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../lib/page
 import { chooseSlugForLanguage } from '../../../lib/slugResolver';
 import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
+import {
+  creatorProfilePathForLanguage,
+  isPostInReview,
+  isPostVisibleOnSite,
+  shouldBlogPostBeNoindex,
+} from '../../../lib/ugcPostRules';
 
 export async function getStaticPaths() {
   const posts = await getBlogPosts();
@@ -17,6 +23,7 @@ export async function getStaticPaths() {
   const seen = new Set<string>();
 
   for (const post of posts) {
+    if (!isPostVisibleOnSite(post)) continue;
     for (const language of SUPPORTED_LANGUAGES) {
       const slug = chooseSlugForLanguage(post.translations, language, post.canonical_language);
       if (!slug) continue;
@@ -43,18 +50,32 @@ const post = Astro.props.post as BlogPost;
 const runtimeMode = Astro.url.searchParams.get('translate') === '1';
 
 const resolution = resolveTranslation(post.translations, lang, post.canonical_language, runtimeMode);
-if (!resolution.output || !resolution.complete) {
-  throw new Error(`No complete translation for ${post.post_id}`);
+if (!isPostVisibleOnSite(post)) {
+  throw new Error(`Post not visible on site for ${post.post_id}`);
 }
 
-const title = resolution.output.seo?.metaTitle || resolution.output.title || post.post_id;
-const description = resolution.output.seo?.metaDescription || resolution.output.excerpt || '';
+const reviewPost = isPostInReview(post);
+const canonicalTranslation =
+  Array.isArray(post.translations) && post.translations.length > 0
+    ? post.translations.find((entry) => String(entry?.language || '').toLowerCase() === String(post.canonical_language || 'en').toLowerCase()) ||
+      post.translations[0]
+    : null;
+const renderTranslation = resolution.output || (reviewPost ? resolution.requested || canonicalTranslation : null);
+if (!renderTranslation) {
+  throw new Error(`No renderable translation for ${post.post_id}`);
+}
+
+const title = renderTranslation.seo?.metaTitle || renderTranslation.title || post.post_id;
+const description = renderTranslation.seo?.metaDescription || renderTranslation.excerpt || '';
 const isMockView = post.mock === true;
-const isApprovedUserPost = post.content_source !== 'user' || post.submission_state === 'approved';
+const noindexReview = shouldBlogPostBeNoindex(post, resolution.indexable);
+const canonicalLanguageRaw = String(canonicalTranslation?.language || post.canonical_language || 'en').trim().toLowerCase();
+const canonicalLanguage = isSupportedLanguage(canonicalLanguageRaw) ? canonicalLanguageRaw : 'en';
+const canonicalSlug = String(canonicalTranslation?.slug || renderTranslation.slug || post.post_id).trim();
 
 const canonicalPath =
-  resolution.complete.canonical_path ||
-  pathForLanguage(post.canonical_language, `blog/${resolution.complete.slug || post.post_id}`);
+  canonicalTranslation?.canonical_path ||
+  (canonicalSlug ? pathForLanguage(canonicalLanguage, `blog/${canonicalSlug}`) : pathForLanguage(canonicalLanguage, 'blog'));
 
 const languagePathMap: Record<string, string> = {};
 for (const language of SUPPORTED_LANGUAGES) {
@@ -67,12 +88,18 @@ for (const language of SUPPORTED_LANGUAGES) {
 const languageLinks = buildLanguageLinks(languagePathMap);
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(canonicalPath);
-const robots =
-  isMockView || !isApprovedUserPost ? 'noindex,nofollow' : resolution.indexable ? 'index,follow' : 'noindex,nofollow';
+const robots = isMockView || noindexReview ? 'noindex,nofollow' : 'index,follow';
 const loginPath = pathForLanguage(lang, 'login');
 const creatorUsername =
   post.content_source === 'user' ? String(post.owner_username_snapshot || '').trim().toLowerCase() : '';
-const creatorProfilePath = creatorUsername ? `/u/${creatorUsername}/` : null;
+const creatorProfilePath = creatorUsername ? creatorProfilePathForLanguage(lang, creatorUsername) : null;
+const reviewBadgeLabel = translate(ui, 'blog.reviewBadge', {}, 'In review');
+const reviewHint = translate(
+  ui,
+  'blog.reviewHint',
+  {},
+  'This post is visible on site while moderation is pending; it is not indexed.'
+);
 const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim();
 const turnstileEnabled = turnstileSiteKey.length > 0;
 const strapiPublicBase = resolveStrapiBaseUrl({
@@ -159,16 +186,23 @@ const blogEngagementCopy = {
       </p>
     ) : null
   }
-  <h1 class="gv-h1">{resolution.output.title}</h1>
-  <p class="small gv-body">{resolution.output.excerpt}</p>
+  {
+    reviewPost ? (
+      <p class="small gv-caption">
+        <span class="status-pill">{reviewBadgeLabel}</span> {reviewHint}
+      </p>
+    ) : null
+  }
+  <h1 class="gv-h1">{renderTranslation.title}</h1>
+  <p class="small gv-body">{renderTranslation.excerpt}</p>
   <p class="gv-caption">
     <strong>{translate(ui, 'post.meta.postId')}:</strong> {post.post_id}
   </p>
   <p class="gv-caption">
-    <strong>{translate(ui, 'post.meta.languageStatus')}:</strong> {resolution.requested?.status || 'missing'}
+    <strong>{translate(ui, 'post.meta.languageStatus')}:</strong> {renderTranslation.status || resolution.requested?.status || 'missing'}
   </p>
-  {resolution.output.body ? <article class="gv-prose gv-body" data-ev-root="off" set:html={resolution.output.body}></article> : <p class="gv-body">{translate(ui, 'post.noBody')}</p>}
-  <EmbedGallery embeds={resolution.output.embeds} ui={ui} />
+  {renderTranslation.body ? <article class="gv-prose gv-body" data-ev-root="off" set:html={renderTranslation.body}></article> : <p class="gv-body">{translate(ui, 'post.noBody')}</p>}
+  <EmbedGallery embeds={renderTranslation.embeds} ui={ui} />
   </section>
   <AdSlot {...{ slot: 'blog_incontent' }} class="blog-incontent-ad" testId="ad-slot-blog-incontent" />
 

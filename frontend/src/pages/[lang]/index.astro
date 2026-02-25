@@ -10,6 +10,7 @@ import { getAtlasPlaces, getBlogPosts, getUiPage } from '../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../lib/pageHelpers';
 import { getUiMessages, translate } from '../../lib/uiLanguage';
+import { isPostInReview, isPostVisibleOnSite } from '../../lib/ugcPostRules';
 
 export async function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map((language) => ({
@@ -82,22 +83,34 @@ const topCities = places
 
 const blogEntries = posts
   .map((post) => {
-    const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
-    const requested = resolved.requested;
-    const complete = resolved.complete;
-
-    if (!resolved.output || !complete?.slug) {
+    if (!isPostVisibleOnSite(post)) {
       return null;
     }
 
-    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
+    const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
+    const requested = resolved.requested;
+    const complete = resolved.complete;
+    const canonicalTranslation =
+      Array.isArray(post.translations) && post.translations.length > 0
+        ? post.translations.find(
+            (entry) =>
+              String(entry?.language || '').toLowerCase() === String(post.canonical_language || 'en').toLowerCase()
+          ) || post.translations[0]
+        : null;
+    const output = resolved.output || (isPostInReview(post) ? requested || canonicalTranslation : null);
+    const slug = requested?.slug || complete?.slug || canonicalTranslation?.slug || '';
+
+    if (!output || !slug) {
+      return null;
+    }
 
     return {
       post_id: post.post_id,
-      title: resolved.output.title || post.post_id,
+      title: output.title || post.post_id,
       href: pathForLanguage(lang, `blog/${slug}`),
       status: requested?.status || 'missing',
       published_on: post.published_on || '',
+      inReview: isPostInReview(post),
     };
   })
   .filter(Boolean)
@@ -252,6 +265,7 @@ const description = homeContent?.seo?.metaDescription || homeContent?.excerpt ||
               <li class="teaser-item">
                 <a href={entry.href}>{entry.title}</a>
                 <span class="status-pill">{entry.status}</span>
+                {entry.inReview ? <span class="status-pill">In review</span> : null}
               </li>
             ))}
           </ul>

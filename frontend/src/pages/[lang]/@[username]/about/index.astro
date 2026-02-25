@@ -1,6 +1,6 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
-import { SUPPORTED_LANGUAGES, pathForLanguage } from '../../../../lib/languages';
+import { SUPPORTED_LANGUAGES, isSupportedLanguage, pathForLanguage } from '../../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../../lib/pageHelpers';
 import { getCreatorProfileByUsername, getCreatorProfiles } from '../../../../lib/strapi';
 import { getUiMessages } from '../../../../lib/uiLanguage';
@@ -17,9 +17,16 @@ export async function getStaticPaths() {
     )
   );
 
-  return usernames.map((username) => ({
-    params: { username },
-  }));
+  return SUPPORTED_LANGUAGES.flatMap((language) =>
+    usernames.map((username) => ({
+      params: { lang: language, username },
+    }))
+  );
+}
+
+const lang = String(Astro.params.lang || '').trim().toLowerCase();
+if (!isSupportedLanguage(lang)) {
+  throw new Error(`Unsupported language: ${lang}`);
 }
 
 const username = String(Astro.params.username || '').trim().toLowerCase();
@@ -27,7 +34,7 @@ if (!username) {
   throw new Error('username is required.');
 }
 
-const ui = getUiMessages('en');
+const ui = getUiMessages(lang);
 const profile = await getCreatorProfileByUsername(username);
 if (!profile) {
   throw new Error(`creator profile not found: ${username}`);
@@ -35,11 +42,11 @@ if (!profile) {
 
 const languageLinks = buildLanguageLinks(
   Object.fromEntries(
-    SUPPORTED_LANGUAGES.map((lang) => [lang, pathForLanguage(lang, `@${username}/about`)])
+    SUPPORTED_LANGUAGES.map((language) => [language, pathForLanguage(language, `@${username}/about`)])
   ) as Record<string, string>
 );
 const alternates = toAlternates(languageLinks);
-const canonical = absoluteUrl(pathForLanguage('en', `@${username}/about`));
+const canonical = absoluteUrl(pathForLanguage(lang, `@${username}/about`));
 const socialLinks = profile.social_links && typeof profile.social_links === 'object' ? profile.social_links : null;
 ---
 
@@ -48,7 +55,7 @@ const socialLinks = profile.social_links && typeof profile.social_links === 'obj
   description={profile.bio || `About @${username}`}
   canonical={canonical}
   robots="noindex,nofollow"
-  currentLanguage="en"
+  currentLanguage={lang}
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
@@ -58,9 +65,9 @@ const socialLinks = profile.social_links && typeof profile.social_links === 'obj
     <h1 class="gv-h1">{profile.display_name || `@${username}`}</h1>
     <p class="small">@{profile.username}</p>
     <nav class="gv-row gv-row--gap" aria-label="Creator navigation">
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage('en', `@${username}`)}>Home</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage('en', `@${username}/posts`)}>Posts</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage('en', `@${username}/about`)}>About</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}`)}>Home</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/posts`)}>Posts</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/about`)}>About</a>
     </nav>
   </section>
 

@@ -9,6 +9,7 @@ import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../..
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { chooseSlugForLanguage } from '../../../lib/slugResolver';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
+import { isPostInReview, isPostVisibleOnSite } from '../../../lib/ugcPostRules';
 
 type SearchKind = 'all' | 'country' | 'city' | 'landmark' | 'region' | 'blog';
 
@@ -149,18 +150,27 @@ const regionItems: SearchItem[] = groups
 
 const blogItems: SearchItem[] = posts
   .map((post) => {
+    if (!isPostVisibleOnSite(post)) return null;
+
     const resolved = resolveTranslation(post.translations, lang, post.canonical_language);
     const requested = resolved.requested;
     const complete = resolved.complete;
-    if (!resolved.output || !complete?.slug) return null;
-
-    const slug = requested?.status === 'complete' && requested.slug ? requested.slug : complete.slug;
+    const canonicalTranslation =
+      Array.isArray(post.translations) && post.translations.length > 0
+        ? post.translations.find(
+            (entry) =>
+              String(entry?.language || '').toLowerCase() === String(post.canonical_language || 'en').toLowerCase()
+          ) || post.translations[0]
+        : null;
+    const output = resolved.output || (isPostInReview(post) ? requested || canonicalTranslation : null);
+    const slug = requested?.slug || complete?.slug || canonicalTranslation?.slug || '';
+    if (!output || !slug) return null;
 
     return {
       id: `blog:${post.post_id}`,
       kind: 'blog',
-      title: resolved.output.title || post.post_id,
-      excerpt: resolved.output.excerpt || '',
+      title: output.title || post.post_id,
+      excerpt: output.excerpt || '',
       href: pathForLanguage(lang, `blog/${slug}`),
       publishedOn: post.published_on || null,
       status: requested?.status || 'missing',
