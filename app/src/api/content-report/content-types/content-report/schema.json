@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "content_reports",
+  "info": {
+    "singularName": "content-report",
+    "pluralName": "content-reports",
+    "displayName": "Content Report",
+    "description": "Community report inbox for post/comment/photo/profile abuse signals"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "report_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "target_type": {
+      "type": "enumeration",
+      "enum": ["post", "comment", "photo", "profile"],
+      "required": true
+    },
+    "target_ref": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    },
+    "reporter_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "reporter_user_id": {
+      "type": "integer",
+      "private": true
+    },
+    "reason": {
+      "type": "enumeration",
+      "enum": ["spam", "inappropriate", "misinformation", "copyright", "other"],
+      "required": true
+    },
+    "note": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["new", "reviewing", "resolved", "dismissed"],
+      "default": "new",
+      "required": true
+    },
+    "auto_triggered": {
+      "type": "boolean",
+      "default": false
+    },
+    "resolution_note": {
+      "type": "text"
+    },
+    "resolved_by": {
+      "type": "integer"
+    },
+    "resolved_at": {
+      "type": "datetime"
+    }
+  }
+}
+

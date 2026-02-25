@@ -1,0 +1,74 @@
+{
+  "kind": "singleType",
+  "collectionName": "community_settings",
+  "info": {
+    "singularName": "community-setting",
+    "pluralName": "community-settings",
+    "displayName": "Community Setting",
+    "description": "Single control center for UGC/community moderation and visibility defaults"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ugc_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "ugc_open_mode": {
+      "type": "enumeration",
+      "enum": ["controlled", "open"],
+      "default": "controlled"
+    },
+    "guest_comments_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "post_links_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "comments_links_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "post_link_limit": {
+      "type": "integer",
+      "default": 4
+    },
+    "member_comment_link_limit": {
+      "type": "integer",
+      "default": 2
+    },
+    "guest_comment_link_limit": {
+      "type": "integer",
+      "default": 1
+    },
+    "default_profile_visibility": {
+      "type": "enumeration",
+      "enum": ["public", "members", "private"],
+      "default": "public"
+    },
+    "moderation_strictness": {
+      "type": "enumeration",
+      "enum": ["lenient", "balanced", "strict"],
+      "default": "balanced"
+    },
+    "citizen_card_visible": {
+      "type": "boolean",
+      "default": true
+    },
+    "badges_visible": {
+      "type": "boolean",
+      "default": false
+    },
+    "notifications_defaults": {
+      "type": "json"
+    },
+    "safety_notice_templates": {
+      "type": "json"
+    }
+  }
+}
+

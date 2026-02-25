@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "account_requests",
+  "info": {
+    "singularName": "account-request",
+    "pluralName": "account-requests",
+    "displayName": "Account Request",
+    "description": "User account close/delete requests with moderation workflow"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "request_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "owner_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "required": true
+    },
+    "request_type": {
+      "type": "enumeration",
+      "enum": ["deactivate", "delete"],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["new", "approved", "rejected", "completed"],
+      "default": "new",
+      "required": true
+    },
+    "reason": {
+      "type": "text"
+    },
+    "resolution_note": {
+      "type": "text"
+    },
+    "resolved_by": {
+      "type": "integer"
+    },
+    "resolved_at": {
+      "type": "datetime"
+    }
+  }
+}
+

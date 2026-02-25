@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_post_revisions",
+  "info": {
+    "singularName": "blog-post-revision",
+    "pluralName": "blog-post-revisions",
+    "displayName": "Blog Post Revision",
+    "description": "Limited revision snapshots for UGC post moderation/audit"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "post_id": {
+      "type": "string",
+      "required": true
+    },
+    "entity_id": {
+      "type": "integer",
+      "required": true
+    },
+    "action": {
+      "type": "enumeration",
+      "enum": ["create", "update", "submit", "moderate", "visibility"],
+      "required": true
+    },
+    "changed_by": {
+      "type": "integer"
+    },
+    "snapshot": {
+      "type": "json",
+      "required": true
+    }
+  }
+}
+

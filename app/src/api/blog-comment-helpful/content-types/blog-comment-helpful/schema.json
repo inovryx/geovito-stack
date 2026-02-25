@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_comment_helpful",
+  "info": {
+    "singularName": "blog-comment-helpful",
+    "pluralName": "blog-comment-helpfuls",
+    "displayName": "Blog Comment Helpful",
+    "description": "Member-only helpful votes for blog comments"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "helpful_key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "owner_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "required": true,
+      "private": true
+    },
+    "blog_comment": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-comment.blog-comment",
+      "required": true
+    },
+    "blog_comment_ref": {
+      "type": "string",
+      "required": true
+    },
+    "client_ip_hash": {
+      "type": "string",
+      "private": true
+    },
+    "mock": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
+
