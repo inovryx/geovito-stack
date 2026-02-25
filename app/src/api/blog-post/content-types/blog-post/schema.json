@@ -26,6 +26,12 @@
       "default": "en",
       "required": true
     },
+    "original_language": {
+      "type": "enumeration",
+      "enum": ["en", "tr", "de", "es", "ru", "zh-cn"],
+      "default": "en",
+      "required": true
+    },
     "translations": {
       "type": "component",
       "repeatable": true,
@@ -72,6 +78,12 @@
       "default": "approved",
       "required": true
     },
+    "site_visibility": {
+      "type": "enumeration",
+      "enum": ["visible", "hidden"],
+      "default": "visible",
+      "required": true
+    },
     "moderation_notes": {
       "type": "text"
     },
@@ -80,6 +92,13 @@
     },
     "reviewed_by": {
       "type": "integer"
+    },
+    "review_flags": {
+      "type": "json"
+    },
+    "revision_enabled": {
+      "type": "boolean",
+      "default": true
     },
     "mock": {
       "type": "boolean",

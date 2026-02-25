@@ -1,6 +1,24 @@
 'use strict';
 
 const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,48}[a-z0-9])?$/;
+const RESERVED_USERNAMES = new Set([
+  'admin',
+  'support',
+  'api',
+  'root',
+  'geovito',
+  'www',
+  'help',
+  'about',
+  'blog',
+  'atlas',
+  'login',
+  'register',
+  'dashboard',
+  'moderation',
+  'settings',
+  'u',
+]);
 
 const normalizeUsername = (value) =>
   String(value || '')
@@ -42,13 +60,33 @@ const normalizeData = (data = {}) => {
   if (data.username && !USERNAME_PATTERN.test(data.username)) {
     throw new Error('creator-profile username must be slug-safe lowercase.');
   }
+
+  if (data.username && RESERVED_USERNAMES.has(data.username)) {
+    throw new Error('creator-profile username is reserved.');
+  }
 };
 
 module.exports = {
   beforeCreate(event) {
     normalizeData(event.params?.data);
   },
-  beforeUpdate(event) {
+  async beforeUpdate(event) {
     normalizeData(event.params?.data);
+
+    const data = event.params?.data || {};
+    if (data.username === undefined) return;
+
+    const where = event.params?.where || {};
+    const entityId = Number(where.id);
+    if (!Number.isInteger(entityId) || entityId <= 0) return;
+
+    const existing = await strapi.entityService.findOne('api::creator-profile.creator-profile', entityId, {
+      fields: ['username'],
+    });
+    const current = normalizeUsername(existing?.username || '');
+    const next = normalizeUsername(data.username || '');
+    if (current && next && current !== next) {
+      throw new Error('creator-profile username is immutable once created.');
+    }
   },
 };

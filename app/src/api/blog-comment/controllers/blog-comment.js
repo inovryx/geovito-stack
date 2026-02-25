@@ -11,15 +11,17 @@ const {
   getGuestMaxLinks,
   getGuestSpamLinks,
 } = require('../../../modules/blog-engagement/constants');
-const { evaluateGuestCommentSafety } = require('../../../modules/blog-engagement/comment-content-safety');
+const { evaluateGuestCommentSafety, detectUrlCount } = require('../../../modules/blog-engagement/comment-content-safety');
 const { verifyGuestCommentTurnstile } = require('../../../modules/blog-engagement/turnstile');
 const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
 const { getClientIp, isLimited } = require('../../../modules/blog-engagement/rate-limit');
 const { log } = require('../../../modules/domain-logging');
 const { resolveActor } = require('../../../modules/domain-logging/context');
+const { getCommunitySettings } = require('../../../modules/community-settings');
 
 const UID = 'api::blog-comment.blog-comment';
 const BLOG_POST_UID = 'api::blog-post.blog-post';
+const BLOG_COMMENT_HELPFUL_UID = 'api::blog-comment-helpful.blog-comment-helpful';
 const USERS_PERMISSIONS_USER_UID = 'plugin::users-permissions.user';
 const COMMENT_STATUS_SET = new Set(Object.values(BLOG_COMMENT_STATUS));
 const OWNER_EMAIL_HINT = String(
@@ -31,10 +33,14 @@ const toPublicComment = (entry) => {
 
   return {
     comment_id: entry.comment_id,
+    parent_comment_id: entry.parent_comment?.comment_id || null,
+    thread_depth: Number(entry.thread_depth || 0),
     body: entry.body,
     language: entry.language || 'en',
     source: entry.source,
     display_name: entry.source === BLOG_COMMENT_SOURCE.REGISTERED ? entry.owner_username || null : entry.guest_display_name || null,
+    helpful_count: Number(entry.helpful_count || 0),
+    report_count: Number(entry.report_count || 0),
     created_at: entry.createdAt,
   };
 };
@@ -44,11 +50,15 @@ const toOwnComment = (entry) => {
 
   return {
     comment_id: entry.comment_id,
+    parent_comment_id: entry.parent_comment?.comment_id || null,
+    thread_depth: Number(entry.thread_depth || 0),
     body: entry.body,
     language: entry.language || 'en',
     source: entry.source,
     status: entry.status,
     blog_post_ref: entry.blog_post_ref || null,
+    helpful_count: Number(entry.helpful_count || 0),
+    report_count: Number(entry.report_count || 0),
     moderation_notes: entry.moderation_notes || null,
     reviewed_at: entry.reviewed_at || null,
     reviewed_by: entry.reviewed_by || null,
@@ -87,6 +97,17 @@ const MODERATION_STALE_HOURS = parseIntSafe(
   1,
   24 * 30
 );
+
+const countHelpfulVotesForComment = async (strapi, commentId) => {
+  const rows = await strapi.entityService.findMany(BLOG_COMMENT_HELPFUL_UID, {
+    filters: {
+      blog_comment_ref: commentId,
+    },
+    fields: ['id'],
+    limit: 10000,
+  });
+  return Array.isArray(rows) ? rows.length : 0;
+};
 
 const normalizeSortOrder = (value) => (String(value || '').toLowerCase() === 'asc' ? 'asc' : 'desc');
 const normalizeLower = (value) => String(value || '').trim().toLowerCase();
@@ -160,12 +181,20 @@ const findCommentByCommentId = async (strapi, commentId) => {
       'blog_post_ref',
       'guest_display_name',
       'owner_username',
+      'thread_depth',
+      'helpful_count',
+      'report_count',
       'moderation_notes',
       'reviewed_at',
       'reviewed_by',
       'createdAt',
       'updatedAt',
     ],
+    populate: {
+      parent_comment: {
+        fields: ['comment_id'],
+      },
+    },
     limit: 1,
   });
 
@@ -207,6 +236,8 @@ const toModerationComment = (entry) => {
   if (!entry) return null;
   return {
     comment_id: entry.comment_id,
+    parent_comment_id: entry.parent_comment?.comment_id || null,
+    thread_depth: Number(entry.thread_depth || 0),
     body: entry.body,
     language: entry.language || 'en',
     source: entry.source,
@@ -217,6 +248,8 @@ const toModerationComment = (entry) => {
         ? entry.owner_username || null
         : entry.guest_display_name || null,
     moderation_notes: entry.moderation_notes || null,
+    helpful_count: Number(entry.helpful_count || 0),
+    report_count: Number(entry.report_count || 0),
     reviewed_at: entry.reviewed_at || null,
     reviewed_by: entry.reviewed_by || null,
     created_at: entry.createdAt,
@@ -241,7 +274,24 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
     const entries = await strapi.entityService.findMany(UID, {
       filters,
       sort: [`createdAt:${sortOrder}`],
-      fields: ['comment_id', 'body', 'language', 'source', 'guest_display_name', 'owner_username', 'createdAt', 'blog_post_ref'],
+      fields: [
+        'comment_id',
+        'body',
+        'language',
+        'source',
+        'guest_display_name',
+        'owner_username',
+        'createdAt',
+        'blog_post_ref',
+        'thread_depth',
+        'helpful_count',
+        'report_count',
+      ],
+      populate: {
+        parent_comment: {
+          fields: ['comment_id'],
+        },
+      },
       limit,
     });
 
@@ -257,7 +307,24 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
     }
 
     const entry = await strapi.entityService.findOne(UID, id, {
-      fields: ['comment_id', 'body', 'language', 'source', 'guest_display_name', 'owner_username', 'createdAt', 'status'],
+      fields: [
+        'comment_id',
+        'body',
+        'language',
+        'source',
+        'guest_display_name',
+        'owner_username',
+        'createdAt',
+        'status',
+        'thread_depth',
+        'helpful_count',
+        'report_count',
+      ],
+      populate: {
+        parent_comment: {
+          fields: ['comment_id'],
+        },
+      },
     });
 
     if (!entry || entry.status !== BLOG_COMMENT_STATUS.APPROVED) {
@@ -323,12 +390,20 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         'source',
         'status',
         'blog_post_ref',
+        'thread_depth',
+        'helpful_count',
+        'report_count',
         'moderation_notes',
         'reviewed_at',
         'reviewed_by',
         'createdAt',
         'updatedAt',
       ],
+      populate: {
+        parent_comment: {
+          fields: ['comment_id'],
+        },
+      },
       limit,
     });
 
@@ -441,6 +516,9 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         'source',
         'status',
         'blog_post_ref',
+        'thread_depth',
+        'helpful_count',
+        'report_count',
         'guest_display_name',
         'owner_username',
         'moderation_notes',
@@ -449,6 +527,11 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         'createdAt',
         'updatedAt',
       ],
+      populate: {
+        parent_comment: {
+          fields: ['comment_id'],
+        },
+      },
       limit,
     });
 
@@ -566,12 +649,20 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         'source',
         'status',
         'blog_post_ref',
+        'thread_depth',
+        'helpful_count',
+        'report_count',
         'moderation_notes',
         'reviewed_at',
         'reviewed_by',
         'createdAt',
         'updatedAt',
       ],
+      populate: {
+        parent_comment: {
+          fields: ['comment_id'],
+        },
+      },
     });
 
     await log(
@@ -632,6 +723,32 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
     }
 
     const source = user?.id ? BLOG_COMMENT_SOURCE.REGISTERED : BLOG_COMMENT_SOURCE.GUEST;
+    const communitySettings = await getCommunitySettings(strapi);
+
+    if (!communitySettings.ugc_enabled) {
+      return ctx.forbidden('Community submissions are disabled.');
+    }
+
+    if (source === BLOG_COMMENT_SOURCE.GUEST && !communitySettings.guest_comments_enabled) {
+      return ctx.forbidden('Guest comments are disabled.');
+    }
+
+    let parentComment = null;
+    let threadDepth = 0;
+    if (payload.parent_comment_id) {
+      parentComment = await findCommentByCommentId(strapi, payload.parent_comment_id);
+      if (!parentComment?.id) {
+        return ctx.badRequest('parent_comment_id not found');
+      }
+      if (String(parentComment.blog_post_ref || '') !== String(payload.post_id || '')) {
+        return ctx.badRequest('parent_comment_id must belong to same post_id');
+      }
+      threadDepth = Number(parentComment.thread_depth || 0) + 1;
+      if (threadDepth > 1) {
+        return ctx.badRequest('reply depth is limited to one level');
+      }
+    }
+
     if (source === BLOG_COMMENT_SOURCE.GUEST) {
       const turnstileCheck = await verifyGuestCommentTurnstile(ctx);
       if (!turnstileCheck.ok) {
@@ -665,6 +782,14 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
     let status = BLOG_COMMENT_STATUS.PENDING;
     let moderationNotes = null;
 
+    const linksEnabled = communitySettings.comments_links_enabled !== false;
+    const bodyUrlCount = detectUrlCount(payload.body);
+    const commentMaxLinks =
+      source === BLOG_COMMENT_SOURCE.GUEST
+        ? Number(communitySettings.guest_comment_link_limit ?? getGuestMaxLinks())
+        : Number(communitySettings.member_comment_link_limit ?? 2);
+    const commentSpamLinks = Math.max(commentMaxLinks + 2, commentMaxLinks + 1);
+
     if (source === BLOG_COMMENT_SOURCE.REGISTERED) {
       const submittedByUser = await strapi.entityService.findMany(UID, {
         filters: {
@@ -680,28 +805,51 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
 
       const approvedAfter = getRegisteredAutoApproveAfter();
       status = submittedByUser.length >= approvedAfter ? BLOG_COMMENT_STATUS.APPROVED : BLOG_COMMENT_STATUS.PENDING;
+
+      if (!linksEnabled && bodyUrlCount > 0) {
+        status = BLOG_COMMENT_STATUS.PENDING;
+        moderationNotes = `auto-hold: links_disabled_for_comments (url_count=${bodyUrlCount})`;
+      } else {
+        const safety = evaluateGuestCommentSafety(payload.body, {
+          maxLinks: Math.max(0, commentMaxLinks),
+          spamLinks: Math.max(commentSpamLinks, commentMaxLinks + 1),
+        });
+        if (safety.forcedStatus) {
+          status = safety.forcedStatus === BLOG_COMMENT_STATUS.SPAM ? BLOG_COMMENT_STATUS.PENDING : safety.forcedStatus;
+          moderationNotes = safety.moderationNotes;
+        }
+      }
     } else {
-      const safety = evaluateGuestCommentSafety(payload.body, {
-        maxLinks: getGuestMaxLinks(),
-        spamLinks: getGuestSpamLinks(),
-      });
+      if (!linksEnabled && bodyUrlCount > 0) {
+        status = BLOG_COMMENT_STATUS.PENDING;
+        moderationNotes = `auto-hold: links_disabled_for_comments (url_count=${bodyUrlCount})`;
+      } else {
+        const safety = evaluateGuestCommentSafety(payload.body, {
+          maxLinks: Math.max(0, Number(communitySettings.guest_comment_link_limit ?? getGuestMaxLinks())),
+          spamLinks: Math.max(
+            Math.max(0, Number(communitySettings.guest_comment_link_limit ?? getGuestMaxLinks())) + 2,
+            Number(communitySettings.guest_comment_link_limit ?? getGuestMaxLinks()) + 1,
+            getGuestSpamLinks()
+          ),
+        });
 
-      if (safety.forcedStatus) {
-        status = safety.forcedStatus;
-        moderationNotes = safety.moderationNotes;
+        if (safety.forcedStatus) {
+          status = safety.forcedStatus;
+          moderationNotes = safety.moderationNotes;
 
-        await log(
-          'blog',
-          'INFO',
-          'blog.comment.submit.auto_flagged',
-          'Guest comment auto-flagged by link policy',
-          {
-            post_id: payload.post_id,
-            forced_status: safety.forcedStatus,
-            url_count: safety.urlCount,
-          },
-          { request_id: requestId, actor }
-        );
+          await log(
+            'blog',
+            'INFO',
+            'blog.comment.submit.auto_flagged',
+            'Guest comment auto-flagged by link policy',
+            {
+              post_id: payload.post_id,
+              forced_status: safety.forcedStatus,
+              url_count: safety.urlCount,
+            },
+            { request_id: requestId, actor }
+          );
+        }
       }
     }
 
@@ -713,6 +861,8 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
       user,
       clientIpHash: hashIp(clientIp),
       moderationNotes,
+      parentComment,
+      threadDepth,
     });
 
     await log(
@@ -738,6 +888,67 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
       status: 'received',
       moderation_status: status,
       comment_ref: created.comment_id,
+    };
+  },
+
+  async helpfulToggle(ctx) {
+    const user = ctx.state?.user?.id ? ctx.state.user : await authenticateFromBearer(strapi, ctx);
+    const userId = Number(user?.id);
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return ctx.unauthorized('Authentication is required.');
+    }
+
+    const payload = ctx.request?.body?.data || ctx.request?.body || {};
+    const commentId = String(payload.comment_id || '').trim();
+    if (!commentId) {
+      return ctx.badRequest('comment_id is required');
+    }
+
+    const comment = await findCommentByCommentId(strapi, commentId);
+    if (!comment?.id || comment.status !== BLOG_COMMENT_STATUS.APPROVED) {
+      return ctx.notFound('Comment not found');
+    }
+
+    const clientIp = getClientIp(ctx);
+    const helpfulKey = `${commentId}:${userId}`;
+    const existing = await strapi.entityService.findMany(BLOG_COMMENT_HELPFUL_UID, {
+      filters: {
+        helpful_key: helpfulKey,
+      },
+      fields: ['id'],
+      limit: 1,
+    });
+
+    let helpful = false;
+    if (existing[0]?.id) {
+      await strapi.entityService.delete(BLOG_COMMENT_HELPFUL_UID, Number(existing[0].id));
+      helpful = false;
+    } else {
+      await strapi.entityService.create(BLOG_COMMENT_HELPFUL_UID, {
+        data: {
+          helpful_key: helpfulKey,
+          owner_user: userId,
+          owner_user_id: userId,
+          blog_comment: Number(comment.id),
+          blog_comment_ref: commentId,
+          client_ip_hash: hashIp(clientIp),
+        },
+      });
+      helpful = true;
+    }
+
+    const helpfulCount = await countHelpfulVotesForComment(strapi, commentId);
+    await strapi.entityService.update(UID, Number(comment.id), {
+      data: {
+        helpful_count: helpfulCount,
+      },
+    });
+
+    ctx.body = {
+      ok: true,
+      comment_id: commentId,
+      helpful,
+      helpful_count: helpfulCount,
     };
   },
 

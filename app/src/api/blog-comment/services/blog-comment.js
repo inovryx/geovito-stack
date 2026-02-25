@@ -17,6 +17,8 @@ module.exports = createCoreService(UID, ({ strapi }) => ({
     user,
     clientIpHash,
     moderationNotes = null,
+    parentComment = null,
+    threadDepth = 0,
   }) {
     return strapi.entityService.create(UID, {
       data: {
@@ -32,6 +34,10 @@ module.exports = createCoreService(UID, ({ strapi }) => ({
         owner_user: user?.id || null,
         owner_user_id: user?.id ? Number(user.id) : null,
         owner_username: user?.username || null,
+        parent_comment: parentComment?.id ? Number(parentComment.id) : null,
+        thread_depth: Math.max(0, Number(threadDepth || 0)),
+        report_count: 0,
+        helpful_count: 0,
         client_ip_hash: clientIpHash,
         moderation_notes: moderationNotes,
       },

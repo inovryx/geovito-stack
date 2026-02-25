@@ -3,6 +3,9 @@
 const crypto = require('crypto');
 const { createCoreController } = require('@strapi/strapi').factories;
 const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
+const { detectUrlCount } = require('../../../modules/blog-engagement/comment-content-safety');
+const { getCommunitySettings } = require('../../../modules/community-settings');
+const { createRevision } = require('../../../modules/blog-engagement/revisions');
 
 const BLOG_POST_UID = 'api::blog-post.blog-post';
 const USER_UID = 'plugin::users-permissions.user';
@@ -10,6 +13,7 @@ const USER_UID = 'plugin::users-permissions.user';
 const BLOG_LANGUAGES = new Set(['en', 'tr', 'de', 'es', 'ru', 'zh-cn']);
 const SUBMISSION_STATES = new Set(['draft', 'submitted', 'approved', 'rejected', 'spam', 'deleted']);
 const MODERATION_TARGET_STATES = new Set(['approved', 'rejected', 'spam', 'deleted']);
+const SITE_VISIBILITY_SET = new Set(['visible', 'hidden']);
 const OWNER_EMAIL_HINT = String(process.env.OWNER_EMAIL || process.env.PUBLIC_OWNER_EMAIL || '')
   .trim()
   .toLowerCase();
@@ -30,6 +34,11 @@ const normalizeLanguage = (value) => {
 const normalizeSubmissionState = (value) => {
   const normalized = String(value || '').trim().toLowerCase();
   return SUBMISSION_STATES.has(normalized) ? normalized : null;
+};
+
+const normalizeSiteVisibility = (value, fallback = 'visible') => {
+  const normalized = String(value || fallback).trim().toLowerCase();
+  return SITE_VISIBILITY_SET.has(normalized) ? normalized : fallback;
 };
 
 const normalizeSlug = (value) =>
@@ -177,6 +186,29 @@ const findPostByPostId = async (strapi, postId, options = {}) => {
   return entries[0] || null;
 };
 
+const validatePostLinkPolicy = (bodyValue, communitySettings) => {
+  const body = String(bodyValue || '');
+  const urlCount = detectUrlCount(body);
+  const linksEnabled = communitySettings?.post_links_enabled !== false;
+  const limit = Math.max(0, Number(communitySettings?.post_link_limit ?? 4));
+
+  if (!linksEnabled && urlCount > 0) {
+    return {
+      ok: false,
+      message: 'Links are disabled for user posts.',
+    };
+  }
+
+  if (linksEnabled && urlCount > limit) {
+    return {
+      ok: false,
+      message: `Post link limit exceeded (max=${limit}, found=${urlCount}).`,
+    };
+  }
+
+  return { ok: true };
+};
+
 const toPostSummary = (post, preferredLanguage = 'en') => {
   const translation = pickTranslation(post, preferredLanguage);
   const slug = sanitizeText(translation?.slug || '', 220);
@@ -186,7 +218,9 @@ const toPostSummary = (post, preferredLanguage = 'en') => {
     post_id: post.post_id,
     content_source: post.content_source || 'editorial',
     submission_state: post.submission_state || 'approved',
+    site_visibility: normalizeSiteVisibility(post.site_visibility || 'visible'),
     canonical_language: normalizeLanguage(post.canonical_language || 'en'),
+    original_language: normalizeLanguage(post.original_language || post.canonical_language || 'en'),
     owner_user_id: post.owner_user_id || null,
     owner_username_snapshot: post.owner_username_snapshot || null,
     published_on: post.published_on || null,
@@ -200,6 +234,7 @@ const toPostSummary = (post, preferredLanguage = 'en') => {
     moderation_notes: post.moderation_notes || null,
     reviewed_at: post.reviewed_at || null,
     reviewed_by: post.reviewed_by || null,
+    review_flags: post.review_flags || null,
   };
 };
 
@@ -213,6 +248,10 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     if (!user) return ctx.unauthorized('Authentication required.');
 
     const payload = parsePayload(ctx);
+    const communitySettings = await getCommunitySettings(strapi);
+    if (!communitySettings.ugc_enabled) {
+      return ctx.forbidden('UGC is disabled.');
+    }
     const canonicalLanguage = normalizeLanguage(payload.language || payload.canonical_language || 'en');
     const title = sanitizeText(payload.title, 160);
     if (!title) return ctx.badRequest('title is required.');
@@ -223,6 +262,10 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     const postId = generatePostId();
     const excerpt = sanitizeText(payload.excerpt, 320);
     const body = sanitizeText(payload.body, 200000);
+    const linkPolicy = validatePostLinkPolicy(body, communitySettings);
+    if (!linkPolicy.ok) {
+      return ctx.badRequest(linkPolicy.message);
+    }
     const tags = Array.isArray(payload.tags) ? payload.tags.slice(0, 30) : [];
     const relatedPlaceRefs = Array.isArray(payload.related_place_refs) ? payload.related_place_refs.slice(0, 80) : [];
 
@@ -230,6 +273,7 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
       data: {
         post_id: postId,
         canonical_language: canonicalLanguage,
+        original_language: canonicalLanguage,
         translations: [
           {
             language: canonicalLanguage,
@@ -250,9 +294,12 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
         owner_user_id: Number(user.id),
         owner_username_snapshot: sanitizeText(user.username || '', 160) || `user-${user.id}`,
         submission_state: 'draft',
+        site_visibility: 'visible',
         moderation_notes: null,
         reviewed_at: null,
         reviewed_by: null,
+        review_flags: null,
+        revision_enabled: true,
         mock: false,
       },
       populate: {
@@ -263,6 +310,12 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     ctx.body = {
       data: toPostSummary(created, canonicalLanguage),
     };
+
+    await createRevision(strapi, {
+      post: created,
+      action: 'create',
+      changedBy: user.id,
+    });
   },
 
   async updateMyDraft(ctx) {
@@ -289,11 +342,16 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     }
 
     const payload = parsePayload(ctx);
+    const communitySettings = await getCommunitySettings(strapi);
     const language = normalizeLanguage(payload.language || payload.canonical_language || post.canonical_language || 'en');
     const nextTitle = sanitizeText(payload.title, 160);
     const nextSlug = normalizeSlug(payload.slug || nextTitle || pickTranslation(post, language)?.slug || '');
     const nextExcerpt = sanitizeText(payload.excerpt, 320);
     const nextBody = sanitizeText(payload.body, 200000);
+    const linkPolicy = validatePostLinkPolicy(nextBody, communitySettings);
+    if (!linkPolicy.ok) {
+      return ctx.badRequest(linkPolicy.message);
+    }
     const nextStatus =
       ['draft', 'complete'].includes(String(payload.translation_status || '').toLowerCase())
         ? String(payload.translation_status).toLowerCase()
@@ -323,11 +381,13 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     const updated = await strapi.entityService.update(BLOG_POST_UID, Number(post.id), {
       data: {
         canonical_language: normalizeLanguage(payload.canonical_language || post.canonical_language || language),
+        original_language: normalizeLanguage(post.original_language || post.canonical_language || language),
         translations: mergedTranslations,
         tags,
         related_place_refs: relatedPlaceRefs,
         owner_username_snapshot: sanitizeText(user.username || post.owner_username_snapshot || '', 160),
         submission_state: 'draft',
+        site_visibility: normalizeSiteVisibility(post.site_visibility || 'visible'),
       },
       populate: {
         translations: true,
@@ -337,6 +397,12 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     ctx.body = {
       data: toPostSummary(updated, language),
     };
+
+    await createRevision(strapi, {
+      post: updated,
+      action: 'update',
+      changedBy: user.id,
+    });
   },
 
   async submitMyDraft(ctx) {
@@ -373,6 +439,7 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     const updated = await strapi.entityService.update(BLOG_POST_UID, Number(post.id), {
       data: {
         submission_state: 'submitted',
+        site_visibility: 'visible',
         moderation_notes: null,
       },
       populate: {
@@ -383,6 +450,12 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     ctx.body = {
       data: toPostSummary(updated, canonicalLanguage),
     };
+
+    await createRevision(strapi, {
+      post: updated,
+      action: 'submit',
+      changedBy: user.id,
+    });
   },
 
   async myList(ctx) {
@@ -409,8 +482,10 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
       fields: [
         'post_id',
         'canonical_language',
+        'original_language',
         'content_source',
         'submission_state',
+        'site_visibility',
         'owner_user_id',
         'owner_username_snapshot',
         'published_on',
@@ -418,6 +493,7 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
         'moderation_notes',
         'reviewed_at',
         'reviewed_by',
+        'review_flags',
         'mock',
       ],
       populate: {
@@ -430,6 +506,58 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     ctx.body = {
       data: Array.isArray(posts) ? posts.map((entry) => toPostSummary(entry, preferredLanguage)) : [],
     };
+  },
+
+  async setMyVisibility(ctx) {
+    if (!isTrue(process.env.UGC_POST_WRITE_ENABLED, false)) {
+      return ctx.forbidden('UGC post write is disabled.');
+    }
+
+    const user = await resolveAuthUser(strapi, ctx);
+    if (!user) return ctx.unauthorized('Authentication required.');
+
+    const postId = sanitizeText(ctx.params?.postId || '', 200);
+    if (!postId) return ctx.badRequest('postId is required.');
+
+    const post = await findPostByPostId(strapi, postId, {
+      content_source: 'user',
+    });
+    if (!post) return ctx.notFound('Post not found.');
+    if (Number(post.owner_user_id || 0) !== Number(user.id)) {
+      return ctx.forbidden('You can only edit your own post visibility.');
+    }
+
+    const state = normalizeSubmissionState(post.submission_state || '');
+    if (!['submitted', 'approved'].includes(state || '')) {
+      return ctx.badRequest('Only submitted/approved posts can change visibility.');
+    }
+
+    const payload = parsePayload(ctx);
+    const visibleRaw = payload.visible;
+    if (visibleRaw === undefined || visibleRaw === null) {
+      return ctx.badRequest('visible is required.');
+    }
+    const visible = ['1', 'true', 'yes', 'on'].includes(String(visibleRaw).trim().toLowerCase());
+    const nextVisibility = visible ? 'visible' : 'hidden';
+
+    const updated = await strapi.entityService.update(BLOG_POST_UID, Number(post.id), {
+      data: {
+        site_visibility: nextVisibility,
+      },
+      populate: {
+        translations: true,
+      },
+    });
+
+    ctx.body = {
+      data: toPostSummary(updated, normalizeLanguage(payload.lang || updated.canonical_language || 'en')),
+    };
+
+    await createRevision(strapi, {
+      post: updated,
+      action: 'visibility',
+      changedBy: user.id,
+    });
   },
 
   async moderationList(ctx) {
@@ -451,8 +579,10 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
       fields: [
         'post_id',
         'canonical_language',
+        'original_language',
         'content_source',
         'submission_state',
+        'site_visibility',
         'owner_user_id',
         'owner_username_snapshot',
         'published_on',
@@ -460,6 +590,7 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
         'moderation_notes',
         'reviewed_at',
         'reviewed_by',
+        'review_flags',
         'mock',
       ],
       populate: {
@@ -527,14 +658,17 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
       reviewed_at: nowIso,
       reviewed_by: Number(identity.user.id),
       translations,
+      site_visibility: normalizeSiteVisibility(post.site_visibility || 'visible'),
     };
 
     if (nextState === 'approved') {
       data.publishedAt = post.publishedAt || nowIso;
       data.published_on = post.published_on || nowDate;
+      data.review_flags = null;
     } else {
       data.publishedAt = null;
       data.published_on = null;
+      data.site_visibility = 'hidden';
     }
 
     const updated = await strapi.entityService.update(BLOG_POST_UID, Number(post.id), {
@@ -547,5 +681,11 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     ctx.body = {
       data: toPostSummary(updated, normalizeLanguage(payload.lang || updated.canonical_language || 'en')),
     };
+
+    await createRevision(strapi, {
+      post: updated,
+      action: 'moderate',
+      changedBy: identity.user.id,
+    });
   },
 }));

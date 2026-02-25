@@ -42,5 +42,13 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: 'POST',
+      path: '/blog-comments/helpful/toggle',
+      handler: 'blog-comment.helpfulToggle',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };

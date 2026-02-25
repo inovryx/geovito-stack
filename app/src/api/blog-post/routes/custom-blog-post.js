@@ -35,6 +35,14 @@ module.exports = {
       },
     },
     {
+      method: 'POST',
+      path: '/blog-posts/me/visibility/:postId',
+      handler: 'blog-post.setMyVisibility',
+      config: {
+        auth: false,
+      },
+    },
+    {
       method: 'GET',
       path: '/blog-posts/moderation/list',
       handler: 'blog-post.moderationList',

@@ -135,6 +135,7 @@ const createUserPost = async ({ strapi, ownerUserId, ownerUsername, postId, titl
     data: {
       post_id: postId,
       canonical_language: 'en',
+      original_language: 'en',
       translations: [
         {
           language: 'en',
@@ -155,9 +156,12 @@ const createUserPost = async ({ strapi, ownerUserId, ownerUsername, postId, titl
       owner_user_id: Number(ownerUserId),
       owner_username_snapshot: ownerUsername,
       submission_state: state,
+      site_visibility: 'visible',
       moderation_notes: null,
       reviewed_at: null,
       reviewed_by: null,
+      review_flags: null,
+      revision_enabled: true,
       mock: false,
       publishedAt: isApproved ? nowIso : null,
       published_on: isApproved ? nowIso.slice(0, 10) : null,
@@ -321,10 +325,15 @@ const run = async () => {
     } else {
       fail('approved user post should be visible in public creator list');
     }
-    if (!beforeIds.has(draftPostId) && !beforeIds.has(submittedPostId)) {
-      pass('draft/submitted user posts are hidden from public creator list');
+    if (beforeIds.has(submittedPostId)) {
+      pass('submitted-visible user post is visible in public creator list (in-review)');
     } else {
-      fail('non-approved user posts leaked into public creator list');
+      fail('submitted-visible user post should be visible in public creator list');
+    }
+    if (!beforeIds.has(draftPostId)) {
+      pass('draft user post remains hidden from public creator list');
+    } else {
+      fail('draft user post leaked into public creator list');
     }
 
     const memberModeration = await requestJson({
@@ -394,9 +403,17 @@ const run = async () => {
       )
     );
     if (afterIds.has(submittedPostId)) {
-      pass('approved-by-editor post becomes visible in public creator list');
+      pass('approved-by-editor post remains visible in public creator list');
     } else {
       fail('editor-approved post should become visible in public creator list');
+    }
+
+    const moderatedRows = Array.isArray(postsAfterModeration.json?.data?.posts) ? postsAfterModeration.json.data.posts : [];
+    const moderatedSubmitted = moderatedRows.find((row) => String(row?.post_id || '') === submittedPostId) || null;
+    if (String(moderatedSubmitted?.submission_state || '') === 'approved') {
+      pass('moderated post state is approved in public creator payload');
+    } else {
+      fail('moderated post state should be approved in public creator payload');
     }
   } catch (error) {
     const message = String(error?.message || error || '');

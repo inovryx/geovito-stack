@@ -2,6 +2,7 @@
 
 const { createCoreController } = require('@strapi/strapi').factories;
 const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
+const { getCommunitySettings } = require('../../../modules/community-settings');
 
 const PROFILE_UID = 'api::creator-profile.creator-profile';
 const BLOG_POST_UID = 'api::blog-post.blog-post';
@@ -65,11 +66,17 @@ const pickTranslation = (post, preferredLanguage = 'en') => {
   return preferred || translations[0] || null;
 };
 
-const isPublishedApprovedUserPost = (post) =>
-  post?.content_source === 'user' &&
-  post?.submission_state === 'approved' &&
-  (Boolean(post?.publishedAt) || Boolean(post?.published_on)) &&
-  post?.mock !== true;
+const isPublishedApprovedUserPost = (post) => {
+  if (post?.content_source !== 'user' || post?.mock === true) return false;
+
+  const state = String(post?.submission_state || '').toLowerCase();
+  const visibility = String(post?.site_visibility || 'visible').toLowerCase();
+  if (visibility !== 'visible') return false;
+
+  if (state === 'submitted') return true;
+  if (state !== 'approved') return false;
+  return Boolean(post?.publishedAt) || Boolean(post?.published_on);
+};
 
 const extractAvatar = (avatar) => {
   if (!avatar) return null;
@@ -100,9 +107,11 @@ const toPublicProfile = (profile, stats = null) => ({
     cities_count: 0,
   },
   links: {
-    profile: `/u/${profile.username}/`,
-    posts: `/u/${profile.username}/posts/`,
-    about: `/u/${profile.username}/about/`,
+    share: `/@${profile.username}`,
+    profile: `/en/@${profile.username}/`,
+    posts: `/en/@${profile.username}/posts/`,
+    about: `/en/@${profile.username}/about/`,
+    mirror_profile: `/u/${profile.username}/`,
   },
 });
 
@@ -151,7 +160,7 @@ const parseProfilePayload = (ctx) => {
     display_name: displayName,
     bio,
     accent_color: normalizeAccentColor(payload.accent_color, 'ocean'),
-    visibility: normalizeVisibility(payload.visibility, 'public'),
+    visibility: payload.visibility === undefined ? null : normalizeVisibility(payload.visibility, 'public'),
     citizen_card_enabled: payload.citizen_card_enabled === undefined ? true : Boolean(payload.citizen_card_enabled),
     social_links: normalizeSocialLinks(payload.social_links),
   };
@@ -257,11 +266,20 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
       filters: {
         content_source: 'user',
         owner_user_id: profile.owner_user_id,
-        submission_state: 'approved',
         mock: false,
-        published_on: {
-          $notNull: true,
-        },
+        $or: [
+          {
+            submission_state: 'approved',
+            site_visibility: 'visible',
+            published_on: {
+              $notNull: true,
+            },
+          },
+          {
+            submission_state: 'submitted',
+            site_visibility: 'visible',
+          },
+        ],
       },
       fields: ['id'],
       populate: {
@@ -297,18 +315,29 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
       filters: {
         content_source: 'user',
         owner_user_id: profile.owner_user_id,
-        submission_state: 'approved',
         mock: false,
-        published_on: {
-          $notNull: true,
-        },
+        $or: [
+          {
+            submission_state: 'approved',
+            site_visibility: 'visible',
+            published_on: {
+              $notNull: true,
+            },
+          },
+          {
+            submission_state: 'submitted',
+            site_visibility: 'visible',
+          },
+        ],
       },
       fields: [
         'post_id',
         'canonical_language',
+        'original_language',
         'published_on',
         'content_source',
         'submission_state',
+        'site_visibility',
         'mock',
         'publishedAt',
         'owner_username_snapshot',
@@ -335,6 +364,10 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
           slug: slug || null,
           language,
           canonical_language: normalizeLanguage(entry.canonical_language || 'en'),
+          original_language: normalizeLanguage(entry.original_language || entry.canonical_language || 'en'),
+          submission_state: String(entry.submission_state || 'approved').toLowerCase(),
+          site_visibility: String(entry.site_visibility || 'visible').toLowerCase(),
+          in_review: String(entry.submission_state || '').toLowerCase() === 'submitted',
           published_on: entry.published_on || null,
           url_path: urlPath,
         };
@@ -387,6 +420,7 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
   async upsertMe(ctx) {
     const user = await resolveAuthUser(strapi, ctx);
     if (!user) return ctx.unauthorized('Authentication required.');
+    const communitySettings = await getCommunitySettings(strapi);
 
     const parsed = parseProfilePayload(ctx);
     const existingRecords = await strapi.entityService.findMany(PROFILE_UID, {
@@ -422,7 +456,7 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
       display_name: parsed.display_name || String(user.username || username).slice(0, 120),
       bio: parsed.bio,
       accent_color: parsed.accent_color,
-      visibility: parsed.visibility,
+      visibility: parsed.visibility || normalizeVisibility(communitySettings.default_profile_visibility, 'public'),
       citizen_card_enabled: parsed.citizen_card_enabled,
       social_links: parsed.social_links,
     };

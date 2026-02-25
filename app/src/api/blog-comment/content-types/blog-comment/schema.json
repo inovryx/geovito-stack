@@ -67,6 +67,23 @@
       "type": "string",
       "required": true
     },
+    "parent_comment": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-comment.blog-comment"
+    },
+    "thread_depth": {
+      "type": "integer",
+      "default": 0
+    },
+    "report_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "helpful_count": {
+      "type": "integer",
+      "default": 0
+    },
     "moderation_notes": {
       "type": "text"
     },

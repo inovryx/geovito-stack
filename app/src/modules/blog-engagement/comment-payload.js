@@ -41,11 +41,13 @@ const normalizePublicCommentPayload = (payload = {}, options = {}) => {
   const language = sanitizeLanguage(input.language || 'en');
   const guestDisplayName = sanitizeText(input.display_name || input.guest_display_name || '');
   const guestEmail = sanitizeEmail(input.email || input.guest_email || '');
+  const parentCommentId = sanitizeText(input.parent_comment_id || '');
 
   validateLength(postId, 120, 'post_id');
   validateLength(body, COMMENT_PUBLIC_LIMITS.BODY_MAX, 'body');
   validateLength(language, COMMENT_PUBLIC_LIMITS.LANGUAGE_MAX, 'language');
   validateLength(guestDisplayName, COMMENT_PUBLIC_LIMITS.DISPLAY_NAME_MAX, 'display_name', false);
+  validateLength(parentCommentId, 160, 'parent_comment_id', false);
 
   if (!isAuthenticated) {
     validateLength(guestEmail, COMMENT_PUBLIC_LIMITS.EMAIL_MAX, 'email');
@@ -60,6 +62,7 @@ const normalizePublicCommentPayload = (payload = {}, options = {}) => {
     language,
     guest_display_name: guestDisplayName || null,
     guest_email: isAuthenticated ? null : guestEmail,
+    parent_comment_id: parentCommentId || null,
   };
 };
 
