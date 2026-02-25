@@ -24,6 +24,18 @@ ensure_strapi_runtime() {
   docker compose up -d strapi >/dev/null
 
   if docker compose exec -T strapi sh -lc "test -f ${SCRIPT_IN_CONTAINER}" >/dev/null 2>&1; then
+    local host_hash=""
+    local container_hash=""
+
+    host_hash="$(sha256sum "${ROOT_DIR}/app/scripts/ugc_api_contract_check.js" | cut -d ' ' -f1)"
+    container_hash="$(docker compose exec -T strapi sh -lc "sha256sum ${SCRIPT_IN_CONTAINER} | cut -d ' ' -f1" 2>/dev/null || true)"
+
+    if [[ -n "$host_hash" && -n "$container_hash" && "$host_hash" == "$container_hash" ]]; then
+      return 0
+    fi
+
+    echo "INFO: Strapi container script guncel degil (checksum mismatch), rebuild yapiliyor..."
+    docker compose up -d --build strapi >/dev/null
     return 0
   fi
 

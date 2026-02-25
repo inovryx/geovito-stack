@@ -9,6 +9,9 @@ const API_BASE = String(process.env.API_BASE || 'http://127.0.0.1:1337').replace
 const ROLE_UID = 'plugin::users-permissions.role';
 const PROFILE_UID = 'api::creator-profile.creator-profile';
 const BLOG_POST_UID = 'api::blog-post.blog-post';
+const BLOG_COMMENT_UID = 'api::blog-comment.blog-comment';
+const BLOG_COMMENT_HELPFUL_UID = 'api::blog-comment-helpful.blog-comment-helpful';
+const CONTENT_REPORT_UID = 'api::content-report.content-report';
 
 const SUFFIX = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`.slice(0, 12);
 const TEMP_PASSWORD = 'TempPassw0rd!';
@@ -18,6 +21,8 @@ const created = {
   roleId: null,
   profileId: null,
   postIds: [],
+  commentRefs: [],
+  reportRefs: [],
 };
 
 let failCount = 0;
@@ -173,6 +178,35 @@ const createUserPost = async ({ strapi, ownerUserId, ownerUsername, postId, titl
 };
 
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
+
+const findCommentEntity = async (strapi, commentId) => {
+  const rows = await strapi.entityService.findMany(BLOG_COMMENT_UID, {
+    publicationState: 'preview',
+    filters: {
+      comment_id: String(commentId || ''),
+    },
+    fields: ['id', 'comment_id', 'status', 'thread_depth', 'report_count', 'helpful_count'],
+    populate: {
+      parent_comment: {
+        fields: ['comment_id'],
+      },
+    },
+    limit: 1,
+  });
+  return rows[0] || null;
+};
+
+const findReportEntity = async (strapi, reportId) => {
+  const rows = await strapi.entityService.findMany(CONTENT_REPORT_UID, {
+    publicationState: 'preview',
+    filters: {
+      report_id: String(reportId || ''),
+    },
+    fields: ['id', 'report_id', 'status'],
+    limit: 1,
+  });
+  return rows[0] || null;
+};
 
 const run = async () => {
   let strapi;
@@ -415,6 +449,267 @@ const run = async () => {
     } else {
       fail('moderated post state should be approved in public creator payload');
     }
+
+    const memberCommentSubmit = await requestJson({
+      method: 'POST',
+      urlPath: '/api/blog-comments/submit',
+      token: memberIdentity.token,
+      body: {
+        post_id: approvedPostId,
+        body: 'UGC contract root comment',
+        language: 'en',
+      },
+    });
+    if (memberCommentSubmit.status === 201) {
+      pass('member can submit root comment');
+    } else {
+      fail(`member root comment submit expected 201, got ${memberCommentSubmit.status}`);
+    }
+    const rootCommentRef = String(memberCommentSubmit.json?.comment_ref || '').trim();
+    if (rootCommentRef) {
+      created.commentRefs.push(rootCommentRef);
+      pass('root comment reference returned');
+    } else {
+      fail('root comment reference is missing');
+    }
+
+    let rootComment = rootCommentRef ? await findCommentEntity(strapi, rootCommentRef) : null;
+    if (rootComment?.id) {
+      pass('root comment entity resolved');
+    } else {
+      fail('root comment entity not found');
+    }
+
+    if (rootComment?.status !== 'approved' && rootCommentRef) {
+      const approveRoot = await requestJson({
+        method: 'POST',
+        urlPath: '/api/blog-comments/moderation/set',
+        token: editorIdentity.token,
+        body: {
+          comment_id: rootCommentRef,
+          status: 'approved',
+          moderation_notes: 'approved by ugc contract check',
+        },
+      });
+      if (approveRoot.status === 200) {
+        pass('editor can approve submitted root comment');
+      } else {
+        fail(`editor root comment moderation expected 200, got ${approveRoot.status}`);
+      }
+      rootComment = await findCommentEntity(strapi, rootCommentRef);
+    }
+
+    if (String(rootComment?.status || '') === 'approved') {
+      pass('root comment is approved for helpful tests');
+    } else {
+      fail('root comment must be approved before helpful toggle tests');
+    }
+
+    const replySubmit = await requestJson({
+      method: 'POST',
+      urlPath: '/api/blog-comments/submit',
+      token: outsiderIdentity.token,
+      body: {
+        post_id: approvedPostId,
+        parent_comment_id: rootCommentRef,
+        body: 'UGC contract first-level reply',
+        language: 'en',
+      },
+    });
+    if (replySubmit.status === 201) {
+      pass('member can submit first-level reply');
+    } else {
+      fail(`reply submit expected 201, got ${replySubmit.status}`);
+    }
+    const replyCommentRef = String(replySubmit.json?.comment_ref || '').trim();
+    if (replyCommentRef) {
+      created.commentRefs.push(replyCommentRef);
+      pass('reply comment reference returned');
+    } else {
+      fail('reply comment reference is missing');
+    }
+
+    const replyComment = replyCommentRef ? await findCommentEntity(strapi, replyCommentRef) : null;
+    if (Number(replyComment?.thread_depth || 0) === 1) {
+      pass('reply comment thread depth is 1');
+    } else {
+      fail('reply comment thread depth should be 1');
+    }
+    if (String(replyComment?.parent_comment?.comment_id || '') === rootCommentRef) {
+      pass('reply parent linkage is correct');
+    } else {
+      fail('reply parent linkage is invalid');
+    }
+
+    const nestedReplyAttempt = await requestJson({
+      method: 'POST',
+      urlPath: '/api/blog-comments/submit',
+      token: memberIdentity.token,
+      body: {
+        post_id: approvedPostId,
+        parent_comment_id: replyCommentRef,
+        body: 'UGC contract nested reply should fail',
+        language: 'en',
+      },
+    });
+    if (nestedReplyAttempt.status === 400) {
+      pass('nested reply depth > 1 is blocked');
+    } else {
+      fail(`nested reply expected 400, got ${nestedReplyAttempt.status}`);
+    }
+
+    const helpfulAnonymous = await requestJson({
+      method: 'POST',
+      urlPath: '/api/blog-comments/helpful/toggle',
+      body: {
+        comment_id: rootCommentRef,
+      },
+    });
+    if (helpfulAnonymous.status === 401) {
+      pass('anonymous helpful toggle is blocked');
+    } else {
+      fail(`anonymous helpful toggle expected 401, got ${helpfulAnonymous.status}`);
+    }
+
+    const helpfulOn = await requestJson({
+      method: 'POST',
+      urlPath: '/api/blog-comments/helpful/toggle',
+      token: memberIdentity.token,
+      body: {
+        comment_id: rootCommentRef,
+      },
+    });
+    if (helpfulOn.status === 200 && helpfulOn.json?.helpful === true) {
+      pass('member helpful toggle ON works');
+    } else {
+      fail(`member helpful ON expected 200 + helpful=true, got ${helpfulOn.status}`);
+    }
+
+    const helpfulOff = await requestJson({
+      method: 'POST',
+      urlPath: '/api/blog-comments/helpful/toggle',
+      token: memberIdentity.token,
+      body: {
+        comment_id: rootCommentRef,
+      },
+    });
+    if (helpfulOff.status === 200 && helpfulOff.json?.helpful === false) {
+      pass('member helpful toggle OFF works');
+    } else {
+      fail(`member helpful OFF expected 200 + helpful=false, got ${helpfulOff.status}`);
+    }
+
+    const commentAfterHelpful = await findCommentEntity(strapi, rootCommentRef);
+    if (Number(commentAfterHelpful?.helpful_count || 0) === 0) {
+      pass('helpful_count resets after toggle off');
+    } else {
+      fail('helpful_count should be 0 after toggle off');
+    }
+
+    const reportSubmit = await requestJson({
+      method: 'POST',
+      urlPath: '/api/content-reports/submit',
+      body: {
+        target_type: 'comment',
+        target_ref: rootCommentRef,
+        reason: 'spam',
+        note: 'ugc contract report check',
+      },
+    });
+    if (reportSubmit.status === 201) {
+      pass('content report submit works for comment target');
+    } else {
+      fail(`content report submit expected 201, got ${reportSubmit.status}`);
+    }
+    const reportRef = String(reportSubmit.json?.data?.report_id || '').trim();
+    if (reportRef) {
+      created.reportRefs.push(reportRef);
+      pass('report reference returned');
+    } else {
+      fail('report reference is missing');
+    }
+
+    const commentAfterReport = await findCommentEntity(strapi, rootCommentRef);
+    if (Number(commentAfterReport?.report_count || 0) >= 1) {
+      pass('comment report_count is incremented after report submit');
+    } else {
+      fail('comment report_count should increment after report submit');
+    }
+
+    const memberReportList = await requestJson({
+      method: 'GET',
+      urlPath: '/api/content-reports/moderation/list',
+      token: memberIdentity.token,
+    });
+    if (memberReportList.status === 403) {
+      pass('member cannot access report moderation list');
+    } else {
+      fail(`member report moderation list expected 403, got ${memberReportList.status}`);
+    }
+
+    const editorReportList = await requestJson({
+      method: 'GET',
+      urlPath: '/api/content-reports/moderation/list?status=new&limit=50',
+      token: editorIdentity.token,
+    });
+    if (editorReportList.status === 200) {
+      pass('editor can access report moderation list');
+    } else {
+      fail(`editor report moderation list expected 200, got ${editorReportList.status}`);
+    }
+    const listedReportIds = new Set(
+      (Array.isArray(editorReportList.json?.data) ? editorReportList.json.data : []).map((row) => String(row?.report_id || ''))
+    );
+    if (reportRef && listedReportIds.has(reportRef)) {
+      pass('submitted report appears in moderation list');
+    } else {
+      fail('submitted report is missing in moderation list');
+    }
+
+    const editorReportSet = await requestJson({
+      method: 'POST',
+      urlPath: '/api/content-reports/moderation/set',
+      token: editorIdentity.token,
+      body: {
+        report_id: reportRef,
+        next_status: 'reviewing',
+        resolution_note: 'checking',
+      },
+    });
+    if (editorReportSet.status === 200 && String(editorReportSet.json?.data?.status || '') === 'reviewing') {
+      pass('editor can move report status to reviewing');
+    } else {
+      fail(`editor report moderation set expected 200 + reviewing, got ${editorReportSet.status}`);
+    }
+
+    const reportEntity = reportRef ? await findReportEntity(strapi, reportRef) : null;
+    if (String(reportEntity?.status || '') === 'reviewing') {
+      pass('report entity state is updated to reviewing');
+    } else {
+      fail('report entity state should be reviewing');
+    }
+
+    const memberSettingsRead = await requestJson({
+      method: 'GET',
+      urlPath: '/api/community-settings/effective',
+      token: memberIdentity.token,
+    });
+    if (memberSettingsRead.status === 403) {
+      pass('member cannot read effective community settings');
+    } else {
+      fail(`member effective settings expected 403, got ${memberSettingsRead.status}`);
+    }
+
+    const editorSettingsRead = await requestJson({
+      method: 'GET',
+      urlPath: '/api/community-settings/effective',
+      token: editorIdentity.token,
+    });
+    if (editorSettingsRead.status === 200 && typeof editorSettingsRead.json?.data?.ugc_enabled === 'boolean') {
+      pass('editor can read effective community settings');
+    } else {
+      fail(`editor effective settings expected 200 + data.ugc_enabled, got ${editorSettingsRead.status}`);
+    }
   } catch (error) {
     const message = String(error?.message || error || '');
     if (!['api_not_ready', 'ugc_profile_public_disabled', 'authenticated_role_missing'].includes(message)) {
@@ -423,6 +718,40 @@ const run = async () => {
   } finally {
     if (strapi) {
       const userService = strapi.plugin('users-permissions').service('user');
+      for (const reportRef of created.reportRefs) {
+        try {
+          const report = await findReportEntity(strapi, reportRef);
+          if (report?.id) {
+            await strapi.entityService.delete(CONTENT_REPORT_UID, Number(report.id));
+          }
+        } catch (_error) {
+          // best-effort cleanup
+        }
+      }
+      for (const commentRef of created.commentRefs) {
+        try {
+          const helpfulRows = await strapi.entityService.findMany(BLOG_COMMENT_HELPFUL_UID, {
+            filters: { blog_comment_ref: commentRef },
+            fields: ['id'],
+            limit: 5000,
+          });
+          for (const row of helpfulRows) {
+            if (row?.id) {
+              await strapi.entityService.delete(BLOG_COMMENT_HELPFUL_UID, Number(row.id));
+            }
+          }
+        } catch (_error) {
+          // best-effort cleanup
+        }
+        try {
+          const comment = await findCommentEntity(strapi, commentRef);
+          if (comment?.id) {
+            await strapi.entityService.delete(BLOG_COMMENT_UID, Number(comment.id));
+          }
+        } catch (_error) {
+          // best-effort cleanup
+        }
+      }
       for (const postId of created.postIds) {
         try {
           await strapi.entityService.delete(BLOG_POST_UID, Number(postId));
