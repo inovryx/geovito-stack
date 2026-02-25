@@ -411,3 +411,12 @@ HEALTH_TOKEN=your_health_token bash tools/stack_health.sh
 What it verifies:
 - `db` and `strapi` containers are running/healthy.
 - Strapi `GET /api/_health` returns `200` and `ok=true, db=true`.
+
+## 8) Community Docs
+
+UGC/community expansion references:
+- `docs/COMMUNITY_SYSTEM.md`
+- `docs/MODERATION_RUNBOOK.md`
+- `docs/UGC_SEO_RULES.md`
+- `docs/EMERGENCY_RUNBOOK.md`
+- `docs/GO_LIVE_GATE.md`
