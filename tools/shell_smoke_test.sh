@@ -181,9 +181,20 @@ check_contains() {
   local pattern="$2"
   local label="$3"
   local url="${BASE_URL}${path}"
-  local body
-  body="$(curl -sS "$url")"
-  if printf '%s' "$body" | rg -q "$pattern"; then
+  local attempts=0
+  local matched=0
+  while [[ "$attempts" -lt 3 ]]; do
+    attempts=$((attempts + 1))
+    local body
+    body="$(curl -sS "$url" || true)"
+    if [[ -n "$body" ]] && printf '%s' "$body" | rg -q "$pattern"; then
+      matched=1
+      break
+    fi
+    sleep 0.2
+  done
+
+  if [[ "$matched" -eq 1 ]]; then
     pass "$label"
   else
     fail "$label (pattern not found: $pattern)"

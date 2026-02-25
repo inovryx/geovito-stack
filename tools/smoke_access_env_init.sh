@@ -16,8 +16,10 @@ fi
 cat > "$TARGET" <<'EOF'
 CF_ACCESS_CLIENT_ID='REPLACE_WITH_REAL_CLIENT_ID'
 CF_ACCESS_CLIENT_SECRET='REPLACE_WITH_REAL_CLIENT_SECRET'
-# Optional: set an existing creator username to enable /u + /@ smoke checks.
+# Optional: set an existing creator username to enable localized /@ smoke checks.
+# Optional: set CREATOR_LANG (default: en) to validate a specific language route.
 # CREATOR_USERNAME='existing_username'
+# CREATOR_LANG='en'
 EOF
 
 chmod 600 "$TARGET"

@@ -6,6 +6,7 @@ BASE_URL="${BASE_URL%/}"
 EXPECTED_SHA7="${EXPECTED_SHA7:-}"
 EXPECTED_SHA="${EXPECTED_SHA:-}"
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
+CREATOR_LANG="${CREATOR_LANG:-en}"
 CF_ACCESS_CLIENT_ID="${CF_ACCESS_CLIENT_ID:-}"
 CF_ACCESS_CLIENT_SECRET="${CF_ACCESS_CLIENT_SECRET:-}"
 
@@ -108,6 +109,15 @@ normalize_username() {
   echo "$value"
 }
 
+normalize_lang() {
+  local value="$1"
+  value="$(echo "$value" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z-]//g')"
+  case "$value" in
+    en|tr|de|es|ru|zh-cn|fr) echo "$value" ;;
+    *) echo "en" ;;
+  esac
+}
+
 curl_auth_args=()
 if [[ -n "$CF_ACCESS_CLIENT_ID" || -n "$CF_ACCESS_CLIENT_SECRET" ]]; then
   if [[ -z "$CF_ACCESS_CLIENT_ID" || -z "$CF_ACCESS_CLIENT_SECRET" ]]; then
@@ -194,7 +204,8 @@ echo "PASS: ${pilot_de} -> noindex + canonical EN"
 # 5) optional creator mini-site checks
 creator_username="$(normalize_username "$CREATOR_USERNAME")"
 if [[ -n "$creator_username" ]]; then
-  creator_home="/u/${creator_username}/"
+  creator_lang="$(normalize_lang "$CREATOR_LANG")"
+  creator_home="/${creator_lang}/@${creator_username}/"
   creator_home_file="$TMP_DIR/creator_home.html"
   code="$(fetch "${BASE_URL}${creator_home}" "$creator_home_file" "${curl_auth_args[@]}")"
   fail_with_access_hint_if_needed "$code" "${creator_home}"
@@ -211,13 +222,13 @@ if [[ -n "$creator_username" ]]; then
   creator_alias_headers="$TMP_DIR/creator_alias_headers.txt"
   code="$(fetch_no_follow "${BASE_URL}${creator_alias}" "$creator_alias_headers" "${curl_auth_args[@]}")"
   fail_with_access_hint_if_needed "$code" "${creator_alias}"
-  [[ "$code" == "301" ]] || fail "creator alias status expected 301, got ${code}"
+  [[ "$code" == "307" ]] || fail "creator alias status expected 307, got ${code}"
   creator_location="$(grep -i '^location:' "$creator_alias_headers" | head -n1 | sed -E 's/^[Ll]ocation:[[:space:]]*//; s/\r$//')"
   [[ -n "$creator_location" ]] || fail "creator alias location header missing"
   if [[ "$(normalize_url "$creator_location")" != "$(normalize_url "${BASE_URL}${creator_home}")" ]]; then
     fail "creator alias location mismatch (got ${creator_location})"
   fi
-  echo "PASS: ${creator_alias} -> 301 ${creator_home}"
+  echo "PASS: ${creator_alias} -> 307 ${creator_home}"
 else
   echo "SKIP: creator mini-site checks (set CREATOR_USERNAME to enable)"
 fi
