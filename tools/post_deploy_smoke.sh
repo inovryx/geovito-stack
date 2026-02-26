@@ -225,7 +225,13 @@ if [[ -n "$creator_username" ]]; then
   [[ "$code" == "307" ]] || fail "creator alias status expected 307, got ${code}"
   creator_location="$(grep -i '^location:' "$creator_alias_headers" | head -n1 | sed -E 's/^[Ll]ocation:[[:space:]]*//; s/\r$//')"
   [[ -n "$creator_location" ]] || fail "creator alias location header missing"
-  if [[ "$(normalize_url "$creator_location")" != "$(normalize_url "${BASE_URL}${creator_home}")" ]]; then
+  creator_location_abs="$creator_location"
+  if [[ "$creator_location_abs" == /* ]]; then
+    creator_location_abs="${BASE_URL}${creator_location_abs}"
+  elif [[ "$creator_location_abs" != http://* && "$creator_location_abs" != https://* ]]; then
+    creator_location_abs="${BASE_URL}/${creator_location_abs}"
+  fi
+  if [[ "$(normalize_url "$creator_location_abs")" != "$(normalize_url "${BASE_URL}${creator_home}")" ]]; then
     fail "creator alias location mismatch (got ${creator_location})"
   fi
   echo "PASS: ${creator_alias} -> 307 ${creator_home}"
