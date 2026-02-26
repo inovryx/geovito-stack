@@ -7,7 +7,7 @@ cd "$ROOT_DIR"
 RUN_DEPLOY="true"
 RUN_SMOKE="true"
 RUN_MODERATION="false"
-RUN_ACCOUNT_TEST="false"
+RUN_ACCOUNT_TEST="true"
 RUN_BLOG_ENGAGEMENT_TEST="false"
 RUN_DASHBOARD_TEST="true"
 RUN_COMMENT_BULK_ACTION="false"
@@ -19,14 +19,14 @@ RUN_CREATOR_SMOKE="false"
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--skip-account-test] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
 
 Purpose:
   Single command release verification:
   1) Force Cloudflare Pages deploy to current HEAD SHA
   2) Run domain smoke check via Access token
   3) (Optional) Run blog moderation stale-pending guard
-  4) (Optional) Run account comment queue Playwright smoke
+  4) (Default) Run account comment queue Playwright smoke
   5) (Optional) Run blog engagement Playwright smoke (auto-seed if needed)
   6) (Default) Run dashboard activity Playwright smoke
   7) (Optional) Run bulk moderation action on oldest pending comments
@@ -72,6 +72,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --with-account-test)
       RUN_ACCOUNT_TEST="true"
+      shift
+      ;;
+    --skip-account-test)
+      RUN_ACCOUNT_TEST="false"
       shift
       ;;
     --with-blog-engagement-test)
@@ -168,7 +172,7 @@ fi
 if [[ "$RUN_ACCOUNT_TEST" == "true" ]]; then
   bash tools/account_comment_queue_test.sh
 else
-  echo "INFO: skipped account queue test stage (use --with-account-test)"
+  echo "INFO: skipped account queue test stage (--skip-account-test)"
 fi
 
 if [[ "$RUN_BLOG_ENGAGEMENT_TEST" == "true" ]]; then

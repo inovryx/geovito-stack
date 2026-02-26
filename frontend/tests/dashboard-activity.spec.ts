@@ -1347,9 +1347,14 @@ test('dashboard section nav falls back to visible lane when hash lane is hidden'
 
   const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]').first();
   const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
+  const memberSidebarLink = page
+    .locator('.desktop-tablet-column [data-auth-dashboard-link][href="/en/dashboard/#dashboard-member"]')
+    .first();
 
   await expect(controlPill).toBeHidden();
   await expect(memberPill).toHaveClass(/is-active/);
+  await expect(memberSidebarLink).toHaveClass(/is-active/);
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-member');
 });
 
 test('dashboard section nav tracks hash and click for admin lanes', async ({ page }, testInfo) => {

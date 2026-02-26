@@ -191,8 +191,8 @@ Not:
   - `bash tools/release_deploy_smoke.sh`
 - Include moderation stale-pending guard:
   - `bash tools/release_deploy_smoke.sh --with-moderation`
-- Include account comment queue Playwright smoke:
-  - `bash tools/release_deploy_smoke.sh --with-account-test`
+- Skip account comment queue Playwright smoke:
+  - `bash tools/release_deploy_smoke.sh --skip-account-test`
 - Include blog engagement Playwright smoke (auto-seed blog mock data when missing):
   - `bash tools/release_deploy_smoke.sh --with-blog-engagement-test`
 - Include bulk moderation action (oldest pending N comments):
@@ -210,11 +210,11 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-ui-locale-progress`
   - if report is missing, script auto-runs `tools/export_ui_locales.sh` first
 - Include everything (moderation + account + engagement + bulk + reseed):
-  - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test --with-comment-bulk-action --with-mock-reseed`
+  - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-moderation --with-blog-engagement-test --with-comment-bulk-action --with-mock-reseed`
 - Include both optional checks:
-  - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test`
+  - `bash tools/release_deploy_smoke.sh --with-moderation`
 - Include all optional checks:
-  - `bash tools/release_deploy_smoke.sh --with-moderation --with-account-test --with-blog-engagement-test`
+  - `bash tools/release_deploy_smoke.sh --with-moderation --with-blog-engagement-test`
 - Include creator mini-site smoke (`/u/{username}` + `/@{username}` alias):
   - `CREATOR_USERNAME=existing_username bash tools/release_deploy_smoke.sh --with-creator-smoke`
   - or persist once in smoke access env:
@@ -222,7 +222,8 @@ Not:
     - after this, creator smoke auto-enables in `tools/release_deploy_smoke.sh`
 
 Notes:
-- `--with-account-test` runs `bash tools/account_comment_queue_test.sh`.
+- Account queue test runs by default: `bash tools/account_comment_queue_test.sh`.
+- Use `--skip-account-test` only when you need a faster smoke cycle.
 - The account test uses Docker Playwright and requires writable `frontend/node_modules` ownership.
 - `--with-blog-engagement-test` runs `bash tools/blog_engagement_ui_playwright.sh`.
 - `--with-comment-bulk-action` requires:
