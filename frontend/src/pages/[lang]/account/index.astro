@@ -75,6 +75,71 @@ const accountCopy = {
   commentsPostRef: translate(ui, 'account.commentsPostRef', {}, 'Post'),
   commentsStatus: translate(ui, 'account.commentsStatus', {}, 'Status'),
   commentsModerationNote: translate(ui, 'account.commentsModerationNote', {}, 'Moderation note'),
+  accountRequestsTitle: translate(ui, 'account.accountRequestsTitle', {}, 'Account requests'),
+  accountRequestsDescription: translate(
+    ui,
+    'account.accountRequestsDescription',
+    {},
+    'Submit deactivate/delete requests. Final decision is reviewed by moderation.'
+  ),
+  accountRequestsTypeLabel: translate(ui, 'account.accountRequestsTypeLabel', {}, 'Request type'),
+  accountRequestsTypeDeactivate: translate(ui, 'account.accountRequestsTypeDeactivate', {}, 'Deactivate account'),
+  accountRequestsTypeDelete: translate(ui, 'account.accountRequestsTypeDelete', {}, 'Delete account'),
+  accountRequestsReasonLabel: translate(ui, 'account.accountRequestsReasonLabel', {}, 'Reason (optional)'),
+  accountRequestsReasonPlaceholder: translate(
+    ui,
+    'account.accountRequestsReasonPlaceholder',
+    {},
+    'Tell us why you are opening this request.'
+  ),
+  accountRequestsSubmit: translate(ui, 'account.accountRequestsSubmit', {}, 'Submit request'),
+  accountRequestsRefresh: translate(ui, 'account.accountRequestsRefresh', {}, 'Refresh requests'),
+  accountRequestsLoading: translate(ui, 'account.accountRequestsLoading', {}, 'Loading requests...'),
+  accountRequestsLoadFailed: translate(
+    ui,
+    'account.accountRequestsLoadFailed',
+    {},
+    'Could not load account requests right now.'
+  ),
+  accountRequestsSubmitSaving: translate(
+    ui,
+    'account.accountRequestsSubmitSaving',
+    {},
+    'Submitting account request...'
+  ),
+  accountRequestsSubmitSuccess: translate(
+    ui,
+    'account.accountRequestsSubmitSuccess',
+    {},
+    'Request submitted. Moderation team will review it.'
+  ),
+  accountRequestsSubmitFailed: translate(
+    ui,
+    'account.accountRequestsSubmitFailed',
+    {},
+    'Could not submit account request.'
+  ),
+  accountRequestsEmpty: translate(ui, 'account.accountRequestsEmpty', {}, 'No account requests yet.'),
+  accountRequestsFilterLabel: translate(ui, 'account.accountRequestsFilterLabel', {}, 'Request filter'),
+  accountRequestsFilterAll: translate(ui, 'account.accountRequestsFilterAll', {}, 'All statuses'),
+  accountRequestsFilterNew: translate(ui, 'account.accountRequestsFilterNew', {}, 'New only'),
+  accountRequestsFilterApproved: translate(ui, 'account.accountRequestsFilterApproved', {}, 'Approved only'),
+  accountRequestsFilterRejected: translate(ui, 'account.accountRequestsFilterRejected', {}, 'Rejected only'),
+  accountRequestsFilterCompleted: translate(ui, 'account.accountRequestsFilterCompleted', {}, 'Completed only'),
+  accountRequestsFilterEmpty: translate(
+    ui,
+    'account.accountRequestsFilterEmpty',
+    {},
+    'No account requests found for this filter.'
+  ),
+  accountRequestsCountNew: translate(ui, 'account.accountRequestsCountNew', {}, 'New'),
+  accountRequestsCountApproved: translate(ui, 'account.accountRequestsCountApproved', {}, 'Approved'),
+  accountRequestsCountRejected: translate(ui, 'account.accountRequestsCountRejected', {}, 'Rejected'),
+  accountRequestsCountCompleted: translate(ui, 'account.accountRequestsCountCompleted', {}, 'Completed'),
+  accountRequestsId: translate(ui, 'account.accountRequestsId', {}, 'Request ID'),
+  accountRequestsType: translate(ui, 'account.accountRequestsType', {}, 'Type'),
+  accountRequestsReason: translate(ui, 'account.accountRequestsReason', {}, 'Reason'),
+  accountRequestsResolution: translate(ui, 'account.accountRequestsResolution', {}, 'Resolution note'),
   localeProgressTitle: translate(ui, 'account.localeProgressTitle', {}, 'Translation progress'),
   localeProgressDescription: translate(
     ui,
@@ -305,6 +370,70 @@ const accountCopy = {
     <p class="small account-feedback" data-account-comments-feedback aria-live="polite"></p>
   </section>
 
+  <section class="card panel gv-stack" id="account-requests" data-account-requests hidden>
+    <div class="account-comments-head">
+      <div>
+        <h2>{accountCopy.accountRequestsTitle}</h2>
+        <p class="small">{accountCopy.accountRequestsDescription}</p>
+      </div>
+      <label class="account-field account-inline-field account-comments-filter">
+        <span>{accountCopy.accountRequestsFilterLabel}</span>
+        <select data-account-requests-filter>
+          <option value="all">{accountCopy.accountRequestsFilterAll}</option>
+          <option value="new">{accountCopy.accountRequestsFilterNew}</option>
+          <option value="approved">{accountCopy.accountRequestsFilterApproved}</option>
+          <option value="rejected">{accountCopy.accountRequestsFilterRejected}</option>
+          <option value="completed">{accountCopy.accountRequestsFilterCompleted}</option>
+        </select>
+      </label>
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-requests-refresh>
+        <span class="ui-button-label">{accountCopy.accountRequestsRefresh}</span>
+      </button>
+    </div>
+
+    <form class="gv-stack account-form" data-account-requests-form novalidate>
+      <label class="account-field">
+        <span>{accountCopy.accountRequestsTypeLabel}</span>
+        <select name="request_type" data-account-request-type required>
+          <option value="deactivate">{accountCopy.accountRequestsTypeDeactivate}</option>
+          <option value="delete">{accountCopy.accountRequestsTypeDelete}</option>
+        </select>
+      </label>
+      <label class="account-field">
+        <span>{accountCopy.accountRequestsReasonLabel}</span>
+        <textarea
+          name="reason"
+          rows="3"
+          maxlength="2000"
+          data-account-request-reason
+          placeholder={accountCopy.accountRequestsReasonPlaceholder}
+        ></textarea>
+      </label>
+      <button type="submit" class="ui-button ui-button-primary ui-button-md" data-account-requests-submit>
+        <span class="ui-button-label">{accountCopy.accountRequestsSubmit}</span>
+      </button>
+      <p class="small account-feedback" data-account-requests-feedback aria-live="polite"></p>
+    </form>
+
+    <div class="account-comments-stats" data-account-requests-stats>
+      <span>
+        {accountCopy.accountRequestsCountNew}: <strong data-account-requests-new>0</strong>
+      </span>
+      <span>
+        {accountCopy.accountRequestsCountApproved}: <strong data-account-requests-approved>0</strong>
+      </span>
+      <span>
+        {accountCopy.accountRequestsCountRejected}: <strong data-account-requests-rejected>0</strong>
+      </span>
+      <span>
+        {accountCopy.accountRequestsCountCompleted}: <strong data-account-requests-completed>0</strong>
+      </span>
+    </div>
+
+    <ul class="account-comments-list gv-stack" data-account-requests-list></ul>
+    <p class="small" data-account-requests-empty>{accountCopy.accountRequestsEmpty}</p>
+  </section>
+
   <section class="card panel gv-stack" id="locale-progress" data-account-locale-progress hidden>
     <div class="account-comments-head">
       <div>
@@ -433,6 +562,7 @@ const accountCopy = {
       const loggedOutPanel = document.querySelector('[data-account-logged-out]');
       const profilePanel = document.querySelector('[data-account-profile]');
       const commentsPanel = document.querySelector('[data-account-comments]');
+      const accountRequestsPanel = document.querySelector('[data-account-requests]');
       const localeProgressPanel = document.querySelector('[data-account-locale-progress]');
       const profileUsername = document.querySelector('[data-account-profile-username]');
       const profileEmail = document.querySelector('[data-account-profile-email]');
@@ -448,6 +578,19 @@ const accountCopy = {
       const commentsCountApproved = document.querySelector('[data-account-comments-approved]');
       const commentsCountRejected = document.querySelector('[data-account-comments-rejected]');
       const commentsCountSpam = document.querySelector('[data-account-comments-spam]');
+      const accountRequestsForm = document.querySelector('[data-account-requests-form]');
+      const accountRequestsTypeSelect = document.querySelector('[data-account-request-type]');
+      const accountRequestsReasonInput = document.querySelector('[data-account-request-reason]');
+      const accountRequestsSubmitButton = document.querySelector('[data-account-requests-submit]');
+      const accountRequestsFeedback = document.querySelector('[data-account-requests-feedback]');
+      const accountRequestsList = document.querySelector('[data-account-requests-list]');
+      const accountRequestsEmpty = document.querySelector('[data-account-requests-empty]');
+      const accountRequestsRefreshButton = document.querySelector('[data-account-requests-refresh]');
+      const accountRequestsFilterSelect = document.querySelector('[data-account-requests-filter]');
+      const accountRequestsCountNew = document.querySelector('[data-account-requests-new]');
+      const accountRequestsCountApproved = document.querySelector('[data-account-requests-approved]');
+      const accountRequestsCountRejected = document.querySelector('[data-account-requests-rejected]');
+      const accountRequestsCountCompleted = document.querySelector('[data-account-requests-completed]');
       const localeProgressList = document.querySelector('[data-account-locale-progress-list]');
       const localeProgressEmpty = document.querySelector('[data-account-locale-progress-empty]');
       const localeProgressFeedback = document.querySelector('[data-account-locale-progress-feedback]');
@@ -480,6 +623,7 @@ const accountCopy = {
         !(loggedOutPanel instanceof HTMLElement) ||
         !(profilePanel instanceof HTMLElement) ||
         !(commentsPanel instanceof HTMLElement) ||
+        !(accountRequestsPanel instanceof HTMLElement) ||
         !(localeProgressPanel instanceof HTMLElement)
       ) {
         return;
@@ -506,6 +650,19 @@ const accountCopy = {
         !(commentsCountApproved instanceof HTMLElement) ||
         !(commentsCountRejected instanceof HTMLElement) ||
         !(commentsCountSpam instanceof HTMLElement) ||
+        !(accountRequestsForm instanceof HTMLFormElement) ||
+        !(accountRequestsTypeSelect instanceof HTMLSelectElement) ||
+        !(accountRequestsReasonInput instanceof HTMLTextAreaElement) ||
+        !(accountRequestsSubmitButton instanceof HTMLButtonElement) ||
+        !(accountRequestsFeedback instanceof HTMLElement) ||
+        !(accountRequestsList instanceof HTMLElement) ||
+        !(accountRequestsEmpty instanceof HTMLElement) ||
+        !(accountRequestsRefreshButton instanceof HTMLButtonElement) ||
+        !(accountRequestsFilterSelect instanceof HTMLSelectElement) ||
+        !(accountRequestsCountNew instanceof HTMLElement) ||
+        !(accountRequestsCountApproved instanceof HTMLElement) ||
+        !(accountRequestsCountRejected instanceof HTMLElement) ||
+        !(accountRequestsCountCompleted instanceof HTMLElement) ||
         !(localeProgressList instanceof HTMLElement) ||
         !(localeProgressEmpty instanceof HTMLElement) ||
         !(localeProgressFeedback instanceof HTMLElement) ||
@@ -547,11 +704,20 @@ const accountCopy = {
         }
         return 'all';
       };
+      const normalizeAccountRequestState = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (normalized === 'new' || normalized === 'approved' || normalized === 'rejected' || normalized === 'completed') {
+          return normalized;
+        }
+        return 'all';
+      };
       const queryParams = new URLSearchParams(window.location.search);
       const initialCommentState = normalizeCommentState(queryParams.get('commentState') || 'all');
+      const initialRequestState = normalizeAccountRequestState(queryParams.get('requestState') || 'all');
       const initialLocaleFromQuery = normalizeLanguage(queryParams.get('locale') || '');
       const initialPreviewState = normalizePreviewState(queryParams.get('state') || 'all');
       let commentsAllItems = [];
+      let accountRequestsAllItems = [];
       let commentsFocusPending = initialCommentState !== 'all' || window.location.hash === '#comments';
       let localeProgressFocusLocale = initialLocaleFromQuery;
       let localeProgressFocusPending = Boolean(initialLocaleFromQuery);
@@ -600,6 +766,11 @@ const accountCopy = {
         commentsFeedback.classList.toggle('is-error', isError);
       };
 
+      const setAccountRequestsFeedback = (message, isError = false) => {
+        accountRequestsFeedback.textContent = message;
+        accountRequestsFeedback.classList.toggle('is-error', isError);
+      };
+
       const setLocaleProgressFeedback = (message, isError = false) => {
         localeProgressFeedback.textContent = message;
         localeProgressFeedback.classList.toggle('is-error', isError);
@@ -616,6 +787,27 @@ const accountCopy = {
         commentsCountApproved.textContent = String(Number(counts.approved) || 0);
         commentsCountRejected.textContent = String(Number(counts.rejected) || 0);
         commentsCountSpam.textContent = String(Number(counts.spam) || 0);
+      };
+
+      const setAccountRequestsCounts = (items) => {
+        const list = Array.isArray(items) ? items : [];
+        let newCount = 0;
+        let approvedCount = 0;
+        let rejectedCount = 0;
+        let completedCount = 0;
+
+        for (const item of list) {
+          const status = normalizeAccountRequestState(item?.status);
+          if (status === 'new') newCount += 1;
+          if (status === 'approved') approvedCount += 1;
+          if (status === 'rejected') rejectedCount += 1;
+          if (status === 'completed') completedCount += 1;
+        }
+
+        accountRequestsCountNew.textContent = String(newCount);
+        accountRequestsCountApproved.textContent = String(approvedCount);
+        accountRequestsCountRejected.textContent = String(rejectedCount);
+        accountRequestsCountCompleted.textContent = String(completedCount);
       };
 
       const setLocaleProgressSummary = (summary) => {
@@ -864,6 +1056,7 @@ const accountCopy = {
         passwordPanel.hidden = true;
         profilePanel.hidden = true;
         commentsPanel.hidden = true;
+        accountRequestsPanel.hidden = true;
         localeProgressPanel.hidden = true;
         loggedOutPanel.hidden = false;
         return;
@@ -873,6 +1066,7 @@ const accountCopy = {
       passwordPanel.hidden = false;
       profilePanel.hidden = false;
       commentsPanel.hidden = false;
+      accountRequestsPanel.hidden = false;
       localeProgressPanel.hidden = false;
       loggedOutPanel.hidden = true;
       renderProfile(session);
@@ -986,6 +1180,58 @@ const accountCopy = {
         setCommentsFeedback('');
       };
 
+      const renderAccountRequests = (items) => {
+        accountRequestsList.innerHTML = '';
+        const list = Array.isArray(items) ? items : [];
+        accountRequestsEmpty.hidden = list.length > 0;
+        if (list.length === 0) return;
+
+        const fragment = document.createDocumentFragment();
+        for (const item of list) {
+          const li = document.createElement('li');
+          li.className = 'account-comment-item';
+          const requestId = escapeHtml(item?.request_id || '-');
+          const requestType = escapeHtml(item?.request_type || '-');
+          const status = escapeHtml(item?.status || '-');
+          const reason = escapeHtml(item?.reason || '');
+          const resolution = escapeHtml(item?.resolution_note || '');
+          const created = formatDate(item?.created_at);
+          const resolved = formatDate(item?.resolved_at);
+
+          li.innerHTML = `
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(accountCopy.accountRequestsId)}:</strong> ${requestId}
+              · <strong>${escapeHtml(accountCopy.accountRequestsType)}:</strong> ${requestType}
+              · <strong>${escapeHtml(accountCopy.commentsStatus)}:</strong> ${status}
+              · <span>${escapeHtml(created)}</span>
+            </p>
+            ${reason ? `<p class="account-comment-body"><strong>${escapeHtml(accountCopy.accountRequestsReason)}:</strong> ${reason}</p>` : ''}
+            ${resolution ? `<p class="account-comment-note"><strong>${escapeHtml(accountCopy.accountRequestsResolution)}:</strong> ${resolution}</p>` : ''}
+            ${item?.resolved_at ? `<p class="account-comment-meta">${escapeHtml(resolved)}</p>` : ''}
+          `;
+          fragment.appendChild(li);
+        }
+
+        accountRequestsList.appendChild(fragment);
+      };
+
+      const applyAccountRequestsFilter = (items) => {
+        const state = normalizeAccountRequestState(accountRequestsFilterSelect.value);
+        const list = Array.isArray(items) ? items : [];
+        if (state === 'all') return list;
+        return list.filter((item) => normalizeAccountRequestState(item?.status) === state);
+      };
+
+      const renderAccountRequestsForCurrentFilter = () => {
+        const filtered = applyAccountRequestsFilter(accountRequestsAllItems);
+        renderAccountRequests(filtered);
+        if (filtered.length === 0 && accountRequestsAllItems.length > 0 && normalizeAccountRequestState(accountRequestsFilterSelect.value) !== 'all') {
+          setAccountRequestsFeedback(accountCopy.accountRequestsFilterEmpty);
+          return;
+        }
+        setAccountRequestsFeedback('');
+      };
+
       const applyCommentsFocus = () => {
         if (!commentsFocusPending) return;
         commentsPanel.classList.add('account-comments-focus');
@@ -1023,6 +1269,78 @@ const accountCopy = {
           renderCommentsForCurrentFilter();
           setCommentsCounts(null);
           setCommentsFeedback(accountCopy.commentsLoadFailed, true);
+        }
+      };
+
+      const loadAccountRequests = async () => {
+        setAccountRequestsFeedback(accountCopy.accountRequestsLoading);
+        try {
+          const response = await fetch(`${authBase}/api/account-requests/me/list?limit=60`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.accountRequestsLoadFailed;
+            accountRequestsAllItems = [];
+            renderAccountRequestsForCurrentFilter();
+            setAccountRequestsCounts([]);
+            setAccountRequestsFeedback(message, true);
+            return;
+          }
+
+          const items = Array.isArray(payload?.data) ? payload.data : [];
+          accountRequestsAllItems = items;
+          setAccountRequestsCounts(items);
+          renderAccountRequestsForCurrentFilter();
+          setAccountRequestsFeedback('');
+        } catch {
+          accountRequestsAllItems = [];
+          renderAccountRequestsForCurrentFilter();
+          setAccountRequestsCounts([]);
+          setAccountRequestsFeedback(accountCopy.accountRequestsLoadFailed, true);
+        }
+      };
+
+      const submitAccountRequest = async () => {
+        const requestType = String(accountRequestsTypeSelect.value || '').trim().toLowerCase();
+        const reason = String(accountRequestsReasonInput.value || '').trim();
+        if (requestType !== 'deactivate' && requestType !== 'delete') {
+          setAccountRequestsFeedback(accountCopy.accountRequestsSubmitFailed, true);
+          return;
+        }
+
+        accountRequestsSubmitButton.disabled = true;
+        setAccountRequestsFeedback(accountCopy.accountRequestsSubmitSaving);
+        try {
+          const response = await fetch(`${authBase}/api/account-requests/me/submit`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+            body: JSON.stringify({
+              request_type: requestType,
+              reason,
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.accountRequestsSubmitFailed;
+            setAccountRequestsFeedback(message, true);
+            return;
+          }
+
+          accountRequestsReasonInput.value = '';
+          setAccountRequestsFeedback(accountCopy.accountRequestsSubmitSuccess);
+          await loadAccountRequests();
+        } catch {
+          setAccountRequestsFeedback(accountCopy.accountRequestsSubmitFailed, true);
+        } finally {
+          accountRequestsSubmitButton.disabled = false;
         }
       };
 
@@ -1414,6 +1732,19 @@ const accountCopy = {
         renderCommentsForCurrentFilter();
       });
 
+      accountRequestsRefreshButton.addEventListener('click', () => {
+        loadAccountRequests();
+      });
+
+      accountRequestsFilterSelect.addEventListener('change', () => {
+        renderAccountRequestsForCurrentFilter();
+      });
+
+      accountRequestsForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await submitAccountRequest();
+      });
+
       localeProgressRefreshButton.addEventListener('click', () => {
         loadLocaleProgress();
       });
@@ -1495,6 +1826,7 @@ const accountCopy = {
       });
 
       commentsFilterSelect.value = initialCommentState;
+      accountRequestsFilterSelect.value = initialRequestState;
       if (initialPreviewState === 'missing' || initialPreviewState === 'untranslated') {
         localeProgressFilterSelect.value = initialPreviewState;
       } else {
@@ -1505,6 +1837,7 @@ const accountCopy = {
       loadPreference();
       loadProfile();
       loadComments();
+      loadAccountRequests();
       loadLocaleProgress();
     })();
   </script>
@@ -1537,8 +1870,19 @@ const accountCopy = {
     color: var(--text);
   }
 
+  .account-field textarea {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+    resize: vertical;
+    min-height: 92px;
+  }
+
   .account-field select:focus-visible,
-  .account-field input:focus-visible {
+  .account-field input:focus-visible,
+  .account-field textarea:focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 1px;
   }
