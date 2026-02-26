@@ -130,6 +130,50 @@ const dashboardCopy = {
   moderationApprove: translate(ui, 'dashboard.moderationApprove', {}, 'Approve'),
   moderationReject: translate(ui, 'dashboard.moderationReject', {}, 'Reject'),
   moderationSpam: translate(ui, 'dashboard.moderationSpam', {}, 'Spam'),
+  reportInboxTitle: translate(ui, 'dashboard.reportInboxTitle', {}, 'Report inbox'),
+  reportInboxBody: translate(
+    ui,
+    'dashboard.reportInboxBody',
+    {},
+    'Community report signals from post/comment/photo/profile targets.'
+  ),
+  reportInboxNewCount: translate(ui, 'dashboard.reportInboxNewCount', {}, 'New reports'),
+  reportInboxReviewingCount: translate(ui, 'dashboard.reportInboxReviewingCount', {}, 'Reviewing'),
+  reportInboxResolvedCount: translate(ui, 'dashboard.reportInboxResolvedCount', {}, 'Resolved'),
+  reportInboxEmpty: translate(ui, 'dashboard.reportInboxEmpty', {}, 'No reports in this queue.'),
+  reportInboxTarget: translate(ui, 'dashboard.reportInboxTarget', {}, 'Target'),
+  reportReview: translate(ui, 'dashboard.reportReview', {}, 'Review'),
+  reportResolve: translate(ui, 'dashboard.reportResolve', {}, 'Resolve'),
+  reportDismiss: translate(ui, 'dashboard.reportDismiss', {}, 'Dismiss'),
+  reportActionSuccess: translate(ui, 'dashboard.reportActionSuccess', {}, 'Report status updated.'),
+  reportActionFailed: translate(ui, 'dashboard.reportActionFailed', {}, 'Report status update failed.'),
+  accountRequestsTitle: translate(ui, 'dashboard.accountRequestsTitle', {}, 'Account requests'),
+  accountRequestsBody: translate(
+    ui,
+    'dashboard.accountRequestsBody',
+    {},
+    'Deactivate/delete requests that require moderation approval.'
+  ),
+  accountRequestsNewCount: translate(ui, 'dashboard.accountRequestsNewCount', {}, 'New requests'),
+  accountRequestsApprovedCount: translate(ui, 'dashboard.accountRequestsApprovedCount', {}, 'Approved'),
+  accountRequestsCompletedCount: translate(ui, 'dashboard.accountRequestsCompletedCount', {}, 'Completed'),
+  accountRequestsEmpty: translate(ui, 'dashboard.accountRequestsEmpty', {}, 'No account requests in queue.'),
+  accountRequestType: translate(ui, 'dashboard.accountRequestType', {}, 'Type'),
+  accountApprove: translate(ui, 'dashboard.accountApprove', {}, 'Approve'),
+  accountReject: translate(ui, 'dashboard.accountReject', {}, 'Reject'),
+  accountComplete: translate(ui, 'dashboard.accountComplete', {}, 'Complete'),
+  accountRequestActionSuccess: translate(
+    ui,
+    'dashboard.accountRequestActionSuccess',
+    {},
+    'Account request status updated.'
+  ),
+  accountRequestActionFailed: translate(
+    ui,
+    'dashboard.accountRequestActionFailed',
+    {},
+    'Account request status update failed.'
+  ),
   moderationNotesPrompt: translate(
     ui,
     'dashboard.moderationNotesPrompt',
@@ -820,6 +864,46 @@ const dashboardCopy = {
             <ul class="dashboard-mini-list" data-dashboard-locale-list></ul>
             <p class="small" data-dashboard-locale-note hidden>{dashboardCopy.localeLimited}</p>
           </article>
+
+          <article class="card panel gv-stack" id="dashboard-editorial-reports">
+            <h3 class="dashboard-mini-title">{dashboardCopy.reportInboxTitle}</h3>
+            <p class="small">{dashboardCopy.reportInboxBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.reportInboxNewCount}</span>
+                <strong data-dashboard-report-new>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.reportInboxReviewingCount}</span>
+                <strong data-dashboard-report-reviewing>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.reportInboxResolvedCount}</span>
+                <strong data-dashboard-report-resolved>0</strong>
+              </p>
+            </div>
+            <ul class="dashboard-mini-list" data-dashboard-report-list></ul>
+          </article>
+
+          <article class="card panel gv-stack" id="dashboard-editorial-account-requests">
+            <h3 class="dashboard-mini-title">{dashboardCopy.accountRequestsTitle}</h3>
+            <p class="small">{dashboardCopy.accountRequestsBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.accountRequestsNewCount}</span>
+                <strong data-dashboard-account-request-new>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.accountRequestsApprovedCount}</span>
+                <strong data-dashboard-account-request-approved>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.accountRequestsCompletedCount}</span>
+                <strong data-dashboard-account-request-completed>0</strong>
+              </p>
+            </div>
+            <ul class="dashboard-mini-list" data-dashboard-account-request-list></ul>
+          </article>
         </div>
       </section>
 
@@ -1146,6 +1230,14 @@ const dashboardCopy = {
       const moderationStaleNode = document.querySelector('[data-dashboard-moderation-stale]');
       const moderationOldestNode = document.querySelector('[data-dashboard-moderation-oldest]');
       const moderationAlertNode = document.querySelector('[data-dashboard-moderation-alert]');
+      const reportNewNode = document.querySelector('[data-dashboard-report-new]');
+      const reportReviewingNode = document.querySelector('[data-dashboard-report-reviewing]');
+      const reportResolvedNode = document.querySelector('[data-dashboard-report-resolved]');
+      const reportListNode = document.querySelector('[data-dashboard-report-list]');
+      const accountRequestNewNode = document.querySelector('[data-dashboard-account-request-new]');
+      const accountRequestApprovedNode = document.querySelector('[data-dashboard-account-request-approved]');
+      const accountRequestCompletedNode = document.querySelector('[data-dashboard-account-request-completed]');
+      const accountRequestListNode = document.querySelector('[data-dashboard-account-request-list]');
 
       const identityNode = document.querySelector('[data-dashboard-identity]');
       const emailNode = document.querySelector('[data-dashboard-email]');
@@ -2350,6 +2442,118 @@ const dashboardCopy = {
         host.appendChild(fragment);
       };
 
+      const renderReportInbox = (items) => {
+        const host = toNode(reportListNode);
+        if (!host) return;
+        host.innerHTML = '';
+
+        const list = Array.isArray(items) ? items : [];
+        const newCount = list.filter((item) => String(item?.status || '').toLowerCase() === 'new').length;
+        const reviewingCount = list.filter((item) => String(item?.status || '').toLowerCase() === 'reviewing').length;
+        const resolvedCount = list.filter((item) => {
+          const status = String(item?.status || '').toLowerCase();
+          return status === 'resolved' || status === 'dismissed';
+        }).length;
+
+        setText(reportNewNode, String(newCount));
+        setText(reportReviewingNode, String(reviewingCount));
+        setText(reportResolvedNode, String(resolvedCount));
+
+        if (!canRunModeration || list.length === 0) {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          row.innerHTML = `<span>${escapeHtml(dashboardCopy.reportInboxEmpty)}</span>`;
+          host.appendChild(row);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        list.slice(0, 8).forEach((item) => {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item dashboard-moderation-item';
+          const reportId = String(item?.report_id || '').trim();
+          const targetType = String(item?.target_type || '').trim().toUpperCase() || '-';
+          const targetRef = String(item?.target_ref || '').trim() || '-';
+          const reason = String(item?.reason || '').trim().toUpperCase() || '-';
+          const status = String(item?.status || '').trim().toUpperCase() || '-';
+          const createdLabel = formatDate(item?.created_at || item?.updated_at || '');
+
+          row.innerHTML = `
+            <strong>${escapeHtml(status)} · ${escapeHtml(reason)} · ${escapeHtml(createdLabel)}</strong>
+            <span>${escapeHtml(dashboardCopy.reportInboxTarget)}: ${escapeHtml(targetType)} · ${escapeHtml(targetRef)}</span>
+            <div class="dashboard-action-row">
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-report-set="reviewing" data-report-id="${escapeHtml(reportId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.reportReview)}</span>
+              </button>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-report-set="resolved" data-report-id="${escapeHtml(reportId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.reportResolve)}</span>
+              </button>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-report-set="dismissed" data-report-id="${escapeHtml(reportId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.reportDismiss)}</span>
+              </button>
+            </div>
+          `;
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+      };
+
+      const renderAccountRequestInbox = (items) => {
+        const host = toNode(accountRequestListNode);
+        if (!host) return;
+        host.innerHTML = '';
+
+        const list = Array.isArray(items) ? items : [];
+        const newCount = list.filter((item) => String(item?.status || '').toLowerCase() === 'new').length;
+        const approvedCount = list.filter((item) => String(item?.status || '').toLowerCase() === 'approved').length;
+        const completedCount = list.filter((item) => String(item?.status || '').toLowerCase() === 'completed').length;
+
+        setText(accountRequestNewNode, String(newCount));
+        setText(accountRequestApprovedNode, String(approvedCount));
+        setText(accountRequestCompletedNode, String(completedCount));
+
+        if (!canRunModeration || list.length === 0) {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          row.innerHTML = `<span>${escapeHtml(dashboardCopy.accountRequestsEmpty)}</span>`;
+          host.appendChild(row);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        list.slice(0, 8).forEach((item) => {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item dashboard-moderation-item';
+          const requestId = String(item?.request_id || '').trim();
+          const requestType = String(item?.request_type || '').trim().toUpperCase() || '-';
+          const status = String(item?.status || '').trim().toUpperCase() || '-';
+          const createdLabel = formatDate(item?.created_at || item?.updated_at || '');
+          const reason = String(item?.reason || '').trim();
+          const reasonLabel = reason.length > 140 ? `${reason.slice(0, 137)}...` : reason;
+
+          row.innerHTML = `
+            <strong>${escapeHtml(status)} · ${escapeHtml(createdLabel)}</strong>
+            <span>${escapeHtml(dashboardCopy.accountRequestType)}: ${escapeHtml(requestType)}</span>
+            ${reasonLabel ? `<span>${escapeHtml(reasonLabel)}</span>` : ''}
+            <div class="dashboard-action-row">
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-account-request-set="approved" data-request-id="${escapeHtml(requestId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.accountApprove)}</span>
+              </button>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-account-request-set="rejected" data-request-id="${escapeHtml(requestId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.accountReject)}</span>
+              </button>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-account-request-set="completed" data-request-id="${escapeHtml(requestId)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.accountComplete)}</span>
+              </button>
+            </div>
+          `;
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+      };
+
       const renderLocaleProgressRows = (rows) => {
         const host = toNode(localeListNode);
         if (!host) return;
@@ -2468,6 +2672,60 @@ const dashboardCopy = {
         return true;
       };
 
+      const runReportAction = async (session, reportId, nextStatus) => {
+        if (!session?.jwt || !reportId || !nextStatus) return false;
+
+        const response = await fetch(`${authBaseUrl}/api/content-reports/moderation/set`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.jwt}`,
+          },
+          body: JSON.stringify({
+            report_id: reportId,
+            next_status: nextStatus,
+          }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          const message = String(payload?.error?.message || dashboardCopy.reportActionFailed);
+          setFeedback(message, true);
+          return false;
+        }
+
+        setFeedback(dashboardCopy.reportActionSuccess);
+        return true;
+      };
+
+      const runAccountRequestAction = async (session, requestId, nextStatus) => {
+        if (!session?.jwt || !requestId || !nextStatus) return false;
+
+        const response = await fetch(`${authBaseUrl}/api/account-requests/moderation/set`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.jwt}`,
+          },
+          body: JSON.stringify({
+            request_id: requestId,
+            next_status: nextStatus,
+          }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          const message = String(payload?.error?.message || dashboardCopy.accountRequestActionFailed);
+          setFeedback(message, true);
+          return false;
+        }
+
+        setFeedback(dashboardCopy.accountRequestActionSuccess);
+        return true;
+      };
+
       const loadDashboard = async (session) => {
         if (isLoading) return;
         isLoading = true;
@@ -2483,6 +2741,8 @@ const dashboardCopy = {
         renderRecentComments([]);
         renderModerationQueue([]);
         renderModerationHistory([]);
+        renderReportInbox([]);
+        renderAccountRequestInbox([]);
 
         setText(commentsTotalNode, '0');
         setText(commentsPendingNode, '0');
@@ -2496,6 +2756,12 @@ const dashboardCopy = {
         setText(moderationPendingNode, '0');
         setText(moderationStaleNode, '0');
         setText(moderationOldestNode, '0h');
+        setText(reportNewNode, '0');
+        setText(reportReviewingNode, '0');
+        setText(reportResolvedNode, '0');
+        setText(accountRequestNewNode, '0');
+        setText(accountRequestApprovedNode, '0');
+        setText(accountRequestCompletedNode, '0');
         if (toNode(moderationAlertNode)) {
           toNode(moderationAlertNode).hidden = true;
         }
@@ -2674,12 +2940,46 @@ const dashboardCopy = {
           } catch {
             hadErrors = true;
           }
+
+          try {
+            const response = await fetch(
+              `${authBaseUrl}/api/content-reports/moderation/list?limit=60`,
+              { headers: authHeaders }
+            );
+            if (response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              const items = Array.isArray(payload?.data) ? payload.data : [];
+              renderReportInbox(items);
+            } else if (!(response.status === 404 || response.status === 405)) {
+              hadErrors = true;
+            }
+          } catch {
+            hadErrors = true;
+          }
+
+          try {
+            const response = await fetch(
+              `${authBaseUrl}/api/account-requests/moderation/list?limit=60`,
+              { headers: authHeaders }
+            );
+            if (response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              const items = Array.isArray(payload?.data) ? payload.data : [];
+              renderAccountRequestInbox(items);
+            } else if (!(response.status === 404 || response.status === 405)) {
+              hadErrors = true;
+            }
+          } catch {
+            hadErrors = true;
+          }
         } else {
           ownerPendingCount = 0;
           ownerStalePendingCount = 0;
           setText(ownerPendingNode, '0');
           renderModerationQueue([]);
           renderModerationHistory([]);
+          renderReportInbox([]);
+          renderAccountRequestInbox([]);
         }
 
         try {
@@ -2876,6 +3176,54 @@ const dashboardCopy = {
             button.disabled = true;
             try {
               const ok = await runModerationAction(currentSession, commentId, status);
+              if (ok) {
+                await loadDashboard(currentSession);
+              }
+            } finally {
+              button.disabled = false;
+            }
+          });
+        }
+
+        if (reportListNode instanceof HTMLElement) {
+          reportListNode.addEventListener('click', async (event) => {
+            const target = event.target;
+            const button =
+              target instanceof HTMLElement ? target.closest('[data-dashboard-report-set]') : null;
+            if (!(button instanceof HTMLButtonElement)) return;
+            if (!canRunModeration || !currentSession) return;
+
+            const reportId = String(button.dataset.reportId || '').trim();
+            const nextStatus = String(button.dataset.dashboardReportSet || '').trim().toLowerCase();
+            if (!reportId || !nextStatus) return;
+
+            button.disabled = true;
+            try {
+              const ok = await runReportAction(currentSession, reportId, nextStatus);
+              if (ok) {
+                await loadDashboard(currentSession);
+              }
+            } finally {
+              button.disabled = false;
+            }
+          });
+        }
+
+        if (accountRequestListNode instanceof HTMLElement) {
+          accountRequestListNode.addEventListener('click', async (event) => {
+            const target = event.target;
+            const button =
+              target instanceof HTMLElement ? target.closest('[data-dashboard-account-request-set]') : null;
+            if (!(button instanceof HTMLButtonElement)) return;
+            if (!canRunModeration || !currentSession) return;
+
+            const requestId = String(button.dataset.requestId || '').trim();
+            const nextStatus = String(button.dataset.dashboardAccountRequestSet || '').trim().toLowerCase();
+            if (!requestId || !nextStatus) return;
+
+            button.disabled = true;
+            try {
+              const ok = await runAccountRequestAction(currentSession, requestId, nextStatus);
               if (ok) {
                 await loadDashboard(currentSession);
               }

@@ -43,9 +43,12 @@
 - Default landing module is `#dashboard-member`; hidden/unauthorized hash targets fall back to first visible role lane.
 - Section pills, module cards, URL hash, and sidebar active links run on one canonical hash state.
 - Dashboard quick actions are role-gated per matrix.
+- Editorial lane now includes `Report inbox` and `Account requests` moderation cards (editor/admin visible).
+- Dashboard moderation actions cover comment, content-report, and account-request status updates.
 - Playwright coverage includes:
   - role visibility gates
   - admin tools links open matching dashboard lanes (`moderation`, `control`, `ads`)
+  - editorial inbox cards render report/account-request queues and apply moderation actions
   - fallback when requested hash lane is hidden
   - hash alias canonical behavior (`#dashboard-control-seo`)
   - header-only nav behavior on dashboard auth mode

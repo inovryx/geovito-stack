@@ -3,6 +3,23 @@ import { expect, test } from '@playwright/test';
 const MOCK_JWT = 'dashboard-activity-mock-jwt';
 const OWNER_EMAIL_HINT = String(process.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
 
+test.beforeEach(async ({ page }) => {
+  await page.route(/\/api\/content-reports\/moderation\/list\?limit=60$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+  await page.route(/\/api\/account-requests\/moderation\/list\?limit=60$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+});
+
 async function dismissConsentBanner(page: import('@playwright/test').Page): Promise<void> {
   const banner = page.locator('[data-consent-banner]');
   if ((await banner.count()) === 0) return;
@@ -218,6 +235,212 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
     }
   });
   expect(storedHistory).toEqual([]);
+});
+
+test('dashboard editorial inbox renders report and account-request queues with moderation actions', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run editorial inbox smoke once on desktop');
+
+  let reportRows = [
+    {
+      report_id: 'report-1',
+      target_type: 'comment',
+      target_ref: 'comment-101',
+      reason: 'spam',
+      status: 'new',
+      created_at: '2026-02-21T09:00:00.000Z',
+      updated_at: '2026-02-21T09:00:00.000Z',
+    },
+  ];
+  let requestRows = [
+    {
+      request_id: 'acct-1',
+      request_type: 'delete',
+      status: 'new',
+      reason: 'Please remove account permanently.',
+      created_at: '2026-02-21T09:10:00.000Z',
+      updated_at: '2026-02-21T09:10:00.000Z',
+    },
+  ];
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 61,
+        username: 'editor-user',
+        email: 'editor@example.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-21T08:00:00.000Z',
+        role: {
+          type: 'editor',
+          name: 'Editor',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+  await page.route(/\/api\/creator-profile\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          username: 'editor-user',
+          visibility: 'public',
+        },
+      }),
+    });
+  });
+  await page.route(/\/api\/blog-posts\/me\/list\?limit=120$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/moderation\/list\?status=all&limit=40$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 1,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_gaps: 0,
+            locales_with_missing: 0,
+            locales_with_untranslated: 0,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/content-reports\/moderation\/list\?limit=60$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: reportRows }),
+    });
+  });
+  await page.route(/\/api\/account-requests\/moderation\/list\?limit=60$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: requestRows }),
+    });
+  });
+
+  await page.route(/\/api\/content-reports\/moderation\/set$/, async (route) => {
+    const payload = route.request().postDataJSON() as { report_id?: string; next_status?: string };
+    reportRows = reportRows.map((item) =>
+      item.report_id === payload?.report_id
+        ? { ...item, status: String(payload?.next_status || item.status), updated_at: '2026-02-21T09:20:00.000Z' }
+        : item
+    );
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: reportRows[0] }),
+    });
+  });
+  await page.route(/\/api\/account-requests\/moderation\/set$/, async (route) => {
+    const payload = route.request().postDataJSON() as { request_id?: string; next_status?: string };
+    requestRows = requestRows.map((item) =>
+      item.request_id === payload?.request_id
+        ? { ...item, status: String(payload?.next_status || item.status), updated_at: '2026-02-21T09:30:00.000Z' }
+        : item
+    );
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: requestRows[0] }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'editor12',
+        build_sha_full: 'editor12deadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-21T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'editor-user',
+        email: 'editor@example.com',
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-21T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/dashboard/#dashboard-editorial-moderation');
+  await dismissConsentBanner(page);
+
+  await expect(page.locator('[data-dashboard-report-new]')).toHaveText('1');
+  await expect(page.locator('[data-dashboard-account-request-new]')).toHaveText('1');
+  await expect(page.locator('[data-dashboard-report-list]')).toContainText('COMMENT');
+  await expect(page.locator('[data-dashboard-account-request-list]')).toContainText('DELETE');
+
+  await page.locator('[data-dashboard-report-set="reviewing"][data-report-id="report-1"]').click();
+  await expect(page.locator('[data-dashboard-report-reviewing]')).toHaveText('1');
+
+  await page
+    .locator('[data-dashboard-account-request-set="approved"][data-request-id="acct-1"]')
+    .click();
+  await expect(page.locator('[data-dashboard-account-request-approved]')).toHaveText('1');
 });
 
 type DashboardRoleCase = {
