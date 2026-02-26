@@ -668,6 +668,12 @@ dashboardRoleCases.forEach((roleCase) => {
     const sidebarAdminModeration = page
       .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-moderation"]')
       .first();
+    const sidebarAdminReports = page
+      .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-reports"]')
+      .first();
+    const sidebarAdminAccountRequests = page
+      .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-account-requests"]')
+      .first();
     const sidebarAdminTranslation = page
       .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-locale"]')
       .first();
@@ -768,12 +774,16 @@ dashboardRoleCases.forEach((roleCase) => {
       await expect(sidebarTranslationModuleLink).toBeVisible();
       await expect(sidebarWorkspaceLocale).toBeVisible();
       await expect(sidebarAdminModeration).toBeVisible();
+      await expect(sidebarAdminReports).toBeVisible();
+      await expect(sidebarAdminAccountRequests).toBeVisible();
       await expect(sidebarAdminTranslation).toBeVisible();
     } else {
       await expect(sidebarModerationModuleLink).toBeHidden();
       await expect(sidebarTranslationModuleLink).toBeHidden();
       await expect(sidebarWorkspaceLocale).toBeHidden();
       await expect(sidebarAdminModeration).toBeHidden();
+      await expect(sidebarAdminReports).toBeHidden();
+      await expect(sidebarAdminAccountRequests).toBeHidden();
       await expect(sidebarAdminTranslation).toBeHidden();
     }
 
@@ -1578,6 +1588,12 @@ test('dashboard admin tools links open matching module lanes', async ({ page }, 
   const adminModerationLink = page
     .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-moderation"]')
     .first();
+  const adminReportsLink = page
+    .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-reports"]')
+    .first();
+  const adminAccountRequestsLink = page
+    .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-account-requests"]')
+    .first();
   const adminSeoLink = page
     .locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-control"]')
     .first();
@@ -1589,12 +1605,16 @@ test('dashboard admin tools links open matching module lanes', async ({ page }, 
   const editorialLane = page.locator('#dashboard-editorial');
   const controlLane = page.locator('#dashboard-control');
   const moderationCard = page.locator('#dashboard-editorial-moderation');
+  const reportsCard = page.locator('#dashboard-editorial-reports');
+  const accountRequestsCard = page.locator('#dashboard-editorial-account-requests');
   const adsCard = page.locator('#dashboard-control-ads');
   const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
   const adsPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control-ads"]').first();
 
   await expect(memberLane).toBeVisible();
   await expect(adminModerationLink).toBeVisible();
+  await expect(adminReportsLink).toBeVisible();
+  await expect(adminAccountRequestsLink).toBeVisible();
   await expect(adminSeoLink).toBeVisible();
   await expect(adminAdsLink).toBeVisible();
 
@@ -1604,6 +1624,20 @@ test('dashboard admin tools links open matching module lanes', async ({ page }, 
   await expect(memberLane).toBeHidden();
   await expect(moderationCard).toBeVisible();
   await expect(adminModerationLink).toHaveClass(/is-active/);
+
+  await adminReportsLink.click();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-editorial-reports');
+  await expect(editorialLane).toBeVisible();
+  await expect(reportsCard).toBeVisible();
+  await expect(adminReportsLink).toHaveClass(/is-active/);
+
+  await adminAccountRequestsLink.click();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe(
+    '#dashboard-editorial-account-requests'
+  );
+  await expect(editorialLane).toBeVisible();
+  await expect(accountRequestsCard).toBeVisible();
+  await expect(adminAccountRequestsLink).toHaveClass(/is-active/);
 
   await adminSeoLink.click();
   await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-control');
@@ -1740,6 +1774,16 @@ test('dashboard hash alias keeps sidebar links active on canonical seo lane', as
   await expect(
     page.locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-control"]').first()
   ).toHaveClass(/is-active/);
+
+  await page.goto('/en/dashboard/#dashboard-reports');
+  await dismissConsentBanner(page);
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-editorial-reports');
+  await expect(
+    page.locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-reports"]').first()
+  ).toHaveClass(/is-active/);
+  await expect(page.locator('[data-dashboard-section-pill][href="#dashboard-editorial-moderation"]').first()).toHaveClass(
+    /is-active/
+  );
 });
 
 test('dashboard auth mode keeps site navigation header-only', async ({ page }, testInfo) => {

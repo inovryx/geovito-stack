@@ -1348,6 +1348,18 @@ const dashboardCopy = {
           minRole: 'editor',
           focusId: 'dashboard-editorial-moderation',
         },
+        reports: {
+          hash: '#dashboard-editorial-reports',
+          laneId: 'dashboard-editorial',
+          minRole: 'editor',
+          focusId: 'dashboard-editorial-reports',
+        },
+        accountRequests: {
+          hash: '#dashboard-editorial-account-requests',
+          laneId: 'dashboard-editorial',
+          minRole: 'editor',
+          focusId: 'dashboard-editorial-account-requests',
+        },
         translation: {
           hash: '#dashboard-editorial-locale',
           laneId: 'dashboard-editorial',
@@ -1367,15 +1379,30 @@ const dashboardCopy = {
           focusId: 'dashboard-control-ads',
         },
       };
-      const dashboardModuleOrder = ['general', 'settings', 'moderation', 'translation', 'seo', 'ads'];
+      const dashboardModuleOrder = [
+        'general',
+        'settings',
+        'moderation',
+        'reports',
+        'accountRequests',
+        'translation',
+        'seo',
+        'ads',
+      ];
       const moduleHashAliases = {
         '#dashboard-general': '#dashboard-member',
         '#dashboard-settings': '#dashboard-member-settings',
         '#dashboard-moderation': '#dashboard-editorial-moderation',
+        '#dashboard-reports': '#dashboard-editorial-reports',
+        '#dashboard-account-requests': '#dashboard-editorial-account-requests',
         '#dashboard-translation': '#dashboard-editorial-locale',
         '#dashboard-seo': '#dashboard-control',
         '#dashboard-control-seo': '#dashboard-control',
         '#dashboard-ads': '#dashboard-control-ads',
+      };
+      const sectionHashAliases = {
+        '#dashboard-editorial-reports': '#dashboard-editorial-moderation',
+        '#dashboard-editorial-account-requests': '#dashboard-editorial-moderation',
       };
       const DASHBOARD_NAV_SYNC_EVENT = 'geovito:dashboard-nav-sync';
       const accountLocaleBasePath = String(accountPath || '').trim() || '/en/account/';
@@ -1589,6 +1616,10 @@ const dashboardCopy = {
         if (!normalizedHash) return '';
         return String(moduleHashAliases[normalizedHash] || normalizedHash);
       };
+      const resolveSectionHash = (hash) => {
+        const normalizedHash = resolveModuleHash(hash);
+        return String(sectionHashAliases[normalizedHash] || normalizedHash);
+      };
 
       const setActiveSectionPill = (hash) => {
         const visibleLinks = getVisibleSectionLinks();
@@ -1610,7 +1641,7 @@ const dashboardCopy = {
         if (visibleLinks.length === 0) return;
 
         const requestedHash = String(hash || '').trim();
-        const normalizedHash = resolveModuleHash(requestedHash);
+        const normalizedHash = resolveSectionHash(requestedHash);
         const matchingLinks = visibleLinks.filter((link) => {
           const href = String(link.getAttribute('href') || '');
           return href === requestedHash || href === normalizedHash;
@@ -1628,7 +1659,7 @@ const dashboardCopy = {
 
         const matchingModuleCards = visibleModuleCards.filter((link) => {
           const href = String(link.getAttribute('href') || '');
-          return href === requestedHash || resolveModuleHash(href) === normalizedHash;
+          return href === requestedHash || resolveSectionHash(href) === normalizedHash;
         });
         if (matchingModuleCards.length > 0) {
           matchingModuleCards.forEach((link) => link.classList.add('is-active'));

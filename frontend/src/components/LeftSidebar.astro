@@ -22,6 +22,8 @@ const accountPath = `/${currentLanguage}/account/`;
 const accountCommentsPath = `${accountPath}?commentState=pending#comments`;
 const accountLocalePath = `${accountPath}#locale-progress`;
 const dashboardEditorialPath = `${dashboardPath}#dashboard-editorial-moderation`;
+const dashboardReportsPath = `${dashboardPath}#dashboard-editorial-reports`;
+const dashboardAccountRequestsPath = `${dashboardPath}#dashboard-editorial-account-requests`;
 const dashboardLocalePath = `${dashboardPath}#dashboard-editorial-locale`;
 const dashboardControlPath = `${dashboardPath}#dashboard-control`;
 const dashboardAdsPath = `${dashboardPath}#dashboard-control-ads`;
@@ -49,6 +51,8 @@ const accessEditorLabel = translate(ui, 'dashboard.accessEditor', {}, 'Editor');
 const accessAdminLabel = translate(ui, 'dashboard.accessAdmin', {}, 'Admin');
 const accessOwnerLabel = translate(ui, 'dashboard.accessOwner', {}, 'Owner');
 const adminModerationLabel = translate(ui, 'dashboard.moderationQueueTitle', {}, 'Pending moderation queue');
+const adminReportsLabel = translate(ui, 'dashboard.reportInboxTitle', {}, 'Report inbox');
+const adminAccountRequestsLabel = translate(ui, 'dashboard.accountRequestsTitle', {}, 'Account requests');
 const adminLocaleLabel = translate(ui, 'dashboard.localeTitle', {}, 'Translation visibility');
 const adminSeoLabel = translate(ui, 'dashboard.moduleSeo', {}, 'SEO');
 const adminAdsLabel = translate(ui, 'dashboard.moduleAds', {}, 'Ads');
@@ -231,6 +235,16 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
         </a>
       </li>
       <li>
+        <a class="small-link" href={dashboardReportsPath} data-auth-admin-link data-min-role="editor" hidden>
+          {adminReportsLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={dashboardAccountRequestsPath} data-auth-admin-link data-min-role="editor" hidden>
+          {adminAccountRequestsLabel}
+        </a>
+      </li>
+      <li>
         <a class="small-link" href={dashboardLocalePath} data-auth-admin-link data-min-role="editor" hidden>
           {adminLocaleLabel}
         </a>
@@ -308,6 +322,8 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
       '#dashboard-general': '#dashboard-member',
       '#dashboard-settings': '#dashboard-member-settings',
       '#dashboard-moderation': '#dashboard-editorial-moderation',
+      '#dashboard-reports': '#dashboard-editorial-reports',
+      '#dashboard-account-requests': '#dashboard-editorial-account-requests',
       '#dashboard-translation': '#dashboard-editorial-locale',
       '#dashboard-seo': '#dashboard-control',
       '#dashboard-control-seo': '#dashboard-control',
