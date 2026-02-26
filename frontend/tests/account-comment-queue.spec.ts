@@ -7,7 +7,9 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
 
   let queueRequestCount = 0;
   let previewRequestCount = 0;
+  let accountRequestsSubmitCount = 0;
   const previewStates: string[] = [];
+  const accountRequestPayloads: Array<{ request_type?: string; reason?: string }> = [];
 
   await page.route(/\/api\/users\/me$/, async (route) => {
     await route.fulfill({
@@ -103,6 +105,90 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify(payload),
+    });
+  });
+
+  await page.route(/\/api\/account-requests\/me\/list/, async (route) => {
+    const data =
+      accountRequestsSubmitCount === 0
+        ? [
+            {
+              request_id: 'request-001',
+              request_type: 'deactivate',
+              status: 'new',
+              reason: 'Temporary break',
+              resolution_note: null,
+              created_at: '2026-02-20T08:00:00.000Z',
+              resolved_at: null,
+            },
+            {
+              request_id: 'request-002',
+              request_type: 'delete',
+              status: 'approved',
+              reason: 'Old test request',
+              resolution_note: 'Approved for final cleanup',
+              created_at: '2026-02-18T08:00:00.000Z',
+              resolved_at: '2026-02-19T09:00:00.000Z',
+            },
+          ]
+        : [
+            {
+              request_id: 'request-003',
+              request_type: 'delete',
+              status: 'new',
+              reason: 'Need full delete',
+              resolution_note: null,
+              created_at: '2026-02-21T08:00:00.000Z',
+              resolved_at: null,
+            },
+            {
+              request_id: 'request-001',
+              request_type: 'deactivate',
+              status: 'new',
+              reason: 'Temporary break',
+              resolution_note: null,
+              created_at: '2026-02-20T08:00:00.000Z',
+              resolved_at: null,
+            },
+            {
+              request_id: 'request-002',
+              request_type: 'delete',
+              status: 'approved',
+              reason: 'Old test request',
+              resolution_note: 'Approved for final cleanup',
+              created_at: '2026-02-18T08:00:00.000Z',
+              resolved_at: '2026-02-19T09:00:00.000Z',
+            },
+          ];
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data }),
+    });
+  });
+
+  await page.route(/\/api\/account-requests\/me\/submit$/, async (route) => {
+    let payload: { request_type?: string; reason?: string } = {};
+    try {
+      payload = route.request().postDataJSON() as { request_type?: string; reason?: string };
+    } catch {
+      payload = {};
+    }
+    accountRequestPayloads.push(payload);
+    accountRequestsSubmitCount += 1;
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          request_id: 'request-003',
+          request_type: payload.request_type || 'delete',
+          reason: payload.reason || null,
+          status: 'new',
+        },
+      }),
     });
   });
 
@@ -247,6 +333,38 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-comments-list] .account-comment-item')).toContainText('approved');
   await expect(page.locator('[data-account-comments-list] .account-comment-item')).toContainText('Approved by moderator');
 
+  await expect(page.locator('[data-account-requests]')).toBeVisible();
+  await expect(page.locator('[data-account-requests-new]')).toHaveText('1');
+  await expect(page.locator('[data-account-requests-approved]')).toHaveText('1');
+  await expect(page.locator('[data-account-requests-rejected]')).toHaveText('0');
+  await expect(page.locator('[data-account-requests-completed]')).toHaveText('0');
+  await expect(page.locator('[data-account-requests-list] .account-comment-item')).toHaveCount(2);
+  await expect(page.locator('[data-account-requests-list]')).toContainText('request-001');
+
+  await page.selectOption('[data-account-requests-filter]', 'approved');
+  await expect(page.locator('[data-account-requests-list] .account-comment-item')).toHaveCount(1);
+  await expect(page.locator('[data-account-requests-list]')).toContainText('request-002');
+  await expect(page.locator('[data-account-requests-list]')).toContainText('approved');
+
+  await page.selectOption('[data-account-requests-filter]', 'rejected');
+  await expect(page.locator('[data-account-requests-list] .account-comment-item')).toHaveCount(0);
+  await expect(page.locator('[data-account-requests-feedback]')).toContainText(
+    'No account requests found for this filter.'
+  );
+
+  await page.selectOption('[data-account-requests-filter]', 'all');
+  await page.selectOption('[data-account-request-type]', 'delete');
+  await page.fill('[data-account-request-reason]', 'Need full delete');
+  await page.click('[data-account-requests-submit]');
+  await expect.poll(() => accountRequestsSubmitCount).toBe(1);
+  await expect
+    .poll(() => accountRequestPayloads[0] || {})
+    .toMatchObject({ request_type: 'delete', reason: 'Need full delete' });
+  await expect(page.locator('[data-account-request-reason]')).toHaveValue('');
+  await expect(page.locator('[data-account-requests-new]')).toHaveText('2');
+  await expect(page.locator('[data-account-requests-approved]')).toHaveText('1');
+  await expect(page.locator('[data-account-requests-list]')).toContainText('request-003');
+
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');
   await expect(page.locator('[data-account-language-health]')).toContainText('12');
@@ -346,6 +464,14 @@ test('account commentState query pre-filters comment queue and focuses comments 
     });
   });
 
+  await page.route(/\/api\/account-requests\/me\/list/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
   await page.route(/\/api\/ui-locales\/meta\/progress/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -402,4 +528,126 @@ test('account commentState query pre-filters comment queue and focuses comments 
   await page.selectOption('[data-account-comments-filter]', 'all');
   await expect(page.locator('[data-account-comments]')).not.toHaveClass(/account-comments-focus/);
   await expect(page.locator('[data-account-comments-list] .account-comment-item')).toHaveCount(2);
+});
+
+test('account requestState query pre-filters account requests list', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run requestState query-filter smoke once on desktop');
+
+  await page.route(/\/api\/users\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 42,
+        username: 'olmysweet',
+        email: 'ali.koc.00@gmail.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-01T10:20:00.000Z',
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [],
+        meta: { counts: { pending: 0, approved: 0, rejected: 0, spam: 0, deleted: 0 } },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/account-requests\/me\/list/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [
+          {
+            request_id: 'request-new',
+            request_type: 'deactivate',
+            status: 'new',
+            reason: 'Short break',
+            resolution_note: null,
+            created_at: '2026-02-20T08:00:00.000Z',
+            resolved_at: null,
+          },
+          {
+            request_id: 'request-approved',
+            request_type: 'delete',
+            status: 'approved',
+            reason: 'Final removal',
+            resolution_note: 'Approved',
+            created_at: '2026-02-19T08:00:00.000Z',
+            resolved_at: '2026-02-20T09:00:00.000Z',
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 1,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_missing: 0,
+            locales_with_untranslated: 0,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    const payload = {
+      jwt,
+      username: 'olmysweet',
+      email: 'ali.koc.00@gmail.com',
+      confirmed: true,
+      blocked: false,
+      loginAt: '2026-02-20T12:10:00.000Z',
+    };
+    localStorage.setItem('geovito_auth_session', JSON.stringify(payload));
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/account/?requestState=approved#account-requests');
+
+  await expect(page.locator('[data-account-requests]')).toBeVisible();
+  await expect(page.locator('[data-account-requests-filter]')).toHaveValue('approved');
+  await expect(page.locator('[data-account-requests-list] .account-comment-item')).toHaveCount(1);
+  await expect(page.locator('[data-account-requests-list]')).toContainText('request-approved');
+  await expect(page.locator('[data-account-requests-list]')).not.toContainText('request-new');
+
+  await page.selectOption('[data-account-requests-filter]', 'all');
+  await expect(page.locator('[data-account-requests-list] .account-comment-item')).toHaveCount(2);
 });
