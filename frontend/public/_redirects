@@ -1,3 +1,4 @@
-# Dynamic profile alias redirects are handled in app routes:
-# - /@username -> /{lang}/@username/ (307)
-# - /u/:username/* remains as internal mirror routes
+# Profile alias fallback for Pages static edge:
+# - /@username -> /en/@username/ (307)
+# Dynamic language-aware redirect may still be handled by app/runtime rules where available.
+/@* /en/@:splat 307
