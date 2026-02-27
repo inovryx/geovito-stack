@@ -23,6 +23,12 @@ Guard:
 - `submitted` content is always `noindex,nofollow` and excluded from sitemap.
 - `approved + visible` can become indexable only if existing language/index gates pass.
 
+## Profile Visibility Rules
+- `public`: readable by everyone.
+- `members`: readable only by authenticated users.
+- `private`: readable only by profile owner or admin.
+- Creator profile list endpoint (`/api/creators`) remains public-only and returns only `public` profiles.
+
 ## Models (Current Foundation)
 - `creator-profile`:
 owner identity, username, display metadata, visibility, citizen-card toggle.

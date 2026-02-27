@@ -739,6 +739,94 @@ const run = async () => {
     } else {
       fail(`editor effective settings expected 200 + data.ugc_enabled, got ${editorSettingsRead.status}`);
     }
+
+    await strapi.entityService.update(PROFILE_UID, Number(profile.id), {
+      data: {
+        visibility: 'members',
+      },
+    });
+
+    const membersAnonProfile = await requestJson({
+      method: 'GET',
+      urlPath: `/api/creators/${encodeURIComponent(creatorUsername)}`,
+    });
+    if (membersAnonProfile.status === 404) {
+      pass('members-only profile is hidden from anonymous access');
+    } else {
+      fail(`members-only profile anon expected 404, got ${membersAnonProfile.status}`);
+    }
+
+    const membersAuthProfile = await requestJson({
+      method: 'GET',
+      urlPath: `/api/creators/${encodeURIComponent(creatorUsername)}`,
+      token: outsiderIdentity.token,
+    });
+    if (membersAuthProfile.status === 200) {
+      pass('members-only profile is visible to authenticated member');
+    } else {
+      fail(`members-only profile auth expected 200, got ${membersAuthProfile.status}`);
+    }
+
+    await strapi.entityService.update(PROFILE_UID, Number(profile.id), {
+      data: {
+        visibility: 'private',
+      },
+    });
+
+    const privateOutsiderProfile = await requestJson({
+      method: 'GET',
+      urlPath: `/api/creators/${encodeURIComponent(creatorUsername)}`,
+      token: outsiderIdentity.token,
+    });
+    if (privateOutsiderProfile.status === 404) {
+      pass('private profile is hidden from non-owner member');
+    } else {
+      fail(`private profile outsider expected 404, got ${privateOutsiderProfile.status}`);
+    }
+
+    const privateOwnerProfile = await requestJson({
+      method: 'GET',
+      urlPath: `/api/creators/${encodeURIComponent(creatorUsername)}`,
+      token: memberIdentity.token,
+    });
+    if (privateOwnerProfile.status === 200) {
+      pass('private profile remains visible to owner');
+    } else {
+      fail(`private profile owner expected 200, got ${privateOwnerProfile.status}`);
+    }
+
+    const privateEditorProfile = await requestJson({
+      method: 'GET',
+      urlPath: `/api/creators/${encodeURIComponent(creatorUsername)}`,
+      token: editorIdentity.token,
+    });
+    if (privateEditorProfile.status === 404) {
+      pass('private profile is hidden from editor role');
+    } else {
+      fail(`private profile editor expected 404, got ${privateEditorProfile.status}`);
+    }
+
+    const privateOutsiderPosts = await requestJson({
+      method: 'GET',
+      urlPath: `/api/creators/${encodeURIComponent(creatorUsername)}/posts?lang=en&limit=60`,
+      token: outsiderIdentity.token,
+    });
+    if (privateOutsiderPosts.status === 404) {
+      pass('private profile posts are hidden from non-owner member');
+    } else {
+      fail(`private profile posts outsider expected 404, got ${privateOutsiderPosts.status}`);
+    }
+
+    const privateOwnerPosts = await requestJson({
+      method: 'GET',
+      urlPath: `/api/creators/${encodeURIComponent(creatorUsername)}/posts?lang=en&limit=60`,
+      token: memberIdentity.token,
+    });
+    if (privateOwnerPosts.status === 200) {
+      pass('private profile posts remain visible to owner');
+    } else {
+      fail(`private profile posts owner expected 200, got ${privateOwnerPosts.status}`);
+    }
   } catch (error) {
     const message = String(error?.message || error || '');
     if (!['api_not_ready', 'ugc_profile_public_disabled', 'authenticated_role_missing'].includes(message)) {

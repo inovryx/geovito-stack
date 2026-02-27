@@ -56,6 +56,16 @@ const normalizeAccentColor = (value, fallback = 'ocean') => {
   return ACCENT_COLORS.has(normalized) ? normalized : fallback;
 };
 
+const resolveRoleFlags = (user) => {
+  const roleRaw = String(user?.role?.type || user?.role?.name || '')
+    .trim()
+    .toLowerCase();
+  const isAdmin = roleRaw.includes('super') || roleRaw.includes('admin');
+  return {
+    isAdmin,
+  };
+};
+
 const reservedUsernames = (() => {
   const envRaw = String(process.env.CREATOR_RESERVED_USERNAMES || '').trim();
   const fromEnv = envRaw
@@ -244,6 +254,19 @@ const findProfileByUsername = async (strapi, username) => {
   return entries[0] || null;
 };
 
+const canAccessProfileVisibility = (profile, user) => {
+  const visibility = normalizeVisibility(profile?.visibility, 'public');
+  if (visibility === 'public') return true;
+  if (!user?.id) return false;
+  if (visibility === 'members') return true;
+
+  const ownerUserId = Number(profile?.owner_user_id || 0);
+  if (ownerUserId > 0 && Number(user.id) === ownerUserId) return true;
+
+  const roleFlags = resolveRoleFlags(user);
+  return roleFlags.isAdmin;
+};
+
 module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
   async findPublicList(ctx) {
     if (!isTrue(process.env.UGC_PROFILE_PUBLIC_ENABLED, true)) {
@@ -287,9 +310,10 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
 
     const username = normalizeUsername(ctx.params?.username);
     if (!username) return ctx.badRequest('username is required.');
+    const requester = await resolveAuthUser(strapi, ctx);
 
     const profile = await findProfileByUsername(strapi, username);
-    if (!profile || normalizeVisibility(profile.visibility) !== 'public') {
+    if (!profile || !canAccessProfileVisibility(profile, requester)) {
       return ctx.notFound('Creator not found.');
     }
 
@@ -333,9 +357,10 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
 
     const username = normalizeUsername(ctx.params?.username);
     if (!username) return ctx.badRequest('username is required.');
+    const requester = await resolveAuthUser(strapi, ctx);
 
     const profile = await findProfileByUsername(strapi, username);
-    if (!profile || normalizeVisibility(profile.visibility) !== 'public') {
+    if (!profile || !canAccessProfileVisibility(profile, requester)) {
       return ctx.notFound('Creator not found.');
     }
 
