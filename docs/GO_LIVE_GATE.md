@@ -2,6 +2,29 @@
 
 Use this checklist before opening broader traffic.
 
+## One-command Gate
+Run:
+
+```bash
+bash tools/go_live_gate.sh
+```
+
+Useful toggles:
+
+```bash
+# include creator profile route checks in smoke
+CREATOR_USERNAME=olmysweet GO_LIVE_REQUIRE_CREATOR=true bash tools/go_live_gate.sh
+
+# skip deploy trigger and only validate current production
+GO_LIVE_WITH_DEPLOY=false bash tools/go_live_gate.sh
+
+# include SMTP reset smoke
+GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate.sh
+
+# if /api/_health is token-protected
+HEALTH_TOKEN=your_token_here bash tools/go_live_gate.sh
+```
+
 ## Core Infrastructure
 - [ ] `bash tools/stack_health.sh` PASS
 - [ ] `bash tools/prod_health.sh` PASS
