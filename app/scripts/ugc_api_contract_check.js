@@ -284,6 +284,35 @@ const run = async () => {
     created.profileId = Number(profile.id);
     pass('creator profile created');
 
+    const reservedUsernameAttempt = await requestJson({
+      method: 'PUT',
+      urlPath: '/api/creator-profile/me',
+      token: outsiderIdentity.token,
+      body: {
+        username: 'admin',
+        display_name: 'Reserved Username Attempt',
+      },
+    });
+    if (reservedUsernameAttempt.status === 400) {
+      pass('reserved creator username is blocked');
+    } else {
+      fail(`reserved username expected 400, got ${reservedUsernameAttempt.status}`);
+    }
+
+    const immutableUsernameAttempt = await requestJson({
+      method: 'PUT',
+      urlPath: '/api/creator-profile/me',
+      token: memberIdentity.token,
+      body: {
+        username: `${creatorUsername}-mutated`,
+      },
+    });
+    if (immutableUsernameAttempt.status === 400) {
+      pass('creator username cannot be changed after initial profile create');
+    } else {
+      fail(`immutable username expected 400, got ${immutableUsernameAttempt.status}`);
+    }
+
     const draftPostId = `ugc-draft-${SUFFIX}`;
     const submittedPostId = `ugc-submitted-${SUFFIX}`;
     const approvedPostId = `ugc-approved-${SUFFIX}`;

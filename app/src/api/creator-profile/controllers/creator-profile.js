@@ -11,6 +11,19 @@ const USER_UID = 'plugin::users-permissions.user';
 const BLOG_LANGUAGES = new Set(['en', 'tr', 'de', 'es', 'ru', 'zh-cn']);
 const ACCENT_COLORS = new Set(['ocean', 'coral', 'moss', 'slate', 'sand', 'plum']);
 const VISIBILITY_SET = new Set(['public', 'members', 'private']);
+const RESERVED_USERNAME_DEFAULT = [
+  'admin',
+  'root',
+  'support',
+  'help',
+  'api',
+  'owner',
+  'system',
+  'geovito',
+  'www',
+  'mail',
+  'cdn',
+];
 
 const isTrue = (value, fallback = false) => {
   if (value === undefined || value === null || value === '') return fallback;
@@ -41,6 +54,24 @@ const normalizeVisibility = (value, fallback = 'public') => {
 const normalizeAccentColor = (value, fallback = 'ocean') => {
   const normalized = String(value || fallback).trim().toLowerCase();
   return ACCENT_COLORS.has(normalized) ? normalized : fallback;
+};
+
+const reservedUsernames = (() => {
+  const envRaw = String(process.env.CREATOR_RESERVED_USERNAMES || '').trim();
+  const fromEnv = envRaw
+    ? envRaw
+        .split(',')
+        .map((entry) => normalizeUsername(entry))
+        .filter(Boolean)
+    : [];
+  const values = fromEnv.length > 0 ? fromEnv : RESERVED_USERNAME_DEFAULT;
+  return new Set(values);
+})();
+
+const isReservedUsername = (value) => {
+  const normalized = normalizeUsername(value);
+  if (!normalized) return false;
+  return reservedUsernames.has(normalized);
 };
 
 const toPositiveInt = (value) => {
@@ -430,9 +461,18 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
     });
     const existing = existingRecords[0] || null;
 
-    const username = parsed.username || normalizeUsername(existing?.username || user.username || `user-${user.id}`);
+    const existingUsername = normalizeUsername(existing?.username || '');
+    if (existingUsername && parsed.username && parsed.username !== existingUsername) {
+      return ctx.badRequest('username is immutable once profile is created.');
+    }
+
+    const username =
+      existingUsername || parsed.username || normalizeUsername(user.username || `user-${user.id}`);
     if (!username || username.length < 3) {
       return ctx.badRequest('username is required and must be at least 3 characters.');
+    }
+    if (!existing?.id && isReservedUsername(username)) {
+      return ctx.badRequest('username is reserved.');
     }
 
     const duplicate = await strapi.entityService.findMany(PROFILE_UID, {

@@ -39,6 +39,13 @@ deactivate/delete request flow for owner-managed account actions.
 - `blog-post-revision`:
 snapshot audit trail for post revisions.
 
+## Creator Username Policy
+- `creator-profile.username` is immutable after first profile creation.
+- Reserved names are blocked for new profile creation (default set includes:
+`admin, root, support, help, api, owner, system, geovito, www, mail, cdn`).
+- Optional override:
+`CREATOR_RESERVED_USERNAMES=name1,name2,...`
+
 ## Permission Baseline
 - Public:
 read public profiles and visible/eligible posts.
