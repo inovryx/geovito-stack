@@ -178,10 +178,18 @@ const headerNav = [
 
     <script is:inline>
       try {
-        const pageLanguage = document.documentElement.lang?.toLowerCase();
-        if (pageLanguage) {
-          localStorage.setItem('geovito.ui_lang', pageLanguage);
-        }
+        const supportedUiLanguages = new Set(['en', 'tr', 'de', 'es', 'ru', 'zh-cn', 'fr']);
+        const pageLanguage = String(document.documentElement.lang || '').trim().toLowerCase();
+        const preferredLanguage = String(localStorage.getItem('geovito.ui_lang') || '')
+          .trim()
+          .toLowerCase();
+        const activeLanguage = supportedUiLanguages.has(preferredLanguage)
+          ? preferredLanguage
+          : supportedUiLanguages.has(pageLanguage)
+            ? pageLanguage
+            : 'en';
+        localStorage.setItem('geovito.ui_lang', activeLanguage);
+        document.cookie = `geovito_ui_lang=${encodeURIComponent(activeLanguage)}; Path=/; Max-Age=31536000; SameSite=Lax`;
       } catch {
         // no-op
       }
