@@ -21,6 +21,7 @@ type SearchItem = {
   href: string;
   publishedOn: string | null;
   status: string;
+  inReview?: boolean;
   countryCode: string | null;
   placeType: string | null;
   keywords: string[];
@@ -174,6 +175,7 @@ const blogItems: SearchItem[] = posts
       href: pathForLanguage(lang, `blog/${slug}`),
       publishedOn: post.published_on || null,
       status: requested?.status || 'missing',
+      inReview: isPostInReview(post),
       countryCode: null,
       placeType: null,
       keywords: Array.from(
@@ -715,6 +717,11 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
                   <div class="search-result-head">
                     <span class="search-kind-badge">${escapeHtml(item.kind)}</span>
                     <span class="status-pill">${escapeHtml(item.status || 'missing')}</span>
+                    ${
+                      item.kind === 'blog' && item.inReview
+                        ? '<span class="status-pill">In review</span>'
+                        : ''
+                    }
                   </div>
                   <a class="search-result-title" data-search-result-title href="${escapeHtml(item.href)}" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</a>
                   <p class="small search-result-excerpt">${escapeHtml(item.excerpt || '')}</p>

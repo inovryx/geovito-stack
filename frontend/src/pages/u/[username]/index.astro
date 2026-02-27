@@ -111,7 +111,7 @@ const avatarUrl = profile.avatar?.url || null;
   </section>
 
   <section class="card panel gv-card gv-stack">
-    <h2 class="gv-h2">Latest approved posts</h2>
+    <h2 class="gv-h2">Latest visible posts</h2>
     {
       posts.length > 0 ? (
         <ul class="gv-stack">
@@ -121,11 +121,24 @@ const avatarUrl = profile.avatar?.url || null;
                 <strong>{String(post.title || post.post_id || 'Untitled')}</strong>
               </a>
               <p class="small">{String(post.excerpt || '')}</p>
+              <p class="gv-caption">
+                {String(post.language || 'en').toUpperCase()}
+                {' · '}
+                {String(post.published_on || '') || '—'}
+                {
+                  String(post.submission_state || '').toLowerCase() === 'submitted' ? (
+                    <>
+                      {' · '}
+                      <span class="status-pill">In review</span>
+                    </>
+                  ) : null
+                }
+              </p>
             </li>
           ))}
         </ul>
       ) : (
-        <p class="small">No approved posts yet.</p>
+        <p class="small">No visible posts yet.</p>
       )
     }
   </section>

@@ -378,11 +378,8 @@ const run = async () => {
       fail(`GET /api/creators/:username/posts expected 200, got ${postsBeforeModeration.status}`);
     }
 
-    const beforeIds = new Set(
-      (Array.isArray(postsBeforeModeration.json?.data?.posts) ? postsBeforeModeration.json.data.posts : []).map((row) =>
-        String(row?.post_id || '')
-      )
-    );
+    const beforeRows = Array.isArray(postsBeforeModeration.json?.data?.posts) ? postsBeforeModeration.json.data.posts : [];
+    const beforeIds = new Set(beforeRows.map((row) => String(row?.post_id || '')));
     if (beforeIds.has(approvedPostId)) {
       pass('approved user post is visible in public creator list');
     } else {
@@ -397,6 +394,18 @@ const run = async () => {
       pass('draft user post remains hidden from public creator list');
     } else {
       fail('draft user post leaked into public creator list');
+    }
+    const submittedBefore = beforeRows.find((row) => String(row?.post_id || '') === submittedPostId) || null;
+    if (submittedBefore?.in_review === true) {
+      pass('submitted-visible user post carries in_review=true');
+    } else {
+      fail('submitted-visible user post should carry in_review=true');
+    }
+    const approvedBefore = beforeRows.find((row) => String(row?.post_id || '') === approvedPostId) || null;
+    if (approvedBefore && approvedBefore?.in_review !== true) {
+      pass('approved user post does not carry in_review marker');
+    } else {
+      fail('approved user post should not carry in_review=true');
     }
 
     const memberModeration = await requestJson({

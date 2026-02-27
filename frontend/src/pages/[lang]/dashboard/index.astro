@@ -1419,8 +1419,9 @@ const dashboardCopy = {
 
       const setCreatorProfileView = (profile, { draftCount = 0, submittedCount = 0, approvedCount = 0 } = {}) => {
         const username = String(profile?.username || '').trim().toLowerCase();
+        const preferredLanguage = String(document.documentElement.lang || 'en').trim().toLowerCase() || 'en';
         const visibility = String(profile?.visibility || '').trim().toLowerCase() || dashboardCopy.unknown;
-        creatorProfileUrl = username ? `/u/${username}/` : '';
+        creatorProfileUrl = username ? `/${preferredLanguage}/@${username}/` : '';
 
         setText(creatorUsernameNode, username ? `@${username}` : '-');
         setText(creatorVisibilityNode, visibility || '-');
@@ -1441,7 +1442,7 @@ const dashboardCopy = {
         if (creatorLinkNode instanceof HTMLAnchorElement) {
           const href = creatorProfileUrl || '#';
           creatorLinkNode.href = href;
-          creatorLinkNode.textContent = creatorProfileUrl || '/u/';
+          creatorLinkNode.textContent = creatorProfileUrl || '/en/@';
           creatorLinkNode.setAttribute('aria-label', href);
         }
 
