@@ -226,6 +226,8 @@ Notes:
 - Use `--skip-account-test` only when you need a faster smoke cycle.
 - The account test uses Docker Playwright and requires writable `frontend/node_modules` ownership.
 - `--with-blog-engagement-test` runs `bash tools/blog_engagement_ui_playwright.sh`.
+- `--with-follow-smoke` runs `bash tools/follow_system_smoke.sh`.
+- `--with-notification-smoke` runs `bash tools/notification_preferences_smoke.sh`.
 - `--with-comment-bulk-action` requires:
   - `COMMENT_BULK_ACTION` in `approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk`
   - optional `COMMENT_BULK_LIMIT` (default `10`) and `COMMENT_BULK_NOTES`.
