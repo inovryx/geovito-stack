@@ -432,6 +432,24 @@ What it verifies:
 - `db` and `strapi` containers are running/healthy.
 - Strapi `GET /api/_health` returns `200` and `ok=true, db=true`.
 
+Auth profile bootstrap (repeatable QA personas):
+
+```bash
+bash tools/bootstrap_auth_profiles.sh
+```
+
+Default accounts created/updated by bootstrap:
+- super admin #1: `geovitoworld@gmail.com` / `koc00785`
+- super admin #2: `ali.koc.00@gmail.com` / `123456`
+- alt admin: `admin.operator@geovito.com` / `123456` (role: `geovito-alt-admin`)
+- member user: `member.user@geovito.com` / `123456` (username: `geovito_member`)
+
+Optional overrides:
+- `SUPER_ADMIN_PRIMARY_EMAIL`, `SUPER_ADMIN_PRIMARY_PASSWORD`
+- `SUPER_ADMIN_SECONDARY_EMAIL`, `SUPER_ADMIN_SECONDARY_PASSWORD`
+- `ALT_ADMIN_EMAIL`, `ALT_ADMIN_PASSWORD`, `ALT_ADMIN_FIRSTNAME`, `ALT_ADMIN_LASTNAME`
+- `MEMBER_USER_EMAIL`, `MEMBER_USER_USERNAME`, `MEMBER_USER_PASSWORD`
+
 ## 8) Community Docs
 
 UGC/community expansion references:
