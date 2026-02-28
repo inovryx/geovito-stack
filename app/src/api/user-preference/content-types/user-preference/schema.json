@@ -5,7 +5,7 @@
     "singularName": "user-preference",
     "pluralName": "user-preferences",
     "displayName": "User Preference",
-    "description": "Per-user UI preferences such as preferred site language"
+    "description": "Per-user UI and notification preferences"
   },
   "options": {
     "draftAndPublish": false
@@ -21,6 +21,19 @@
       "type": "string",
       "required": true,
       "default": "en"
+    },
+    "notifications_site_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "notifications_email_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "notifications_digest": {
+      "type": "enumeration",
+      "enum": ["off", "instant", "daily", "weekly"],
+      "default": "daily"
     },
     "updated_from_ip": {
       "type": "string"

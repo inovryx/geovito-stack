@@ -262,6 +262,12 @@ Pre-design gate icinde bulk yorum moderasyon aksiyonu kosmak istersen:
 Standalone JSON bulk report:
 - `bash tools/blog_comment_bulk_report.sh --action approve-next-bulk --limit 10 --dry-run`
 
+Follow system foundation smoke (feature flag + member toggle/list guard):
+- `bash tools/follow_system_smoke.sh`
+
+Notification preferences foundation smoke (member GET + partial update guards):
+- `bash tools/notification_preferences_smoke.sh`
+
 ## 3) Test Mode Protection (Recommended for closed testing)
 
 If you want to avoid accidental public usage during test phase:

@@ -38,6 +38,10 @@ owner identity, username, display metadata, visibility, citizen-card toggle.
 guest/member split, reply threading fields, moderation fields.
 - `community-setting` (single type):
 central policy controls for guest comments, link policy, moderation strictness, visibility defaults.
+- `user-preference` extension:
+member-scoped site language + notification preferences (`site/email enabled`, `digest`), partial update safe.
+- `user-follow`:
+member follow graph foundation (`target_type=user|place`) controlled by `follow_system_enabled`.
 - `content-report`:
 post/comment/photo/profile reporting and moderation lifecycle.
 - `account-request`:
@@ -74,3 +78,6 @@ full moderation plus community settings and high-risk controls.
 - Keep high-risk capabilities feature-flagged.
 - Keep dormant import/translation/AI guards unchanged by default.
 - Respect existing gate scripts and release checks before rollout.
+- Follow system defaults to OFF:
+  - Env fallback: `FOLLOW_SYSTEM_ENABLED=false`
+  - Runtime control center key: `community-setting.follow_system_enabled`

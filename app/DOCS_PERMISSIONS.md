@@ -53,7 +53,8 @@ Not allowed:
 - Authenticated users can access:
   - `GET /api/user-preferences/me`
   - `PUT /api/user-preferences/me`
-  These endpoints only read/write the caller's own preference record.
+  These endpoints only read/write the caller's own preference record
+  (site language + notification preferences, partial updates supported).
 - Authenticated users can access UGC owner routes when enabled:
   - `GET /api/creator-profile/me`
   - `PUT /api/creator-profile/me`

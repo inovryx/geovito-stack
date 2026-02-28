@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../../../../layouts/MainLayout.astro';
+import FollowUserPanel from '../../../../components/community/FollowUserPanel.astro';
 import { SUPPORTED_LANGUAGES, pathForLanguage } from '../../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../../lib/pageHelpers';
 import { getCreatorProfileByUsername, getCreatorProfiles } from '../../../../lib/strapi';
@@ -63,6 +64,8 @@ const socialLinks = profile.social_links && typeof profile.social_links === 'obj
       <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage('en', `@${username}/about`)}>About</a>
     </nav>
   </section>
+
+  <FollowUserPanel username={username} lang="en" />
 
   <section class="card panel gv-card gv-stack">
     <h2 class="gv-h2">About</h2>

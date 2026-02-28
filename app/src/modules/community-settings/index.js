@@ -52,6 +52,7 @@ const defaultsFromEnv = () => {
     moderation_strictness: normalizeStrictness(process.env.MODERATION_STRICTNESS, 'balanced'),
     citizen_card_visible: parseBool(process.env.UGC_CITIZEN_CARD_ENABLED, true),
     badges_visible: parseBool(process.env.UGC_BADGES_VISIBLE, false),
+    follow_system_enabled: parseBool(process.env.FOLLOW_SYSTEM_ENABLED, false),
     notifications_defaults: null,
     safety_notice_templates: null,
   };
@@ -89,6 +90,7 @@ const normalizeSettings = (value = {}) => {
   merged.moderation_strictness = normalizeStrictness(merged.moderation_strictness, defaults.moderation_strictness);
   merged.citizen_card_visible = parseBool(merged.citizen_card_visible, defaults.citizen_card_visible);
   merged.badges_visible = parseBool(merged.badges_visible, defaults.badges_visible);
+  merged.follow_system_enabled = parseBool(merged.follow_system_enabled, defaults.follow_system_enabled);
   merged.notifications_defaults =
     merged.notifications_defaults && typeof merged.notifications_defaults === 'object'
       ? merged.notifications_defaults
@@ -139,4 +141,3 @@ module.exports = {
   clearCommunitySettingsCache,
   normalizeSettings,
 };
-

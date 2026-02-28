@@ -63,6 +63,10 @@
       "type": "boolean",
       "default": false
     },
+    "follow_system_enabled": {
+      "type": "boolean",
+      "default": false
+    },
     "notifications_defaults": {
       "type": "json"
     },
@@ -71,4 +75,3 @@
     }
   }
 }
-

@@ -257,6 +257,53 @@ const accountCopy = {
   preferenceSaveFailed: translate(ui, 'account.preferenceSaveFailed', {}, 'Failed to save preference.'),
   preferenceSavedRedirect: translate(ui, 'account.preferenceSavedRedirect', {}, 'Preference saved. Redirecting...'),
   preferenceNetworkError: translate(ui, 'account.preferenceNetworkError', {}, 'Network error while saving preference.'),
+  notificationsTitle: translate(ui, 'account.notificationsTitle', {}, 'Notification preferences'),
+  notificationsDescription: translate(
+    ui,
+    'account.notificationsDescription',
+    {},
+    'Control in-site and email notifications for your account.'
+  ),
+  notificationsSiteEnabled: translate(ui, 'account.notificationsSiteEnabled', {}, 'Enable in-site notifications'),
+  notificationsEmailEnabled: translate(ui, 'account.notificationsEmailEnabled', {}, 'Enable email notifications'),
+  notificationsDigest: translate(ui, 'account.notificationsDigest', {}, 'Email digest frequency'),
+  notificationsDigestOff: translate(ui, 'account.notificationsDigestOff', {}, 'Off'),
+  notificationsDigestInstant: translate(ui, 'account.notificationsDigestInstant', {}, 'Instant'),
+  notificationsDigestDaily: translate(ui, 'account.notificationsDigestDaily', {}, 'Daily'),
+  notificationsDigestWeekly: translate(ui, 'account.notificationsDigestWeekly', {}, 'Weekly'),
+  notificationsSave: translate(ui, 'account.notificationsSave', {}, 'Save notification settings'),
+  notificationsLoaded: translate(ui, 'account.notificationsLoaded', {}, 'Loaded your notification preferences.'),
+  notificationsSaving: translate(ui, 'account.notificationsSaving', {}, 'Saving notification preferences...'),
+  notificationsSaved: translate(ui, 'account.notificationsSaved', {}, 'Notification preferences saved.'),
+  notificationsSaveFailed: translate(ui, 'account.notificationsSaveFailed', {}, 'Failed to save notification preferences.'),
+  notificationsNetworkError: translate(
+    ui,
+    'account.notificationsNetworkError',
+    {},
+    'Network error while saving notification preferences.'
+  ),
+  followsTitle: translate(ui, 'account.followsTitle', {}, 'Following'),
+  followsDescription: translate(
+    ui,
+    'account.followsDescription',
+    {},
+    'Track users and places you follow from your account.'
+  ),
+  followsRefresh: translate(ui, 'account.followsRefresh', {}, 'Refresh follows'),
+  followsLoading: translate(ui, 'account.followsLoading', {}, 'Loading follows...'),
+  followsLoadFailed: translate(ui, 'account.followsLoadFailed', {}, 'Could not load follows right now.'),
+  followsNone: translate(ui, 'account.followsNone', {}, 'You are not following anything yet.'),
+  followsUsers: translate(ui, 'account.followsUsers', {}, 'Users'),
+  followsPlaces: translate(ui, 'account.followsPlaces', {}, 'Places'),
+  followsType: translate(ui, 'account.followsType', {}, 'Type'),
+  followsTarget: translate(ui, 'account.followsTarget', {}, 'Target'),
+  followsStatus: translate(ui, 'account.followsStatus', {}, 'Status'),
+  followsLastChanged: translate(ui, 'account.followsLastChanged', {}, 'Last changed'),
+  followsUnfollow: translate(ui, 'account.followsUnfollow', {}, 'Unfollow'),
+  followsUnfollowing: translate(ui, 'account.followsUnfollowing', {}, 'Removing...'),
+  followsUnfollowFailed: translate(ui, 'account.followsUnfollowFailed', {}, 'Could not update follow status.'),
+  followsUpdated: translate(ui, 'account.followsUpdated', {}, 'Follow list updated.'),
+  followsDisabled: translate(ui, 'account.followsDisabled', {}, 'Follow system is currently disabled by community settings.'),
   passwordTitle: translate(ui, 'account.passwordTitle', {}, 'Change password'),
   passwordDescription: translate(
     ui,
@@ -434,6 +481,29 @@ const accountCopy = {
     <p class="small" data-account-requests-empty>{accountCopy.accountRequestsEmpty}</p>
   </section>
 
+  <section class="card panel gv-stack" data-account-follows hidden data-auth-base={authBaseUrl}>
+    <div class="account-comments-head">
+      <div>
+        <h2>{accountCopy.followsTitle}</h2>
+        <p class="small">{accountCopy.followsDescription}</p>
+      </div>
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-follows-refresh>
+        <span class="ui-button-label">{accountCopy.followsRefresh}</span>
+      </button>
+    </div>
+    <div class="account-comments-stats">
+      <span>
+        {accountCopy.followsUsers}: <strong data-account-follows-users>0</strong>
+      </span>
+      <span>
+        {accountCopy.followsPlaces}: <strong data-account-follows-places>0</strong>
+      </span>
+    </div>
+    <ul class="account-comments-list gv-stack" data-account-follows-list></ul>
+    <p class="small" data-account-follows-empty>{accountCopy.followsNone}</p>
+    <p class="small account-feedback" data-account-follows-feedback aria-live="polite"></p>
+  </section>
+
   <section class="card panel gv-stack" id="locale-progress" data-account-locale-progress hidden>
     <div class="account-comments-head">
       <div>
@@ -526,6 +596,40 @@ const accountCopy = {
       </button>
       <p class="small account-feedback" data-account-feedback aria-live="polite"></p>
     </form>
+
+    <form class="gv-stack account-form" data-account-notifications-form data-auth-base={authBaseUrl} novalidate>
+      <h3>{accountCopy.notificationsTitle}</h3>
+      <p class="small">{accountCopy.notificationsDescription}</p>
+
+      <label class="account-field">
+        <span>
+          <input type="checkbox" name="notifications_site_enabled" data-account-notifications-site />
+          {accountCopy.notificationsSiteEnabled}
+        </span>
+      </label>
+
+      <label class="account-field">
+        <span>
+          <input type="checkbox" name="notifications_email_enabled" data-account-notifications-email />
+          {accountCopy.notificationsEmailEnabled}
+        </span>
+      </label>
+
+      <label class="account-field">
+        <span>{accountCopy.notificationsDigest}</span>
+        <select name="notifications_digest" data-account-notifications-digest>
+          <option value="off">{accountCopy.notificationsDigestOff}</option>
+          <option value="instant">{accountCopy.notificationsDigestInstant}</option>
+          <option value="daily">{accountCopy.notificationsDigestDaily}</option>
+          <option value="weekly">{accountCopy.notificationsDigestWeekly}</option>
+        </select>
+      </label>
+
+      <button type="submit" class="ui-button ui-button-primary ui-button-md">
+        <span class="ui-button-label">{accountCopy.notificationsSave}</span>
+      </button>
+      <p class="small account-feedback" data-account-notifications-feedback aria-live="polite"></p>
+    </form>
   </section>
 
   <section class="card panel gv-stack" data-account-password hidden>
@@ -614,6 +718,11 @@ const accountCopy = {
       const feedback = document.querySelector('[data-account-feedback]');
       const select = document.querySelector('[data-account-language-select]');
       const languageHealth = document.querySelector('[data-account-language-health]');
+      const notificationsForm = document.querySelector('[data-account-notifications-form]');
+      const notificationsSite = document.querySelector('[data-account-notifications-site]');
+      const notificationsEmail = document.querySelector('[data-account-notifications-email]');
+      const notificationsDigest = document.querySelector('[data-account-notifications-digest]');
+      const notificationsFeedback = document.querySelector('[data-account-notifications-feedback]');
       const passwordForm = document.querySelector('[data-account-password-form]');
       const passwordFeedback = document.querySelector('[data-account-password-feedback]');
 
@@ -633,6 +742,14 @@ const accountCopy = {
         !(feedback instanceof HTMLElement) ||
         !(select instanceof HTMLSelectElement) ||
         !(languageHealth instanceof HTMLElement)
+      )
+        return;
+      if (
+        !(notificationsForm instanceof HTMLFormElement) ||
+        !(notificationsSite instanceof HTMLInputElement) ||
+        !(notificationsEmail instanceof HTMLInputElement) ||
+        !(notificationsDigest instanceof HTMLSelectElement) ||
+        !(notificationsFeedback instanceof HTMLElement)
       )
         return;
       if (!(passwordForm instanceof HTMLFormElement) || !(passwordFeedback instanceof HTMLElement)) return;
@@ -692,6 +809,13 @@ const accountCopy = {
       const normalizedLanguages = Array.isArray(availableLanguages) ? availableLanguages : [];
       const isAllowedLanguage = (value) => normalizedLanguages.includes(value);
       const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
+      const normalizeNotificationDigest = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (normalized === 'off' || normalized === 'instant' || normalized === 'daily' || normalized === 'weekly') {
+          return normalized;
+        }
+        return 'daily';
+      };
       const normalizePreviewState = (value) => {
         const normalized = String(value || '').trim().toLowerCase();
         if (normalized === 'missing' || normalized === 'untranslated') return normalized;
@@ -748,6 +872,11 @@ const accountCopy = {
       const setFeedback = (message, isError = false) => {
         feedback.textContent = message;
         feedback.classList.toggle('is-error', isError);
+      };
+
+      const setNotificationsFeedback = (message, isError = false) => {
+        notificationsFeedback.textContent = message;
+        notificationsFeedback.classList.toggle('is-error', isError);
       };
 
       const setProfileFeedback = (message, isError = false) => {
@@ -1070,6 +1199,9 @@ const accountCopy = {
       localeProgressPanel.hidden = false;
       loggedOutPanel.hidden = true;
       renderProfile(session);
+      notificationsSite.checked = true;
+      notificationsEmail.checked = true;
+      notificationsDigest.value = 'daily';
 
       const applyPreferredLanguage = (language) => {
         const normalized = normalizeLanguage(language);
@@ -1082,6 +1214,13 @@ const accountCopy = {
           // no-op
         }
         return true;
+      };
+
+      const applyNotificationPreference = (data) => {
+        const source = data && typeof data === 'object' ? data : {};
+        notificationsSite.checked = source.notifications_site_enabled !== false;
+        notificationsEmail.checked = source.notifications_email_enabled !== false;
+        notificationsDigest.value = normalizeNotificationDigest(source.notifications_digest);
       };
 
       const loadPreference = async () => {
@@ -1100,10 +1239,13 @@ const accountCopy = {
           });
           if (!response.ok) return;
           const payload = await response.json().catch(() => null);
-          const language = normalizeLanguage(payload?.data?.preferred_ui_language);
+          const preferenceData = payload?.data && typeof payload.data === 'object' ? payload.data : {};
+          const language = normalizeLanguage(preferenceData?.preferred_ui_language);
           if (applyPreferredLanguage(language)) {
             setFeedback(accountCopy.loadedPreference);
           }
+          applyNotificationPreference(preferenceData);
+          setNotificationsFeedback(accountCopy.notificationsLoaded);
         } catch {
           // no-op
         }
@@ -1657,6 +1799,43 @@ const accountCopy = {
         }
       });
 
+      notificationsForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const digest = normalizeNotificationDigest(notificationsDigest.value);
+        notificationsDigest.value = digest;
+
+        setNotificationsFeedback(accountCopy.notificationsSaving);
+        try {
+          const response = await fetch(`${authBase}/api/user-preferences/me`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+            body: JSON.stringify({
+              data: {
+                notifications_site_enabled: Boolean(notificationsSite.checked),
+                notifications_email_enabled: Boolean(notificationsEmail.checked),
+                notifications_digest: digest,
+              },
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.notificationsSaveFailed;
+            setNotificationsFeedback(message, true);
+            return;
+          }
+
+          applyNotificationPreference(payload?.data);
+          setNotificationsFeedback(accountCopy.notificationsSaved);
+        } catch {
+          setNotificationsFeedback(accountCopy.notificationsNetworkError, true);
+        }
+      });
+
       select.addEventListener('change', () => {
         updateLanguageHealth();
       });
@@ -1839,6 +2018,224 @@ const accountCopy = {
       loadComments();
       loadAccountRequests();
       loadLocaleProgress();
+    })();
+  </script>
+
+  <script is:inline define:vars={{ accountCopy }}>
+    (() => {
+      const section = document.querySelector('[data-account-follows]');
+      if (!(section instanceof HTMLElement)) return;
+
+      const authBase = section.getAttribute('data-auth-base');
+      const listNode = section.querySelector('[data-account-follows-list]');
+      const emptyNode = section.querySelector('[data-account-follows-empty]');
+      const feedbackNode = section.querySelector('[data-account-follows-feedback]');
+      const refreshButton = section.querySelector('[data-account-follows-refresh]');
+      const usersCount = section.querySelector('[data-account-follows-users]');
+      const placesCount = section.querySelector('[data-account-follows-places]');
+      if (
+        !authBase ||
+        !(listNode instanceof HTMLElement) ||
+        !(emptyNode instanceof HTMLElement) ||
+        !(feedbackNode instanceof HTMLElement) ||
+        !(refreshButton instanceof HTMLButtonElement) ||
+        !(usersCount instanceof HTMLElement) ||
+        !(placesCount instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      const readSession = () => {
+        try {
+          const fromLocal = localStorage.getItem('geovito_auth_session');
+          if (fromLocal) return JSON.parse(fromLocal);
+          const fromSession = sessionStorage.getItem('geovito_auth_session');
+          if (fromSession) {
+            localStorage.setItem('geovito_auth_session', fromSession);
+            return JSON.parse(fromSession);
+          }
+        } catch (_error) {
+          return null;
+        }
+        return null;
+      };
+
+      const session = readSession();
+      const jwt = typeof session?.jwt === 'string' ? session.jwt : '';
+      if (!jwt) {
+        section.hidden = true;
+        return;
+      }
+
+      section.hidden = false;
+      const escapeHtml = (value) =>
+        String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      const setFeedback = (message, isError = false) => {
+        feedbackNode.textContent = String(message || '');
+        feedbackNode.classList.toggle('is-error', Boolean(isError));
+      };
+      const formatDate = (value) => {
+        if (!value) return '-';
+        const date = new Date(String(value));
+        if (Number.isNaN(date.getTime())) return '-';
+        return date.toLocaleString();
+      };
+
+      let currentRows = [];
+      let followEnabled = true;
+
+      const renderCounts = (rows) => {
+        const list = Array.isArray(rows) ? rows : [];
+        const userTotal = list.filter((row) => String(row?.target_type || '') === 'user').length;
+        const placeTotal = list.filter((row) => String(row?.target_type || '') === 'place').length;
+        usersCount.textContent = String(userTotal);
+        placesCount.textContent = String(placeTotal);
+      };
+
+      const renderRows = (rows) => {
+        listNode.innerHTML = '';
+        const list = Array.isArray(rows) ? rows : [];
+        emptyNode.hidden = list.length > 0;
+        if (list.length === 0) return;
+
+        const fragment = document.createDocumentFragment();
+        for (const row of list) {
+          const item = document.createElement('li');
+          item.className = 'account-comment-item';
+          const targetType = String(row?.target_type || '-');
+          const targetRef = String(row?.target_ref || '-');
+          const status = String(row?.status || '-');
+          const changed = formatDate(row?.last_toggled_at || row?.updated_at);
+
+          item.innerHTML = `
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(accountCopy.followsType)}:</strong> ${escapeHtml(targetType)}
+              · <strong>${escapeHtml(accountCopy.followsTarget)}:</strong> ${escapeHtml(targetRef)}
+              · <strong>${escapeHtml(accountCopy.followsStatus)}:</strong> ${escapeHtml(status)}
+              · <strong>${escapeHtml(accountCopy.followsLastChanged)}:</strong> ${escapeHtml(changed)}
+            </p>
+            <div class="account-locale-actions">
+              <button
+                type="button"
+                class="ui-button ui-button-secondary ui-button-sm"
+                data-account-follow-remove
+                data-target-type="${escapeHtml(targetType)}"
+                data-target-ref="${escapeHtml(targetRef)}"
+              >
+                <span class="ui-button-label">${escapeHtml(accountCopy.followsUnfollow)}</span>
+              </button>
+            </div>
+          `;
+          fragment.appendChild(item);
+        }
+
+        listNode.appendChild(fragment);
+      };
+
+      const fetchRows = async () => {
+        const response = await fetch(`${authBase}/api/user-follows/me/list?limit=500`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${jwt}`,
+          },
+        });
+        const payload = await response.json().catch(() => ({}));
+        return {
+          ok: response.ok,
+          status: response.status,
+          payload,
+        };
+      };
+
+      const load = async () => {
+        setFeedback(accountCopy.followsLoading);
+        try {
+          const result = await fetchRows();
+          if (!result.ok) {
+            if (result.status === 401) {
+              section.hidden = true;
+              return;
+            }
+            setFeedback(accountCopy.followsLoadFailed, true);
+            return;
+          }
+
+          const data = result.payload?.data && typeof result.payload.data === 'object' ? result.payload.data : {};
+          followEnabled = data.follow_system_enabled === true;
+          currentRows = Array.isArray(data.items) ? data.items : [];
+
+          renderCounts(currentRows);
+          renderRows(currentRows);
+          if (!followEnabled) {
+            setFeedback(accountCopy.followsDisabled);
+            return;
+          }
+          setFeedback('');
+        } catch (_error) {
+          setFeedback(accountCopy.followsLoadFailed, true);
+        }
+      };
+
+      listNode.addEventListener('click', async (event) => {
+        const target = event.target instanceof HTMLElement ? event.target.closest('[data-account-follow-remove]') : null;
+        if (!(target instanceof HTMLButtonElement)) return;
+        if (!followEnabled) {
+          setFeedback(accountCopy.followsDisabled);
+          return;
+        }
+
+        const targetType = String(target.getAttribute('data-target-type') || '').trim().toLowerCase();
+        const targetRef = String(target.getAttribute('data-target-ref') || '').trim().toLowerCase();
+        if (!targetType || !targetRef) return;
+
+        const label = target.querySelector('.ui-button-label');
+        target.disabled = true;
+        if (label) label.textContent = accountCopy.followsUnfollowing;
+        setFeedback(accountCopy.followsUnfollowing);
+
+        try {
+          const response = await fetch(`${authBase}/api/user-follows/me/toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${jwt}`,
+            },
+            body: JSON.stringify({
+              target_type: targetType,
+              target_ref: targetRef,
+              action: 'unfollow',
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.followsUnfollowFailed;
+            setFeedback(message, true);
+            target.disabled = false;
+            if (label) label.textContent = accountCopy.followsUnfollow;
+            return;
+          }
+
+          setFeedback(accountCopy.followsUpdated);
+          await load();
+        } catch (_error) {
+          setFeedback(accountCopy.followsUnfollowFailed, true);
+          target.disabled = false;
+          if (label) label.textContent = accountCopy.followsUnfollow;
+        }
+      });
+
+      refreshButton.addEventListener('click', () => {
+        load();
+      });
+
+      load();
     })();
   </script>
 </MainLayout>

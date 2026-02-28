@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_follows",
+  "info": {
+    "singularName": "user-follow",
+    "pluralName": "user-follows",
+    "displayName": "User Follow",
+    "description": "Member follow graph foundation for user/place targets."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "follow_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "owner_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "required": true
+    },
+    "target_type": {
+      "type": "enumeration",
+      "enum": ["user", "place"],
+      "required": true
+    },
+    "target_ref": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "muted"],
+      "default": "active"
+    },
+    "created_from_ip": {
+      "type": "string"
+    },
+    "last_toggled_at": {
+      "type": "datetime"
+    }
+  }
+}
