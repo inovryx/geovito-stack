@@ -16,6 +16,7 @@ GO_LIVE_REQUIRE_CREATOR="${GO_LIVE_REQUIRE_CREATOR:-false}"
 GO_LIVE_SKIP_PRE_IMPORT="${GO_LIVE_SKIP_PRE_IMPORT:-false}"
 GO_LIVE_SKIP_PRE_DESIGN="${GO_LIVE_SKIP_PRE_DESIGN:-false}"
 GO_LIVE_SKIP_UI="${GO_LIVE_SKIP_UI:-false}"
+GO_LIVE_SKIP_REPORT_SMOKE="${GO_LIVE_SKIP_REPORT_SMOKE:-false}"
 
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-}"
 
@@ -41,6 +42,7 @@ Env toggles:
   GO_LIVE_SKIP_PRE_IMPORT=true    # skip pre_import_index_gate_check
   GO_LIVE_SKIP_PRE_DESIGN=true    # skip pre_design_gate_check
   GO_LIVE_SKIP_UI=true            # skip account/dashboard playwright checks
+  GO_LIVE_SKIP_REPORT_SMOKE=true  # skip content report submission/moderation smoke
   GO_LIVE_WITH_SMTP=true          # run password reset smoke (requires RESET_SMOKE_EMAIL)
   RESET_SMOKE_EMAIL=<mail>        # required when GO_LIVE_WITH_SMTP=true
 
@@ -115,7 +117,7 @@ echo "GEOVITO GO-LIVE GATE"
 echo "expected_sha7=${EXPECTED_SHA7}"
 echo "creator_username=${CREATOR_USERNAME:-<empty>}"
 echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP}"
-echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI}"
+echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE}"
 echo "=============================================================="
 
 if [[ "$HEALTH_TOKEN" == *"REPLACE_WITH_"* ]]; then
@@ -161,6 +163,15 @@ if [[ -n "$CREATOR_USERNAME" ]]; then
   run_step "Access Smoke" bash -lc "cd '$ROOT_DIR' && EXPECTED_SHA7='$EXPECTED_SHA7' CREATOR_USERNAME='$CREATOR_USERNAME' bash tools/smoke_access.sh"
 else
   run_step "Access Smoke" bash -lc "cd '$ROOT_DIR' && EXPECTED_SHA7='$EXPECTED_SHA7' bash tools/smoke_access.sh"
+fi
+
+if [[ "$GO_LIVE_SKIP_REPORT_SMOKE" != "true" ]]; then
+  run_step "Report Moderation Smoke" bash tools/report_moderation_smoke.sh
+else
+  STEP_NAMES+=("Report Moderation Smoke")
+  STEP_STATUS+=("SKIP")
+  STEP_CODES+=("0")
+  echo "RESULT: SKIP (Report Moderation Smoke)"
 fi
 
 if [[ "$GO_LIVE_SKIP_UI" != "true" ]]; then

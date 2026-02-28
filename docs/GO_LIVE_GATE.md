@@ -23,6 +23,9 @@ GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate
 
 # if /api/_health is token-protected
 HEALTH_TOKEN=your_token_here bash tools/go_live_gate.sh
+
+# skip report moderation smoke (not recommended for release)
+GO_LIVE_SKIP_REPORT_SMOKE=true bash tools/go_live_gate.sh
 ```
 
 Optional secret-file setup for health token:
@@ -58,7 +61,7 @@ nano ~/.config/geovito/health.env
 - [ ] submitted-visible posts show "In review"
 - [ ] submitted-visible posts are noindex and sitemap-excluded
 - [ ] approved-visible posts follow indexability gates
-- [ ] report submission + moderation queue verified
+- [ ] `bash tools/report_moderation_smoke.sh` PASS
 - [ ] guest comment policy and link limits verified
 
 ## Profile + Routing
