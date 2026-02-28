@@ -8,6 +8,7 @@ EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
 SMOKE_ACCESS_ENV_FILE="${SMOKE_ACCESS_ENV_FILE:-$HOME/.config/geovito/smoke_access.env}"
 HEALTH_TOKEN="${HEALTH_TOKEN:-}"
+HEALTH_ENV_FILE="${HEALTH_ENV_FILE:-$HOME/.config/geovito/health.env}"
 
 GO_LIVE_WITH_DEPLOY="${GO_LIVE_WITH_DEPLOY:-true}"
 GO_LIVE_WITH_SMTP="${GO_LIVE_WITH_SMTP:-false}"
@@ -33,6 +34,8 @@ Purpose:
 Env toggles:
   EXPECTED_SHA7=<git_short_sha>   # defaults to current HEAD
   CREATOR_USERNAME=<username>     # optional; enables creator smoke checks
+  HEALTH_TOKEN=<token>            # optional; used by stack_health when /api/_health is protected
+  HEALTH_ENV_FILE=~/.config/geovito/health.env
   GO_LIVE_REQUIRE_CREATOR=true    # fail if creator username missing
   GO_LIVE_WITH_DEPLOY=true|false  # run pages_deploy_force before smoke (default: true)
   GO_LIVE_SKIP_PRE_IMPORT=true    # skip pre_import_index_gate_check
@@ -58,6 +61,12 @@ if [[ -z "$CREATOR_USERNAME" && -f "$SMOKE_ACCESS_ENV_FILE" ]]; then
   # shellcheck disable=SC1090
   source "$SMOKE_ACCESS_ENV_FILE"
   CREATOR_USERNAME="${CREATOR_USERNAME:-}"
+fi
+
+if [[ -z "$HEALTH_TOKEN" && -f "$HEALTH_ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$HEALTH_ENV_FILE"
+  HEALTH_TOKEN="${HEALTH_TOKEN:-}"
 fi
 
 if [[ -z "$HEALTH_TOKEN" && -f "$ROOT_DIR/.env" ]]; then
@@ -109,10 +118,14 @@ echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP}"
 echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI}"
 echo "=============================================================="
 
+if [[ "$HEALTH_TOKEN" == *"REPLACE_WITH_"* ]]; then
+  HEALTH_TOKEN=""
+fi
+
 if [[ -n "$HEALTH_TOKEN" ]]; then
-  run_step "Stack Health" bash -lc "cd '$ROOT_DIR' && HEALTH_TOKEN='$HEALTH_TOKEN' bash tools/stack_health.sh"
+  run_step "Stack Health" bash -lc "cd '$ROOT_DIR' && HEALTH_TOKEN='$HEALTH_TOKEN' HEALTH_ENV_FILE='$HEALTH_ENV_FILE' bash tools/stack_health.sh"
 else
-  run_step "Stack Health" bash tools/stack_health.sh
+  run_step "Stack Health" bash -lc "cd '$ROOT_DIR' && HEALTH_ENV_FILE='$HEALTH_ENV_FILE' bash tools/stack_health.sh"
 fi
 run_step "Production Health" bash tools/prod_health.sh
 run_step "Pages Build Check" bash tools/pages_build_check.sh

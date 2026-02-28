@@ -409,6 +409,14 @@ Optional token usage:
 HEALTH_TOKEN=your_health_token bash tools/stack_health.sh
 ```
 
+Optional secret-file setup (recommended):
+
+```bash
+bash tools/stack_health_env_init.sh
+nano ~/.config/geovito/health.env
+bash tools/stack_health.sh
+```
+
 What it verifies:
 - `db` and `strapi` containers are running/healthy.
 - Strapi `GET /api/_health` returns `200` and `ok=true, db=true`.

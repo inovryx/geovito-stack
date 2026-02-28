@@ -25,6 +25,13 @@ GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate
 HEALTH_TOKEN=your_token_here bash tools/go_live_gate.sh
 ```
 
+Optional secret-file setup for health token:
+
+```bash
+bash tools/stack_health_env_init.sh
+nano ~/.config/geovito/health.env
+```
+
 ## Core Infrastructure
 - [ ] `bash tools/stack_health.sh` PASS
 - [ ] `bash tools/prod_health.sh` PASS

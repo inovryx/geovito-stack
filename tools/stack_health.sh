@@ -6,6 +6,7 @@ cd "$ROOT_DIR"
 
 API_BASE="${API_BASE:-http://127.0.0.1:1337}"
 HEALTH_TOKEN="${HEALTH_TOKEN:-}"
+HEALTH_ENV_FILE="${HEALTH_ENV_FILE:-$HOME/.config/geovito/health.env}"
 FAIL_COUNT=0
 
 pass() {
@@ -53,6 +54,16 @@ echo "GEOVITO STACK HEALTH CHECK"
 echo "API_BASE=${API_BASE}"
 echo "=============================================================="
 
+if [[ -z "$HEALTH_TOKEN" && -f "$HEALTH_ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$HEALTH_ENV_FILE"
+  HEALTH_TOKEN="${HEALTH_TOKEN:-}"
+fi
+
+if [[ "$HEALTH_TOKEN" == *"REPLACE_WITH_"* ]]; then
+  HEALTH_TOKEN=""
+fi
+
 check_service "db"
 check_service "strapi"
 
@@ -70,6 +81,12 @@ health_code="$(
 
 if [[ "$health_code" != "200" ]]; then
   fail "strapi /api/_health status=${health_code}"
+  if [[ "$health_code" == "403" ]]; then
+    echo "HINT: /api/_health token korumali olabilir."
+    echo "  1) bash tools/stack_health_env_init.sh"
+    echo "  2) nano \"$HEALTH_ENV_FILE\""
+    echo "  3) bash tools/stack_health.sh"
+  fi
 else
   ok_value="$(extract_json_value "$health_tmp" "ok")"
   db_value="$(extract_json_value "$health_tmp" "db")"
