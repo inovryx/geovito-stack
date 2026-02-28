@@ -4,6 +4,22 @@ const MOCK_JWT = 'dashboard-activity-mock-jwt';
 const OWNER_EMAIL_HINT = String(process.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
 
 test.beforeEach(async ({ page }) => {
+  await page.route(/\/api\/user-follows\/me\/list\?limit=500$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          follow_system_enabled: false,
+          items: [
+            { id: 1, target_type: 'user' },
+            { id: 2, target_type: 'place' },
+            { id: 3, target_type: 'place' },
+          ],
+        },
+      }),
+    });
+  });
   await page.route(/\/api\/content-reports\/moderation\/list\?limit=60$/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -80,7 +96,14 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+      body: JSON.stringify({
+        data: {
+          preferred_ui_language: 'en',
+          notifications_site_enabled: false,
+          notifications_email_enabled: false,
+          notifications_digest: 'daily',
+        },
+      }),
     });
   });
 
@@ -230,6 +253,8 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('comments are pending moderation');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('locales have UI translation gaps');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Follow system is disabled in community settings.');
+  await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('In-site notifications are disabled on your profile.');
+  await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Email notifications are disabled on your profile.');
   await expect(
     page.locator('[data-dashboard-activity-feed] .dashboard-activity-link', { hasText: 'Runbook' }).first()
   ).toBeVisible();
@@ -241,6 +266,13 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   ).toBeVisible();
   await expect(page.locator('[data-dashboard-community-open-mode]')).toContainText('Controlled');
   await expect(page.locator('[data-dashboard-community-follow-enabled]')).toContainText('Disabled');
+  await expect(page.locator('[data-dashboard-follow-system]')).toHaveText('Disabled');
+  await expect(page.locator('[data-dashboard-follow-total]')).toHaveText('3');
+  await expect(page.locator('[data-dashboard-follow-users]')).toHaveText('1');
+  await expect(page.locator('[data-dashboard-follow-places]')).toHaveText('2');
+  await expect(page.locator('[data-dashboard-notifications-site]')).toHaveText('Disabled');
+  await expect(page.locator('[data-dashboard-notifications-email]')).toHaveText('Disabled');
+  await expect(page.locator('[data-dashboard-notifications-digest]')).toHaveText('Daily');
 
   await page.check('[data-dashboard-activity-warn-only]');
   const warnBadges = (await page

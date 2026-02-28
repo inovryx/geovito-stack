@@ -67,6 +67,41 @@ const dashboardCopy = {
     'Preferred UI language saved to your profile.'
   ),
   preferenceValue: translate(ui, 'dashboard.preferenceValue', {}, 'Preferred language'),
+  followTitle: translate(ui, 'dashboard.followTitle', {}, 'Follow status'),
+  followBody: translate(
+    ui,
+    'dashboard.followBody',
+    {},
+    'Quick snapshot of follow system availability and your current follows.'
+  ),
+  followSystemState: translate(ui, 'dashboard.followSystemState', {}, 'Follow system'),
+  followTotal: translate(ui, 'dashboard.followTotal', {}, 'Total follows'),
+  followUsers: translate(ui, 'dashboard.followUsers', {}, 'User follows'),
+  followPlaces: translate(ui, 'dashboard.followPlaces', {}, 'Place follows'),
+  followLoadedAt: translate(ui, 'dashboard.followLoadedAt', {}, 'Loaded at'),
+  followStatusEnabled: translate(ui, 'dashboard.followStatusEnabled', {}, 'Enabled'),
+  followStatusDisabled: translate(ui, 'dashboard.followStatusDisabled', {}, 'Disabled'),
+  followStatusUnknown: translate(ui, 'dashboard.followStatusUnknown', {}, 'Unknown'),
+  followLoadFailed: translate(ui, 'dashboard.followLoadFailed', {}, 'Could not load follow status.'),
+  followDisabledNote: translate(ui, 'dashboard.followDisabledNote', {}, 'Follow system is currently disabled in community settings.'),
+  followManage: translate(ui, 'dashboard.followManage', {}, 'Open follow settings'),
+  notificationsTitle: translate(ui, 'dashboard.notificationsTitle', {}, 'Notification status'),
+  notificationsBody: translate(
+    ui,
+    'dashboard.notificationsBody',
+    {},
+    'Current in-site/email notification preferences for your account.'
+  ),
+  notificationsSite: translate(ui, 'dashboard.notificationsSite', {}, 'In-site notifications'),
+  notificationsEmail: translate(ui, 'dashboard.notificationsEmail', {}, 'Email notifications'),
+  notificationsDigest: translate(ui, 'dashboard.notificationsDigest', {}, 'Digest'),
+  notificationsDigestOff: translate(ui, 'dashboard.notificationsDigestOff', {}, 'Off'),
+  notificationsDigestInstant: translate(ui, 'dashboard.notificationsDigestInstant', {}, 'Instant'),
+  notificationsDigestDaily: translate(ui, 'dashboard.notificationsDigestDaily', {}, 'Daily'),
+  notificationsDigestWeekly: translate(ui, 'dashboard.notificationsDigestWeekly', {}, 'Weekly'),
+  notificationsLoadedAt: translate(ui, 'dashboard.notificationsLoadedAt', {}, 'Loaded at'),
+  notificationsLoadFailed: translate(ui, 'dashboard.notificationsLoadFailed', {}, 'Could not load notification preferences.'),
+  notificationsManage: translate(ui, 'dashboard.notificationsManage', {}, 'Open notification settings'),
   commentsTitle: translate(ui, 'dashboard.commentsTitle', {}, 'My comment moderation'),
   commentsBody: translate(
     ui,
@@ -335,6 +370,8 @@ const dashboardCopy = {
   activityCommunityUgcDisabled: translate(ui, 'dashboard.activityCommunityUgcDisabled', {}, 'UGC publishing is disabled in community settings.'),
   activityCommunityGuestDisabled: translate(ui, 'dashboard.activityCommunityGuestDisabled', {}, 'Guest comments are disabled in community settings.'),
   activityCommunityFollowDisabled: translate(ui, 'dashboard.activityCommunityFollowDisabled', {}, 'Follow system is disabled in community settings.'),
+  activityNotificationSiteDisabled: translate(ui, 'dashboard.activityNotificationSiteDisabled', {}, 'In-site notifications are disabled on your profile.'),
+  activityNotificationEmailDisabled: translate(ui, 'dashboard.activityNotificationEmailDisabled', {}, 'Email notifications are disabled on your profile.'),
   ownerOpsTitle: translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations'),
   ownerOpsBody: translate(
     ui,
@@ -667,6 +704,68 @@ const dashboardCopy = {
               <span>{dashboardCopy.preferenceValue}</span>
               <strong data-dashboard-preferred>{dashboardCopy.unknown}</strong>
             </p>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.followTitle}</h3>
+            <p class="small">{dashboardCopy.followBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.followSystemState}</span>
+                <strong data-dashboard-follow-system>{dashboardCopy.followStatusUnknown}</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.followTotal}</span>
+                <strong data-dashboard-follow-total>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.followUsers}</span>
+                <strong data-dashboard-follow-users>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.followPlaces}</span>
+                <strong data-dashboard-follow-places>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.followLoadedAt}</span>
+                <strong data-dashboard-follow-loaded-at>{dashboardCopy.followStatusUnknown}</strong>
+              </p>
+            </div>
+            <p class="small" data-dashboard-follow-note hidden></p>
+            <div class="dashboard-actions">
+              <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#follow-settings`}>
+                <span class="ui-button-label">{dashboardCopy.followManage}</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.notificationsTitle}</h3>
+            <p class="small">{dashboardCopy.notificationsBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.notificationsSite}</span>
+                <strong data-dashboard-notifications-site>{dashboardCopy.followStatusUnknown}</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.notificationsEmail}</span>
+                <strong data-dashboard-notifications-email>{dashboardCopy.followStatusUnknown}</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.notificationsDigest}</span>
+                <strong data-dashboard-notifications-digest>{dashboardCopy.notificationsDigestOff}</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.notificationsLoadedAt}</span>
+                <strong data-dashboard-notifications-loaded-at>{dashboardCopy.followStatusUnknown}</strong>
+              </p>
+            </div>
+            <p class="small" data-dashboard-notifications-note hidden></p>
+            <div class="dashboard-actions">
+              <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#notification-preferences`}>
+                <span class="ui-button-label">{dashboardCopy.notificationsManage}</span>
+              </a>
+            </div>
           </article>
 
           <article class="card panel gv-stack">
@@ -1356,6 +1455,17 @@ const dashboardCopy = {
       const commentsApprovedNode = document.querySelector('[data-dashboard-comments-approved]');
       const commentsRejectedNode = document.querySelector('[data-dashboard-comments-rejected]');
       const commentsRecentNode = document.querySelector('[data-dashboard-comments-recent]');
+      const followSystemNode = document.querySelector('[data-dashboard-follow-system]');
+      const followTotalNode = document.querySelector('[data-dashboard-follow-total]');
+      const followUsersNode = document.querySelector('[data-dashboard-follow-users]');
+      const followPlacesNode = document.querySelector('[data-dashboard-follow-places]');
+      const followLoadedAtNode = document.querySelector('[data-dashboard-follow-loaded-at]');
+      const followNoteNode = document.querySelector('[data-dashboard-follow-note]');
+      const notificationsSiteNode = document.querySelector('[data-dashboard-notifications-site]');
+      const notificationsEmailNode = document.querySelector('[data-dashboard-notifications-email]');
+      const notificationsDigestNode = document.querySelector('[data-dashboard-notifications-digest]');
+      const notificationsLoadedAtNode = document.querySelector('[data-dashboard-notifications-loaded-at]');
+      const notificationsNoteNode = document.querySelector('[data-dashboard-notifications-note]');
       const creatorUsernameNode = document.querySelector('[data-dashboard-creator-username]');
       const creatorVisibilityNode = document.querySelector('[data-dashboard-creator-visibility]');
       const creatorDraftsNode = document.querySelector('[data-dashboard-creator-drafts]');
@@ -1427,6 +1537,9 @@ const dashboardCopy = {
       let ownerFingerprintSha = '';
       let creatorProfileUrl = '';
       let communitySettingsPayload = null;
+      let followSystemEnabled = null;
+      let notificationsSiteEnabled = null;
+      let notificationsEmailEnabled = null;
       let lastActivityHasErrors = false;
       let activityHistory = [];
       let activityTickTimer = null;
@@ -1577,6 +1690,22 @@ const dashboardCopy = {
             : dashboardCopy.communityValueUnknown;
       };
 
+      const followBoolLabel = (value) => {
+        return value === true
+          ? dashboardCopy.followStatusEnabled
+          : value === false
+            ? dashboardCopy.followStatusDisabled
+            : dashboardCopy.followStatusUnknown;
+      };
+
+      const digestLabel = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (normalized === 'instant') return dashboardCopy.notificationsDigestInstant;
+        if (normalized === 'daily') return dashboardCopy.notificationsDigestDaily;
+        if (normalized === 'weekly') return dashboardCopy.notificationsDigestWeekly;
+        return dashboardCopy.notificationsDigestOff;
+      };
+
       const modeLabel = (value) => {
         const normalized = String(value || '').trim().toLowerCase();
         if (normalized === 'open') return dashboardCopy.communityOpenModeOpen;
@@ -1620,6 +1749,95 @@ const dashboardCopy = {
         setText(communityDefaultVisibilityNode, String(data?.default_profile_visibility || dashboardCopy.communityValueUnknown));
         setText(communityStrictnessNode, String(data?.moderation_strictness || dashboardCopy.communityValueUnknown));
         setText(communityLoadedAtNode, formatDate(loadedAtIsoString));
+      };
+
+      const resetFollowView = () => {
+        followSystemEnabled = null;
+        setText(followSystemNode, dashboardCopy.followStatusUnknown);
+        setText(followTotalNode, '0');
+        setText(followUsersNode, '0');
+        setText(followPlacesNode, '0');
+        setText(followLoadedAtNode, dashboardCopy.followStatusUnknown);
+        if (toNode(followNoteNode)) {
+          toNode(followNoteNode).hidden = true;
+          toNode(followNoteNode).textContent = '';
+          toNode(followNoteNode).classList.remove('is-error');
+        }
+      };
+
+      const applyFollowView = (payload, loadedAtIsoString) => {
+        const data = payload && typeof payload === 'object' ? payload : null;
+        const items = Array.isArray(data?.items) ? data.items : [];
+        followSystemEnabled =
+          typeof data?.follow_system_enabled === 'boolean'
+            ? data.follow_system_enabled
+            : null;
+
+        const userCount = items.filter((item) => {
+          const targetType = String(item?.target_type || '').trim().toLowerCase();
+          return targetType === 'user';
+        }).length;
+        const placeCount = items.filter((item) => {
+          const targetType = String(item?.target_type || '').trim().toLowerCase();
+          return targetType === 'place';
+        }).length;
+
+        setText(followSystemNode, followBoolLabel(followSystemEnabled));
+        setText(followTotalNode, String(normalizeCount(items.length, 0)));
+        setText(followUsersNode, String(normalizeCount(userCount, 0)));
+        setText(followPlacesNode, String(normalizeCount(placeCount, 0)));
+        setText(followLoadedAtNode, formatDate(loadedAtIsoString));
+
+        const note = toNode(followNoteNode);
+        if (note) {
+          if (followSystemEnabled === false) {
+            note.hidden = false;
+            note.textContent = dashboardCopy.followDisabledNote;
+            note.classList.remove('is-error');
+          } else {
+            note.hidden = true;
+            note.textContent = '';
+            note.classList.remove('is-error');
+          }
+        }
+      };
+
+      const resetNotificationView = () => {
+        notificationsSiteEnabled = null;
+        notificationsEmailEnabled = null;
+        setText(notificationsSiteNode, dashboardCopy.followStatusUnknown);
+        setText(notificationsEmailNode, dashboardCopy.followStatusUnknown);
+        setText(notificationsDigestNode, dashboardCopy.notificationsDigestOff);
+        setText(notificationsLoadedAtNode, dashboardCopy.followStatusUnknown);
+        if (toNode(notificationsNoteNode)) {
+          toNode(notificationsNoteNode).hidden = true;
+          toNode(notificationsNoteNode).textContent = '';
+          toNode(notificationsNoteNode).classList.remove('is-error');
+        }
+      };
+
+      const applyNotificationView = (payload, loadedAtIsoString) => {
+        const data = payload && typeof payload === 'object' ? payload : null;
+        notificationsSiteEnabled =
+          typeof data?.notifications_site_enabled === 'boolean'
+            ? data.notifications_site_enabled
+            : null;
+        notificationsEmailEnabled =
+          typeof data?.notifications_email_enabled === 'boolean'
+            ? data.notifications_email_enabled
+            : null;
+
+        setText(notificationsSiteNode, followBoolLabel(notificationsSiteEnabled));
+        setText(notificationsEmailNode, followBoolLabel(notificationsEmailEnabled));
+        setText(notificationsDigestNode, digestLabel(data?.notifications_digest));
+        setText(notificationsLoadedAtNode, formatDate(loadedAtIsoString));
+
+        const note = toNode(notificationsNoteNode);
+        if (note) {
+          note.hidden = true;
+          note.textContent = '';
+          note.classList.remove('is-error');
+        }
       };
 
       const setFeedback = (message, isError = false) => {
@@ -2237,6 +2455,26 @@ const dashboardCopy = {
                 ts: nowTs,
               });
             }
+          }
+
+          if (notificationsSiteEnabled === false) {
+            events.push({
+              level: 'info',
+              message: dashboardCopy.activityNotificationSiteDisabled,
+              actionLabel: dashboardCopy.notificationsManage,
+              actionHref: `${accountPath}#notification-preferences`,
+              ts: nowTs,
+            });
+          }
+
+          if (notificationsEmailEnabled === false) {
+            events.push({
+              level: 'info',
+              message: dashboardCopy.activityNotificationEmailDisabled,
+              actionLabel: dashboardCopy.notificationsManage,
+              actionHref: `${accountPath}#notification-preferences`,
+              ts: nowTs,
+            });
           }
 
           if (hasErrors) {
@@ -2975,6 +3213,8 @@ const dashboardCopy = {
         setText(commentsPendingNode, '0');
         setText(commentsApprovedNode, '0');
         setText(commentsRejectedNode, '0');
+        resetFollowView();
+        resetNotificationView();
         setCreatorProfileView(null, {
           draftCount: 0,
           submittedCount: 0,
@@ -3087,11 +3327,44 @@ const dashboardCopy = {
             if (preferred) {
               setText(preferredNode, preferred.toUpperCase());
             }
+            applyNotificationView(payload?.data, new Date().toISOString());
           } else {
             hadErrors = true;
+            if (toNode(notificationsNoteNode)) {
+              toNode(notificationsNoteNode).hidden = false;
+              toNode(notificationsNoteNode).textContent = dashboardCopy.notificationsLoadFailed;
+              toNode(notificationsNoteNode).classList.add('is-error');
+            }
           }
         } catch {
           hadErrors = true;
+          if (toNode(notificationsNoteNode)) {
+            toNode(notificationsNoteNode).hidden = false;
+            toNode(notificationsNoteNode).textContent = dashboardCopy.notificationsLoadFailed;
+            toNode(notificationsNoteNode).classList.add('is-error');
+          }
+        }
+
+        try {
+          const response = await fetch(`${authBaseUrl}/api/user-follows/me/list?limit=500`, { headers: authHeaders });
+          if (response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            applyFollowView(payload?.data, new Date().toISOString());
+          } else if (!(response.status === 404 || response.status === 405)) {
+            hadErrors = true;
+            if (toNode(followNoteNode)) {
+              toNode(followNoteNode).hidden = false;
+              toNode(followNoteNode).textContent = dashboardCopy.followLoadFailed;
+              toNode(followNoteNode).classList.add('is-error');
+            }
+          }
+        } catch {
+          hadErrors = true;
+          if (toNode(followNoteNode)) {
+            toNode(followNoteNode).hidden = false;
+            toNode(followNoteNode).textContent = dashboardCopy.followLoadFailed;
+            toNode(followNoteNode).classList.add('is-error');
+          }
         }
 
         try {
