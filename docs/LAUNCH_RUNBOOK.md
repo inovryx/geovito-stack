@@ -268,6 +268,9 @@ Follow system foundation smoke (feature flag + member toggle/list guard):
 Notification preferences foundation smoke (member GET + partial update guards):
 - `bash tools/notification_preferences_smoke.sh`
 
+Community settings control-center smoke (role guard + effective contract):
+- `bash tools/community_settings_smoke.sh`
+
 ## 3) Test Mode Protection (Recommended for closed testing)
 
 If you want to avoid accidental public usage during test phase:

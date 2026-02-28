@@ -26,6 +26,9 @@ HEALTH_TOKEN=your_token_here bash tools/go_live_gate.sh
 
 # skip report moderation smoke (not recommended for release)
 GO_LIVE_SKIP_REPORT_SMOKE=true bash tools/go_live_gate.sh
+
+# skip community settings smoke (not recommended for release)
+GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=true bash tools/go_live_gate.sh
 ```
 
 Optional secret-file setup for health token:
@@ -62,6 +65,7 @@ nano ~/.config/geovito/health.env
 - [ ] submitted-visible posts are noindex and sitemap-excluded
 - [ ] approved-visible posts follow indexability gates
 - [ ] `bash tools/report_moderation_smoke.sh` PASS
+- [ ] `bash tools/community_settings_smoke.sh` PASS
 - [ ] guest comment policy and link limits verified
 
 ## Profile + Routing

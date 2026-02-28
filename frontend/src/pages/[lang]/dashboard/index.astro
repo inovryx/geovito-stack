@@ -36,6 +36,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
 const strapiAdminUrl = `${authBaseUrl.replace(/\/$/, '')}/admin`;
+const communitySettingsAdminUrl = `${strapiAdminUrl}/content-manager/single-types/api::community-setting.community-setting`;
 
 const dashboardCopy = {
   title: translate(ui, 'dashboard.title', {}, 'Dashboard'),
@@ -305,6 +306,35 @@ const dashboardCopy = {
   controlReleaseCopied: translate(ui, 'dashboard.controlReleaseCopied', {}, 'Release command copied.'),
   controlReleaseCopyFailed: translate(ui, 'dashboard.controlReleaseCopyFailed', {}, 'Clipboard blocked. Copy manually.'),
   controlLimited: translate(ui, 'dashboard.controlLimited', {}, 'Admin links are visible for owner/admin roles only.'),
+  communityTitle: translate(ui, 'dashboard.communityTitle', {}, 'Community settings'),
+  communityBody: translate(
+    ui,
+    'dashboard.communityBody',
+    {},
+    'Effective runtime policy for UGC, comments, links, and follow controls.'
+  ),
+  communityOpenMode: translate(ui, 'dashboard.communityOpenMode', {}, 'Open mode'),
+  communityOpenModeControlled: translate(ui, 'dashboard.communityOpenModeControlled', {}, 'Controlled'),
+  communityOpenModeOpen: translate(ui, 'dashboard.communityOpenModeOpen', {}, 'Open'),
+  communityUgcEnabled: translate(ui, 'dashboard.communityUgcEnabled', {}, 'UGC enabled'),
+  communityGuestComments: translate(ui, 'dashboard.communityGuestComments', {}, 'Guest comments'),
+  communityFollowSystem: translate(ui, 'dashboard.communityFollowSystem', {}, 'Follow system'),
+  communityPostLinks: translate(ui, 'dashboard.communityPostLinks', {}, 'Post links'),
+  communityCommentLinks: translate(ui, 'dashboard.communityCommentLinks', {}, 'Comment links'),
+  communityPostLinkLimit: translate(ui, 'dashboard.communityPostLinkLimit', {}, 'Post link limit'),
+  communityMemberLinkLimit: translate(ui, 'dashboard.communityMemberLinkLimit', {}, 'Member comment link limit'),
+  communityGuestLinkLimit: translate(ui, 'dashboard.communityGuestLinkLimit', {}, 'Guest comment link limit'),
+  communityDefaultVisibility: translate(ui, 'dashboard.communityDefaultVisibility', {}, 'Default profile visibility'),
+  communityStrictness: translate(ui, 'dashboard.communityStrictness', {}, 'Moderation strictness'),
+  communityValueEnabled: translate(ui, 'dashboard.communityValueEnabled', {}, 'Enabled'),
+  communityValueDisabled: translate(ui, 'dashboard.communityValueDisabled', {}, 'Disabled'),
+  communityValueUnknown: translate(ui, 'dashboard.communityValueUnknown', {}, 'Unknown'),
+  communityLoadFailed: translate(ui, 'dashboard.communityLoadFailed', {}, 'Could not load effective community settings.'),
+  communityLoadedAt: translate(ui, 'dashboard.communityLoadedAt', {}, 'Loaded at'),
+  communityManage: translate(ui, 'dashboard.communityManage', {}, 'Manage community settings'),
+  activityCommunityUgcDisabled: translate(ui, 'dashboard.activityCommunityUgcDisabled', {}, 'UGC publishing is disabled in community settings.'),
+  activityCommunityGuestDisabled: translate(ui, 'dashboard.activityCommunityGuestDisabled', {}, 'Guest comments are disabled in community settings.'),
+  activityCommunityFollowDisabled: translate(ui, 'dashboard.activityCommunityFollowDisabled', {}, 'Follow system is disabled in community settings.'),
   ownerOpsTitle: translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations'),
   ownerOpsBody: translate(
     ui,
@@ -1018,6 +1048,74 @@ const dashboardCopy = {
             <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
           </article>
 
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-community">
+            <h3 class="dashboard-mini-title">{dashboardCopy.communityTitle}</h3>
+            <p class="small">{dashboardCopy.communityBody}</p>
+            <ul class="dashboard-owner-summary-list">
+              <li>
+                <span>{dashboardCopy.communityOpenMode}</span>
+                <strong data-dashboard-community-open-mode>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityUgcEnabled}</span>
+                <strong data-dashboard-community-ugc-enabled>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityGuestComments}</span>
+                <strong data-dashboard-community-guest-comments>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityFollowSystem}</span>
+                <strong data-dashboard-community-follow-enabled>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityPostLinks}</span>
+                <strong data-dashboard-community-post-links>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityCommentLinks}</span>
+                <strong data-dashboard-community-comment-links>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityPostLinkLimit}</span>
+                <strong data-dashboard-community-post-link-limit>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityMemberLinkLimit}</span>
+                <strong data-dashboard-community-member-link-limit>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityGuestLinkLimit}</span>
+                <strong data-dashboard-community-guest-link-limit>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityDefaultVisibility}</span>
+                <strong data-dashboard-community-default-visibility>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityStrictness}</span>
+                <strong data-dashboard-community-strictness>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityLoadedAt}</span>
+                <strong data-dashboard-community-loaded-at>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+            </ul>
+            <div class="dashboard-actions">
+              <a
+                class="ui-button ui-button-secondary ui-button-sm"
+                href={communitySettingsAdminUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-dashboard-admin-link
+                hidden
+              >
+                <span class="ui-button-label">{dashboardCopy.communityManage}</span>
+              </a>
+            </div>
+            <p class="small" data-dashboard-community-note hidden></p>
+          </article>
+
           <article class="card panel gv-stack dashboard-control-card" id="dashboard-control-seo">
             <h3 class="dashboard-mini-title">{dashboardCopy.moduleSeo}</h3>
             <p class="small">
@@ -1212,7 +1310,7 @@ const dashboardCopy = {
 
   </section>
 
-  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint, launchRunbookUrl, accountPath }}>
+  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint, launchRunbookUrl, accountPath, communitySettingsAdminUrl }}>
     (() => {
       const loggedOutPanel = document.querySelector('[data-dashboard-logged-out]');
       const authedPanel = document.querySelector('[data-dashboard-authenticated]');
@@ -1292,6 +1390,19 @@ const dashboardCopy = {
       const ownerWidgetReleaseBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="release"]');
       const ownerWidgetModerationBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="moderation"]');
       const ownerWidgetLocaleBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="locale"]');
+      const communityOpenModeNode = document.querySelector('[data-dashboard-community-open-mode]');
+      const communityUgcEnabledNode = document.querySelector('[data-dashboard-community-ugc-enabled]');
+      const communityGuestCommentsNode = document.querySelector('[data-dashboard-community-guest-comments]');
+      const communityFollowEnabledNode = document.querySelector('[data-dashboard-community-follow-enabled]');
+      const communityPostLinksNode = document.querySelector('[data-dashboard-community-post-links]');
+      const communityCommentLinksNode = document.querySelector('[data-dashboard-community-comment-links]');
+      const communityPostLinkLimitNode = document.querySelector('[data-dashboard-community-post-link-limit]');
+      const communityMemberLinkLimitNode = document.querySelector('[data-dashboard-community-member-link-limit]');
+      const communityGuestLinkLimitNode = document.querySelector('[data-dashboard-community-guest-link-limit]');
+      const communityDefaultVisibilityNode = document.querySelector('[data-dashboard-community-default-visibility]');
+      const communityStrictnessNode = document.querySelector('[data-dashboard-community-strictness]');
+      const communityLoadedAtNode = document.querySelector('[data-dashboard-community-loaded-at]');
+      const communityNoteNode = document.querySelector('[data-dashboard-community-note]');
       const activityFeedNode = document.querySelector('[data-dashboard-activity-feed]');
       const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
@@ -1315,6 +1426,7 @@ const dashboardCopy = {
       let ownerLocaleDeployCount = 0;
       let ownerFingerprintSha = '';
       let creatorProfileUrl = '';
+      let communitySettingsPayload = null;
       let lastActivityHasErrors = false;
       let activityHistory = [];
       let activityTickTimer = null;
@@ -1455,6 +1567,59 @@ const dashboardCopy = {
         const parsed = Number(value);
         if (!Number.isFinite(parsed) || parsed < 0) return fallback;
         return Math.round(parsed);
+      };
+
+      const boolLabel = (value) => {
+        return value === true
+          ? dashboardCopy.communityValueEnabled
+          : value === false
+            ? dashboardCopy.communityValueDisabled
+            : dashboardCopy.communityValueUnknown;
+      };
+
+      const modeLabel = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (normalized === 'open') return dashboardCopy.communityOpenModeOpen;
+        if (normalized === 'controlled') return dashboardCopy.communityOpenModeControlled;
+        return dashboardCopy.communityValueUnknown;
+      };
+
+      const resetCommunitySettingsView = () => {
+        communitySettingsPayload = null;
+        setText(communityOpenModeNode, dashboardCopy.communityValueUnknown);
+        setText(communityUgcEnabledNode, dashboardCopy.communityValueUnknown);
+        setText(communityGuestCommentsNode, dashboardCopy.communityValueUnknown);
+        setText(communityFollowEnabledNode, dashboardCopy.communityValueUnknown);
+        setText(communityPostLinksNode, dashboardCopy.communityValueUnknown);
+        setText(communityCommentLinksNode, dashboardCopy.communityValueUnknown);
+        setText(communityPostLinkLimitNode, '0');
+        setText(communityMemberLinkLimitNode, '0');
+        setText(communityGuestLinkLimitNode, '0');
+        setText(communityDefaultVisibilityNode, dashboardCopy.communityValueUnknown);
+        setText(communityStrictnessNode, dashboardCopy.communityValueUnknown);
+        setText(communityLoadedAtNode, dashboardCopy.communityValueUnknown);
+        if (toNode(communityNoteNode)) {
+          toNode(communityNoteNode).hidden = true;
+          toNode(communityNoteNode).textContent = '';
+          toNode(communityNoteNode).classList.remove('is-error');
+        }
+      };
+
+      const applyCommunitySettingsView = (settings, loadedAtIsoString) => {
+        const data = settings && typeof settings === 'object' ? settings : null;
+        communitySettingsPayload = data;
+        setText(communityOpenModeNode, modeLabel(data?.ugc_open_mode));
+        setText(communityUgcEnabledNode, boolLabel(data?.ugc_enabled));
+        setText(communityGuestCommentsNode, boolLabel(data?.guest_comments_enabled));
+        setText(communityFollowEnabledNode, boolLabel(data?.follow_system_enabled));
+        setText(communityPostLinksNode, boolLabel(data?.post_links_enabled));
+        setText(communityCommentLinksNode, boolLabel(data?.comments_links_enabled));
+        setText(communityPostLinkLimitNode, String(normalizeCount(data?.post_link_limit, 0)));
+        setText(communityMemberLinkLimitNode, String(normalizeCount(data?.member_comment_link_limit, 0)));
+        setText(communityGuestLinkLimitNode, String(normalizeCount(data?.guest_comment_link_limit, 0)));
+        setText(communityDefaultVisibilityNode, String(data?.default_profile_visibility || dashboardCopy.communityValueUnknown));
+        setText(communityStrictnessNode, String(data?.moderation_strictness || dashboardCopy.communityValueUnknown));
+        setText(communityLoadedAtNode, formatDate(loadedAtIsoString));
       };
 
       const setFeedback = (message, isError = false) => {
@@ -2042,6 +2207,36 @@ const dashboardCopy = {
               actionHref: editorialLocaleHref,
               ts: nowTs,
             });
+          }
+
+          if (currentRoleRank >= Number(roleRanks.admin) && communitySettingsPayload) {
+            if (communitySettingsPayload.ugc_enabled === false) {
+              events.push({
+                level: 'warn',
+                message: dashboardCopy.activityCommunityUgcDisabled,
+                actionLabel: dashboardCopy.communityManage,
+                actionHref: communitySettingsAdminUrl,
+                ts: nowTs,
+              });
+            }
+            if (communitySettingsPayload.guest_comments_enabled === false) {
+              events.push({
+                level: 'info',
+                message: dashboardCopy.activityCommunityGuestDisabled,
+                actionLabel: dashboardCopy.communityManage,
+                actionHref: communitySettingsAdminUrl,
+                ts: nowTs,
+              });
+            }
+            if (communitySettingsPayload.follow_system_enabled === false) {
+              events.push({
+                level: 'info',
+                message: dashboardCopy.activityCommunityFollowDisabled,
+                actionLabel: dashboardCopy.communityManage,
+                actionHref: communitySettingsAdminUrl,
+                ts: nowTs,
+              });
+            }
           }
 
           if (hasErrors) {
@@ -2785,6 +2980,7 @@ const dashboardCopy = {
           submittedCount: 0,
           approvedCount: 0,
         });
+        resetCommunitySettingsView();
         setText(moderationPendingNode, '0');
         setText(moderationStaleNode, '0');
         setText(moderationOldestNode, '0h');
@@ -2857,6 +3053,31 @@ const dashboardCopy = {
         }
 
         const access = applyAccessView(inferRole(userPayload, session));
+
+        if (access.isAdmin) {
+          try {
+            const response = await fetch(`${authBaseUrl}/api/community-settings/effective`, { headers: authHeaders });
+            if (response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              const settings = payload?.data && typeof payload.data === 'object' ? payload.data : null;
+              applyCommunitySettingsView(settings, new Date().toISOString());
+            } else if (!(response.status === 404 || response.status === 405)) {
+              hadErrors = true;
+              if (toNode(communityNoteNode)) {
+                toNode(communityNoteNode).hidden = false;
+                toNode(communityNoteNode).textContent = dashboardCopy.communityLoadFailed;
+                toNode(communityNoteNode).classList.add('is-error');
+              }
+            }
+          } catch {
+            hadErrors = true;
+            if (toNode(communityNoteNode)) {
+              toNode(communityNoteNode).hidden = false;
+              toNode(communityNoteNode).textContent = dashboardCopy.communityLoadFailed;
+              toNode(communityNoteNode).classList.add('is-error');
+            }
+          }
+        }
 
         try {
           const response = await fetch(`${authBaseUrl}/api/user-preferences/me`, { headers: authHeaders });

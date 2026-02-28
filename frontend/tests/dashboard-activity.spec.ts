@@ -18,6 +18,31 @@ test.beforeEach(async ({ page }) => {
       body: JSON.stringify({ data: [] }),
     });
   });
+  await page.route(/\/api\/community-settings\/effective$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          ugc_enabled: true,
+          ugc_open_mode: 'controlled',
+          guest_comments_enabled: true,
+          post_links_enabled: true,
+          comments_links_enabled: true,
+          post_link_limit: 4,
+          member_comment_link_limit: 2,
+          guest_comment_link_limit: 1,
+          default_profile_visibility: 'public',
+          moderation_strictness: 'balanced',
+          citizen_card_visible: true,
+          badges_visible: false,
+          follow_system_enabled: false,
+          notifications_defaults: null,
+          safety_notice_templates: null,
+        },
+      }),
+    });
+  });
 });
 
 async function dismissConsentBanner(page: import('@playwright/test').Page): Promise<void> {
@@ -204,6 +229,7 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Build abc1234 is live.');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('comments are pending moderation');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('locales have UI translation gaps');
+  await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Follow system is disabled in community settings.');
   await expect(
     page.locator('[data-dashboard-activity-feed] .dashboard-activity-link', { hasText: 'Runbook' }).first()
   ).toBeVisible();
@@ -213,6 +239,8 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(
     page.locator('[data-dashboard-activity-feed] .dashboard-activity-link', { hasText: 'Translations' }).first()
   ).toBeVisible();
+  await expect(page.locator('[data-dashboard-community-open-mode]')).toContainText('Controlled');
+  await expect(page.locator('[data-dashboard-community-follow-enabled]')).toContainText('Disabled');
 
   await page.check('[data-dashboard-activity-warn-only]');
   const warnBadges = (await page
