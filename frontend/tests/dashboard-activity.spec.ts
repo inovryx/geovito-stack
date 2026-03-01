@@ -1322,6 +1322,7 @@ test('dashboard lane collapse state persists between reloads', async ({ page }, 
 
   await page.reload();
   await dismissConsentBanner(page);
+  await page.waitForLoadState('networkidle');
   await expect(memberLaneContent).toBeHidden();
 
   await memberLaneToggle.click();
