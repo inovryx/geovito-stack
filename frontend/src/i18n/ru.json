@@ -3,67 +3,67 @@
     "label": "Реклама"
   },
   "nav": {
-    "blog": "Blog",
+    "blog": "Posty",
     "help": "Pomoshch",
     "home": "Glavnaya",
     "about": "O proekte",
-    "atlas": "Atlas",
+    "atlas": "Issledovat",
     "rules": "Pravila",
-    "account": "Account",
+    "account": "Uchetnaya zapis",
     "regions": "Regiony"
   },
   "ops": {
     "kpi": {
-      "clicks": "Clicks (7d)",
-      "earnings": "Earnings (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "impressions": "Impressions (7d)"
+      "clicks": "Kliki (7d)",
+      "earnings": "Dohod (7d)",
+      "requests": "Zaprosy Cloudflare (7d)",
+      "sessions": "Sessii (7d)",
+      "pageviews": "Prosmotry stranic (7d)",
+      "impressions": "Pokazy (7d)"
     },
     "empty": {
-      "desc": "Run the metrics collector locally, then refresh this page.",
-      "title": "No metrics collected yet"
+      "desc": "Zapustite sborshchik metrik lokalno i obnovite etu stranicu.",
+      "title": "Metriki poka ne sobrany"
     },
-    "title": "Ops Metrics",
+    "title": "Ops metrika",
     "disabled": {
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
-      "title": "Ops metrics viewer is disabled in this mode"
+      "desc": "Ustanovite PUBLIC_OPS_MODE=local, chtoby razreshit lokalnoe chtenie faylov v etoy srede.",
+      "title": "Prosmotrshchik ops-metrik otklyuchen v etom rezhime"
     },
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "subtitle": "Vnutrennyaya agregirovannaya panel metrik dlya lokalnyh operatsiy.",
     "providers": {
-      "ok": "OK",
-      "error": "Error",
-      "title": "Provider status",
-      "notConfigured": "Not configured"
+      "ok": "Normalno",
+      "error": "Oshibka",
+      "title": "Status provaydera",
+      "notConfigured": "Ne nastroeno"
     }
   },
   "auth": {
-    "registerDisabledBody": "Account creation is paused in this environment.",
-    "registerDisabledHint": "Registration is currently disabled.",
-    "registerDisabledTitle": "Registration is disabled"
+    "registerDisabledBody": "Sozdanie akkauntov v etoy srede priostanovleno.",
+    "registerDisabledHint": "Registratsiya seychas otklyuchena.",
+    "registerDisabledTitle": "Registratsiya otklyuchena"
   },
   "blog": {
     "noBody": "Kontent poka otsutstvuet.",
     "listHint": "Posty vidny, dazhe esli perevod ne complete; nepolnye varianty ne indeksiruyutsya.",
-    "listTitle": "Blog",
+    "listTitle": "Posty",
     "listDescription": "Spisok bloga Geovito"
   },
   "home": {
-    "noTrending": "No trending places yet.",
-    "blogSection": "Blog",
+    "noTrending": "Trendovykh mest poka net.",
+    "blogSection": "Posty",
     "defaultBody": "Kontent poka otsutstvuet.",
-    "defaultTitle": "Geovito Atlas",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "defaultTitle": "Geovito Issledovat",
+    "trendingHint": "Mesta tipa goroda opredelyayutsya cherez country_profile.city_like_levels.",
     "noPostSummary": "Kratkoe opisanie poka otsutstvuet.",
-    "trendingTitle": "Trending places",
+    "trendingTitle": "Trendovye mesta",
     "atlasCountries": "Atlas (Strany)",
     "defaultExcerpt": "Glavnaya stranitsa na osnove Strapi.",
     "noCountryDescription": "Opisanie poka otsutstvuet."
   },
   "post": {
     "meta": {
-      "postId": "post_id",
+      "postId": "post_id_ru",
       "languageStatus": "status yazyka"
     },
     "noBody": "Kontent poka otsutstvuet."
@@ -78,16 +78,16 @@
     },
     "list": {
       "empty": "Stranitsy stran poka nedostupny.",
-      "title": "Atlas",
+      "title": "Issledovat",
       "states": {
-        "draft": "draft",
-        "missing": "missing",
-        "complete": "complete"
+        "draft": "chernovik",
+        "missing": "otsutstvuet",
+        "complete": "zaversheno"
       },
       "filters": {
         "all": "Vse",
         "city": "Gorod",
-        "region": "Region",
+        "region": "Oblast",
         "country": "Strana",
         "landmark": "Oriyentir"
       },
@@ -109,9 +109,9 @@
     },
     "meta": {
       "type": "tip",
-      "region": "region",
+      "region": "oblast",
       "country": "strana",
-      "placeId": "place_id",
+      "placeId": "mesto_id",
       "coordinates": "koordinaty",
       "notAvailable": "nedostupno",
       "languageStatus": "status yazyka"
@@ -197,7 +197,7 @@
       "editor": "Editor/Admin: proverka i publikatsiya Atlas i Blog kontenta.",
       "public": "Public: chtenie Atlas/Blog/UI i otpravka Atlas-predlozheniy."
     },
-    "title": "Account",
+    "title": "Uchetnaya zapis",
     "loginCta": "Otkryt admin-login",
     "rolesTitle": "Granitsy roley",
     "description": "Obolochka akkaunta seychas rabotaet v read-only rezhime.",
@@ -234,7 +234,7 @@
     "meta": {
       "title": "Metadannye regiona",
       "country": "strana",
-      "regionKey": "region key",
+      "regionKey": "klyuch oblasti",
       "memberCount": "kolichestvo uchastnikov"
     },
     "noBody": "Kontent poka otsutstvuet.",
@@ -250,7 +250,7 @@
       "savedPlaces": "Sokhranennye mesta/watchlist (future)",
       "submissions": "Moi Atlas-predlozheniya (future)"
     },
-    "title": "Dashboard",
+    "title": "Panel",
     "loginCta": "Pereyti v account-shell",
     "dataTitle": "Planiruemye moduli",
     "description": "Bezopasnaya dashboard-obolochka dlya editorial potoka.",
