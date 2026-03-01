@@ -1,278 +1,278 @@
 {
   "ads": {
-    "label": "Advertisement"
+    "label": "Publicite"
   },
   "nav": {
-    "blog": "Blog",
-    "help": "Help",
-    "home": "Home",
-    "about": "About",
-    "atlas": "Atlas",
-    "rules": "Rules",
-    "account": "Account",
-    "regions": "Regions"
+    "blog": "Articles",
+    "help": "Aide",
+    "home": "Accueil",
+    "about": "A propos",
+    "atlas": "Explorer",
+    "rules": "Regles",
+    "account": "Compte",
+    "regions": "Zones"
   },
   "ops": {
     "kpi": {
-      "clicks": "Clicks (7d)",
-      "earnings": "Earnings (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "impressions": "Impressions (7d)"
+      "clicks": "Clics (7j)",
+      "earnings": "Revenus (7j)",
+      "requests": "Requetes Cloudflare (7j)",
+      "sessions": "Sessions (7j)",
+      "pageviews": "Vues de page (7j)",
+      "impressions": "Impressions (7j)"
     },
     "empty": {
-      "desc": "Run the metrics collector locally, then refresh this page.",
-      "title": "No metrics collected yet"
+      "desc": "Executez le collecteur de metriques en local puis actualisez cette page.",
+      "title": "Aucune metrique collectee pour le moment"
     },
-    "title": "Ops Metrics",
+    "title": "Metriques Ops",
     "disabled": {
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
-      "title": "Ops metrics viewer is disabled in this mode"
+      "desc": "Definissez PUBLIC_OPS_MODE=local pour autoriser la lecture de fichiers locaux dans cet environnement.",
+      "title": "L'affichage des metriques Ops est desactive dans ce mode"
     },
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "subtitle": "Tableau interne de metriques agregees pour les operations locales.",
     "providers": {
-      "ok": "OK",
-      "error": "Error",
-      "title": "Provider status",
-      "notConfigured": "Not configured"
+      "ok": "Bon",
+      "error": "Erreur",
+      "title": "Statut des fournisseurs",
+      "notConfigured": "Non configure"
     }
   },
   "auth": {
-    "registerDisabledBody": "Account creation is paused in this environment.",
-    "registerDisabledHint": "Registration is currently disabled.",
-    "registerDisabledTitle": "Registration is disabled"
+    "registerDisabledBody": "La creation de compte est en pause dans cet environnement.",
+    "registerDisabledHint": "L'inscription est actuellement desactivee.",
+    "registerDisabledTitle": "Inscription desactivee"
   },
   "blog": {
-    "noBody": "No content body yet.",
-    "listHint": "Posts are visible even when translation is not complete; incomplete variants are not indexable.",
-    "listTitle": "Blog",
-    "listDescription": "Geovito blog list"
+    "noBody": "Aucun contenu pour le moment.",
+    "listHint": "Les billets restent visibles meme si la traduction n'est pas complete ; les variantes incompletes ne sont pas indexables.",
+    "listTitle": "Articles",
+    "listDescription": "Liste du blog Geovito"
   },
   "home": {
-    "noTrending": "No trending places yet.",
-    "blogSection": "Blog",
-    "defaultBody": "No body content yet.",
-    "defaultTitle": "Geovito Atlas",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
-    "noPostSummary": "No summary yet.",
-    "trendingTitle": "Trending places",
-    "atlasCountries": "Atlas (Countries)",
-    "defaultExcerpt": "Strapi-driven homepage.",
-    "noCountryDescription": "No description yet."
+    "noTrending": "Aucun lieu tendance pour le moment.",
+    "blogSection": "Articles",
+    "defaultBody": "Aucun contenu principal pour le moment.",
+    "defaultTitle": "Geovito Explorer",
+    "trendingHint": "Les lieux de type ville sont determines via country_profile.city_like_levels.",
+    "noPostSummary": "Aucun resume pour le moment.",
+    "trendingTitle": "Lieux tendances",
+    "atlasCountries": "Explorer (Pays)",
+    "defaultExcerpt": "Page d'accueil alimentee par Strapi.",
+    "noCountryDescription": "Aucune description pour le moment."
   },
   "post": {
     "meta": {
-      "postId": "post_id",
-      "languageStatus": "language status"
+      "postId": "id_billet",
+      "languageStatus": "statut de langue"
     },
-    "noBody": "No content body yet."
+    "noBody": "Aucun contenu pour le moment."
   },
   "site": {
     "brand": "Geovito"
   },
   "atlas": {
     "toc": {
-      "aria": "On this page",
-      "title": "On this page"
+      "aria": "Sur cette page",
+      "title": "Sur cette page"
     },
     "list": {
-      "empty": "No countries are available yet.",
-      "title": "Atlas",
+      "empty": "Aucun pays disponible pour le moment.",
+      "title": "Explorer",
       "states": {
-        "draft": "draft",
-        "missing": "missing",
-        "complete": "complete"
+        "draft": "brouillon",
+        "missing": "manquant",
+        "complete": "complet"
       },
       "filters": {
-        "all": "All",
-        "city": "City",
-        "region": "Region",
-        "country": "Country",
-        "landmark": "Landmark"
+        "all": "Tous",
+        "city": "Ville",
+        "region": "Zone",
+        "country": "Pays",
+        "landmark": "Point d'interet"
       },
-      "noSnippet": "No summary yet.",
-      "emptyTitle": "No places found",
-      "filterAria": "Filter atlas places",
+      "noSnippet": "Aucun resume pour le moment.",
+      "emptyTitle": "Aucun lieu trouve",
+      "filterAria": "Filtrer les lieux Explorer",
       "pagination": {
-        "aria": "Atlas pagination",
-        "next": "Next",
-        "prev": "Prev",
-        "pageLabel": "Page {page}",
-        "pageCurrentLabel": "Current page, {page}"
+        "aria": "Pagination Explorer",
+        "next": "Suivant",
+        "prev": "Precedent",
+        "pageLabel": "Page n {page}",
+        "pageCurrentLabel": "Page actuelle, {page}"
       },
-      "description": "Country-level entry points in the Atlas hierarchy.",
-      "emptyAction": "Reset filters",
-      "metaSummary": "Showing {shown} of {total} places",
-      "stateLegendAria": "Language state legend",
-      "emptyDescription": "Try another filter chip to continue exploring the atlas."
+      "description": "Points d'entree au niveau pays dans la hierarchie Explorer.",
+      "emptyAction": "Reinitialiser les filtres",
+      "metaSummary": "{shown} lieux affiches sur {total}",
+      "stateLegendAria": "Legende de statut linguistique",
+      "emptyDescription": "Essayez un autre filtre pour continuer l'exploration."
     },
     "meta": {
-      "type": "type",
-      "region": "region",
-      "country": "country",
-      "placeId": "place_id",
-      "coordinates": "coordinates",
-      "notAvailable": "not available",
-      "languageStatus": "language status"
+      "type": "categorie",
+      "region": "zone",
+      "country": "pays",
+      "placeId": "id_lieu",
+      "coordinates": "coordonnees",
+      "notAvailable": "non disponible",
+      "languageStatus": "statut de langue"
     },
     "links": {
-      "parent": "Parent place",
-      "related": "Related places",
-      "children": "Child places",
-      "noParent": "No parent place.",
-      "noRelated": "No related places found.",
-      "breadcrumb": "Hierarchy",
-      "noChildren": "No child places found.",
-      "relatedBlog": "Related blog posts",
-      "noRelatedBlog": "No related blog posts found."
+      "parent": "Lieu parent",
+      "related": "Lieux associes",
+      "children": "Lieux enfants",
+      "noParent": "Aucun lieu parent.",
+      "noRelated": "Aucun lieu associe trouve.",
+      "breadcrumb": "Hierarchie",
+      "noChildren": "Aucun lieu enfant trouve.",
+      "relatedBlog": "Billets de blog associes",
+      "noRelatedBlog": "Aucun billet de blog associe trouve."
     },
-    "noBody": "No content body yet.",
+    "noBody": "Aucun contenu pour le moment.",
     "section": {
-      "overview": "Overview",
-      "hierarchy": "Hierarchy",
-      "quickFacts": "Quick Facts",
-      "nearbyPlaces": "Nearby Places",
-      "relatedPosts": "Related Posts",
-      "travelEssentials": "Travel Essentials"
+      "overview": "Vue d'ensemble",
+      "hierarchy": "Hierarchie",
+      "quickFacts": "Infos rapides",
+      "nearbyPlaces": "Lieux proches",
+      "relatedPosts": "Billets associes",
+      "travelEssentials": "Essentiels de voyage"
     },
     "hierarchy": {
-      "noParent": "No parent place",
-      "badgesAria": "Place state and type",
-      "noChildren": "No child places",
-      "moreChildren": "+{count} more children"
+      "noParent": "Aucun lieu parent",
+      "badgesAria": "Etat et type du lieu",
+      "noChildren": "Aucun lieu enfant",
+      "moreChildren": "+{count} lieux enfants en plus"
     },
     "quickFacts": {
-      "currency": "Currency",
-      "language": "Language",
-      "timezone": "Timezone",
-      "elevation": "Elevation",
-      "population": "Population",
-      "coordinates": "Coordinates"
+      "currency": "Devise",
+      "language": "Langue",
+      "timezone": "Fuseau horaire",
+      "elevation": "Altitude",
+      "population": "Population totale",
+      "coordinates": "Coordonnees"
     },
     "relatedPosts": {
-      "empty": "No related posts yet"
+      "empty": "Aucun billet associe pour le moment"
     },
     "travelEssentials": {
-      "visa": "Visa",
+      "visa": "Visa requis",
       "helper": {
-        "noOrigin": "Select an origin to estimate flights."
+        "noOrigin": "Selectionnez un point de depart pour estimer les vols."
       },
-      "flights": "Flights",
-      "currency": "Currency",
-      "comingSoon": "Coming soon"
+      "flights": "Vols",
+      "currency": "Devise",
+      "comingSoon": "Bientot disponible"
     }
   },
   "embed": {
-    "openSource": "Open source video",
-    "sectionTitle": "Videos"
+    "openSource": "Ouvrir la video source",
+    "sectionTitle": "Clips video"
   },
   "legal": {
     "terms": {
-      "title": "Terms of Use"
+      "title": "Conditions d'utilisation"
     },
     "cookies": {
-      "title": "Cookie Policy",
-      "openConsentCta": "Update analytics and ads consent preferences at any time."
+      "title": "Politique des cookies",
+      "openConsentCta": "Mettez a jour a tout moment vos preferences de consentement analytics et publicite."
     },
     "privacy": {
-      "title": "Privacy Policy"
+      "title": "Politique de confidentialite"
     },
-    "lastUpdated": "Last updated",
-    "enFallbackNotice": "This legal page is currently published in English while localized versions are in progress."
+    "lastUpdated": "Derniere mise a jour",
+    "enFallbackNotice": "Cette page legale est publiee en anglais pour le moment ; les versions localisees arrivent."
   },
   "footer": {
-    "terms": "Terms",
-    "cookies": "Cookies",
-    "privacy": "Privacy"
+    "terms": "Conditions",
+    "cookies": "Parametres cookies",
+    "privacy": "Confidentialite"
   },
   "uiPage": {
-    "noBody": "No content body yet.",
-    "notFoundTitle": "Page not available",
-    "notFoundDescription": "This system page does not exist in Strapi yet."
+    "noBody": "Aucun contenu pour le moment.",
+    "notFoundTitle": "Page indisponible",
+    "notFoundDescription": "Cette page systeme n'existe pas encore dans Strapi."
   },
   "account": {
     "roles": {
-      "user": "Authenticated user: reserved for future blog submissions and profile features.",
-      "editor": "Editor/Admin: review and publish Atlas and Blog content.",
-      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions."
+      "user": "Utilisateur authentifie : reserve aux futures soumissions de blog et fonctions de profil.",
+      "editor": "Editor/Admin : revise et publie le contenu Explorer et Blog.",
+      "public": "Public : lire Explorer/Blog/UI et soumettre des suggestions Explorer."
     },
-    "title": "Account",
-    "loginCta": "Open admin login",
-    "rolesTitle": "Role boundaries",
-    "description": "User account shell is active in read-only mode for now.",
-    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
-    "authStateTitle": "Authentication status"
+    "title": "Compte",
+    "loginCta": "Ouvrir la connexion admin",
+    "rolesTitle": "Limites de role",
+    "description": "Le shell du compte utilisateur est actif en mode lecture seule pour l'instant.",
+    "authStateBody": "Vous consultez actuellement le shell hors connexion. L'inscription publique et les donnees personnalisees du compte sont desactivees volontairement a cette phase.",
+    "authStateTitle": "Statut d'authentification"
   },
   "actions": {
-    "previewOnDemand": "Open on-demand translation preview (noindex)"
+    "previewOnDemand": "Ouvrir l'apercu de traduction a la demande (noindex)"
   },
   "consent": {
-    "ads": "Ads",
-    "desc": "We use optional analytics and ads settings only with your permission. Necessary features are always on.",
-    "save": "Save preferences",
-    "close": "Close",
-    "title": "Privacy preferences",
-    "manage": "Manage consent",
-    "updated": "Consent updated",
-    "alwaysOn": "Always on",
-    "acceptAll": "Accept all",
-    "analytics": "Analytics",
-    "customize": "Customize",
-    "learnMore": "Learn more",
-    "necessary": "Necessary",
-    "rejectAll": "Reject all",
-    "modalTitle": "Customize consent",
-    "openSettings": "Open consent settings"
+    "ads": "Annonces",
+    "desc": "Nous utilisons les options analytics et publicitaires facultatives uniquement avec votre autorisation. Les fonctions necessaires restent actives.",
+    "save": "Enregistrer les preferences",
+    "close": "Fermer",
+    "title": "Preferences de confidentialite",
+    "manage": "Gerer le consentement",
+    "updated": "Consentement mis a jour",
+    "alwaysOn": "Toujours actif",
+    "acceptAll": "Tout accepter",
+    "analytics": "Mesure d'audience",
+    "customize": "Personnaliser",
+    "learnMore": "En savoir plus",
+    "necessary": "Necessaire",
+    "rejectAll": "Tout refuser",
+    "modalTitle": "Personnaliser le consentement",
+    "openSettings": "Ouvrir les parametres de consentement"
   },
   "regions": {
     "list": {
-      "empty": "No region groups are available yet.",
-      "title": "Regions",
-      "description": "Country-specific regional group pages without changing core parent chains."
+      "empty": "Aucun groupe regional disponible pour le moment.",
+      "title": "Zones",
+      "description": "Pages de groupes regionaux par pays sans modifier les chaines parentes du coeur."
     },
     "meta": {
-      "title": "Region metadata",
-      "country": "country",
-      "regionKey": "region key",
-      "memberCount": "member count"
+      "title": "Metadonnees de region",
+      "country": "pays",
+      "regionKey": "cle region",
+      "memberCount": "nombre de membres"
     },
-    "noBody": "No content body yet.",
-    "members": "Member places",
-    "noMembers": "No member places found."
+    "noBody": "Aucun contenu pour le moment.",
+    "members": "Lieux membres",
+    "noMembers": "Aucun lieu membre trouve."
   },
   "language": {
-    "switcherAria": "Language selector"
+    "switcherAria": "Selecteur de langue"
   },
   "dashboard": {
     "items": {
-      "blogDrafts": "My blog drafts (future)",
-      "savedPlaces": "Saved places/watchlist (future)",
-      "submissions": "My Atlas suggestions (future self-view)"
+      "blogDrafts": "Mes brouillons de blog (a venir)",
+      "savedPlaces": "Lieux sauvegardes/liste de suivi (a venir)",
+      "submissions": "Mes suggestions Explorer (vue perso a venir)"
     },
-    "title": "Dashboard",
-    "loginCta": "Go to account shell",
-    "dataTitle": "Planned modules",
-    "description": "Editorial-safe user dashboard shell.",
-    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
-    "readOnlyTitle": "Read-only mode"
+    "title": "Tableau de bord",
+    "loginCta": "Aller au shell de compte",
+    "dataTitle": "Modules prevus",
+    "description": "Shell du tableau de bord utilisateur compatible revue editoriale.",
+    "readOnlyBody": "Les widgets du tableau de bord restent volontairement limites jusqu'a l'activation des soumissions utilisateur.",
+    "readOnlyTitle": "Mode lecture seule"
   },
   "errorPage": {
-    "title": "Something went wrong",
-    "homeCta": "Back to home",
-    "reportCta": "Report issue",
-    "consentCta": "Open consent settings",
-    "reportSent": "Issue report sent.",
-    "description": "The page hit an unexpected problem. You can go back home or adjust consent settings.",
-    "reportReady": "You can report this issue.",
-    "inlineFallback": "Some interactive controls are temporarily unavailable.",
-    "reportDisabled": "Enable analytics consent to send an error report."
+    "title": "Un probleme est survenu",
+    "homeCta": "Retour a l'accueil",
+    "reportCta": "Signaler un probleme",
+    "consentCta": "Ouvrir les parametres de consentement",
+    "reportSent": "Signalement envoye.",
+    "description": "La page a rencontre un probleme inattendu. Vous pouvez revenir a l'accueil ou ajuster le consentement.",
+    "reportReady": "Vous pouvez signaler ce probleme.",
+    "inlineFallback": "Certains controles interactifs sont temporairement indisponibles.",
+    "reportDisabled": "Activez le consentement analytics pour envoyer un signalement d'erreur."
   },
   "stateBanner": {
-    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
-    "runtime": "Runtime translation preview is shown. This view is not indexed.",
-    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
-    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
-    "canonicalLink": "Go to canonical complete version"
+    "mock": "Des donnees MOCK sont affichees sur cette page. Cette vue reste toujours noindex.",
+    "runtime": "L'apercu de traduction runtime est affiche. Cette vue n'est pas indexee.",
+    "fallback": "Le contenu complet n'est pas pret dans cette langue ({language}). La version canonique complete est affichee.",
+    "incomplete": "Le contenu n'est pas complet dans cette langue ({language}, etat : {state}). La version canonique complete est affichee.",
+    "canonicalLink": "Aller vers la version canonique complete"
   }
 }
