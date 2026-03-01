@@ -30,6 +30,9 @@ GO_LIVE_SKIP_REPORT_SMOKE=true bash tools/go_live_gate.sh
 # skip community settings smoke (not recommended for release)
 GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=true bash tools/go_live_gate.sh
 
+# skip dashboard role baseline smoke (not recommended for release)
+GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=true bash tools/go_live_gate.sh
+
 # skip follow/notification foundation smokes (not recommended for release)
 GO_LIVE_SKIP_FOLLOW_SMOKE=true GO_LIVE_SKIP_NOTIFICATION_SMOKE=true bash tools/go_live_gate.sh
 ```
@@ -69,6 +72,7 @@ nano ~/.config/geovito/health.env
 - [ ] approved-visible posts follow indexability gates
 - [ ] `bash tools/report_moderation_smoke.sh` PASS
 - [ ] `bash tools/community_settings_smoke.sh` PASS
+- [ ] `bash tools/dashboard_role_smoke.sh` PASS
 - [ ] `bash tools/follow_system_smoke.sh` PASS
 - [ ] `bash tools/notification_preferences_smoke.sh` PASS
 - [ ] guest comment policy and link limits verified

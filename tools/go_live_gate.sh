@@ -18,6 +18,7 @@ GO_LIVE_SKIP_PRE_DESIGN="${GO_LIVE_SKIP_PRE_DESIGN:-false}"
 GO_LIVE_SKIP_UI="${GO_LIVE_SKIP_UI:-false}"
 GO_LIVE_SKIP_REPORT_SMOKE="${GO_LIVE_SKIP_REPORT_SMOKE:-false}"
 GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE="${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE:-false}"
+GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE="${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE:-false}"
 GO_LIVE_SKIP_FOLLOW_SMOKE="${GO_LIVE_SKIP_FOLLOW_SMOKE:-false}"
 GO_LIVE_SKIP_NOTIFICATION_SMOKE="${GO_LIVE_SKIP_NOTIFICATION_SMOKE:-false}"
 
@@ -47,6 +48,7 @@ Env toggles:
   GO_LIVE_SKIP_UI=true            # skip account/dashboard playwright checks
   GO_LIVE_SKIP_REPORT_SMOKE=true  # skip content report submission/moderation smoke
   GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=true  # skip community settings role/contract smoke
+  GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=true  # skip dashboard role baseline smoke
   GO_LIVE_SKIP_FOLLOW_SMOKE=true  # skip follow system foundation smoke
   GO_LIVE_SKIP_NOTIFICATION_SMOKE=true  # skip notification preferences smoke
   GO_LIVE_WITH_SMTP=true          # run password reset smoke (requires RESET_SMOKE_EMAIL)
@@ -123,7 +125,7 @@ echo "GEOVITO GO-LIVE GATE"
 echo "expected_sha7=${EXPECTED_SHA7}"
 echo "creator_username=${CREATOR_USERNAME:-<empty>}"
 echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP}"
-echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE} skip_community_settings_smoke=${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE} skip_follow_smoke=${GO_LIVE_SKIP_FOLLOW_SMOKE} skip_notification_smoke=${GO_LIVE_SKIP_NOTIFICATION_SMOKE}"
+echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE} skip_community_settings_smoke=${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE} skip_dashboard_role_smoke=${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE} skip_follow_smoke=${GO_LIVE_SKIP_FOLLOW_SMOKE} skip_notification_smoke=${GO_LIVE_SKIP_NOTIFICATION_SMOKE}"
 echo "=============================================================="
 
 if [[ "$HEALTH_TOKEN" == *"REPLACE_WITH_"* ]]; then
@@ -187,6 +189,15 @@ else
   STEP_STATUS+=("SKIP")
   STEP_CODES+=("0")
   echo "RESULT: SKIP (Community Settings Smoke)"
+fi
+
+if [[ "$GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE" != "true" ]]; then
+  run_step "Dashboard Role Smoke" bash tools/dashboard_role_smoke.sh
+else
+  STEP_NAMES+=("Dashboard Role Smoke")
+  STEP_STATUS+=("SKIP")
+  STEP_CODES+=("0")
+  echo "RESULT: SKIP (Dashboard Role Smoke)"
 fi
 
 if [[ "$GO_LIVE_SKIP_FOLLOW_SMOKE" != "true" ]]; then
