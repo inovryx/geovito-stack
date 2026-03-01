@@ -71,7 +71,9 @@ UI locale build-time export:
   - Not: `ui_locale_publish.sh` ve `ui_locale_sync.sh` bu dosya yoksa template olusturup durur.
 - Operational commands:
   - `bash tools/ui_locale_publish.sh` (export + build check)
-  - `bash tools/ui_locale_sync.sh` (import + export + build check)
+  - `bash tools/ui_locale_sync.sh` (import + export + build check; default source `frontend/src/i18n`)
+  - artifacts kaynagi gerekiyorsa:
+    - `bash tools/ui_locale_sync.sh --from-artifacts`
 
 If social login is enabled:
 - Apply provider configuration from env to Strapi store:
@@ -212,7 +214,10 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-mock-reseed`
 - Include ui-locale sync stage (import + export before progress check):
   - `bash tools/release_deploy_smoke.sh --with-ui-locale-sync`
+  - default sync source: `frontend/src/i18n` (stale artifacts overwrite riskini onler)
   - default sync runs without build check (`tools/ui_locale_sync.sh --no-build-check`)
+  - artifacts source zorunluysa:
+    - `UI_LOCALE_SYNC_SOURCE=artifacts bash tools/release_deploy_smoke.sh --with-ui-locale-sync`
   - enable build check in sync stage:
     - `UI_LOCALE_SYNC_BUILD_CHECK=true bash tools/release_deploy_smoke.sh --with-ui-locale-sync`
 - Include ui-locale translation gap check:
