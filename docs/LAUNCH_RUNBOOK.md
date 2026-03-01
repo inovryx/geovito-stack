@@ -191,6 +191,8 @@ Not:
   - `bash tools/release_deploy_smoke.sh`
 - Include moderation stale-pending guard:
   - `bash tools/release_deploy_smoke.sh --with-moderation`
+- Include dashboard role baseline smoke (super admin + alt admin + member profile checks):
+  - `bash tools/release_deploy_smoke.sh --with-dashboard-role-smoke`
 - Skip account comment queue Playwright smoke:
   - `bash tools/release_deploy_smoke.sh --skip-account-test`
 - Include blog engagement Playwright smoke (auto-seed blog mock data when missing):
@@ -215,6 +217,8 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-moderation`
 - Include all optional checks:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-blog-engagement-test`
+- Include dashboard role + follow + notification foundations:
+  - `bash tools/release_deploy_smoke.sh --with-dashboard-role-smoke --with-follow-smoke --with-notification-smoke`
 - Include creator mini-site smoke (`/u/{username}` + `/@{username}` alias):
   - `CREATOR_USERNAME=existing_username bash tools/release_deploy_smoke.sh --with-creator-smoke`
   - or persist once in smoke access env:

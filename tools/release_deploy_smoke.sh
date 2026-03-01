@@ -10,6 +10,7 @@ RUN_MODERATION="false"
 RUN_ACCOUNT_TEST="true"
 RUN_BLOG_ENGAGEMENT_TEST="false"
 RUN_DASHBOARD_TEST="true"
+RUN_DASHBOARD_ROLE_SMOKE="false"
 RUN_FOLLOW_SMOKE="false"
 RUN_NOTIFICATION_SMOKE="false"
 RUN_COMMENT_BULK_ACTION="false"
@@ -21,7 +22,7 @@ RUN_CREATOR_SMOKE="false"
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--skip-account-test] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-follow-smoke] [--with-notification-smoke] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--skip-account-test] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-dashboard-role-smoke] [--with-follow-smoke] [--with-notification-smoke] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
 
 Purpose:
   Single command release verification:
@@ -31,13 +32,14 @@ Purpose:
   4) (Default) Run account comment queue Playwright smoke
   5) (Optional) Run blog engagement Playwright smoke (auto-seed if needed)
   6) (Default) Run dashboard activity Playwright smoke
-  7) (Optional) Run follow system foundation smoke
-  8) (Optional) Run notification preferences foundation smoke
-  9) (Optional) Run bulk moderation action on oldest pending comments
-  10) (Optional) Re-seed mock dataset at end (useful after purge flows)
-  11) (Optional) Sync ui-locale import/export flow before release checks
-  12) (Optional) Validate ui-locale progress report (strict by default)
-  13) (Optional/Auto) Validate creator mini-site + @ alias redirect in smoke stage
+  7) (Optional) Run dashboard role matrix smoke (super admin + alt admin + member baseline)
+  8) (Optional) Run follow system foundation smoke
+  9) (Optional) Run notification preferences foundation smoke
+  10) (Optional) Run bulk moderation action on oldest pending comments
+  11) (Optional) Re-seed mock dataset at end (useful after purge flows)
+  12) (Optional) Sync ui-locale import/export flow before release checks
+  13) (Optional) Validate ui-locale progress report (strict by default)
+  14) (Optional/Auto) Validate creator mini-site + @ alias redirect in smoke stage
 
 Notes:
   - pages deploy hook must be configured:
@@ -92,6 +94,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-dashboard-test)
       RUN_DASHBOARD_TEST="false"
+      shift
+      ;;
+    --with-dashboard-role-smoke)
+      RUN_DASHBOARD_ROLE_SMOKE="true"
       shift
       ;;
     --with-follow-smoke)
@@ -152,7 +158,7 @@ fi
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
 echo "expected_sha7=${EXPECTED_SHA7}"
-echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_dashboard_test=${RUN_DASHBOARD_TEST} run_follow_smoke=${RUN_FOLLOW_SMOKE} run_notification_smoke=${RUN_NOTIFICATION_SMOKE} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_sync=${RUN_UI_LOCALE_SYNC} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS} run_creator_smoke=${RUN_CREATOR_SMOKE}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_dashboard_test=${RUN_DASHBOARD_TEST} run_dashboard_role_smoke=${RUN_DASHBOARD_ROLE_SMOKE} run_follow_smoke=${RUN_FOLLOW_SMOKE} run_notification_smoke=${RUN_NOTIFICATION_SMOKE} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_sync=${RUN_UI_LOCALE_SYNC} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS} run_creator_smoke=${RUN_CREATOR_SMOKE}"
 echo "=============================================================="
 
 if [[ "$RUN_DEPLOY" == "true" ]]; then
@@ -197,6 +203,12 @@ if [[ "$RUN_DASHBOARD_TEST" == "true" ]]; then
   bash tools/dashboard_activity_ui_playwright.sh
 else
   echo "INFO: skipped dashboard activity ui test stage (--skip-dashboard-test)"
+fi
+
+if [[ "$RUN_DASHBOARD_ROLE_SMOKE" == "true" ]]; then
+  bash tools/dashboard_role_smoke.sh
+else
+  echo "INFO: skipped dashboard role smoke stage (use --with-dashboard-role-smoke)"
 fi
 
 if [[ "$RUN_FOLLOW_SMOKE" == "true" ]]; then
