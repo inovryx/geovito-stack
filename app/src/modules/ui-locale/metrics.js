@@ -1,6 +1,7 @@
 'use strict';
 
 const MAX_EXAMPLE_KEYS = 25;
+const DEFAULT_IGNORED_KEYS = ['site.brand'];
 
 const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
@@ -29,10 +30,38 @@ const normalizeComparable = (value) => {
   return String(value);
 };
 
-const computeTranslationStats = (referenceStrings, localeStrings) => {
+const parseIgnoreKeys = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item || '').trim())
+      .filter(Boolean);
+  }
+
+  return String(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const resolveIgnoredKeys = (options = {}) => {
+  const ignored = new Set(DEFAULT_IGNORED_KEYS);
+  for (const key of parseIgnoreKeys(process.env.UI_LOCALE_IGNORE_KEYS || '')) {
+    ignored.add(key);
+  }
+  for (const key of parseIgnoreKeys(options.ignore_keys || options.ignoreKeys || '')) {
+    ignored.add(key);
+  }
+  return ignored;
+};
+
+const computeTranslationStats = (referenceStrings, localeStrings, options = {}) => {
+  const ignoredKeys = resolveIgnoredKeys(options);
   const referenceFlat = flattenObject(referenceStrings || {});
   const localeFlat = flattenObject(localeStrings || {});
-  const referenceKeys = Object.keys(referenceFlat).sort((left, right) => left.localeCompare(right));
+  const referenceKeys = Object.keys(referenceFlat)
+    .filter((key) => !ignoredKeys.has(key))
+    .sort((left, right) => left.localeCompare(right));
 
   const missing = [];
   const untranslated = [];
@@ -79,7 +108,7 @@ const computeTranslationStats = (referenceStrings, localeStrings) => {
 };
 
 const buildReferenceRows = (referenceStrings, localeStrings, options = {}) => {
-  const stats = computeTranslationStats(referenceStrings, localeStrings);
+  const stats = computeTranslationStats(referenceStrings, localeStrings, options);
   const stateFilter = String(options.state || 'all').trim().toLowerCase();
   const allowedState = new Set(['all', 'missing', 'untranslated', 'translated']);
   const effectiveStateFilter = allowedState.has(stateFilter) ? stateFilter : 'all';
