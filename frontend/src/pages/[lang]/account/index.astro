@@ -323,6 +323,12 @@ const accountCopy = {
   savedListsUpdatedAt: translate(ui, 'account.savedListsUpdatedAt', {}, 'Updated'),
   savedListsItemsLabel: translate(ui, 'account.savedListsItemsLabel', {}, 'Items'),
   savedListsRecentTargets: translate(ui, 'account.savedListsRecentTargets', {}, 'Recent targets'),
+  savedListsOpenTarget: translate(ui, 'account.savedListsOpenTarget', {}, 'Open target'),
+  savedListsRemoveItem: translate(ui, 'account.savedListsRemoveItem', {}, 'Remove'),
+  savedListsRemovingItem: translate(ui, 'account.savedListsRemovingItem', {}, 'Removing...'),
+  savedListsItemRemoved: translate(ui, 'account.savedListsItemRemoved', {}, 'Saved item removed.'),
+  savedListsRemoveFailed: translate(ui, 'account.savedListsRemoveFailed', {}, 'Could not update saved item state.'),
+  savedListsNoItemsInList: translate(ui, 'account.savedListsNoItemsInList', {}, 'No items in this list yet.'),
   passwordTitle: translate(ui, 'account.passwordTitle', {}, 'Change password'),
   passwordDescription: translate(
     ui,
@@ -2140,11 +2146,26 @@ const accountCopy = {
 
       let currentLists = [];
       let currentItems = [];
+      let isMutating = false;
 
       const normalizeCount = (value) => {
         const parsed = Number(value);
         if (!Number.isFinite(parsed) || parsed < 0) return 0;
         return Math.round(parsed);
+      };
+      const normalizeLang = (value) => {
+        const lang = String(value || '').trim().toLowerCase();
+        return lang || 'en';
+      };
+      const currentLanguage = normalizeLang(document.documentElement.lang || 'en');
+      const buildTargetHref = (targetType, targetRef) => {
+        const normalizedType = String(targetType || '').trim().toLowerCase();
+        const normalizedRef = String(targetRef || '').trim().replace(/^\/+|\/+$/g, '');
+        if (!normalizedRef) return '#';
+        const encodedRef = encodeURIComponent(normalizedRef).replaceAll('%2F', '/');
+        if (normalizedType === 'place') return `/${currentLanguage}/atlas/${encodedRef}/`;
+        if (normalizedType === 'post') return `/${currentLanguage}/blog/${encodedRef}/`;
+        return '#';
       };
 
       const renderStats = () => {
@@ -2170,7 +2191,12 @@ const accountCopy = {
           const listId = String(item?.list_id || '');
           if (!listId) continue;
           const row = itemIndex.get(listId) || [];
-          row.push(String(item?.target_ref || '').trim());
+          row.push({
+            item_id: String(item?.item_id || ''),
+            target_type: String(item?.target_type || '').trim().toLowerCase(),
+            target_ref: String(item?.target_ref || '').trim(),
+            href: buildTargetHref(item?.target_type, item?.target_ref),
+          });
           itemIndex.set(listId, row);
         }
 
@@ -2183,8 +2209,37 @@ const accountCopy = {
           const visibility = String(row?.visibility || '-');
           const updatedAt = formatDate(row?.updated_at || row?.created_at);
           const itemCount = normalizeCount(row?.item_count);
-          const preview = (itemIndex.get(listId) || []).slice(0, 3).filter(Boolean);
-          const previewText = preview.length > 0 ? preview.join(', ') : '-';
+          const previewItems = (itemIndex.get(listId) || []).slice(0, 4).filter((entry) => entry?.target_ref);
+          const previewMarkup =
+            previewItems.length > 0
+              ? previewItems
+                  .map((entry) => {
+                    const targetRef = String(entry?.target_ref || '');
+                    const targetType = String(entry?.target_type || '');
+                    const href = String(entry?.href || '#');
+                    return `
+                      <li class="account-comment-meta account-saved-item-row">
+                        <span>${escapeHtml(targetRef)} (${escapeHtml(targetType)})</span>
+                        <span class="account-locale-actions account-saved-item-actions">
+                          <a class="ui-button ui-button-secondary ui-button-sm" href="${escapeHtml(href)}">
+                            <span class="ui-button-label">${escapeHtml(accountCopy.savedListsOpenTarget)}</span>
+                          </a>
+                          <button
+                            type="button"
+                            class="ui-button ui-button-secondary ui-button-sm"
+                            data-account-saved-item-remove
+                            data-list-id="${escapeHtml(listId)}"
+                            data-target-type="${escapeHtml(targetType)}"
+                            data-target-ref="${escapeHtml(targetRef)}"
+                          >
+                            <span class="ui-button-label">${escapeHtml(accountCopy.savedListsRemoveItem)}</span>
+                          </button>
+                        </span>
+                      </li>
+                    `;
+                  })
+                  .join('')
+              : `<li class="account-comment-meta">${escapeHtml(accountCopy.savedListsNoItemsInList)}</li>`;
 
           item.innerHTML = `
             <p class="account-comment-meta">
@@ -2196,8 +2251,9 @@ const accountCopy = {
               · <strong>${escapeHtml(accountCopy.savedListsUpdatedAt)}:</strong> ${escapeHtml(updatedAt)}
             </p>
             <p class="account-comment-meta">
-              <strong>${escapeHtml(accountCopy.savedListsRecentTargets)}:</strong> ${escapeHtml(previewText)}
+              <strong>${escapeHtml(accountCopy.savedListsRecentTargets)}:</strong>
             </p>
+            <ul class="account-comments-list gv-stack">${previewMarkup}</ul>
           `;
           fragment.appendChild(item);
         }
@@ -2256,6 +2312,58 @@ const accountCopy = {
 
       refreshButton.addEventListener('click', () => {
         load();
+      });
+
+      listNode.addEventListener('click', async (event) => {
+        const target =
+          event.target instanceof HTMLElement ? event.target.closest('[data-account-saved-item-remove]') : null;
+        if (!(target instanceof HTMLButtonElement)) return;
+        if (isMutating) return;
+
+        const listId = String(target.getAttribute('data-list-id') || '').trim();
+        const targetType = String(target.getAttribute('data-target-type') || '').trim().toLowerCase();
+        const targetRef = String(target.getAttribute('data-target-ref') || '').trim();
+        if (!listId || !targetType || !targetRef) return;
+
+        const label = target.querySelector('.ui-button-label');
+        target.disabled = true;
+        if (label) label.textContent = accountCopy.savedListsRemovingItem;
+        setFeedback(accountCopy.savedListsRemovingItem);
+        isMutating = true;
+
+        try {
+          const response = await fetch(`${authBase}/api/user-saved-lists/me/items/toggle`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${jwt}`,
+            },
+            body: JSON.stringify({
+              list_id: listId,
+              target_type: targetType,
+              target_ref: targetRef,
+              action: 'unsave',
+            }),
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.savedListsRemoveFailed;
+            setFeedback(message, true);
+            target.disabled = false;
+            if (label) label.textContent = accountCopy.savedListsRemoveItem;
+            isMutating = false;
+            return;
+          }
+          setFeedback(accountCopy.savedListsItemRemoved);
+          await load();
+        } catch (_error) {
+          setFeedback(accountCopy.savedListsRemoveFailed, true);
+          target.disabled = false;
+          if (label) label.textContent = accountCopy.savedListsRemoveItem;
+        } finally {
+          isMutating = false;
+        }
       });
 
       load();

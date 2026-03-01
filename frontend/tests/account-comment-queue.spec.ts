@@ -8,8 +8,32 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   let queueRequestCount = 0;
   let previewRequestCount = 0;
   let accountRequestsSubmitCount = 0;
+  let savedListToggleCount = 0;
   const previewStates: string[] = [];
   const accountRequestPayloads: Array<{ request_type?: string; reason?: string }> = [];
+  const savedListRows = [
+    {
+      list_id: 'list-main',
+      slug: 'my-atlas',
+      title: 'My atlas picks',
+      visibility: 'private',
+      updated_at: '2026-02-21T07:00:00.000Z',
+    },
+  ];
+  const savedItems = [
+    {
+      item_id: 'item-1',
+      list_id: 'list-main',
+      target_type: 'place',
+      target_ref: 'place-istanbul',
+    },
+    {
+      item_id: 'item-2',
+      list_id: 'list-main',
+      target_type: 'post',
+      target_ref: 'post-city-break',
+    },
+  ];
 
   await page.route(/\/api\/users\/me$/, async (route) => {
     await route.fulfill({
@@ -193,21 +217,16 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   });
 
   await page.route(/\/api\/user-saved-lists\/me\/lists\?limit=200$/, async (route) => {
+    const lists = savedListRows.map((row) => ({
+      ...row,
+      item_count: savedItems.filter((item) => item.list_id === row.list_id).length,
+    }));
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         data: {
-          items: [
-            {
-              list_id: 'list-main',
-              slug: 'my-atlas',
-              title: 'My atlas picks',
-              visibility: 'private',
-              item_count: 2,
-              updated_at: '2026-02-21T07:00:00.000Z',
-            },
-          ],
+          items: lists,
         },
       }),
     });
@@ -219,20 +238,45 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
       contentType: 'application/json',
       body: JSON.stringify({
         data: {
-          items: [
-            {
-              item_id: 'item-1',
-              list_id: 'list-main',
-              target_type: 'place',
-              target_ref: 'place-istanbul',
-            },
-            {
-              item_id: 'item-2',
-              list_id: 'list-main',
-              target_type: 'post',
-              target_ref: 'post-city-break',
-            },
-          ],
+          items: savedItems,
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-saved-lists\/me\/items\/toggle$/, async (route) => {
+    let payload: { list_id?: string; target_type?: string; target_ref?: string; action?: string } = {};
+    try {
+      payload = route.request().postDataJSON() as {
+        list_id?: string;
+        target_type?: string;
+        target_ref?: string;
+        action?: string;
+      };
+    } catch {
+      payload = {};
+    }
+
+    if (payload.action === 'unsave') {
+      const index = savedItems.findIndex(
+        (item) =>
+          item.list_id === payload.list_id &&
+          item.target_type === payload.target_type &&
+          item.target_ref === payload.target_ref
+      );
+      if (index >= 0) {
+        savedItems.splice(index, 1);
+      }
+    }
+    savedListToggleCount += 1;
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          ok: true,
+          toggled: payload.action || 'unsave',
         },
       }),
     });
@@ -417,6 +461,15 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-saved-lists-total-places]')).toHaveText('1');
   await expect(page.locator('[data-account-saved-lists-list]')).toContainText('My atlas picks');
   await expect(page.locator('[data-account-saved-lists-list]')).toContainText('place-istanbul');
+  await expect(page.locator('[data-account-saved-lists-list] [data-account-saved-item-remove]')).toHaveCount(2);
+  await expect(page.locator('[data-account-saved-lists-list] a[href="/en/atlas/place-istanbul/"]')).toHaveCount(1);
+  await page.click('[data-account-saved-item-remove][data-target-ref="place-istanbul"]');
+  await expect.poll(() => savedListToggleCount).toBe(1);
+  await expect(page.locator('[data-account-saved-lists-total-items]')).toHaveText('1');
+  await expect(page.locator('[data-account-saved-lists-total-posts]')).toHaveText('1');
+  await expect(page.locator('[data-account-saved-lists-total-places]')).toHaveText('0');
+  await expect(page.locator('[data-account-saved-lists-list]')).not.toContainText('place-istanbul');
+  await expect(page.locator('[data-account-saved-lists-list]')).toContainText('post-city-break');
 
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');
