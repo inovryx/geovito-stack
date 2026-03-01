@@ -4,6 +4,26 @@ const MOCK_JWT = 'dashboard-activity-mock-jwt';
 const OWNER_EMAIL_HINT = String(process.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
 
 test.beforeEach(async ({ page }) => {
+  const savedListRows = [
+    {
+      list_id: 'list-atlas',
+      title: 'Atlas picks',
+      visibility: 'private',
+    },
+    {
+      list_id: 'list-stories',
+      title: 'Story ideas',
+      visibility: 'public',
+    },
+  ];
+  const savedItems = [
+    { item_id: 'item-1', list_id: 'list-atlas', target_type: 'place', target_ref: 'italy-pilot' },
+    { item_id: 'item-2', list_id: 'list-atlas', target_type: 'place', target_ref: 'berlin' },
+    { item_id: 'item-3', list_id: 'list-atlas', target_type: 'post', target_ref: 'post-neighborhood-layers' },
+    { item_id: 'item-4', list_id: 'list-stories', target_type: 'post', target_ref: 'post-city-break' },
+    { item_id: 'item-5', list_id: 'list-stories', target_type: 'post', target_ref: 'post-route-cues' },
+  ];
+
   await page.route(/\/api\/user-follows\/me\/list\?limit=500$/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -21,25 +41,16 @@ test.beforeEach(async ({ page }) => {
     });
   });
   await page.route(/\/api\/user-saved-lists\/me\/lists\?limit=200$/, async (route) => {
+    const lists = savedListRows.map((row) => ({
+      ...row,
+      item_count: savedItems.filter((item) => item.list_id === row.list_id).length,
+    }));
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         data: {
-          items: [
-            {
-              list_id: 'list-atlas',
-              title: 'Atlas picks',
-              visibility: 'private',
-              item_count: 3,
-            },
-            {
-              list_id: 'list-stories',
-              title: 'Story ideas',
-              visibility: 'public',
-              item_count: 2,
-            },
-          ],
+          items: lists,
         },
       }),
     });
@@ -50,15 +61,40 @@ test.beforeEach(async ({ page }) => {
       contentType: 'application/json',
       body: JSON.stringify({
         data: {
-          items: [
-            { item_id: 'item-1', list_id: 'list-atlas', target_type: 'place', target_ref: 'italy-pilot' },
-            { item_id: 'item-2', list_id: 'list-atlas', target_type: 'place', target_ref: 'berlin' },
-            { item_id: 'item-3', list_id: 'list-atlas', target_type: 'post', target_ref: 'post-neighborhood-layers' },
-            { item_id: 'item-4', list_id: 'list-stories', target_type: 'post', target_ref: 'post-city-break' },
-            { item_id: 'item-5', list_id: 'list-stories', target_type: 'post', target_ref: 'post-route-cues' },
-          ],
+          items: savedItems,
         },
       }),
+    });
+  });
+  await page.route(/\/api\/user-saved-lists\/me\/items\/toggle$/, async (route) => {
+    let payload: { list_id?: string; target_type?: string; target_ref?: string; action?: string } = {};
+    try {
+      payload = route.request().postDataJSON() as {
+        list_id?: string;
+        target_type?: string;
+        target_ref?: string;
+        action?: string;
+      };
+    } catch {
+      payload = {};
+    }
+
+    if (payload.action === 'unsave') {
+      const index = savedItems.findIndex(
+        (item) =>
+          item.list_id === payload.list_id &&
+          item.target_type === payload.target_type &&
+          item.target_ref === payload.target_ref
+      );
+      if (index >= 0) {
+        savedItems.splice(index, 1);
+      }
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { ok: true } }),
     });
   });
   await page.route(/\/api\/content-reports\/moderation\/list\?limit=60$/, async (route) => {
@@ -315,6 +351,16 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-saved-lists-total-items]')).toHaveText('5');
   await expect(page.locator('[data-dashboard-saved-lists-total-posts]')).toHaveText('3');
   await expect(page.locator('[data-dashboard-saved-lists-total-places]')).toHaveText('2');
+  await expect(page.locator('[data-dashboard-saved-lists-items]')).toBeVisible();
+  await expect(page.locator('[data-dashboard-saved-lists-items]')).toContainText('italy-pilot');
+  await expect(page.locator('[data-dashboard-saved-lists-items] a[href="/en/atlas/italy-pilot/"]')).toHaveCount(1);
+  await page.click('[data-dashboard-saved-remove][data-target-ref="italy-pilot"]');
+  await expect(page.locator('[data-dashboard-feedback]')).toContainText('Saved item removed.');
+  await expect(page.locator('[data-dashboard-saved-lists-total-items]')).toHaveText('4');
+  await expect(page.locator('[data-dashboard-saved-lists-total-posts]')).toHaveText('3');
+  await expect(page.locator('[data-dashboard-saved-lists-total-places]')).toHaveText('1');
+  await expect(page.locator('[data-dashboard-saved-lists-items]')).not.toContainText('italy-pilot');
+  await expect(page.locator('[data-dashboard-saved-lists-items]')).toContainText('post-city-break');
   await expect(page.locator('[data-dashboard-notifications-site]')).toHaveText('Disabled');
   await expect(page.locator('[data-dashboard-notifications-email]')).toHaveText('Disabled');
   await expect(page.locator('[data-dashboard-notifications-digest]')).toHaveText('Daily');

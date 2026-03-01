@@ -116,6 +116,13 @@ const dashboardCopy = {
   savedListsLoadedAt: translate(ui, 'dashboard.savedListsLoadedAt', {}, 'Loaded at'),
   savedListsLoadFailed: translate(ui, 'dashboard.savedListsLoadFailed', {}, 'Could not load saved lists.'),
   savedListsManage: translate(ui, 'dashboard.savedListsManage', {}, 'Open saved lists'),
+  savedListsRecentItems: translate(ui, 'dashboard.savedListsRecentItems', {}, 'Recent saved items'),
+  savedListsOpenTarget: translate(ui, 'dashboard.savedListsOpenTarget', {}, 'Open target'),
+  savedListsRemoveItem: translate(ui, 'dashboard.savedListsRemoveItem', {}, 'Remove'),
+  savedListsRemovingItem: translate(ui, 'dashboard.savedListsRemovingItem', {}, 'Removing...'),
+  savedListsItemRemoved: translate(ui, 'dashboard.savedListsItemRemoved', {}, 'Saved item removed.'),
+  savedListsRemoveFailed: translate(ui, 'dashboard.savedListsRemoveFailed', {}, 'Could not update saved item state.'),
+  savedListsNoItems: translate(ui, 'dashboard.savedListsNoItems', {}, 'No saved items yet.'),
   commentsTitle: translate(ui, 'dashboard.commentsTitle', {}, 'My comment moderation'),
   commentsBody: translate(
     ui,
@@ -808,6 +815,8 @@ const dashboardCopy = {
               </p>
             </div>
             <p class="small" data-dashboard-saved-lists-note hidden></p>
+            <p class="small">{dashboardCopy.savedListsRecentItems}</p>
+            <ul class="dashboard-mini-list" data-dashboard-saved-lists-items hidden></ul>
             <div class="dashboard-actions">
               <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#saved-lists`}>
                 <span class="ui-button-label">{dashboardCopy.savedListsManage}</span>
@@ -1519,6 +1528,7 @@ const dashboardCopy = {
       const savedListsTotalPlacesNode = document.querySelector('[data-dashboard-saved-lists-total-places]');
       const savedListsLoadedAtNode = document.querySelector('[data-dashboard-saved-lists-loaded-at]');
       const savedListsNoteNode = document.querySelector('[data-dashboard-saved-lists-note]');
+      const savedListsItemsNode = document.querySelector('[data-dashboard-saved-lists-items]');
       const creatorUsernameNode = document.querySelector('[data-dashboard-creator-username]');
       const creatorVisibilityNode = document.querySelector('[data-dashboard-creator-visibility]');
       const creatorDraftsNode = document.querySelector('[data-dashboard-creator-drafts]');
@@ -1593,6 +1603,7 @@ const dashboardCopy = {
       let followSystemEnabled = null;
       let notificationsSiteEnabled = null;
       let notificationsEmailEnabled = null;
+      let savedListsMutating = false;
       let lastActivityHasErrors = false;
       let activityHistory = [];
       let activityTickTimer = null;
@@ -1899,11 +1910,88 @@ const dashboardCopy = {
         setText(savedListsTotalPostsNode, '0');
         setText(savedListsTotalPlacesNode, '0');
         setText(savedListsLoadedAtNode, dashboardCopy.followStatusUnknown);
+        if (toNode(savedListsItemsNode)) {
+          toNode(savedListsItemsNode).innerHTML = '';
+          toNode(savedListsItemsNode).hidden = true;
+        }
         if (toNode(savedListsNoteNode)) {
           toNode(savedListsNoteNode).hidden = true;
           toNode(savedListsNoteNode).textContent = '';
           toNode(savedListsNoteNode).classList.remove('is-error');
         }
+      };
+
+      const resolveSavedListTargetHref = (targetType, targetRef) => {
+        const normalizedType = String(targetType || '').trim().toLowerCase();
+        const normalizedRef = String(targetRef || '').trim().replace(/^\/+|\/+$/g, '');
+        const currentLanguage = normalizeLanguage(document.documentElement.lang || 'en') || 'en';
+        if (!normalizedRef) return `${accountPath}#saved-lists`;
+        const encodedRef = encodeURIComponent(normalizedRef).replaceAll('%2F', '/');
+        if (normalizedType === 'place') return `/${currentLanguage}/atlas/${encodedRef}/`;
+        if (normalizedType === 'post') return `/${currentLanguage}/blog/${encodedRef}/`;
+        return `${accountPath}#saved-lists`;
+      };
+
+      const renderSavedListsItems = (listsPayload, itemsPayload) => {
+        const host = toNode(savedListsItemsNode);
+        if (!host) return;
+        host.innerHTML = '';
+
+        const lists = Array.isArray(listsPayload?.items) ? listsPayload.items : [];
+        const items = Array.isArray(itemsPayload?.items) ? itemsPayload.items : [];
+        const titleByListId = new Map(
+          lists.map((item) => [String(item?.list_id || '').trim(), String(item?.title || '').trim()])
+        );
+        const candidates = items
+          .map((item) => ({
+            listId: String(item?.list_id || '').trim(),
+            targetType: String(item?.target_type || '').trim().toLowerCase(),
+            targetRef: String(item?.target_ref || '').trim(),
+          }))
+          .filter((item) => item.listId && item.targetType && item.targetRef)
+          .slice(0, 5);
+
+        if (candidates.length === 0) {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          row.innerHTML = `<span>${escapeHtml(dashboardCopy.savedListsNoItems)}</span>`;
+          host.appendChild(row);
+          host.hidden = false;
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        candidates.forEach((item) => {
+          const row = document.createElement('li');
+          row.className = 'dashboard-mini-item';
+          const listTitle = titleByListId.get(item.listId) || item.listId || dashboardCopy.unknown;
+          const targetType = item.targetType || dashboardCopy.unknown;
+          const targetHref = resolveSavedListTargetHref(item.targetType, item.targetRef);
+
+          row.innerHTML = `
+            <strong>${escapeHtml(listTitle)} · ${escapeHtml(targetType)}</strong>
+            <span>${escapeHtml(item.targetRef)}</span>
+            <div class="dashboard-actions">
+              <a class="ui-button ui-button-secondary ui-button-sm" href="${escapeHtml(targetHref)}">
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.savedListsOpenTarget)}</span>
+              </a>
+              <button
+                type="button"
+                class="ui-button ui-button-secondary ui-button-sm"
+                data-dashboard-saved-remove
+                data-list-id="${escapeHtml(item.listId)}"
+                data-target-type="${escapeHtml(item.targetType)}"
+                data-target-ref="${escapeHtml(item.targetRef)}"
+              >
+                <span class="ui-button-label">${escapeHtml(dashboardCopy.savedListsRemoveItem)}</span>
+              </button>
+            </div>
+          `;
+          fragment.appendChild(row);
+        });
+
+        host.appendChild(fragment);
+        host.hidden = false;
       };
 
       const applySavedListsView = (listsPayload, itemsPayload, loadedAtIsoString) => {
@@ -1917,6 +2005,7 @@ const dashboardCopy = {
         setText(savedListsTotalPostsNode, String(normalizeCount(postCount, 0)));
         setText(savedListsTotalPlacesNode, String(normalizeCount(placeCount, 0)));
         setText(savedListsLoadedAtNode, formatDate(loadedAtIsoString));
+        renderSavedListsItems(listsPayload, itemsPayload);
         if (toNode(savedListsNoteNode)) {
           toNode(savedListsNoteNode).hidden = true;
           toNode(savedListsNoteNode).textContent = '';
@@ -3275,6 +3364,34 @@ const dashboardCopy = {
         return true;
       };
 
+      const runSavedItemRemoveAction = async (session, listId, targetType, targetRef) => {
+        if (!session?.jwt || !listId || !targetType || !targetRef) return false;
+
+        const response = await fetch(`${authBaseUrl}/api/user-saved-lists/me/items/toggle`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.jwt}`,
+          },
+          body: JSON.stringify({
+            list_id: listId,
+            target_type: targetType,
+            target_ref: targetRef,
+            action: 'unsave',
+          }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          const message = String(payload?.error?.message || dashboardCopy.savedListsRemoveFailed);
+          setFeedback(message, true);
+          return false;
+        }
+
+        return true;
+      };
+
       const loadDashboard = async (session) => {
         if (isLoading) return;
         isLoading = true;
@@ -3880,6 +3997,41 @@ const dashboardCopy = {
               }
             } finally {
               button.disabled = false;
+            }
+          });
+        }
+
+        if (savedListsItemsNode instanceof HTMLElement) {
+          savedListsItemsNode.addEventListener('click', async (event) => {
+            const target = event.target;
+            const button =
+              target instanceof HTMLElement ? target.closest('[data-dashboard-saved-remove]') : null;
+            if (!(button instanceof HTMLButtonElement)) return;
+            if (!currentSession || savedListsMutating) return;
+
+            const listId = String(button.dataset.listId || '').trim();
+            const targetType = String(button.dataset.targetType || '').trim().toLowerCase();
+            const targetRef = String(button.dataset.targetRef || '').trim();
+            if (!listId || !targetType || !targetRef) return;
+
+            const label = button.querySelector('.ui-button-label');
+            button.disabled = true;
+            if (label) label.textContent = dashboardCopy.savedListsRemovingItem;
+            savedListsMutating = true;
+            setFeedback(dashboardCopy.savedListsRemovingItem);
+
+            try {
+              const ok = await runSavedItemRemoveAction(currentSession, listId, targetType, targetRef);
+              if (ok) {
+                await loadDashboard(currentSession);
+                setFeedback(dashboardCopy.savedListsItemRemoved);
+              }
+            } finally {
+              savedListsMutating = false;
+              if (button.isConnected) {
+                button.disabled = false;
+                if (label) label.textContent = dashboardCopy.savedListsRemoveItem;
+              }
             }
           });
         }
