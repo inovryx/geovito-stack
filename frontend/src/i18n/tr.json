@@ -3,70 +3,70 @@
     "label": "Reklam"
   },
   "nav": {
-    "blog": "Blog",
-    "help": "Help",
-    "home": "Home",
-    "about": "About",
-    "atlas": "Atlas",
-    "rules": "Rules",
-    "account": "Account",
-    "regions": "Regions"
+    "blog": "Yazilar",
+    "help": "Yardim",
+    "home": "Ana Sayfa",
+    "about": "Hakkinda",
+    "atlas": "Kesif",
+    "rules": "Kurallar",
+    "account": "Hesap",
+    "regions": "Bolgeler"
   },
   "ops": {
     "kpi": {
-      "clicks": "Clicks (7d)",
-      "earnings": "Earnings (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "impressions": "Impressions (7d)"
+      "clicks": "Tiklamalar (7g)",
+      "earnings": "Gelir (7g)",
+      "requests": "Cloudflare istekleri (7g)",
+      "sessions": "Oturumlar (7g)",
+      "pageviews": "Sayfa goruntulemeleri (7g)",
+      "impressions": "Gosterimler (7g)"
     },
     "empty": {
-      "desc": "Run the metrics collector locally, then refresh this page.",
-      "title": "No metrics collected yet"
+      "desc": "Metrik toplayiciyi yerelde calistirip bu sayfayi yenileyin.",
+      "title": "Henuz metrik toplanmadi"
     },
-    "title": "Ops Metrics",
+    "title": "Ops Metrikleri",
     "disabled": {
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
-      "title": "Ops metrics viewer is disabled in this mode"
+      "desc": "Bu ortamda yerel dosya okumaya izin vermek icin PUBLIC_OPS_MODE=local ayarlayin.",
+      "title": "Bu modda Ops metrik goruntuleyici kapali"
     },
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "subtitle": "Yerel operasyonlar icin dahili toplu metrik paneli.",
     "providers": {
-      "ok": "OK",
-      "error": "Error",
-      "title": "Provider status",
-      "notConfigured": "Not configured"
+      "ok": "Tamam",
+      "error": "Hata",
+      "title": "Saglayici durumu",
+      "notConfigured": "Yapilandirilmamis"
     }
   },
   "auth": {
-    "registerDisabledBody": "Account creation is paused in this environment.",
-    "registerDisabledHint": "Registration is currently disabled.",
-    "registerDisabledTitle": "Registration is disabled"
+    "registerDisabledBody": "Hesap olusturma bu ortamda duraklatildi.",
+    "registerDisabledHint": "Kayit su anda devre disi.",
+    "registerDisabledTitle": "Kayit devre disi"
   },
   "blog": {
-    "noBody": "No content body yet.",
-    "listHint": "Posts are visible even when translation is not complete; incomplete variants are not indexable.",
-    "listTitle": "Blog",
-    "listDescription": "Geovito blog list"
+    "noBody": "Henuz icerik govdesi yok.",
+    "listHint": "Yazilar ceviri complete olmasa da gorunur; eksik varyantlar indexlenmez.",
+    "listTitle": "Yazilar",
+    "listDescription": "Geovito blog listesi"
   },
   "home": {
-    "noTrending": "No trending places yet.",
-    "blogSection": "Blog",
-    "defaultBody": "No body content yet.",
-    "defaultTitle": "Geovito Atlas",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
-    "noPostSummary": "No summary yet.",
-    "trendingTitle": "Trending places",
-    "atlasCountries": "Atlas (Countries)",
-    "defaultExcerpt": "Strapi-driven homepage.",
-    "noCountryDescription": "No description yet."
+    "noTrending": "Henuz trend yer yok.",
+    "blogSection": "Yazilar",
+    "defaultBody": "Henuz govde icerigi yok.",
+    "defaultTitle": "Geovito Atlasi",
+    "trendingHint": "Sehir benzeri yerler country_profile.city_like_levels alanindan cozulur.",
+    "noPostSummary": "Henuz ozet yok.",
+    "trendingTitle": "Trend yerler",
+    "atlasCountries": "Atlas (Ulkeler)",
+    "defaultExcerpt": "Strapi destekli ana sayfa.",
+    "noCountryDescription": "Henuz ulke aciklamasi yok."
   },
   "post": {
     "meta": {
-      "postId": "post_id",
-      "languageStatus": "language status"
+      "postId": "yazi_id",
+      "languageStatus": "dil durumu"
     },
-    "noBody": "No content body yet."
+    "noBody": "Henuz icerik govdesi yok."
   },
   "site": {
     "brand": "Geovito"
@@ -77,57 +77,57 @@
       "title": "Bu sayfada"
     },
     "list": {
-      "empty": "No countries are available yet.",
-      "title": "Atlas",
+      "empty": "Henuz ulke yok.",
+      "title": "Kesif",
       "states": {
-        "draft": "draft",
-        "missing": "missing",
-        "complete": "complete"
+        "draft": "taslak",
+        "missing": "eksik",
+        "complete": "tamam"
       },
       "filters": {
-        "all": "All",
-        "city": "City",
-        "region": "Region",
-        "country": "Country",
-        "landmark": "Landmark"
+        "all": "Tum",
+        "city": "Sehir",
+        "region": "Bolge",
+        "country": "Ulke",
+        "landmark": "Onemli Nokta"
       },
-      "noSnippet": "No summary yet.",
-      "emptyTitle": "No places found",
-      "filterAria": "Filter atlas places",
+      "noSnippet": "Henuz ozet yok.",
+      "emptyTitle": "Yer bulunamadi",
+      "filterAria": "Atlas yerlerini filtrele",
       "pagination": {
-        "aria": "Atlas pagination",
-        "next": "Next",
-        "prev": "Prev",
-        "pageLabel": "Page {page}",
-        "pageCurrentLabel": "Current page, {page}"
+        "aria": "Atlas sayfalama",
+        "next": "Sonraki",
+        "prev": "Onceki",
+        "pageLabel": "Sayfa {page}",
+        "pageCurrentLabel": "Mevcut sayfa, {page}"
       },
-      "description": "Country-level entry points in the Atlas hierarchy.",
-      "emptyAction": "Reset filters",
-      "metaSummary": "Showing {shown} of {total} places",
-      "stateLegendAria": "Language state legend",
-      "emptyDescription": "Try another filter chip to continue exploring the atlas."
+      "description": "Atlas hiyerarsisinde ulke duzeyi giris noktalar.",
+      "emptyAction": "Filtreleri sifirla",
+      "metaSummary": "{total} yerden {shown} tanesi gosteriliyor",
+      "stateLegendAria": "Dil durumu aciklamasi",
+      "emptyDescription": "Kesfe devam etmek icin baska bir filtre secin."
     },
     "meta": {
-      "type": "type",
-      "region": "region",
-      "country": "country",
-      "placeId": "place_id",
-      "coordinates": "coordinates",
-      "notAvailable": "not available",
-      "languageStatus": "language status"
+      "type": "tur",
+      "region": "bolge",
+      "country": "ulke",
+      "placeId": "yer_id",
+      "coordinates": "koordinatlar",
+      "notAvailable": "yok",
+      "languageStatus": "dil durumu"
     },
     "links": {
-      "parent": "Parent place",
-      "related": "Related places",
-      "children": "Child places",
-      "noParent": "No parent place.",
-      "noRelated": "No related places found.",
-      "breadcrumb": "Hierarchy",
-      "noChildren": "No child places found.",
-      "relatedBlog": "Related blog posts",
-      "noRelatedBlog": "No related blog posts found."
+      "parent": "Ust yer",
+      "related": "Ilgili yerler",
+      "children": "Alt yerler",
+      "noParent": "Ust yer yok.",
+      "noRelated": "Ilgili yer bulunamadi.",
+      "breadcrumb": "Hiyerarsi",
+      "noChildren": "Alt yer bulunamadi.",
+      "relatedBlog": "Ilgili blog yazilari",
+      "noRelatedBlog": "Ilgili blog yazisi bulunamadi."
     },
-    "noBody": "No content body yet.",
+    "noBody": "Henuz icerik govdesi yok.",
     "section": {
       "overview": "Genel Bakis",
       "hierarchy": "Hiyerarsi",
@@ -187,25 +187,25 @@
     "privacy": "Gizlilik"
   },
   "uiPage": {
-    "noBody": "No content body yet.",
-    "notFoundTitle": "Page not available",
-    "notFoundDescription": "This system page does not exist in Strapi yet."
+    "noBody": "Henuz icerik govdesi yok.",
+    "notFoundTitle": "Sayfa kullanilamiyor",
+    "notFoundDescription": "Bu sistem sayfasi Strapi tarafinda henuz yok."
   },
   "account": {
     "roles": {
-      "user": "Authenticated user: reserved for future blog submissions and profile features.",
-      "editor": "Editor/Admin: review and publish Atlas and Blog content.",
-      "public": "Public: read Atlas/Blog/UI and submit Atlas suggestions."
+      "user": "Dogrulanmis kullanici: gelecekteki blog gonderimleri ve profil ozellikleri icin ayrildi.",
+      "editor": "Editor/Admin: Atlas ve Blog iceriklerini inceler ve yayina alir.",
+      "public": "Herkes: Atlas/Blog/UI okuyabilir ve Atlas onerisi gonderebilir."
     },
-    "title": "Account",
-    "loginCta": "Open admin login",
-    "rolesTitle": "Role boundaries",
-    "description": "User account shell is active in read-only mode for now.",
-    "authStateBody": "You are currently viewing the logged-out shell. Public registration and personalized account data are intentionally disabled in this phase.",
-    "authStateTitle": "Authentication status"
+    "title": "Hesap",
+    "loginCta": "Admin girisini ac",
+    "rolesTitle": "Rol sinirlari",
+    "description": "Kullanici hesap paneli su an salt-okunur modda aktif.",
+    "authStateBody": "Su anda cikis yapmis gorunumdesiniz. Bu fazda acik kayit ve kisilestirilmis hesap verileri bilincli olarak sinirlandirildi.",
+    "authStateTitle": "Kimlik durumu"
   },
   "actions": {
-    "previewOnDemand": "Open on-demand translation preview (noindex)"
+    "previewOnDemand": "Istege bagli ceviri onizlemesini ac (noindex)"
   },
   "consent": {
     "ads": "Reklam",
@@ -227,35 +227,35 @@
   },
   "regions": {
     "list": {
-      "empty": "No region groups are available yet.",
-      "title": "Regions",
-      "description": "Country-specific regional group pages without changing core parent chains."
+      "empty": "Henuz bolge grubu yok.",
+      "title": "Bolgeler",
+      "description": "Ana ebeveyn zincirini degistirmeden ulkeye ozel bolge grup sayfalari."
     },
     "meta": {
-      "title": "Region metadata",
-      "country": "country",
-      "regionKey": "region key",
-      "memberCount": "member count"
+      "title": "Bolge metaverisi",
+      "country": "ulke",
+      "regionKey": "bolge anahtari",
+      "memberCount": "uye sayisi"
     },
-    "noBody": "No content body yet.",
-    "members": "Member places",
-    "noMembers": "No member places found."
+    "noBody": "Henuz icerik govdesi yok.",
+    "members": "Uye yerler",
+    "noMembers": "Uye yer bulunamadi."
   },
   "language": {
-    "switcherAria": "Language selector"
+    "switcherAria": "Dil secici"
   },
   "dashboard": {
     "items": {
-      "blogDrafts": "My blog drafts (future)",
-      "savedPlaces": "Saved places/watchlist (future)",
-      "submissions": "My Atlas suggestions (future self-view)"
+      "blogDrafts": "Blog taslaklarim (yakinda)",
+      "savedPlaces": "Kaydedilen yerler/izleme listesi (yakinda)",
+      "submissions": "Atlas onerilerim (gelecekte oz-gorunum)"
     },
-    "title": "Dashboard",
-    "loginCta": "Go to account shell",
-    "dataTitle": "Planned modules",
-    "description": "Editorial-safe user dashboard shell.",
-    "readOnlyBody": "Dashboard widgets are intentionally limited until user-submission features are enabled.",
-    "readOnlyTitle": "Read-only mode"
+    "title": "Kontrol Paneli",
+    "loginCta": "Hesap paneline git",
+    "dataTitle": "Planlanan moduller",
+    "description": "Editoryal-guvenli kullanici paneli.",
+    "readOnlyBody": "Kullanici gonderim ozellikleri acilana kadar panel kartlari bilincli olarak sinirli.",
+    "readOnlyTitle": "Salt-okunur mod"
   },
   "errorPage": {
     "title": "Bir seyler ters gitti",
@@ -269,10 +269,10 @@
     "reportDisabled": "Hata raporu gondermek icin analiz iznini etkinlestirin."
   },
   "stateBanner": {
-    "mock": "MOCK DATA is displayed on this page. This view is always noindex.",
-    "runtime": "Runtime translation preview is shown. This view is not indexed.",
-    "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
-    "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
-    "canonicalLink": "Go to canonical complete version"
+    "mock": "Bu sayfada MOCK DATA gosteriliyor. Bu gorunum her zaman noindex.",
+    "runtime": "Calisma zamani ceviri onizlemesi gosteriliyor. Bu gorunum indexlenmez.",
+    "fallback": "Bu dilde complete icerik hazir degil ({language}). Canonical complete surum gosteriliyor.",
+    "incomplete": "Bu dilde icerik complete degil ({language}, durum: {state}). Canonical complete surum gosteriliyor.",
+    "canonicalLink": "Canonical complete surume git"
   }
 }
