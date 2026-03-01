@@ -189,8 +189,15 @@ Not:
 
 - Standard:
   - `bash tools/release_deploy_smoke.sh`
+- Default release now also includes:
+  - `bash tools/report_moderation_smoke.sh`
+  - `bash tools/community_settings_smoke.sh`
 - Include moderation stale-pending guard:
   - `bash tools/release_deploy_smoke.sh --with-moderation`
+- Skip report moderation smoke (not recommended for release):
+  - `bash tools/release_deploy_smoke.sh --skip-report-smoke`
+- Skip community settings smoke (not recommended for release):
+  - `bash tools/release_deploy_smoke.sh --skip-community-settings-smoke`
 - Include dashboard role baseline smoke (super admin + alt admin + member profile checks):
   - `bash tools/release_deploy_smoke.sh --with-dashboard-role-smoke`
 - Skip account comment queue Playwright smoke:
@@ -213,9 +220,7 @@ Not:
   - if report is missing, script auto-runs `tools/export_ui_locales.sh` first
 - Include everything (moderation + account + engagement + bulk + reseed):
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_DRY_RUN=true bash tools/release_deploy_smoke.sh --with-moderation --with-blog-engagement-test --with-comment-bulk-action --with-mock-reseed`
-- Include both optional checks:
-  - `bash tools/release_deploy_smoke.sh --with-moderation`
-- Include all optional checks:
+- Include core + moderation + engagement:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-blog-engagement-test`
 - Include dashboard role + follow + notification foundations:
   - `bash tools/release_deploy_smoke.sh --with-dashboard-role-smoke --with-follow-smoke --with-notification-smoke`

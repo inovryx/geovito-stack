@@ -200,6 +200,8 @@ What it does:
 - forces Cloudflare Pages deploy to current `HEAD` SHA (`tools/pages_deploy_force.sh`)
 - runs domain smoke checks with Access token (`tools/smoke_access.sh`)
 - runs moderation queue stale-pending guard (`tools/blog_moderation_report.sh --fail-on-stale-pending`)
+- runs report moderation smoke (`tools/report_moderation_smoke.sh`)
+- runs community settings smoke (`tools/community_settings_smoke.sh`)
 
 First-time setup (one-time):
 ```bash
@@ -212,6 +214,10 @@ Optional tuning:
 - pending age threshold: `BLOG_MOD_PENDING_ALERT_HOURS` (default `24`)
 - custom moderation args passthrough:
   - `SMOKE_BLOG_MODERATION_ARGS="--fail-on-stale-pending --json" bash tools/release_deploy_smoke.sh --with-moderation`
+- skip report moderation smoke (not recommended for release):
+  - `bash tools/release_deploy_smoke.sh --skip-report-smoke`
+- skip community settings smoke (not recommended for release):
+  - `bash tools/release_deploy_smoke.sh --skip-community-settings-smoke`
 - optional bulk moderation action during release:
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
   - dry-run preview (no write):

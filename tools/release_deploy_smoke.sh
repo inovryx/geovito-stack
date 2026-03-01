@@ -13,8 +13,8 @@ RUN_DASHBOARD_TEST="true"
 RUN_DASHBOARD_ROLE_SMOKE="false"
 RUN_FOLLOW_SMOKE="false"
 RUN_NOTIFICATION_SMOKE="false"
-RUN_REPORT_SMOKE="false"
-RUN_COMMUNITY_SETTINGS_SMOKE="false"
+RUN_REPORT_SMOKE="true"
+RUN_COMMUNITY_SETTINGS_SMOKE="true"
 RUN_COMMENT_BULK_ACTION="false"
 RUN_MOCK_RESEED="false"
 RUN_UI_LOCALE_SYNC="false"
@@ -24,7 +24,7 @@ RUN_CREATOR_SMOKE="false"
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--skip-account-test] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-dashboard-role-smoke] [--with-follow-smoke] [--with-notification-smoke] [--with-report-smoke] [--with-community-settings-smoke] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--skip-account-test] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-dashboard-role-smoke] [--with-follow-smoke] [--with-notification-smoke] [--skip-report-smoke] [--skip-community-settings-smoke] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
 
 Purpose:
   Single command release verification:
@@ -37,8 +37,8 @@ Purpose:
   7) (Optional) Run dashboard role matrix smoke (super admin + alt admin + member baseline)
   8) (Optional) Run follow system foundation smoke
   9) (Optional) Run notification preferences foundation smoke
-  10) (Optional) Run content report moderation smoke
-  11) (Optional) Run community settings role/contract smoke
+  10) (Default) Run content report moderation smoke
+  11) (Default) Run community settings role/contract smoke
   12) (Optional) Run bulk moderation action on oldest pending comments
   13) (Optional) Re-seed mock dataset at end (useful after purge flows)
   14) (Optional) Sync ui-locale import/export flow before release checks
@@ -113,12 +113,12 @@ while [[ $# -gt 0 ]]; do
       RUN_NOTIFICATION_SMOKE="true"
       shift
       ;;
-    --with-report-smoke)
-      RUN_REPORT_SMOKE="true"
+    --skip-report-smoke)
+      RUN_REPORT_SMOKE="false"
       shift
       ;;
-    --with-community-settings-smoke)
-      RUN_COMMUNITY_SETTINGS_SMOKE="true"
+    --skip-community-settings-smoke)
+      RUN_COMMUNITY_SETTINGS_SMOKE="false"
       shift
       ;;
     --with-comment-bulk-action)
@@ -239,13 +239,13 @@ fi
 if [[ "$RUN_REPORT_SMOKE" == "true" ]]; then
   bash tools/report_moderation_smoke.sh
 else
-  echo "INFO: skipped report moderation smoke stage (use --with-report-smoke)"
+  echo "INFO: skipped report moderation smoke stage (--skip-report-smoke)"
 fi
 
 if [[ "$RUN_COMMUNITY_SETTINGS_SMOKE" == "true" ]]; then
   bash tools/community_settings_smoke.sh
 else
-  echo "INFO: skipped community settings smoke stage (use --with-community-settings-smoke)"
+  echo "INFO: skipped community settings smoke stage (--skip-community-settings-smoke)"
 fi
 
 if [[ "$RUN_COMMENT_BULK_ACTION" == "true" ]]; then
