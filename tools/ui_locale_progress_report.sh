@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPORT_PATH="${UI_LOCALE_PROGRESS_REPORT:-$ROOT_DIR/artifacts/ui-locale-progress.json}"
 STRICT_MODE="${UI_LOCALE_PROGRESS_STRICT:-false}"
+STRICT_LEVEL="${UI_LOCALE_PROGRESS_STRICT_LEVEL:-all}"
 
 if [[ "$REPORT_PATH" = /* ]]; then
   if [[ "$REPORT_PATH" == "$ROOT_DIR/"* ]]; then
@@ -28,6 +29,7 @@ docker run --rm -i \
   -w /work \
   -e REPORT_PATH="$CONTAINER_REPORT_PATH" \
   -e STRICT_MODE="$STRICT_MODE" \
+  -e STRICT_LEVEL="$STRICT_LEVEL" \
   node:20-alpine \
   node - <<'NODE'
 const fs = require('fs');
@@ -35,6 +37,8 @@ const path = require('path');
 
 const reportPath = process.env.REPORT_PATH || '';
 const strictMode = String(process.env.STRICT_MODE || 'false').toLowerCase() === 'true';
+const strictLevelRaw = String(process.env.STRICT_LEVEL || 'all').trim().toLowerCase();
+const strictLevel = strictLevelRaw === 'missing-only' ? 'missing-only' : 'all';
 
 const resolved = path.isAbsolute(reportPath) ? reportPath : path.join(process.cwd(), reportPath);
 const raw = fs.readFileSync(resolved, 'utf8');
@@ -95,8 +99,17 @@ console.log(`summary: locales=${locales.length} missing_total=${totalMissing} un
 if (totalMissing > 0 || totalUntranslated > 0) {
   console.log(`WARN: translation gaps found (missing=${totalMissing}, untranslated=${totalUntranslated})`);
   if (strictMode) {
-    console.log('FAIL: strict mode enabled (UI_LOCALE_PROGRESS_STRICT=true)');
-    process.exit(1);
+    if (strictLevel === 'missing-only') {
+      if (totalMissing > 0) {
+        console.log('FAIL: strict mode enabled (UI_LOCALE_PROGRESS_STRICT=true, level=missing-only)');
+        process.exit(1);
+      } else {
+        console.log('PASS: strict mode(missing-only) passed (no missing keys).');
+      }
+    } else {
+      console.log('FAIL: strict mode enabled (UI_LOCALE_PROGRESS_STRICT=true, level=all)');
+      process.exit(1);
+    }
   }
 } else {
   console.log('PASS: all locale keys translated.');
