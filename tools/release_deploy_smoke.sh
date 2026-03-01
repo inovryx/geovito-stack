@@ -15,6 +15,7 @@ RUN_FOLLOW_SMOKE="false"
 RUN_NOTIFICATION_SMOKE="false"
 RUN_REPORT_SMOKE="true"
 RUN_COMMUNITY_SETTINGS_SMOKE="true"
+RUN_UGC_API_CONTRACT="false"
 RUN_COMMENT_BULK_ACTION="false"
 RUN_MOCK_RESEED="false"
 RUN_UI_LOCALE_SYNC="false"
@@ -24,7 +25,7 @@ RUN_CREATOR_SMOKE="false"
 usage() {
   cat <<'USAGE'
 Usage:
-  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--skip-account-test] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-dashboard-role-smoke] [--with-follow-smoke] [--with-notification-smoke] [--skip-report-smoke] [--skip-community-settings-smoke] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
+  bash tools/release_deploy_smoke.sh [--skip-deploy] [--skip-smoke] [--with-moderation] [--skip-account-test] [--with-account-test] [--with-blog-engagement-test] [--skip-dashboard-test] [--with-dashboard-role-smoke] [--with-follow-smoke] [--with-notification-smoke] [--skip-report-smoke] [--skip-community-settings-smoke] [--with-ugc-api-contract] [--with-comment-bulk-action] [--with-mock-reseed] [--with-ui-locale-sync] [--with-ui-locale-progress] [--with-creator-smoke]
 
 Purpose:
   Single command release verification:
@@ -39,11 +40,12 @@ Purpose:
   9) (Optional) Run notification preferences foundation smoke
   10) (Default) Run content report moderation smoke
   11) (Default) Run community settings role/contract smoke
-  12) (Optional) Run bulk moderation action on oldest pending comments
-  13) (Optional) Re-seed mock dataset at end (useful after purge flows)
-  14) (Optional) Sync ui-locale import/export flow before release checks
-  15) (Optional) Validate ui-locale progress report (strict by default)
-  16) (Optional/Auto) Validate creator mini-site + @ alias redirect in smoke stage
+  12) (Optional) Run UGC API contract check
+  13) (Optional) Run bulk moderation action on oldest pending comments
+  14) (Optional) Re-seed mock dataset at end (useful after purge flows)
+  15) (Optional) Sync ui-locale import/export flow before release checks
+  16) (Optional) Validate ui-locale progress report (strict by default)
+  17) (Optional/Auto) Validate creator mini-site + @ alias redirect in smoke stage
 
 Notes:
   - pages deploy hook must be configured:
@@ -121,6 +123,10 @@ while [[ $# -gt 0 ]]; do
       RUN_COMMUNITY_SETTINGS_SMOKE="false"
       shift
       ;;
+    --with-ugc-api-contract)
+      RUN_UGC_API_CONTRACT="true"
+      shift
+      ;;
     --with-comment-bulk-action)
       RUN_COMMENT_BULK_ACTION="true"
       shift
@@ -171,7 +177,7 @@ fi
 echo "=============================================================="
 echo "GEOVITO RELEASE DEPLOY+SMOKE"
 echo "expected_sha7=${EXPECTED_SHA7}"
-echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_dashboard_test=${RUN_DASHBOARD_TEST} run_dashboard_role_smoke=${RUN_DASHBOARD_ROLE_SMOKE} run_follow_smoke=${RUN_FOLLOW_SMOKE} run_notification_smoke=${RUN_NOTIFICATION_SMOKE} run_report_smoke=${RUN_REPORT_SMOKE} run_community_settings_smoke=${RUN_COMMUNITY_SETTINGS_SMOKE} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_sync=${RUN_UI_LOCALE_SYNC} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS} run_creator_smoke=${RUN_CREATOR_SMOKE}"
+echo "run_deploy=${RUN_DEPLOY} run_smoke=${RUN_SMOKE} run_moderation=${RUN_MODERATION} run_account_test=${RUN_ACCOUNT_TEST} run_blog_engagement_test=${RUN_BLOG_ENGAGEMENT_TEST} run_dashboard_test=${RUN_DASHBOARD_TEST} run_dashboard_role_smoke=${RUN_DASHBOARD_ROLE_SMOKE} run_follow_smoke=${RUN_FOLLOW_SMOKE} run_notification_smoke=${RUN_NOTIFICATION_SMOKE} run_report_smoke=${RUN_REPORT_SMOKE} run_community_settings_smoke=${RUN_COMMUNITY_SETTINGS_SMOKE} run_ugc_api_contract=${RUN_UGC_API_CONTRACT} run_comment_bulk_action=${RUN_COMMENT_BULK_ACTION} run_mock_reseed=${RUN_MOCK_RESEED} run_ui_locale_sync=${RUN_UI_LOCALE_SYNC} run_ui_locale_progress=${RUN_UI_LOCALE_PROGRESS} run_creator_smoke=${RUN_CREATOR_SMOKE}"
 echo "=============================================================="
 
 if [[ "$RUN_DEPLOY" == "true" ]]; then
@@ -246,6 +252,12 @@ if [[ "$RUN_COMMUNITY_SETTINGS_SMOKE" == "true" ]]; then
   bash tools/community_settings_smoke.sh
 else
   echo "INFO: skipped community settings smoke stage (--skip-community-settings-smoke)"
+fi
+
+if [[ "$RUN_UGC_API_CONTRACT" == "true" ]]; then
+  bash tools/ugc_api_contract_check.sh
+else
+  echo "INFO: skipped UGC API contract stage (use --with-ugc-api-contract)"
 fi
 
 if [[ "$RUN_COMMENT_BULK_ACTION" == "true" ]]; then

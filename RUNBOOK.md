@@ -218,6 +218,8 @@ Optional tuning:
   - `bash tools/release_deploy_smoke.sh --skip-report-smoke`
 - skip community settings smoke (not recommended for release):
   - `bash tools/release_deploy_smoke.sh --skip-community-settings-smoke`
+- optional UGC backend contract smoke:
+  - `bash tools/release_deploy_smoke.sh --with-ugc-api-contract`
 - optional bulk moderation action during release:
   - `COMMENT_BULK_ACTION=approve-next-bulk COMMENT_BULK_LIMIT=10 bash tools/release_deploy_smoke.sh --with-comment-bulk-action`
   - dry-run preview (no write):

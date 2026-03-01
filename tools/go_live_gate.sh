@@ -18,6 +18,7 @@ GO_LIVE_SKIP_PRE_DESIGN="${GO_LIVE_SKIP_PRE_DESIGN:-false}"
 GO_LIVE_SKIP_UI="${GO_LIVE_SKIP_UI:-false}"
 GO_LIVE_SKIP_REPORT_SMOKE="${GO_LIVE_SKIP_REPORT_SMOKE:-false}"
 GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE="${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE:-false}"
+GO_LIVE_SKIP_UGC_API_CONTRACT="${GO_LIVE_SKIP_UGC_API_CONTRACT:-false}"
 GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE="${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE:-false}"
 GO_LIVE_SKIP_FOLLOW_SMOKE="${GO_LIVE_SKIP_FOLLOW_SMOKE:-false}"
 GO_LIVE_SKIP_NOTIFICATION_SMOKE="${GO_LIVE_SKIP_NOTIFICATION_SMOKE:-false}"
@@ -48,6 +49,7 @@ Env toggles:
   GO_LIVE_SKIP_UI=true            # skip account/dashboard playwright checks
   GO_LIVE_SKIP_REPORT_SMOKE=true  # skip content report submission/moderation smoke
   GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=true  # skip community settings role/contract smoke
+  GO_LIVE_SKIP_UGC_API_CONTRACT=true  # skip UGC API contract check
   GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=true  # skip dashboard role baseline smoke
   GO_LIVE_SKIP_FOLLOW_SMOKE=true  # skip follow system foundation smoke
   GO_LIVE_SKIP_NOTIFICATION_SMOKE=true  # skip notification preferences smoke
@@ -59,6 +61,7 @@ Examples:
   GO_LIVE_WITH_DEPLOY=false bash tools/go_live_gate.sh
   CREATOR_USERNAME=olmysweet GO_LIVE_REQUIRE_CREATOR=true bash tools/go_live_gate.sh
   GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate.sh
+  GO_LIVE_SKIP_UGC_API_CONTRACT=true bash tools/go_live_gate.sh
 USAGE
 }
 
@@ -125,7 +128,7 @@ echo "GEOVITO GO-LIVE GATE"
 echo "expected_sha7=${EXPECTED_SHA7}"
 echo "creator_username=${CREATOR_USERNAME:-<empty>}"
 echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP}"
-echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE} skip_community_settings_smoke=${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE} skip_dashboard_role_smoke=${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE} skip_follow_smoke=${GO_LIVE_SKIP_FOLLOW_SMOKE} skip_notification_smoke=${GO_LIVE_SKIP_NOTIFICATION_SMOKE}"
+echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE} skip_community_settings_smoke=${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE} skip_ugc_api_contract=${GO_LIVE_SKIP_UGC_API_CONTRACT} skip_dashboard_role_smoke=${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE} skip_follow_smoke=${GO_LIVE_SKIP_FOLLOW_SMOKE} skip_notification_smoke=${GO_LIVE_SKIP_NOTIFICATION_SMOKE}"
 echo "=============================================================="
 
 if [[ "$HEALTH_TOKEN" == *"REPLACE_WITH_"* ]]; then
@@ -189,6 +192,15 @@ else
   STEP_STATUS+=("SKIP")
   STEP_CODES+=("0")
   echo "RESULT: SKIP (Community Settings Smoke)"
+fi
+
+if [[ "$GO_LIVE_SKIP_UGC_API_CONTRACT" != "true" ]]; then
+  run_step "UGC API Contract Check" bash tools/ugc_api_contract_check.sh
+else
+  STEP_NAMES+=("UGC API Contract Check")
+  STEP_STATUS+=("SKIP")
+  STEP_CODES+=("0")
+  echo "RESULT: SKIP (UGC API Contract Check)"
 fi
 
 if [[ "$GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE" != "true" ]]; then
