@@ -3,67 +3,67 @@
     "label": "Werbung"
   },
   "nav": {
-    "blog": "Blog",
+    "blog": "Beitraege",
     "help": "Hilfe",
     "home": "Startseite",
     "about": "Uber uns",
-    "atlas": "Atlas",
+    "atlas": "Entdecken",
     "rules": "Regeln",
     "account": "Konto",
     "regions": "Regionen"
   },
   "ops": {
     "kpi": {
-      "clicks": "Clicks (7d)",
-      "earnings": "Earnings (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "impressions": "Impressions (7d)"
+      "clicks": "Klicks (7T)",
+      "earnings": "Einnahmen (7T)",
+      "requests": "Cloudflare-Anfragen (7T)",
+      "sessions": "Sitzungen (7T)",
+      "pageviews": "Seitenaufrufe (7T)",
+      "impressions": "Impressionen (7T)"
     },
     "empty": {
-      "desc": "Run the metrics collector locally, then refresh this page.",
-      "title": "No metrics collected yet"
+      "desc": "Fuehre den Metriksammler lokal aus und aktualisiere dann diese Seite.",
+      "title": "Noch keine Metriken erfasst"
     },
-    "title": "Ops Metrics",
+    "title": "Ops-Metriken",
     "disabled": {
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
-      "title": "Ops metrics viewer is disabled in this mode"
+      "desc": "Setze PUBLIC_OPS_MODE=local, um lokales Dateilesen in dieser Umgebung zu erlauben.",
+      "title": "Ops-Metrikansicht ist in diesem Modus deaktiviert"
     },
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "subtitle": "Internes aggregiertes Metrik-Dashboard fuer lokale Operationen.",
     "providers": {
-      "ok": "OK",
-      "error": "Error",
-      "title": "Provider status",
-      "notConfigured": "Not configured"
+      "ok": "Okay",
+      "error": "Fehler",
+      "title": "Anbieterstatus",
+      "notConfigured": "Nicht konfiguriert"
     }
   },
   "auth": {
-    "registerDisabledBody": "Account creation is paused in this environment.",
-    "registerDisabledHint": "Registration is currently disabled.",
-    "registerDisabledTitle": "Registration is disabled"
+    "registerDisabledBody": "Die Kontoerstellung ist in dieser Umgebung pausiert.",
+    "registerDisabledHint": "Die Registrierung ist derzeit deaktiviert.",
+    "registerDisabledTitle": "Registrierung ist deaktiviert"
   },
   "blog": {
     "noBody": "Noch kein Inhaltstext verfugbar.",
     "listHint": "Beitrage sind sichtbar, auch wenn Ubersetzungen nicht complete sind; unvollstandige Varianten werden nicht indexiert.",
-    "listTitle": "Blog",
+    "listTitle": "Beitraege",
     "listDescription": "Geovito Blog-Liste"
   },
   "home": {
-    "noTrending": "No trending places yet.",
-    "blogSection": "Blog",
+    "noTrending": "Noch keine Trend-Orte.",
+    "blogSection": "Beitraege",
     "defaultBody": "Noch kein Inhaltstext verfugbar.",
-    "defaultTitle": "Geovito Atlas",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "defaultTitle": "Geovito Entdecken",
+    "trendingHint": "Stadtnahe Orte werden ueber country_profile.city_like_levels aufgeloest.",
     "noPostSummary": "Noch keine Zusammenfassung vorhanden.",
-    "trendingTitle": "Trending places",
+    "trendingTitle": "Trend-Orte",
     "atlasCountries": "Atlas (Lander)",
     "defaultExcerpt": "Strapi-gesteuerte Startseite.",
     "noCountryDescription": "Noch keine Beschreibung vorhanden."
   },
   "post": {
     "meta": {
-      "postId": "post_id",
+      "postId": "beitrag_id",
       "languageStatus": "sprachstatus"
     },
     "noBody": "Noch kein Inhaltstext verfugbar."
@@ -78,16 +78,16 @@
     },
     "list": {
       "empty": "Es sind noch keine Lander verfugbar.",
-      "title": "Atlas",
+      "title": "Entdecken",
       "states": {
-        "draft": "draft",
-        "missing": "missing",
-        "complete": "complete"
+        "draft": "entwurf",
+        "missing": "fehlt",
+        "complete": "vollstaendig"
       },
       "filters": {
         "all": "Alle",
         "city": "Stadt",
-        "region": "Region",
+        "region": "Bereich",
         "country": "Land",
         "landmark": "Sehenswurdigkeit"
       },
@@ -109,9 +109,9 @@
     },
     "meta": {
       "type": "typ",
-      "region": "region",
+      "region": "bereich",
       "country": "land",
-      "placeId": "place_id",
+      "placeId": "ort_id",
       "coordinates": "koordinaten",
       "notAvailable": "nicht verfugbar",
       "languageStatus": "sprachstatus"
@@ -154,7 +154,7 @@
       "empty": "Noch keine verwandten Beitrage"
     },
     "travelEssentials": {
-      "visa": "Visa",
+      "visa": "Visum",
       "helper": {
         "noOrigin": "Wahle einen Abflugort, um Flugoptionen zu schatzen."
       },
@@ -165,7 +165,7 @@
   },
   "embed": {
     "openSource": "Quellvideo offnen",
-    "sectionTitle": "Videos"
+    "sectionTitle": "Video-Einbettungen"
   },
   "legal": {
     "terms": {
@@ -183,7 +183,7 @@
   },
   "footer": {
     "terms": "Nutzungsbedingungen",
-    "cookies": "Cookies",
+    "cookies": "Cookie-Hinweise",
     "privacy": "Datenschutz"
   },
   "uiPage": {
@@ -217,7 +217,7 @@
     "updated": "Einwilligung aktualisiert",
     "alwaysOn": "Immer aktiv",
     "acceptAll": "Alle akzeptieren",
-    "analytics": "Analytics",
+    "analytics": "Analytik",
     "customize": "Anpassen",
     "learnMore": "Mehr erfahren",
     "necessary": "Notwendig",
@@ -234,7 +234,7 @@
     "meta": {
       "title": "Regions-Metadaten",
       "country": "land",
-      "regionKey": "region key",
+      "regionKey": "bereichsschluessel",
       "memberCount": "anzahl mitglieder"
     },
     "noBody": "Noch kein Inhaltstext verfugbar.",
@@ -250,7 +250,7 @@
       "savedPlaces": "Gespeicherte Orte/Watchlist (spater)",
       "submissions": "Meine Atlas-Vorschlage (spater)"
     },
-    "title": "Dashboard",
+    "title": "Uebersicht",
     "loginCta": "Zur Konto-Shell",
     "dataTitle": "Geplante Module",
     "description": "Editorial-sichere Dashboard-Shell.",
