@@ -3,67 +3,67 @@
     "label": "Publicidad"
   },
   "nav": {
-    "blog": "Blog",
+    "blog": "Articulos",
     "help": "Ayuda",
     "home": "Inicio",
     "about": "Acerca de",
-    "atlas": "Atlas",
+    "atlas": "Explorar",
     "rules": "Reglas",
     "account": "Cuenta",
     "regions": "Regiones"
   },
   "ops": {
     "kpi": {
-      "clicks": "Clicks (7d)",
-      "earnings": "Earnings (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "impressions": "Impressions (7d)"
+      "clicks": "Clics (7d)",
+      "earnings": "Ingresos (7d)",
+      "requests": "Solicitudes de Cloudflare (7d)",
+      "sessions": "Sesiones (7d)",
+      "pageviews": "Vistas de pagina (7d)",
+      "impressions": "Impresiones (7d)"
     },
     "empty": {
-      "desc": "Run the metrics collector locally, then refresh this page.",
-      "title": "No metrics collected yet"
+      "desc": "Ejecuta el recolector de metricas localmente y luego actualiza esta pagina.",
+      "title": "Aun no se recopilaron metricas"
     },
-    "title": "Ops Metrics",
+    "title": "Metricas de ops",
     "disabled": {
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
-      "title": "Ops metrics viewer is disabled in this mode"
+      "desc": "Establece PUBLIC_OPS_MODE=local para permitir lectura local de archivos en este entorno.",
+      "title": "El visor de metricas de ops esta deshabilitado en este modo"
     },
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "subtitle": "Panel interno de metricas agregadas para operaciones locales.",
     "providers": {
-      "ok": "OK",
-      "error": "Error",
-      "title": "Provider status",
-      "notConfigured": "Not configured"
+      "ok": "Correcto",
+      "error": "Fallo",
+      "title": "Estado del proveedor",
+      "notConfigured": "No configurado"
     }
   },
   "auth": {
-    "registerDisabledBody": "Account creation is paused in this environment.",
-    "registerDisabledHint": "Registration is currently disabled.",
-    "registerDisabledTitle": "Registration is disabled"
+    "registerDisabledBody": "La creacion de cuentas esta en pausa en este entorno.",
+    "registerDisabledHint": "El registro esta deshabilitado actualmente.",
+    "registerDisabledTitle": "Registro deshabilitado"
   },
   "blog": {
     "noBody": "Aun no hay contenido.",
     "listHint": "Las entradas son visibles aunque la traduccion no sea complete; las variantes incompletas no se indexan.",
-    "listTitle": "Blog",
+    "listTitle": "Articulos",
     "listDescription": "Lista de blog de Geovito"
   },
   "home": {
-    "noTrending": "No trending places yet.",
-    "blogSection": "Blog",
+    "noTrending": "Aun no hay lugares en tendencia.",
+    "blogSection": "Articulos",
     "defaultBody": "Aun no hay contenido.",
-    "defaultTitle": "Geovito Atlas",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "defaultTitle": "Geovito Explorar",
+    "trendingHint": "Los lugares tipo ciudad se resuelven mediante country_profile.city_like_levels.",
     "noPostSummary": "Aun no hay resumen.",
-    "trendingTitle": "Trending places",
+    "trendingTitle": "Lugares en tendencia",
     "atlasCountries": "Atlas (Paises)",
     "defaultExcerpt": "Pagina de inicio basada en Strapi.",
     "noCountryDescription": "Aun no hay descripcion."
   },
   "post": {
     "meta": {
-      "postId": "post_id",
+      "postId": "articulo_id",
       "languageStatus": "estado del idioma"
     },
     "noBody": "Aun no hay contenido."
@@ -78,16 +78,16 @@
     },
     "list": {
       "empty": "Todavia no hay paises disponibles.",
-      "title": "Atlas",
+      "title": "Explorar",
       "states": {
-        "draft": "draft",
-        "missing": "missing",
-        "complete": "complete"
+        "draft": "borrador",
+        "missing": "faltante",
+        "complete": "completo"
       },
       "filters": {
         "all": "Todos",
         "city": "Ciudad",
-        "region": "Region",
+        "region": "Zona",
         "country": "Pais",
         "landmark": "Lugar clave"
       },
@@ -109,9 +109,9 @@
     },
     "meta": {
       "type": "tipo",
-      "region": "region",
+      "region": "zona",
       "country": "pais",
-      "placeId": "place_id",
+      "placeId": "lugar_id",
       "coordinates": "coordenadas",
       "notAvailable": "no disponible",
       "languageStatus": "estado del idioma"
@@ -154,7 +154,7 @@
       "empty": "Aun no hay articulos relacionados"
     },
     "travelEssentials": {
-      "visa": "Visa",
+      "visa": "Visado",
       "helper": {
         "noOrigin": "Selecciona un origen para estimar vuelos."
       },
@@ -165,7 +165,7 @@
   },
   "embed": {
     "openSource": "Abrir video fuente",
-    "sectionTitle": "Videos"
+    "sectionTitle": "Videos incrustados"
   },
   "legal": {
     "terms": {
@@ -183,7 +183,7 @@
   },
   "footer": {
     "terms": "Terminos",
-    "cookies": "Cookies",
+    "cookies": "Politica de cookies",
     "privacy": "Privacidad"
   },
   "uiPage": {
@@ -234,7 +234,7 @@
     "meta": {
       "title": "Metadatos de region",
       "country": "pais",
-      "regionKey": "region key",
+      "regionKey": "clave de zona",
       "memberCount": "cantidad de miembros"
     },
     "noBody": "Aun no hay contenido.",
