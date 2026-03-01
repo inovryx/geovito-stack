@@ -12,6 +12,7 @@ HEALTH_ENV_FILE="${HEALTH_ENV_FILE:-$HOME/.config/geovito/health.env}"
 
 GO_LIVE_WITH_DEPLOY="${GO_LIVE_WITH_DEPLOY:-true}"
 GO_LIVE_WITH_SMTP="${GO_LIVE_WITH_SMTP:-false}"
+GO_LIVE_WITH_BACKUP_VERIFY="${GO_LIVE_WITH_BACKUP_VERIFY:-false}"
 GO_LIVE_REQUIRE_CREATOR="${GO_LIVE_REQUIRE_CREATOR:-false}"
 GO_LIVE_SKIP_PRE_IMPORT="${GO_LIVE_SKIP_PRE_IMPORT:-false}"
 GO_LIVE_SKIP_PRE_DESIGN="${GO_LIVE_SKIP_PRE_DESIGN:-false}"
@@ -46,6 +47,7 @@ Env toggles:
   HEALTH_ENV_FILE=~/.config/geovito/health.env
   GO_LIVE_REQUIRE_CREATOR=true    # fail if creator username missing
   GO_LIVE_WITH_DEPLOY=true|false  # run pages_deploy_force before smoke (default: true)
+  GO_LIVE_WITH_BACKUP_VERIFY=true # verify latest backup snapshot integrity
   GO_LIVE_SKIP_PRE_IMPORT=true    # skip pre_import_index_gate_check
   GO_LIVE_SKIP_PRE_DESIGN=true    # skip pre_design_gate_check
   GO_LIVE_SKIP_UI=true            # skip account/dashboard playwright checks
@@ -65,6 +67,7 @@ Examples:
   GO_LIVE_WITH_DEPLOY=false bash tools/go_live_gate.sh
   CREATOR_USERNAME=olmysweet GO_LIVE_REQUIRE_CREATOR=true bash tools/go_live_gate.sh
   GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate.sh
+  GO_LIVE_WITH_BACKUP_VERIFY=true bash tools/go_live_gate.sh
   GO_LIVE_SKIP_UGC_API_CONTRACT=true bash tools/go_live_gate.sh
   GO_LIVE_SKIP_UI_PAGE_PROGRESS=true bash tools/go_live_gate.sh
 USAGE
@@ -132,7 +135,7 @@ echo "=============================================================="
 echo "GEOVITO GO-LIVE GATE"
 echo "expected_sha7=${EXPECTED_SHA7}"
 echo "creator_username=${CREATOR_USERNAME:-<empty>}"
-echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP}"
+echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP} with_backup_verify=${GO_LIVE_WITH_BACKUP_VERIFY}"
 echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE} skip_community_settings_smoke=${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE} skip_ugc_api_contract=${GO_LIVE_SKIP_UGC_API_CONTRACT} skip_ui_page_progress=${GO_LIVE_SKIP_UI_PAGE_PROGRESS} skip_dashboard_role_smoke=${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE} skip_follow_smoke=${GO_LIVE_SKIP_FOLLOW_SMOKE} skip_notification_smoke=${GO_LIVE_SKIP_NOTIFICATION_SMOKE} skip_saved_list_smoke=${GO_LIVE_SKIP_SAVED_LIST_SMOKE}"
 echo "=============================================================="
 
@@ -145,6 +148,16 @@ if [[ -n "$HEALTH_TOKEN" ]]; then
 else
   run_step "Stack Health" bash -lc "cd '$ROOT_DIR' && HEALTH_ENV_FILE='$HEALTH_ENV_FILE' bash tools/stack_health.sh"
 fi
+
+if [[ "$GO_LIVE_WITH_BACKUP_VERIFY" == "true" ]]; then
+  run_step "Backup Verify" bash tools/backup_verify.sh
+else
+  STEP_NAMES+=("Backup Verify")
+  STEP_STATUS+=("SKIP")
+  STEP_CODES+=("0")
+  echo "RESULT: SKIP (Backup Verify)"
+fi
+
 run_step "Production Health" bash tools/prod_health.sh
 run_step "Pages Build Check" bash tools/pages_build_check.sh
 

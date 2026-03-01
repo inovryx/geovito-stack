@@ -55,3 +55,18 @@ If failing:
 1. Identify first failing gate.
 2. Revert or hotfix only that scope.
 3. Re-run full chain before redeploy.
+
+## 6) Backup / Restore Drill
+Before high-risk schema/content operations:
+1. `bash tools/backup_create.sh`
+2. `bash tools/backup_verify.sh`
+
+If rollback is needed:
+1. Identify snapshot stamp under backup root (default `~/backups/geovito`).
+2. Restore DB:
+`cat ~/backups/geovito/<STAMP>/postgres.sql | docker compose exec -T db sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'`
+3. Restore uploads:
+`cat ~/backups/geovito/<STAMP>/uploads.tgz | docker compose exec -T strapi sh -lc 'tar -C /opt/app/public -xzf -'`
+4. Run health and smoke:
+- `bash tools/stack_health.sh`
+- `bash tools/smoke_access.sh`

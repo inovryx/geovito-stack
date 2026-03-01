@@ -21,6 +21,9 @@ GO_LIVE_WITH_DEPLOY=false bash tools/go_live_gate.sh
 # include SMTP reset smoke
 GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate.sh
 
+# include backup integrity verify (latest snapshot under BACKUP_ROOT)
+GO_LIVE_WITH_BACKUP_VERIFY=true bash tools/go_live_gate.sh
+
 # if /api/_health is token-protected
 HEALTH_TOKEN=your_token_here bash tools/go_live_gate.sh
 
@@ -55,6 +58,7 @@ nano ~/.config/geovito/health.env
 
 ## Core Infrastructure
 - [ ] `bash tools/stack_health.sh` PASS
+- [ ] `GO_LIVE_WITH_BACKUP_VERIFY=true bash tools/go_live_gate.sh` includes `Backup Verify` PASS
 - [ ] `bash tools/prod_health.sh` PASS
 - [ ] `bash tools/pages_build_check.sh` PASS
 

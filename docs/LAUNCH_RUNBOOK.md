@@ -455,6 +455,23 @@ What it verifies:
 - `db` and `strapi` containers are running/healthy.
 - Strapi `GET /api/_health` returns `200` and `ok=true, db=true`.
 
+Backup + restore verification (recommended before risky changes):
+
+```bash
+bash tools/backup_env_init.sh
+nano ~/.config/geovito/backup.env
+bash tools/backup_create.sh
+bash tools/backup_verify.sh
+```
+
+Notes:
+- Backups are stored under `BACKUP_ROOT/<UTC_STAMP>/` (default: `~/backups/geovito`).
+- Snapshot includes:
+  - `postgres.sql` (plain pg_dump)
+  - `uploads.tgz` (Strapi uploads archive)
+  - `meta.txt` + `SHA256SUMS`
+- `backup_create.sh` auto-prunes snapshots older than `BACKUP_KEEP_DAYS`.
+
 Auth profile bootstrap (repeatable QA personas):
 
 ```bash
