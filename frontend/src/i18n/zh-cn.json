@@ -7,41 +7,41 @@
     "help": "Bangzhu",
     "home": "Shouye",
     "about": "Guanyu",
-    "atlas": "Atlas",
+    "atlas": "Tansuo",
     "rules": "Guize",
     "account": "Zhanghu",
     "regions": "Qvyu"
   },
   "ops": {
     "kpi": {
-      "clicks": "Clicks (7d)",
-      "earnings": "Earnings (7d)",
-      "requests": "Cloudflare requests (7d)",
-      "sessions": "Sessions (7d)",
-      "pageviews": "Pageviews (7d)",
-      "impressions": "Impressions (7d)"
+      "clicks": "Dianji liang (7d)",
+      "earnings": "Shouyi (7d)",
+      "requests": "Cloudflare qingqiu liang (7d)",
+      "sessions": "Huihua shu (7d)",
+      "pageviews": "Yemian liulan liang (7d)",
+      "impressions": "Baoguang liang (7d)"
     },
     "empty": {
-      "desc": "Run the metrics collector locally, then refresh this page.",
-      "title": "No metrics collected yet"
+      "desc": "Qing zai bendi yunxing zhibiao caijiqi, ranhou shuaxin benye.",
+      "title": "Hai mei you caiji dao zhibiao"
     },
-    "title": "Ops Metrics",
+    "title": "Ops zhibiao",
     "disabled": {
-      "desc": "Set PUBLIC_OPS_MODE=local to allow local file reading in this environment.",
-      "title": "Ops metrics viewer is disabled in this mode"
+      "desc": "Shezhi PUBLIC_OPS_MODE=local, yi yunxu dangqian huanjing duqu bendi wenjian.",
+      "title": "Dangqian moshi xia Ops zhibiao liulan yi guanbi"
     },
-    "subtitle": "Internal aggregated metrics dashboard for local operations.",
+    "subtitle": "Mianxiang bendi yunying de neibu huizong zhibiao yibiaopan.",
     "providers": {
-      "ok": "OK",
-      "error": "Error",
-      "title": "Provider status",
-      "notConfigured": "Not configured"
+      "ok": "Zhengchang",
+      "error": "Cuowu",
+      "title": "Tigongfang zhuangtai",
+      "notConfigured": "Wei peizhi"
     }
   },
   "auth": {
-    "registerDisabledBody": "Account creation is paused in this environment.",
-    "registerDisabledHint": "Registration is currently disabled.",
-    "registerDisabledTitle": "Registration is disabled"
+    "registerDisabledBody": "Dangqian huanjing zhong zhanghu chuangjian yi zanting.",
+    "registerDisabledHint": "Muqian zhuce gongneng yi guanbi.",
+    "registerDisabledTitle": "Zhuce yi guanbi"
   },
   "blog": {
     "noBody": "Zanwu zhengwen neirong.",
@@ -50,20 +50,20 @@
     "listDescription": "Geovito boke liebiao"
   },
   "home": {
-    "noTrending": "No trending places yet.",
+    "noTrending": "Zanwu remen didian.",
     "blogSection": "Boke",
     "defaultBody": "Zanwu zhengwen neirong.",
-    "defaultTitle": "Geovito Atlas",
-    "trendingHint": "City-like places resolved via country_profile.city_like_levels.",
+    "defaultTitle": "Geovito Tansuo",
+    "trendingHint": "Leisi chengshi de didian tongguo country_profile.city_like_levels jinxing panding.",
     "noPostSummary": "Zanwu zhaiyao.",
-    "trendingTitle": "Trending places",
+    "trendingTitle": "Remen didian",
     "atlasCountries": "Atlas (Guojia)",
     "defaultExcerpt": "You Strapi qudong de shouye.",
     "noCountryDescription": "Zanwu miaoshu."
   },
   "post": {
     "meta": {
-      "postId": "post_id",
+      "postId": "wenzhang_id",
       "languageStatus": "yuyan zhuangtai"
     },
     "noBody": "Zanwu zhengwen neirong."
@@ -78,11 +78,11 @@
     },
     "list": {
       "empty": "Zanwu guojia nei rong.",
-      "title": "Atlas",
+      "title": "Tansuo",
       "states": {
-        "draft": "draft",
-        "missing": "missing",
-        "complete": "complete"
+        "draft": "caogao",
+        "missing": "queshi",
+        "complete": "wancheng"
       },
       "filters": {
         "all": "Quanbu",
@@ -111,7 +111,7 @@
       "type": "leixing",
       "region": "quyu",
       "country": "guojia",
-      "placeId": "place_id",
+      "placeId": "didian_id",
       "coordinates": "zuobiao",
       "notAvailable": "zanwu",
       "languageStatus": "yuyan zhuangtai"
@@ -183,7 +183,7 @@
   },
   "footer": {
     "terms": "Tiaokuan",
-    "cookies": "Cookies",
+    "cookies": "Cookie zhengce",
     "privacy": "Yinsi"
   },
   "uiPage": {
@@ -234,7 +234,7 @@
     "meta": {
       "title": "Qvyu yuan shuju",
       "country": "guojia",
-      "regionKey": "region key",
+      "regionKey": "quyu key",
       "memberCount": "chengyuan shuliang"
     },
     "noBody": "Zanwu zhengwen neirong.",
@@ -250,7 +250,7 @@
       "savedPlaces": "shoucang didian/watchlist (future)",
       "submissions": "wo de Atlas jianyi (future)"
     },
-    "title": "Dashboard",
+    "title": "Yibiaopan",
     "loginCta": "qianwang zhanghu shell",
     "dataTitle": "jihua zhong de mokuai",
     "description": "Mianxiang bianji liucheng de anquan dashboard shell.",
