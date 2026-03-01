@@ -33,6 +33,9 @@ GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=true bash tools/go_live_gate.sh
 # skip UGC API contract check (not recommended for release)
 GO_LIVE_SKIP_UGC_API_CONTRACT=true bash tools/go_live_gate.sh
 
+# skip UI page progress check (not recommended for release)
+GO_LIVE_SKIP_UI_PAGE_PROGRESS=true bash tools/go_live_gate.sh
+
 # skip dashboard role baseline smoke (not recommended for release)
 GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=true bash tools/go_live_gate.sh
 
@@ -76,6 +79,7 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/report_moderation_smoke.sh` PASS
 - [ ] `bash tools/community_settings_smoke.sh` PASS
 - [ ] `bash tools/ugc_api_contract_check.sh` PASS
+- [ ] `bash tools/ui_page_progress_report.sh` PASS
 - [ ] `bash tools/dashboard_role_smoke.sh` PASS
 - [ ] `bash tools/follow_system_smoke.sh` PASS
 - [ ] `bash tools/notification_preferences_smoke.sh` PASS
