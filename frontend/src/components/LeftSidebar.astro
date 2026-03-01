@@ -20,6 +20,7 @@ const registerPath = `/${currentLanguage}/register/`;
 const dashboardPath = `/${currentLanguage}/dashboard/`;
 const accountPath = `/${currentLanguage}/account/`;
 const accountCommentsPath = `${accountPath}?commentState=pending#comments`;
+const accountSavedListsPath = `${accountPath}#saved-lists`;
 const accountLocalePath = `${accountPath}#locale-progress`;
 const dashboardEditorialPath = `${dashboardPath}#dashboard-editorial-moderation`;
 const dashboardReportsPath = `${dashboardPath}#dashboard-editorial-reports`;
@@ -60,6 +61,7 @@ const adminControlLabel = translate(ui, 'dashboard.controlAdmin', {}, 'Open Stra
 const workspaceTitle = translate(ui, 'dashboard.workspaceTitle', {}, 'Workspace');
 const workspaceHint = translate(ui, 'dashboard.workspaceHint', {}, 'Personal and role-based shortcuts.');
 const workspaceCommentsLabel = translate(ui, 'dashboard.quickComments', {}, 'Open my comment queue');
+const workspaceSavedListsLabel = translate(ui, 'dashboard.savedListsManage', {}, 'Open saved lists');
 const workspaceLocaleLabel = translate(ui, 'dashboard.quickLocale', {}, 'Open translation progress');
 const dashboardModuleTitle = translate(ui, 'dashboard.moduleNavTitle', {}, 'Dashboard modules');
 const dashboardModuleGeneral = translate(ui, 'dashboard.moduleGeneral', {}, 'General');
@@ -204,6 +206,11 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
       <li>
         <a class="small-link" href={accountCommentsPath} data-auth-workspace-link data-min-role="member">
           {workspaceCommentsLabel}
+        </a>
+      </li>
+      <li>
+        <a class="small-link" href={accountSavedListsPath} data-auth-workspace-link data-min-role="member">
+          {workspaceSavedListsLabel}
         </a>
       </li>
       <li>

@@ -20,6 +20,47 @@ test.beforeEach(async ({ page }) => {
       }),
     });
   });
+  await page.route(/\/api\/user-saved-lists\/me\/lists\?limit=200$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          items: [
+            {
+              list_id: 'list-atlas',
+              title: 'Atlas picks',
+              visibility: 'private',
+              item_count: 3,
+            },
+            {
+              list_id: 'list-stories',
+              title: 'Story ideas',
+              visibility: 'public',
+              item_count: 2,
+            },
+          ],
+        },
+      }),
+    });
+  });
+  await page.route(/\/api\/user-saved-lists\/me\/items\?limit=500$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          items: [
+            { item_id: 'item-1', list_id: 'list-atlas', target_type: 'place', target_ref: 'italy-pilot' },
+            { item_id: 'item-2', list_id: 'list-atlas', target_type: 'place', target_ref: 'berlin' },
+            { item_id: 'item-3', list_id: 'list-atlas', target_type: 'post', target_ref: 'post-neighborhood-layers' },
+            { item_id: 'item-4', list_id: 'list-stories', target_type: 'post', target_ref: 'post-city-break' },
+            { item_id: 'item-5', list_id: 'list-stories', target_type: 'post', target_ref: 'post-route-cues' },
+          ],
+        },
+      }),
+    });
+  });
   await page.route(/\/api\/content-reports\/moderation\/list\?limit=60$/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -270,6 +311,10 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-follow-total]')).toHaveText('3');
   await expect(page.locator('[data-dashboard-follow-users]')).toHaveText('1');
   await expect(page.locator('[data-dashboard-follow-places]')).toHaveText('2');
+  await expect(page.locator('[data-dashboard-saved-lists-total-lists]')).toHaveText('2');
+  await expect(page.locator('[data-dashboard-saved-lists-total-items]')).toHaveText('5');
+  await expect(page.locator('[data-dashboard-saved-lists-total-posts]')).toHaveText('3');
+  await expect(page.locator('[data-dashboard-saved-lists-total-places]')).toHaveText('2');
   await expect(page.locator('[data-dashboard-notifications-site]')).toHaveText('Disabled');
   await expect(page.locator('[data-dashboard-notifications-email]')).toHaveText('Disabled');
   await expect(page.locator('[data-dashboard-notifications-digest]')).toHaveText('Daily');

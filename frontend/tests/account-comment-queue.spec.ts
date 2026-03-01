@@ -192,6 +192,52 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
     });
   });
 
+  await page.route(/\/api\/user-saved-lists\/me\/lists\?limit=200$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          items: [
+            {
+              list_id: 'list-main',
+              slug: 'my-atlas',
+              title: 'My atlas picks',
+              visibility: 'private',
+              item_count: 2,
+              updated_at: '2026-02-21T07:00:00.000Z',
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-saved-lists\/me\/items\?limit=500$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          items: [
+            {
+              item_id: 'item-1',
+              list_id: 'list-main',
+              target_type: 'place',
+              target_ref: 'place-istanbul',
+            },
+            {
+              item_id: 'item-2',
+              list_id: 'list-main',
+              target_type: 'post',
+              target_ref: 'post-city-break',
+            },
+          ],
+        },
+      }),
+    });
+  });
+
   await page.route(/\/api\/ui-locales\/meta\/progress/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -364,6 +410,13 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-requests-new]')).toHaveText('2');
   await expect(page.locator('[data-account-requests-approved]')).toHaveText('1');
   await expect(page.locator('[data-account-requests-list]')).toContainText('request-003');
+  await expect(page.locator('[data-account-saved-lists]')).toBeVisible();
+  await expect(page.locator('[data-account-saved-lists-total-lists]')).toHaveText('1');
+  await expect(page.locator('[data-account-saved-lists-total-items]')).toHaveText('2');
+  await expect(page.locator('[data-account-saved-lists-total-posts]')).toHaveText('1');
+  await expect(page.locator('[data-account-saved-lists-total-places]')).toHaveText('1');
+  await expect(page.locator('[data-account-saved-lists-list]')).toContainText('My atlas picks');
+  await expect(page.locator('[data-account-saved-lists-list]')).toContainText('place-istanbul');
 
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');
@@ -499,6 +552,30 @@ test('account commentState query pre-filters comment queue and focuses comments 
               coverage_percent: 100,
             },
           ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-saved-lists\/me\/lists\?limit=200$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          items: [],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-saved-lists\/me\/items\?limit=500$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          items: [],
         },
       }),
     });

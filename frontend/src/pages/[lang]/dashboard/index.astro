@@ -102,6 +102,20 @@ const dashboardCopy = {
   notificationsLoadedAt: translate(ui, 'dashboard.notificationsLoadedAt', {}, 'Loaded at'),
   notificationsLoadFailed: translate(ui, 'dashboard.notificationsLoadFailed', {}, 'Could not load notification preferences.'),
   notificationsManage: translate(ui, 'dashboard.notificationsManage', {}, 'Open notification settings'),
+  savedListsTitle: translate(ui, 'dashboard.savedListsTitle', {}, 'Saved lists'),
+  savedListsBody: translate(
+    ui,
+    'dashboard.savedListsBody',
+    {},
+    'Personal list coverage across saved places and posts.'
+  ),
+  savedListsTotalLists: translate(ui, 'dashboard.savedListsTotalLists', {}, 'Lists'),
+  savedListsTotalItems: translate(ui, 'dashboard.savedListsTotalItems', {}, 'Saved items'),
+  savedListsTotalPosts: translate(ui, 'dashboard.savedListsTotalPosts', {}, 'Saved posts'),
+  savedListsTotalPlaces: translate(ui, 'dashboard.savedListsTotalPlaces', {}, 'Saved places'),
+  savedListsLoadedAt: translate(ui, 'dashboard.savedListsLoadedAt', {}, 'Loaded at'),
+  savedListsLoadFailed: translate(ui, 'dashboard.savedListsLoadFailed', {}, 'Could not load saved lists.'),
+  savedListsManage: translate(ui, 'dashboard.savedListsManage', {}, 'Open saved lists'),
   commentsTitle: translate(ui, 'dashboard.commentsTitle', {}, 'My comment moderation'),
   commentsBody: translate(
     ui,
@@ -764,6 +778,39 @@ const dashboardCopy = {
             <div class="dashboard-actions">
               <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#notification-preferences`}>
                 <span class="ui-button-label">{dashboardCopy.notificationsManage}</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card panel gv-stack">
+            <h3 class="dashboard-mini-title">{dashboardCopy.savedListsTitle}</h3>
+            <p class="small">{dashboardCopy.savedListsBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.savedListsTotalLists}</span>
+                <strong data-dashboard-saved-lists-total-lists>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.savedListsTotalItems}</span>
+                <strong data-dashboard-saved-lists-total-items>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.savedListsTotalPosts}</span>
+                <strong data-dashboard-saved-lists-total-posts>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.savedListsTotalPlaces}</span>
+                <strong data-dashboard-saved-lists-total-places>0</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.savedListsLoadedAt}</span>
+                <strong data-dashboard-saved-lists-loaded-at>{dashboardCopy.followStatusUnknown}</strong>
+              </p>
+            </div>
+            <p class="small" data-dashboard-saved-lists-note hidden></p>
+            <div class="dashboard-actions">
+              <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#saved-lists`}>
+                <span class="ui-button-label">{dashboardCopy.savedListsManage}</span>
               </a>
             </div>
           </article>
@@ -1466,6 +1513,12 @@ const dashboardCopy = {
       const notificationsDigestNode = document.querySelector('[data-dashboard-notifications-digest]');
       const notificationsLoadedAtNode = document.querySelector('[data-dashboard-notifications-loaded-at]');
       const notificationsNoteNode = document.querySelector('[data-dashboard-notifications-note]');
+      const savedListsTotalListsNode = document.querySelector('[data-dashboard-saved-lists-total-lists]');
+      const savedListsTotalItemsNode = document.querySelector('[data-dashboard-saved-lists-total-items]');
+      const savedListsTotalPostsNode = document.querySelector('[data-dashboard-saved-lists-total-posts]');
+      const savedListsTotalPlacesNode = document.querySelector('[data-dashboard-saved-lists-total-places]');
+      const savedListsLoadedAtNode = document.querySelector('[data-dashboard-saved-lists-loaded-at]');
+      const savedListsNoteNode = document.querySelector('[data-dashboard-saved-lists-note]');
       const creatorUsernameNode = document.querySelector('[data-dashboard-creator-username]');
       const creatorVisibilityNode = document.querySelector('[data-dashboard-creator-visibility]');
       const creatorDraftsNode = document.querySelector('[data-dashboard-creator-drafts]');
@@ -1837,6 +1890,37 @@ const dashboardCopy = {
           note.hidden = true;
           note.textContent = '';
           note.classList.remove('is-error');
+        }
+      };
+
+      const resetSavedListsView = () => {
+        setText(savedListsTotalListsNode, '0');
+        setText(savedListsTotalItemsNode, '0');
+        setText(savedListsTotalPostsNode, '0');
+        setText(savedListsTotalPlacesNode, '0');
+        setText(savedListsLoadedAtNode, dashboardCopy.followStatusUnknown);
+        if (toNode(savedListsNoteNode)) {
+          toNode(savedListsNoteNode).hidden = true;
+          toNode(savedListsNoteNode).textContent = '';
+          toNode(savedListsNoteNode).classList.remove('is-error');
+        }
+      };
+
+      const applySavedListsView = (listsPayload, itemsPayload, loadedAtIsoString) => {
+        const lists = Array.isArray(listsPayload?.items) ? listsPayload.items : [];
+        const items = Array.isArray(itemsPayload?.items) ? itemsPayload.items : [];
+        const postCount = items.filter((item) => String(item?.target_type || '').trim().toLowerCase() === 'post').length;
+        const placeCount = items.filter((item) => String(item?.target_type || '').trim().toLowerCase() === 'place').length;
+
+        setText(savedListsTotalListsNode, String(normalizeCount(lists.length, 0)));
+        setText(savedListsTotalItemsNode, String(normalizeCount(items.length, 0)));
+        setText(savedListsTotalPostsNode, String(normalizeCount(postCount, 0)));
+        setText(savedListsTotalPlacesNode, String(normalizeCount(placeCount, 0)));
+        setText(savedListsLoadedAtNode, formatDate(loadedAtIsoString));
+        if (toNode(savedListsNoteNode)) {
+          toNode(savedListsNoteNode).hidden = true;
+          toNode(savedListsNoteNode).textContent = '';
+          toNode(savedListsNoteNode).classList.remove('is-error');
         }
       };
 
@@ -3215,6 +3299,7 @@ const dashboardCopy = {
         setText(commentsRejectedNode, '0');
         resetFollowView();
         resetNotificationView();
+        resetSavedListsView();
         setCreatorProfileView(null, {
           draftCount: 0,
           submittedCount: 0,
@@ -3364,6 +3449,46 @@ const dashboardCopy = {
             toNode(followNoteNode).hidden = false;
             toNode(followNoteNode).textContent = dashboardCopy.followLoadFailed;
             toNode(followNoteNode).classList.add('is-error');
+          }
+        }
+
+        try {
+          const listsResponse = await fetch(`${authBaseUrl}/api/user-saved-lists/me/lists?limit=200`, { headers: authHeaders });
+          if (listsResponse.ok) {
+            const listsPayload = await listsResponse.json().catch(() => ({}));
+            let itemsPayload = { items: [] };
+            const itemsResponse = await fetch(`${authBaseUrl}/api/user-saved-lists/me/items?limit=500`, { headers: authHeaders });
+            if (itemsResponse.ok) {
+              const parsed = await itemsResponse.json().catch(() => ({}));
+              itemsPayload = parsed?.data && typeof parsed.data === 'object' ? parsed.data : { items: [] };
+            } else if (!(itemsResponse.status === 404 || itemsResponse.status === 405)) {
+              hadErrors = true;
+              if (toNode(savedListsNoteNode)) {
+                toNode(savedListsNoteNode).hidden = false;
+                toNode(savedListsNoteNode).textContent = dashboardCopy.savedListsLoadFailed;
+                toNode(savedListsNoteNode).classList.add('is-error');
+              }
+            }
+
+            const listsData =
+              listsPayload?.data && typeof listsPayload.data === 'object'
+                ? listsPayload.data
+                : { items: [] };
+            applySavedListsView(listsData, itemsPayload, new Date().toISOString());
+          } else if (!(listsResponse.status === 404 || listsResponse.status === 405)) {
+            hadErrors = true;
+            if (toNode(savedListsNoteNode)) {
+              toNode(savedListsNoteNode).hidden = false;
+              toNode(savedListsNoteNode).textContent = dashboardCopy.savedListsLoadFailed;
+              toNode(savedListsNoteNode).classList.add('is-error');
+            }
+          }
+        } catch {
+          hadErrors = true;
+          if (toNode(savedListsNoteNode)) {
+            toNode(savedListsNoteNode).hidden = false;
+            toNode(savedListsNoteNode).textContent = dashboardCopy.savedListsLoadFailed;
+            toNode(savedListsNoteNode).classList.add('is-error');
           }
         }
 

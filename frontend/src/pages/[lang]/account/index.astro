@@ -304,6 +304,25 @@ const accountCopy = {
   followsUnfollowFailed: translate(ui, 'account.followsUnfollowFailed', {}, 'Could not update follow status.'),
   followsUpdated: translate(ui, 'account.followsUpdated', {}, 'Follow list updated.'),
   followsDisabled: translate(ui, 'account.followsDisabled', {}, 'Follow system is currently disabled by community settings.'),
+  savedListsTitle: translate(ui, 'account.savedListsTitle', {}, 'Saved lists'),
+  savedListsDescription: translate(
+    ui,
+    'account.savedListsDescription',
+    {},
+    'Track your saved places/posts and list coverage from one panel.'
+  ),
+  savedListsRefresh: translate(ui, 'account.savedListsRefresh', {}, 'Refresh lists'),
+  savedListsLoading: translate(ui, 'account.savedListsLoading', {}, 'Loading saved lists...'),
+  savedListsLoadFailed: translate(ui, 'account.savedListsLoadFailed', {}, 'Could not load saved lists right now.'),
+  savedListsNone: translate(ui, 'account.savedListsNone', {}, 'No saved lists yet. Create your first list from atlas or blog cards.'),
+  savedListsTotalLists: translate(ui, 'account.savedListsTotalLists', {}, 'Lists'),
+  savedListsTotalItems: translate(ui, 'account.savedListsTotalItems', {}, 'Saved items'),
+  savedListsTotalPosts: translate(ui, 'account.savedListsTotalPosts', {}, 'Saved posts'),
+  savedListsTotalPlaces: translate(ui, 'account.savedListsTotalPlaces', {}, 'Saved places'),
+  savedListsVisibility: translate(ui, 'account.savedListsVisibility', {}, 'Visibility'),
+  savedListsUpdatedAt: translate(ui, 'account.savedListsUpdatedAt', {}, 'Updated'),
+  savedListsItemsLabel: translate(ui, 'account.savedListsItemsLabel', {}, 'Items'),
+  savedListsRecentTargets: translate(ui, 'account.savedListsRecentTargets', {}, 'Recent targets'),
   passwordTitle: translate(ui, 'account.passwordTitle', {}, 'Change password'),
   passwordDescription: translate(
     ui,
@@ -502,6 +521,35 @@ const accountCopy = {
     <ul class="account-comments-list gv-stack" data-account-follows-list></ul>
     <p class="small" data-account-follows-empty>{accountCopy.followsNone}</p>
     <p class="small account-feedback" data-account-follows-feedback aria-live="polite"></p>
+  </section>
+
+  <section class="card panel gv-stack" id="saved-lists" data-account-saved-lists hidden data-auth-base={authBaseUrl}>
+    <div class="account-comments-head">
+      <div>
+        <h2>{accountCopy.savedListsTitle}</h2>
+        <p class="small">{accountCopy.savedListsDescription}</p>
+      </div>
+      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-saved-lists-refresh>
+        <span class="ui-button-label">{accountCopy.savedListsRefresh}</span>
+      </button>
+    </div>
+    <div class="account-comments-stats">
+      <span>
+        {accountCopy.savedListsTotalLists}: <strong data-account-saved-lists-total-lists>0</strong>
+      </span>
+      <span>
+        {accountCopy.savedListsTotalItems}: <strong data-account-saved-lists-total-items>0</strong>
+      </span>
+      <span>
+        {accountCopy.savedListsTotalPosts}: <strong data-account-saved-lists-total-posts>0</strong>
+      </span>
+      <span>
+        {accountCopy.savedListsTotalPlaces}: <strong data-account-saved-lists-total-places>0</strong>
+      </span>
+    </div>
+    <ul class="account-comments-list gv-stack" data-account-saved-lists-list></ul>
+    <p class="small" data-account-saved-lists-empty>{accountCopy.savedListsNone}</p>
+    <p class="small account-feedback" data-account-saved-lists-feedback aria-live="polite"></p>
   </section>
 
   <section class="card panel gv-stack" id="locale-progress" data-account-locale-progress hidden>
@@ -2018,6 +2066,199 @@ const accountCopy = {
       loadComments();
       loadAccountRequests();
       loadLocaleProgress();
+    })();
+  </script>
+
+  <script is:inline define:vars={{ accountCopy }}>
+    (() => {
+      const section = document.querySelector('[data-account-saved-lists]');
+      if (!(section instanceof HTMLElement)) return;
+
+      const authBase = section.getAttribute('data-auth-base');
+      const listNode = section.querySelector('[data-account-saved-lists-list]');
+      const emptyNode = section.querySelector('[data-account-saved-lists-empty]');
+      const feedbackNode = section.querySelector('[data-account-saved-lists-feedback]');
+      const refreshButton = section.querySelector('[data-account-saved-lists-refresh]');
+      const totalListsNode = section.querySelector('[data-account-saved-lists-total-lists]');
+      const totalItemsNode = section.querySelector('[data-account-saved-lists-total-items]');
+      const totalPostsNode = section.querySelector('[data-account-saved-lists-total-posts]');
+      const totalPlacesNode = section.querySelector('[data-account-saved-lists-total-places]');
+      if (
+        !authBase ||
+        !(listNode instanceof HTMLElement) ||
+        !(emptyNode instanceof HTMLElement) ||
+        !(feedbackNode instanceof HTMLElement) ||
+        !(refreshButton instanceof HTMLButtonElement) ||
+        !(totalListsNode instanceof HTMLElement) ||
+        !(totalItemsNode instanceof HTMLElement) ||
+        !(totalPostsNode instanceof HTMLElement) ||
+        !(totalPlacesNode instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      const readSession = () => {
+        try {
+          const fromLocal = localStorage.getItem('geovito_auth_session');
+          if (fromLocal) return JSON.parse(fromLocal);
+          const fromSession = sessionStorage.getItem('geovito_auth_session');
+          if (fromSession) {
+            localStorage.setItem('geovito_auth_session', fromSession);
+            return JSON.parse(fromSession);
+          }
+        } catch (_error) {
+          return null;
+        }
+        return null;
+      };
+
+      const session = readSession();
+      const jwt = typeof session?.jwt === 'string' ? session.jwt : '';
+      if (!jwt) {
+        section.hidden = true;
+        return;
+      }
+
+      section.hidden = false;
+      const escapeHtml = (value) =>
+        String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      const setFeedback = (message, isError = false) => {
+        feedbackNode.textContent = String(message || '');
+        feedbackNode.classList.toggle('is-error', Boolean(isError));
+      };
+      const formatDate = (value) => {
+        if (!value) return '-';
+        const date = new Date(String(value));
+        if (Number.isNaN(date.getTime())) return '-';
+        return date.toLocaleString();
+      };
+
+      let currentLists = [];
+      let currentItems = [];
+
+      const normalizeCount = (value) => {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed < 0) return 0;
+        return Math.round(parsed);
+      };
+
+      const renderStats = () => {
+        const items = Array.isArray(currentItems) ? currentItems : [];
+        const listTotal = Array.isArray(currentLists) ? currentLists.length : 0;
+        const postTotal = items.filter((item) => String(item?.target_type || '').toLowerCase() === 'post').length;
+        const placeTotal = items.filter((item) => String(item?.target_type || '').toLowerCase() === 'place').length;
+        totalListsNode.textContent = String(listTotal);
+        totalItemsNode.textContent = String(items.length);
+        totalPostsNode.textContent = String(postTotal);
+        totalPlacesNode.textContent = String(placeTotal);
+      };
+
+      const renderRows = () => {
+        listNode.innerHTML = '';
+        const lists = Array.isArray(currentLists) ? currentLists : [];
+        const items = Array.isArray(currentItems) ? currentItems : [];
+        emptyNode.hidden = lists.length > 0;
+        if (lists.length === 0) return;
+
+        const itemIndex = new Map();
+        for (const item of items) {
+          const listId = String(item?.list_id || '');
+          if (!listId) continue;
+          const row = itemIndex.get(listId) || [];
+          row.push(String(item?.target_ref || '').trim());
+          itemIndex.set(listId, row);
+        }
+
+        const fragment = document.createDocumentFragment();
+        for (const row of lists) {
+          const item = document.createElement('li');
+          item.className = 'account-comment-item';
+          const listId = String(row?.list_id || '');
+          const title = String(row?.title || row?.slug || '-');
+          const visibility = String(row?.visibility || '-');
+          const updatedAt = formatDate(row?.updated_at || row?.created_at);
+          const itemCount = normalizeCount(row?.item_count);
+          const preview = (itemIndex.get(listId) || []).slice(0, 3).filter(Boolean);
+          const previewText = preview.length > 0 ? preview.join(', ') : '-';
+
+          item.innerHTML = `
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(title)}</strong>
+            </p>
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(accountCopy.savedListsVisibility)}:</strong> ${escapeHtml(visibility)}
+              · <strong>${escapeHtml(accountCopy.savedListsItemsLabel)}:</strong> ${escapeHtml(String(itemCount))}
+              · <strong>${escapeHtml(accountCopy.savedListsUpdatedAt)}:</strong> ${escapeHtml(updatedAt)}
+            </p>
+            <p class="account-comment-meta">
+              <strong>${escapeHtml(accountCopy.savedListsRecentTargets)}:</strong> ${escapeHtml(previewText)}
+            </p>
+          `;
+          fragment.appendChild(item);
+        }
+
+        listNode.appendChild(fragment);
+      };
+
+      const load = async () => {
+        setFeedback(accountCopy.savedListsLoading);
+        try {
+          const listResponse = await fetch(`${authBase}/api/user-saved-lists/me/lists?limit=200`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${jwt}`,
+            },
+          });
+
+          if (!listResponse.ok) {
+            if (listResponse.status === 401) {
+              section.hidden = true;
+              return;
+            }
+            if (listResponse.status === 404 || listResponse.status === 405) {
+              section.hidden = true;
+              return;
+            }
+            setFeedback(accountCopy.savedListsLoadFailed, true);
+            return;
+          }
+
+          const listPayload = await listResponse.json().catch(() => ({}));
+          currentLists = Array.isArray(listPayload?.data?.items) ? listPayload.data.items : [];
+
+          const itemResponse = await fetch(`${authBase}/api/user-saved-lists/me/items?limit=500`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${jwt}`,
+            },
+          });
+          if (itemResponse.ok) {
+            const itemPayload = await itemResponse.json().catch(() => ({}));
+            currentItems = Array.isArray(itemPayload?.data?.items) ? itemPayload.data.items : [];
+          } else if (itemResponse.status === 404 || itemResponse.status === 405) {
+            currentItems = [];
+          } else {
+            currentItems = [];
+          }
+
+          renderStats();
+          renderRows();
+          setFeedback('');
+        } catch (_error) {
+          setFeedback(accountCopy.savedListsLoadFailed, true);
+        }
+      };
+
+      refreshButton.addEventListener('click', () => {
+        load();
+      });
+
+      load();
     })();
   </script>
 
