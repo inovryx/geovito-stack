@@ -42,6 +42,8 @@ central policy controls for guest comments, link policy, moderation strictness, 
 member-scoped site language + notification preferences (`site/email enabled`, `digest`), partial update safe.
 - `user-follow`:
 member follow graph foundation (`target_type=user|place`) controlled by `follow_system_enabled`.
+- `user-saved-list` + `user-saved-item`:
+member-owned saved collections for place/post targets (`list` + `toggle/list` foundations).
 - `content-report`:
 post/comment/photo/profile reporting and moderation lifecycle.
 - `account-request`:

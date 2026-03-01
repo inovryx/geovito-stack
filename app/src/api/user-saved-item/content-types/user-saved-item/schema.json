@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_saved_items",
+  "info": {
+    "singularName": "user-saved-item",
+    "pluralName": "user-saved-items",
+    "displayName": "User Saved Item",
+    "description": "Saved place/post references scoped by member list ownership."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "item_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "list": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-saved-list.user-saved-list"
+    },
+    "list_id": {
+      "type": "string",
+      "required": true
+    },
+    "owner_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "required": true
+    },
+    "target_type": {
+      "type": "enumeration",
+      "enum": ["place", "post"],
+      "required": true
+    },
+    "target_ref": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 220
+    },
+    "saved_from_ip": {
+      "type": "string"
+    },
+    "last_toggled_at": {
+      "type": "datetime"
+    }
+  }
+}

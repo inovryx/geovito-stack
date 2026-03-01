@@ -41,6 +41,9 @@ GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=true bash tools/go_live_gate.sh
 
 # skip follow/notification foundation smokes (not recommended for release)
 GO_LIVE_SKIP_FOLLOW_SMOKE=true GO_LIVE_SKIP_NOTIFICATION_SMOKE=true bash tools/go_live_gate.sh
+
+# skip saved list foundation smoke (not recommended for release)
+GO_LIVE_SKIP_SAVED_LIST_SMOKE=true bash tools/go_live_gate.sh
 ```
 
 Optional secret-file setup for health token:
@@ -83,6 +86,7 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/dashboard_role_smoke.sh` PASS
 - [ ] `bash tools/follow_system_smoke.sh` PASS
 - [ ] `bash tools/notification_preferences_smoke.sh` PASS
+- [ ] `bash tools/saved_list_smoke.sh` PASS
 - [ ] guest comment policy and link limits verified
 
 ## Profile + Routing

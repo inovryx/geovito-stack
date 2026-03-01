@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_saved_lists",
+  "info": {
+    "singularName": "user-saved-list",
+    "pluralName": "user-saved-lists",
+    "displayName": "User Saved List",
+    "description": "Member-managed saved collections for places/posts."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "list_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "owner_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "owner_user_id": {
+      "type": "integer",
+      "required": true
+    },
+    "slug": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": ["private", "public"],
+      "default": "private"
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_from_ip": {
+      "type": "string"
+    },
+    "last_toggled_at": {
+      "type": "datetime"
+    }
+  }
+}

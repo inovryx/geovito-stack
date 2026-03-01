@@ -58,6 +58,13 @@ else
   echo "RESULT: SKIP (UGC API Contract Check) set RUN_UGC_API_CONTRACT_GATE=false to disable"
   SUMMARY_LINES+=("SKIP | UGC API Contract Check | opt_out")
 fi
+RUN_SAVED_LIST_SMOKE_GATE_VALUE="${RUN_SAVED_LIST_SMOKE_GATE:-true}"
+if [[ "$RUN_SAVED_LIST_SMOKE_GATE_VALUE" == "true" ]]; then
+  run_gate "Saved List Smoke" bash tools/saved_list_smoke.sh
+else
+  echo "RESULT: SKIP (Saved List Smoke) set RUN_SAVED_LIST_SMOKE_GATE=false to disable"
+  SUMMARY_LINES+=("SKIP | Saved List Smoke | opt_out")
+fi
 if [[ "${RUN_BLOG_ENGAGEMENT_UI_GATE:-false}" == "true" ]]; then
   run_gate "Blog Engagement UI Playwright" bash tools/blog_engagement_ui_playwright.sh
 else

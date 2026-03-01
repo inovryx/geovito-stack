@@ -229,6 +229,8 @@ Not:
   - `bash tools/release_deploy_smoke.sh --with-moderation --with-blog-engagement-test`
 - Include dashboard role + follow + notification foundations:
   - `bash tools/release_deploy_smoke.sh --with-dashboard-role-smoke --with-follow-smoke --with-notification-smoke`
+- Include saved list foundation smoke:
+  - `bash tools/release_deploy_smoke.sh --with-saved-list-smoke`
 - Include UGC backend contract smoke:
   - `bash tools/release_deploy_smoke.sh --with-ugc-api-contract`
 - Include creator mini-site smoke (`/u/{username}` + `/@{username}` alias):
@@ -244,6 +246,7 @@ Notes:
 - `--with-blog-engagement-test` runs `bash tools/blog_engagement_ui_playwright.sh`.
 - `--with-follow-smoke` runs `bash tools/follow_system_smoke.sh`.
 - `--with-notification-smoke` runs `bash tools/notification_preferences_smoke.sh`.
+- `--with-saved-list-smoke` runs `bash tools/saved_list_smoke.sh`.
 - `--with-ugc-api-contract` runs `bash tools/ugc_api_contract_check.sh`.
 - `--with-comment-bulk-action` requires:
   - `COMMENT_BULK_ACTION` in `approve-next-bulk|reject-next-bulk|spam-next-bulk|delete-next-bulk`
@@ -286,6 +289,9 @@ Follow system foundation smoke (feature flag + member toggle/list guard):
 
 Notification preferences foundation smoke (member GET + partial update guards):
 - `bash tools/notification_preferences_smoke.sh`
+
+Saved list foundation smoke (member list create + item toggle/list guard):
+- `bash tools/saved_list_smoke.sh`
 
 Community settings control-center smoke (role guard + effective contract):
 - `bash tools/community_settings_smoke.sh`
