@@ -6,7 +6,9 @@ module.exports = {
       method: 'GET',
       path: '/ui-pages/meta/progress',
       handler: 'ui-page.progress',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
     {
       method: 'GET',
