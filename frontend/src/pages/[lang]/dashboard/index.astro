@@ -1377,6 +1377,22 @@ const dashboardCopy = {
                 <strong data-dashboard-owner-locale-deploy>0</strong>
               </li>
               <li>
+                <span>{dashboardCopy.followTotal}</span>
+                <strong data-dashboard-owner-follow-total>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.savedListsTotalItems}</span>
+                <strong data-dashboard-owner-saved-items>0</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.notificationsSite}</span>
+                <strong data-dashboard-owner-notification-site>{dashboardCopy.followStatusUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.notificationsEmail}</span>
+                <strong data-dashboard-owner-notification-email>{dashboardCopy.followStatusUnknown}</strong>
+              </li>
+              <li>
                 <span>{dashboardCopy.ownerSummaryRefreshedAt}</span>
                 <strong data-dashboard-owner-refreshed>{dashboardCopy.unknown}</strong>
               </li>
@@ -1433,6 +1449,25 @@ const dashboardCopy = {
                   >
                     <span class="ui-button-label">{dashboardCopy.activityActionTranslations}</span>
                     <span class="dashboard-owner-widget-badge" data-dashboard-owner-widget-badge="locale" hidden>0</span>
+                  </a>
+                </div>
+              </article>
+              <article class="dashboard-owner-widget" data-dashboard-owner-widget="community" data-state="unknown">
+                <header>
+                  <span>{dashboardCopy.communityTitle}</span>
+                  <strong data-dashboard-owner-widget-community-state>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
+                </header>
+                <p class="small" data-dashboard-owner-widget-community-detail>{dashboardCopy.activityBuildUnknown}</p>
+                <div class="dashboard-owner-widget-actions">
+                  <a
+                    class="ui-button ui-button-secondary ui-button-sm"
+                    href={communitySettingsAdminUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-dashboard-owner-widget-action="community"
+                  >
+                    <span class="ui-button-label">{dashboardCopy.communityManage}</span>
+                    <span class="dashboard-owner-widget-badge" data-dashboard-owner-widget-badge="community" hidden>0</span>
                   </a>
                 </div>
               </article>
@@ -1569,6 +1604,10 @@ const dashboardCopy = {
       const ownerPendingNode = document.querySelector('[data-dashboard-owner-pending]');
       const ownerLocaleGapsNode = document.querySelector('[data-dashboard-owner-locale-gaps]');
       const ownerLocaleDeployNode = document.querySelector('[data-dashboard-owner-locale-deploy]');
+      const ownerFollowTotalNode = document.querySelector('[data-dashboard-owner-follow-total]');
+      const ownerSavedItemsNode = document.querySelector('[data-dashboard-owner-saved-items]');
+      const ownerNotificationSiteNode = document.querySelector('[data-dashboard-owner-notification-site]');
+      const ownerNotificationEmailNode = document.querySelector('[data-dashboard-owner-notification-email]');
       const controlReleaseStatusNode = document.querySelector('[data-dashboard-control-release-status]');
       const controlPendingNode = document.querySelector('[data-dashboard-control-pending]');
       const controlLocaleGapsNode = document.querySelector('[data-dashboard-control-locale-gaps]');
@@ -1582,9 +1621,13 @@ const dashboardCopy = {
       const ownerWidgetLocaleNode = document.querySelector('[data-dashboard-owner-widget="locale"]');
       const ownerWidgetLocaleStateNode = document.querySelector('[data-dashboard-owner-widget-locale-state]');
       const ownerWidgetLocaleDetailNode = document.querySelector('[data-dashboard-owner-widget-locale-detail]');
+      const ownerWidgetCommunityNode = document.querySelector('[data-dashboard-owner-widget="community"]');
+      const ownerWidgetCommunityStateNode = document.querySelector('[data-dashboard-owner-widget-community-state]');
+      const ownerWidgetCommunityDetailNode = document.querySelector('[data-dashboard-owner-widget-community-detail]');
       const ownerWidgetReleaseBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="release"]');
       const ownerWidgetModerationBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="moderation"]');
       const ownerWidgetLocaleBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="locale"]');
+      const ownerWidgetCommunityBadgeNode = document.querySelector('[data-dashboard-owner-widget-badge="community"]');
       const communityOpenModeNode = document.querySelector('[data-dashboard-community-open-mode]');
       const communityUgcEnabledNode = document.querySelector('[data-dashboard-community-ugc-enabled]');
       const communityGuestCommentsNode = document.querySelector('[data-dashboard-community-guest-comments]');
@@ -1621,6 +1664,8 @@ const dashboardCopy = {
       let ownerLocaleMissingCount = 0;
       let ownerLocaleUntranslatedCount = 0;
       let ownerLocaleDeployCount = 0;
+      let ownerFollowTotal = 0;
+      let ownerSavedItemsTotal = 0;
       let ownerFingerprintSha = '';
       let creatorProfileUrl = '';
       let communitySettingsPayload = null;
@@ -1845,6 +1890,7 @@ const dashboardCopy = {
 
       const resetFollowView = () => {
         followSystemEnabled = null;
+        ownerFollowTotal = 0;
         setText(followSystemNode, dashboardCopy.followStatusUnknown);
         setText(followTotalNode, '0');
         setText(followUsersNode, '0');
@@ -1875,7 +1921,8 @@ const dashboardCopy = {
         }).length;
 
         setText(followSystemNode, followBoolLabel(followSystemEnabled));
-        setText(followTotalNode, String(normalizeCount(items.length, 0)));
+        ownerFollowTotal = normalizeCount(items.length, 0);
+        setText(followTotalNode, String(ownerFollowTotal));
         setText(followUsersNode, String(normalizeCount(userCount, 0)));
         setText(followPlacesNode, String(normalizeCount(placeCount, 0)));
         setText(followLoadedAtNode, formatDate(loadedAtIsoString));
@@ -1933,6 +1980,7 @@ const dashboardCopy = {
       };
 
       const resetSavedListsView = () => {
+        ownerSavedItemsTotal = 0;
         setText(savedListsTotalListsNode, '0');
         setText(savedListsTotalItemsNode, '0');
         setText(savedListsTotalPostsNode, '0');
@@ -2025,11 +2073,12 @@ const dashboardCopy = {
       const applySavedListsView = (listsPayload, itemsPayload, loadedAtIsoString) => {
         const lists = Array.isArray(listsPayload?.items) ? listsPayload.items : [];
         const items = Array.isArray(itemsPayload?.items) ? itemsPayload.items : [];
+        ownerSavedItemsTotal = normalizeCount(items.length, 0);
         const postCount = items.filter((item) => String(item?.target_type || '').trim().toLowerCase() === 'post').length;
         const placeCount = items.filter((item) => String(item?.target_type || '').trim().toLowerCase() === 'place').length;
 
         setText(savedListsTotalListsNode, String(normalizeCount(lists.length, 0)));
-        setText(savedListsTotalItemsNode, String(normalizeCount(items.length, 0)));
+        setText(savedListsTotalItemsNode, String(ownerSavedItemsTotal));
         setText(savedListsTotalPostsNode, String(normalizeCount(postCount, 0)));
         setText(savedListsTotalPlacesNode, String(normalizeCount(placeCount, 0)));
         setText(savedListsLoadedAtNode, formatDate(loadedAtIsoString));
@@ -2441,8 +2490,19 @@ const dashboardCopy = {
         const localeHasMissing = ownerLocaleMissingCount > 0;
         const localeHasUntranslated = ownerLocaleUntranslatedCount > 0;
         const localeNeedsDeploy = ownerLocaleDeployCount > 0;
+        const followDisabled =
+          followSystemEnabled === false || communitySettingsPayload?.follow_system_enabled === false;
+        const notificationsBothDisabled =
+          notificationsSiteEnabled === false && notificationsEmailEnabled === false;
+        const noSavedSignals = ownerSavedItemsTotal <= 0;
+        const ugcDisabled = communitySettingsPayload?.ugc_enabled === false;
         const localeIssueCount = Math.max(0, Number(ownerLocaleGapCount) + Number(ownerLocaleDeployCount));
         const releaseIssueCount = Number(moderationHasPending) + Number(moderationHasStale) + Number(localeHasGaps) + Number(localeNeedsDeploy);
+
+        setText(ownerFollowTotalNode, String(normalizeCount(ownerFollowTotal, 0)));
+        setText(ownerSavedItemsNode, String(normalizeCount(ownerSavedItemsTotal, 0)));
+        setText(ownerNotificationSiteNode, followBoolLabel(notificationsSiteEnabled));
+        setText(ownerNotificationEmailNode, followBoolLabel(notificationsEmailEnabled));
 
         const releaseState = !hasReleaseSha
           ? 'unknown'
@@ -2531,6 +2591,66 @@ const dashboardCopy = {
         setOwnerWidgetBadge(ownerWidgetLocaleBadgeNode, localeIssueCount, {
           label: dashboardCopy.ownerSummaryLocaleGaps,
           criticalThreshold: 5,
+        });
+
+        const communitySignals = [];
+        if (ugcDisabled) {
+          communitySignals.push(dashboardCopy.activityCommunityUgcDisabled);
+        }
+        if (followDisabled) {
+          communitySignals.push(dashboardCopy.activityCommunityFollowDisabled);
+        }
+        if (notificationsSiteEnabled === false) {
+          communitySignals.push(dashboardCopy.activityNotificationSiteDisabled);
+        }
+        if (notificationsEmailEnabled === false) {
+          communitySignals.push(dashboardCopy.activityNotificationEmailDisabled);
+        }
+        if (noSavedSignals) {
+          communitySignals.push(`${dashboardCopy.savedListsTotalItems}: 0`);
+        }
+
+        const hasCommunityInputs =
+          communitySettingsPayload !== null ||
+          followSystemEnabled !== null ||
+          notificationsSiteEnabled !== null ||
+          notificationsEmailEnabled !== null ||
+          ownerSavedItemsTotal > 0 ||
+          ownerFollowTotal > 0;
+        let communityState = 'unknown';
+        if (hasCommunityInputs) {
+          if (ugcDisabled || (followDisabled && notificationsBothDisabled)) {
+            communityState = 'warn';
+          } else if (followDisabled || notificationsBothDisabled || noSavedSignals) {
+            communityState = 'info';
+          } else {
+            communityState = 'ok';
+          }
+        }
+        const communityStatusText =
+          communityState === 'unknown'
+            ? dashboardCopy.ownerSummaryStatusUnknown
+            : communityState === 'warn'
+              ? dashboardCopy.ownerSummaryStatusAttention
+              : communityState === 'info'
+                ? dashboardCopy.activityLevelInfo
+                : dashboardCopy.ownerSummaryStatusLive;
+        const communityDetailText = hasCommunityInputs
+          ? communitySignals.length > 0
+            ? communitySignals.slice(0, 2).join(' · ')
+            : dashboardCopy.activityAllClear
+          : dashboardCopy.communityLoadFailed;
+        setOwnerWidgetState(
+          ownerWidgetCommunityNode,
+          communityState,
+          ownerWidgetCommunityStateNode,
+          ownerWidgetCommunityDetailNode,
+          communityStatusText,
+          communityDetailText
+        );
+        setOwnerWidgetBadge(ownerWidgetCommunityBadgeNode, communitySignals.length, {
+          label: dashboardCopy.communityTitle,
+          criticalThreshold: 3,
         });
       };
 
@@ -4456,7 +4576,7 @@ const dashboardCopy = {
 
   .dashboard-owner-widgets {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.55rem;
   }
 

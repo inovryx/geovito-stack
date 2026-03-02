@@ -1102,18 +1102,25 @@ test('dashboard owner widgets show warning states when signals are present', asy
   const releaseWidget = page.locator('[data-dashboard-owner-widget="release"]');
   const moderationWidget = page.locator('[data-dashboard-owner-widget="moderation"]');
   const localeWidget = page.locator('[data-dashboard-owner-widget="locale"]');
+  const communityWidget = page.locator('[data-dashboard-owner-widget="community"]');
   const moderationAction = page.locator('[data-dashboard-owner-widget-action="moderation"]');
   const localeAction = page.locator('[data-dashboard-owner-widget-action="locale"]');
+  const communityAction = page.locator('[data-dashboard-owner-widget-action="community"]');
   const releaseBadge = page.locator('[data-dashboard-owner-widget-badge="release"]');
   const moderationBadge = page.locator('[data-dashboard-owner-widget-badge="moderation"]');
   const localeBadge = page.locator('[data-dashboard-owner-widget-badge="locale"]');
+  const communityBadge = page.locator('[data-dashboard-owner-widget-badge="community"]');
 
   await expect(releaseWidget).toHaveAttribute('data-state', 'warn');
   await expect(moderationWidget).toHaveAttribute('data-state', 'warn');
   await expect(localeWidget).toHaveAttribute('data-state', 'warn');
+  await expect(communityWidget).toHaveAttribute('data-state', 'info');
   await expect(page.locator('[data-dashboard-owner-widget-release-detail]')).toContainText('owner77');
   await expect(page.locator('[data-dashboard-owner-widget-moderation-detail]')).toContainText('older than 36h');
   await expect(page.locator('[data-dashboard-owner-widget-locale-detail]')).toContainText('locales have UI translation gaps');
+  await expect(page.locator('[data-dashboard-owner-widget-community-detail]')).toContainText(
+    'Follow system is disabled in community settings.'
+  );
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('TR');
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('8 missing');
   await expect(page.locator('[data-dashboard-locale-list] .dashboard-mini-item').first()).toContainText('deploy');
@@ -1133,8 +1140,11 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(releaseBadge).toHaveAttribute('title', /4$/);
   await expect(moderationBadge).toHaveAttribute('title', /7$/);
   await expect(localeBadge).toHaveAttribute('title', /2$/);
+  await expect(communityBadge).toHaveText('1');
+  await expect(communityBadge).toHaveAttribute('data-level', 'default');
 
   await expect(moderationAction).toHaveAttribute('href', /\/en\/account\/\?commentState=pending#comments$/);
+  await expect(communityAction).toHaveAttribute('href', /\/admin\/content-manager\/single-types\/api::community-setting\.community-setting$/);
   await localeAction.click();
   await expect(page).toHaveURL(/#dashboard-editorial-locale$/);
   await expect(localeAction).toHaveAttribute('href', '#dashboard-editorial-locale');
