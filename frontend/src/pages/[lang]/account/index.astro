@@ -304,6 +304,24 @@ const accountCopy = {
   followsUnfollowFailed: translate(ui, 'account.followsUnfollowFailed', {}, 'Could not update follow status.'),
   followsUpdated: translate(ui, 'account.followsUpdated', {}, 'Follow list updated.'),
   followsDisabled: translate(ui, 'account.followsDisabled', {}, 'Follow system is currently disabled by community settings.'),
+  communityVisibilityCitizenCard: translate(ui, 'account.communityVisibilityCitizenCard', {}, 'Citizen card visibility'),
+  communityVisibilityBadges: translate(ui, 'account.communityVisibilityBadges', {}, 'Badge visibility'),
+  communityVisibilityLoadedAt: translate(ui, 'account.communityVisibilityLoadedAt', {}, 'Loaded at'),
+  communityVisibilityEnabled: translate(ui, 'account.communityVisibilityEnabled', {}, 'Enabled'),
+  communityVisibilityDisabled: translate(ui, 'account.communityVisibilityDisabled', {}, 'Disabled'),
+  communityVisibilityUnknown: translate(ui, 'account.communityVisibilityUnknown', {}, 'Unknown'),
+  communityVisibilityLimited: translate(
+    ui,
+    'account.communityVisibilityLimited',
+    {},
+    'Community visibility settings require editor/admin permission.'
+  ),
+  communityVisibilityLoadFailed: translate(
+    ui,
+    'account.communityVisibilityLoadFailed',
+    {},
+    'Could not load community visibility settings right now.'
+  ),
   savedListsTitle: translate(ui, 'account.savedListsTitle', {}, 'Saved lists'),
   savedListsDescription: translate(
     ui,
@@ -524,8 +542,20 @@ const accountCopy = {
         {accountCopy.followsPlaces}: <strong data-account-follows-places>0</strong>
       </span>
     </div>
+    <div class="account-comments-stats">
+      <span>
+        {accountCopy.communityVisibilityCitizenCard}: <strong data-account-community-citizen-card>{accountCopy.communityVisibilityUnknown}</strong>
+      </span>
+      <span>
+        {accountCopy.communityVisibilityBadges}: <strong data-account-community-badges>{accountCopy.communityVisibilityUnknown}</strong>
+      </span>
+      <span>
+        {accountCopy.communityVisibilityLoadedAt}: <strong data-account-community-loaded-at>{accountCopy.communityVisibilityUnknown}</strong>
+      </span>
+    </div>
     <ul class="account-comments-list gv-stack" data-account-follows-list></ul>
     <p class="small" data-account-follows-empty>{accountCopy.followsNone}</p>
+    <p class="small account-feedback" data-account-community-feedback aria-live="polite"></p>
     <p class="small account-feedback" data-account-follows-feedback aria-live="polite"></p>
   </section>
 
@@ -2379,17 +2409,25 @@ const accountCopy = {
       const listNode = section.querySelector('[data-account-follows-list]');
       const emptyNode = section.querySelector('[data-account-follows-empty]');
       const feedbackNode = section.querySelector('[data-account-follows-feedback]');
+      const communityFeedbackNode = section.querySelector('[data-account-community-feedback]');
       const refreshButton = section.querySelector('[data-account-follows-refresh]');
       const usersCount = section.querySelector('[data-account-follows-users]');
       const placesCount = section.querySelector('[data-account-follows-places]');
+      const communityCitizenCardNode = section.querySelector('[data-account-community-citizen-card]');
+      const communityBadgesNode = section.querySelector('[data-account-community-badges]');
+      const communityLoadedAtNode = section.querySelector('[data-account-community-loaded-at]');
       if (
         !authBase ||
         !(listNode instanceof HTMLElement) ||
         !(emptyNode instanceof HTMLElement) ||
         !(feedbackNode instanceof HTMLElement) ||
+        !(communityFeedbackNode instanceof HTMLElement) ||
         !(refreshButton instanceof HTMLButtonElement) ||
         !(usersCount instanceof HTMLElement) ||
-        !(placesCount instanceof HTMLElement)
+        !(placesCount instanceof HTMLElement) ||
+        !(communityCitizenCardNode instanceof HTMLElement) ||
+        !(communityBadgesNode instanceof HTMLElement) ||
+        !(communityLoadedAtNode instanceof HTMLElement)
       ) {
         return;
       }
@@ -2428,11 +2466,53 @@ const accountCopy = {
         feedbackNode.textContent = String(message || '');
         feedbackNode.classList.toggle('is-error', Boolean(isError));
       };
+      const setCommunityFeedback = (message, isError = false) => {
+        communityFeedbackNode.textContent = String(message || '');
+        communityFeedbackNode.classList.toggle('is-error', Boolean(isError));
+      };
       const formatDate = (value) => {
         if (!value) return '-';
         const date = new Date(String(value));
         if (Number.isNaN(date.getTime())) return '-';
         return date.toLocaleString();
+      };
+      const toBoolLabel = (value) => {
+        if (value === true) return accountCopy.communityVisibilityEnabled;
+        if (value === false) return accountCopy.communityVisibilityDisabled;
+        return accountCopy.communityVisibilityUnknown;
+      };
+      const resetCommunityVisibilityView = () => {
+        communityCitizenCardNode.textContent = accountCopy.communityVisibilityUnknown;
+        communityBadgesNode.textContent = accountCopy.communityVisibilityUnknown;
+        communityLoadedAtNode.textContent = accountCopy.communityVisibilityUnknown;
+        setCommunityFeedback('');
+      };
+      const loadCommunityVisibility = async () => {
+        resetCommunityVisibilityView();
+        try {
+          const response = await fetch(`${authBase}/api/community-settings/effective`, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${jwt}`,
+            },
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (response.status === 403) {
+            setCommunityFeedback(accountCopy.communityVisibilityLimited);
+            return;
+          }
+          if (!response.ok) {
+            setCommunityFeedback(accountCopy.communityVisibilityLoadFailed, true);
+            return;
+          }
+          const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
+          communityCitizenCardNode.textContent = toBoolLabel(data.citizen_card_visible);
+          communityBadgesNode.textContent = toBoolLabel(data.badges_visible);
+          communityLoadedAtNode.textContent = formatDate(new Date().toISOString());
+          setCommunityFeedback('');
+        } catch (_error) {
+          setCommunityFeedback(accountCopy.communityVisibilityLoadFailed, true);
+        }
       };
 
       let currentRows = [];
@@ -2582,9 +2662,11 @@ const accountCopy = {
 
       refreshButton.addEventListener('click', () => {
         load();
+        loadCommunityVisibility();
       });
 
       load();
+      loadCommunityVisibility();
     })();
   </script>
 </MainLayout>

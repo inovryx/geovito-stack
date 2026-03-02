@@ -68,6 +68,19 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
     });
   });
 
+  await page.route(/\/api\/community-settings\/effective$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          citizen_card_visible: true,
+          badges_visible: false,
+        },
+      }),
+    });
+  });
+
   await page.route(/\/api\/blog-comments\/me\/list/, async (route) => {
     queueRequestCount += 1;
     const payload =
@@ -470,6 +483,8 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-saved-lists-total-places]')).toHaveText('0');
   await expect(page.locator('[data-account-saved-lists-list]')).not.toContainText('place-istanbul');
   await expect(page.locator('[data-account-saved-lists-list]')).toContainText('post-city-break');
+  await expect(page.locator('[data-account-community-citizen-card]')).toContainText('Enabled');
+  await expect(page.locator('[data-account-community-badges]')).toContainText('Disabled');
 
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');
@@ -523,6 +538,19 @@ test('account commentState query pre-filters comment queue and focuses comments 
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/community-settings\/effective$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          citizen_card_visible: true,
+          badges_visible: false,
+        },
+      }),
     });
   });
 
@@ -683,6 +711,19 @@ test('account requestState query pre-filters account requests list', async ({ pa
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/community-settings\/effective$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          citizen_card_visible: true,
+          badges_visible: false,
+        },
+      }),
     });
   });
 
