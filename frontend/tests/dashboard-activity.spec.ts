@@ -1106,6 +1106,9 @@ test('dashboard owner widgets show warning states when signals are present', asy
   const moderationAction = page.locator('[data-dashboard-owner-widget-action="moderation"]');
   const localeAction = page.locator('[data-dashboard-owner-widget-action="locale"]');
   const communityAction = page.locator('[data-dashboard-owner-widget-action="community"]');
+  const communityFollowAction = page.locator('[data-dashboard-owner-widget-action="community-follow"]');
+  const communityNotificationsAction = page.locator('[data-dashboard-owner-widget-action="community-notifications"]');
+  const communitySavedAction = page.locator('[data-dashboard-owner-widget-action="community-saved"]');
   const releaseBadge = page.locator('[data-dashboard-owner-widget-badge="release"]');
   const moderationBadge = page.locator('[data-dashboard-owner-widget-badge="moderation"]');
   const localeBadge = page.locator('[data-dashboard-owner-widget-badge="locale"]');
@@ -1131,6 +1134,10 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(page.locator('[data-dashboard-moderation-pending]')).toHaveText('7');
   await expect(page.locator('[data-dashboard-moderation-stale]')).toHaveText('3');
   await expect(page.locator('[data-dashboard-moderation-oldest]')).toHaveText('96h');
+  await expect(page.locator('[data-dashboard-owner-follow-total]')).toHaveText('3');
+  await expect(page.locator('[data-dashboard-owner-saved-items]')).toHaveText('5');
+  await expect(page.locator('[data-dashboard-owner-notification-site]')).toHaveText('Unknown');
+  await expect(page.locator('[data-dashboard-owner-notification-email]')).toHaveText('Unknown');
   await expect(releaseBadge).toHaveText('4');
   await expect(moderationBadge).toHaveText('7');
   await expect(localeBadge).toHaveText('2');
@@ -1144,7 +1151,19 @@ test('dashboard owner widgets show warning states when signals are present', asy
   await expect(communityBadge).toHaveAttribute('data-level', 'default');
 
   await expect(moderationAction).toHaveAttribute('href', /\/en\/account\/\?commentState=pending#comments$/);
+  await expect(communityFollowAction).toHaveAttribute('href', '#dashboard-member');
+  await expect(communityNotificationsAction).toHaveAttribute('href', '#dashboard-member');
+  await expect(communitySavedAction).toHaveAttribute('href', '#dashboard-member');
+  await expect(communityFollowAction).toHaveAttribute('data-dashboard-focus-target', 'dashboard-member-follow');
+  await expect(communityNotificationsAction).toHaveAttribute('data-dashboard-focus-target', 'dashboard-member-notifications');
+  await expect(communitySavedAction).toHaveAttribute('data-dashboard-focus-target', 'dashboard-member-saved-lists');
   await expect(communityAction).toHaveAttribute('href', /\/admin\/content-manager\/single-types\/api::community-setting\.community-setting$/);
+
+  await communityFollowAction.click();
+  await expect(page).toHaveURL(/#dashboard-member$/);
+  await expect(page.locator('[data-dashboard-section-pill][href="#dashboard-member"]').first()).toHaveClass(/is-active/);
+  await expect(page.locator('#dashboard-member-follow')).toBeVisible();
+
   await localeAction.click();
   await expect(page).toHaveURL(/#dashboard-editorial-locale$/);
   await expect(localeAction).toHaveAttribute('href', '#dashboard-editorial-locale');

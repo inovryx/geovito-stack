@@ -706,7 +706,7 @@ const dashboardCopy = {
         </header>
 
         <div class="dashboard-grid" data-dashboard-lane-content>
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" id="dashboard-member-follow">
             <h3 class="dashboard-mini-title">{dashboardCopy.overviewTitle}</h3>
             <dl class="dashboard-dl">
               <div>
@@ -732,7 +732,7 @@ const dashboardCopy = {
             </dl>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" id="dashboard-member-notifications">
             <h3 class="dashboard-mini-title">{dashboardCopy.preferenceTitle}</h3>
             <p class="small">{dashboardCopy.preferenceBody}</p>
             <p class="dashboard-kpi">
@@ -741,7 +741,7 @@ const dashboardCopy = {
             </p>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" id="dashboard-member-saved-lists">
             <h3 class="dashboard-mini-title">{dashboardCopy.followTitle}</h3>
             <p class="small">{dashboardCopy.followBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1461,6 +1461,33 @@ const dashboardCopy = {
                 <div class="dashboard-owner-widget-actions">
                   <a
                     class="ui-button ui-button-secondary ui-button-sm"
+                    href="#dashboard-member"
+                    data-dashboard-section-pill
+                    data-dashboard-owner-widget-action="community-follow"
+                    data-dashboard-focus-target="dashboard-member-follow"
+                  >
+                    <span class="ui-button-label">{dashboardCopy.followTitle}</span>
+                  </a>
+                  <a
+                    class="ui-button ui-button-secondary ui-button-sm"
+                    href="#dashboard-member"
+                    data-dashboard-section-pill
+                    data-dashboard-owner-widget-action="community-notifications"
+                    data-dashboard-focus-target="dashboard-member-notifications"
+                  >
+                    <span class="ui-button-label">{dashboardCopy.notificationsTitle}</span>
+                  </a>
+                  <a
+                    class="ui-button ui-button-secondary ui-button-sm"
+                    href="#dashboard-member"
+                    data-dashboard-section-pill
+                    data-dashboard-owner-widget-action="community-saved"
+                    data-dashboard-focus-target="dashboard-member-saved-lists"
+                  >
+                    <span class="ui-button-label">{dashboardCopy.savedListsTitle}</span>
+                  </a>
+                  <a
+                    class="ui-button ui-button-secondary ui-button-sm"
                     href={communitySettingsAdminUrl}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -1647,7 +1674,8 @@ const dashboardCopy = {
       const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
       const activityClearNode = document.querySelector('[data-dashboard-activity-clear]');
-      const sectionPillLinks = Array.from(
+      const sectionPillLinks = Array.from(document.querySelectorAll('[data-dashboard-section-pill]'));
+      const sectionNavPillLinks = Array.from(
         document.querySelectorAll('.dashboard-section-nav [data-dashboard-section-pill]')
       );
       const moduleCardLinks = Array.from(document.querySelectorAll('[data-dashboard-module-link]'));
@@ -2239,7 +2267,7 @@ const dashboardCopy = {
       const isLaneVisible = (laneNode) => laneNode instanceof HTMLElement && laneNode.hidden !== true;
 
       const getVisibleSectionLinks = () => {
-        return sectionPillLinks.filter((link) => {
+        return sectionNavPillLinks.filter((link) => {
           if (!(link instanceof HTMLAnchorElement)) return false;
           return !link.hidden;
         });
@@ -2261,7 +2289,7 @@ const dashboardCopy = {
           if (!(link instanceof HTMLAnchorElement)) return false;
           return !link.hidden;
         });
-        sectionPillLinks.forEach((link) => {
+        sectionNavPillLinks.forEach((link) => {
           if (link instanceof HTMLElement) {
             link.classList.remove('is-active');
           }
@@ -2344,6 +2372,7 @@ const dashboardCopy = {
       const applyModuleView = (hash, options = {}) => {
         const syncHash = options.syncHash !== false;
         const focusTarget = options.focusTarget === true;
+        const requestedFocusTargetId = String(options.focusTargetId || '').trim();
         const module = resolveModuleFromHash(hash, currentRoleRank);
         if (!module) return null;
 
@@ -2386,7 +2415,7 @@ const dashboardCopy = {
         }
 
         if (focusTarget) {
-          const targetId = String(module.focusId || module.laneId || '').trim();
+          const targetId = String(requestedFocusTargetId || module.focusId || module.laneId || '').trim();
           if (targetId) {
             const targetNode = document.getElementById(targetId);
             if (targetNode instanceof HTMLElement) {
@@ -2402,6 +2431,7 @@ const dashboardCopy = {
         const requestedHash = String(hash || '').trim();
         if (!requestedHash.startsWith('#')) return null;
         const syncHash = options.syncHash !== false;
+        const focusTargetId = String(options.focusTargetId || '').trim();
         if (syncHash) {
           try {
             history.replaceState(null, '', requestedHash);
@@ -2412,6 +2442,7 @@ const dashboardCopy = {
         return applyModuleView(requestedHash, {
           syncHash: false,
           focusTarget: options.focusTarget === true,
+          focusTargetId,
         });
       };
 
@@ -4048,8 +4079,9 @@ const dashboardCopy = {
           link.addEventListener('click', (event) => {
             const href = String(link.getAttribute('href') || '').trim();
             if (!href.startsWith('#')) return;
+            const focusTargetId = String(link.dataset.dashboardFocusTarget || '').trim();
             event.preventDefault();
-            applyHashNavigation(href, { syncHash: true, focusTarget: true });
+            applyHashNavigation(href, { syncHash: true, focusTarget: true, focusTargetId });
           });
         });
 
