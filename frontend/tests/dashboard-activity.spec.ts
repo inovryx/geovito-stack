@@ -330,6 +330,7 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('comments are pending moderation');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('locales have UI translation gaps');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Follow system is disabled in community settings.');
+  await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Badge visibility is disabled in community settings.');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('In-site notifications are disabled on your profile.');
   await expect(page.locator('[data-dashboard-activity-feed]')).toContainText('Email notifications are disabled on your profile.');
   await expect(
@@ -343,6 +344,8 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   ).toBeVisible();
   await expect(page.locator('[data-dashboard-community-open-mode]')).toContainText('Controlled');
   await expect(page.locator('[data-dashboard-community-follow-enabled]')).toContainText('Disabled');
+  await expect(page.locator('[data-dashboard-community-citizen-card]')).toContainText('Enabled');
+  await expect(page.locator('[data-dashboard-community-badges]')).toContainText('Disabled');
   await expect(page.locator('[data-dashboard-follow-system]')).toHaveText('Disabled');
   await expect(page.locator('[data-dashboard-follow-total]')).toHaveText('3');
   await expect(page.locator('[data-dashboard-follow-users]')).toHaveText('1');

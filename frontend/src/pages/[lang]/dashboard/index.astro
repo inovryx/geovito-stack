@@ -375,6 +375,8 @@ const dashboardCopy = {
   communityUgcEnabled: translate(ui, 'dashboard.communityUgcEnabled', {}, 'UGC enabled'),
   communityGuestComments: translate(ui, 'dashboard.communityGuestComments', {}, 'Guest comments'),
   communityFollowSystem: translate(ui, 'dashboard.communityFollowSystem', {}, 'Follow system'),
+  communityCitizenCard: translate(ui, 'dashboard.communityCitizenCard', {}, 'Citizen card'),
+  communityBadges: translate(ui, 'dashboard.communityBadges', {}, 'Badges'),
   communityPostLinks: translate(ui, 'dashboard.communityPostLinks', {}, 'Post links'),
   communityCommentLinks: translate(ui, 'dashboard.communityCommentLinks', {}, 'Comment links'),
   communityPostLinkLimit: translate(ui, 'dashboard.communityPostLinkLimit', {}, 'Post link limit'),
@@ -391,6 +393,18 @@ const dashboardCopy = {
   activityCommunityUgcDisabled: translate(ui, 'dashboard.activityCommunityUgcDisabled', {}, 'UGC publishing is disabled in community settings.'),
   activityCommunityGuestDisabled: translate(ui, 'dashboard.activityCommunityGuestDisabled', {}, 'Guest comments are disabled in community settings.'),
   activityCommunityFollowDisabled: translate(ui, 'dashboard.activityCommunityFollowDisabled', {}, 'Follow system is disabled in community settings.'),
+  activityCommunityCitizenCardDisabled: translate(
+    ui,
+    'dashboard.activityCommunityCitizenCardDisabled',
+    {},
+    'Citizen card visibility is disabled in community settings.'
+  ),
+  activityCommunityBadgesDisabled: translate(
+    ui,
+    'dashboard.activityCommunityBadgesDisabled',
+    {},
+    'Badge visibility is disabled in community settings.'
+  ),
   activityNotificationSiteDisabled: translate(ui, 'dashboard.activityNotificationSiteDisabled', {}, 'In-site notifications are disabled on your profile.'),
   activityNotificationEmailDisabled: translate(ui, 'dashboard.activityNotificationEmailDisabled', {}, 'Email notifications are disabled on your profile.'),
   ownerOpsTitle: translate(ui, 'dashboard.ownerOpsTitle', {}, 'Owner operations'),
@@ -1224,6 +1238,14 @@ const dashboardCopy = {
                 <strong data-dashboard-community-follow-enabled>{dashboardCopy.communityValueUnknown}</strong>
               </li>
               <li>
+                <span>{dashboardCopy.communityCitizenCard}</span>
+                <strong data-dashboard-community-citizen-card>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
+                <span>{dashboardCopy.communityBadges}</span>
+                <strong data-dashboard-community-badges>{dashboardCopy.communityValueUnknown}</strong>
+              </li>
+              <li>
                 <span>{dashboardCopy.communityPostLinks}</span>
                 <strong data-dashboard-community-post-links>{dashboardCopy.communityValueUnknown}</strong>
               </li>
@@ -1567,6 +1589,8 @@ const dashboardCopy = {
       const communityUgcEnabledNode = document.querySelector('[data-dashboard-community-ugc-enabled]');
       const communityGuestCommentsNode = document.querySelector('[data-dashboard-community-guest-comments]');
       const communityFollowEnabledNode = document.querySelector('[data-dashboard-community-follow-enabled]');
+      const communityCitizenCardNode = document.querySelector('[data-dashboard-community-citizen-card]');
+      const communityBadgesNode = document.querySelector('[data-dashboard-community-badges]');
       const communityPostLinksNode = document.querySelector('[data-dashboard-community-post-links]');
       const communityCommentLinksNode = document.querySelector('[data-dashboard-community-comment-links]');
       const communityPostLinkLimitNode = document.querySelector('[data-dashboard-community-post-link-limit]');
@@ -1783,6 +1807,8 @@ const dashboardCopy = {
         setText(communityUgcEnabledNode, dashboardCopy.communityValueUnknown);
         setText(communityGuestCommentsNode, dashboardCopy.communityValueUnknown);
         setText(communityFollowEnabledNode, dashboardCopy.communityValueUnknown);
+        setText(communityCitizenCardNode, dashboardCopy.communityValueUnknown);
+        setText(communityBadgesNode, dashboardCopy.communityValueUnknown);
         setText(communityPostLinksNode, dashboardCopy.communityValueUnknown);
         setText(communityCommentLinksNode, dashboardCopy.communityValueUnknown);
         setText(communityPostLinkLimitNode, '0');
@@ -1805,6 +1831,8 @@ const dashboardCopy = {
         setText(communityUgcEnabledNode, boolLabel(data?.ugc_enabled));
         setText(communityGuestCommentsNode, boolLabel(data?.guest_comments_enabled));
         setText(communityFollowEnabledNode, boolLabel(data?.follow_system_enabled));
+        setText(communityCitizenCardNode, boolLabel(data?.citizen_card_visible));
+        setText(communityBadgesNode, boolLabel(data?.badges_visible));
         setText(communityPostLinksNode, boolLabel(data?.post_links_enabled));
         setText(communityCommentLinksNode, boolLabel(data?.comments_links_enabled));
         setText(communityPostLinkLimitNode, String(normalizeCount(data?.post_link_limit, 0)));
@@ -2623,6 +2651,24 @@ const dashboardCopy = {
               events.push({
                 level: 'info',
                 message: dashboardCopy.activityCommunityFollowDisabled,
+                actionLabel: dashboardCopy.communityManage,
+                actionHref: communitySettingsAdminUrl,
+                ts: nowTs,
+              });
+            }
+            if (communitySettingsPayload.citizen_card_visible === false) {
+              events.push({
+                level: 'info',
+                message: dashboardCopy.activityCommunityCitizenCardDisabled,
+                actionLabel: dashboardCopy.communityManage,
+                actionHref: communitySettingsAdminUrl,
+                ts: nowTs,
+              });
+            }
+            if (communitySettingsPayload.badges_visible === false) {
+              events.push({
+                level: 'info',
+                message: dashboardCopy.activityCommunityBadgesDisabled,
                 actionLabel: dashboardCopy.communityManage,
                 actionHref: communitySettingsAdminUrl,
                 ts: nowTs,
