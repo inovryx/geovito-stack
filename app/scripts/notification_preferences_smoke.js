@@ -14,6 +14,7 @@ const PREFERENCE_UID = 'api::user-preference.user-preference';
 const TEMP_PASSWORD = 'TempPassw0rd!';
 const SUFFIX = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`.slice(0, 12);
 const DIGEST_VALUES = new Set(['off', 'instant', 'daily', 'weekly']);
+const ONBOARDING_STATUS_VALUES = new Set(['in_progress', 'completed', 'skipped']);
 
 const created = {
   userId: null,
@@ -222,6 +223,43 @@ const assertPreferenceShape = (payload, label) => {
   return false;
 };
 
+const assertOnboardingShape = (payload, label) => {
+  const row = payload && typeof payload === 'object' ? payload : {};
+  const onboarding =
+    row.onboarding_progress && typeof row.onboarding_progress === 'object' ? row.onboarding_progress : null;
+  const boolKeys = ['profile_completed', 'first_place_selected', 'first_post_started', 'share_prompt_seen', 'skipped'];
+
+  if (!onboarding) {
+    fail(`${label} is missing onboarding_progress`);
+    return false;
+  }
+
+  for (const key of boolKeys) {
+    if (typeof onboarding[key] !== 'boolean') {
+      fail(`${label} onboarding_progress.${key} must be boolean`);
+      return false;
+    }
+  }
+
+  if (!Number.isInteger(onboarding.completed_steps) || !Number.isInteger(onboarding.total_steps)) {
+    fail(`${label} onboarding progress counters are invalid`);
+    return false;
+  }
+
+  if (!Number.isFinite(Number(onboarding.progress_percent))) {
+    fail(`${label} onboarding_progress.progress_percent is invalid`);
+    return false;
+  }
+
+  if (!ONBOARDING_STATUS_VALUES.has(String(onboarding.status || ''))) {
+    fail(`${label} onboarding_progress.status is invalid`);
+    return false;
+  }
+
+  pass(`${label} includes valid onboarding progress shape`);
+  return true;
+};
+
 const run = async () => {
   let strapi;
   try {
@@ -268,6 +306,7 @@ const run = async () => {
       fail(`GET /api/user-preferences/me expected 200, got ${initialGet.status}`);
     }
     assertPreferenceShape(initialGet.json?.data, 'initial GET');
+    assertOnboardingShape(initialGet.json?.data, 'initial GET');
 
     const updateNotifications = await requestJson({
       method: 'PUT',
@@ -298,6 +337,49 @@ const run = async () => {
     } else {
       fail('notification-only update payload mismatch');
     }
+    assertOnboardingShape(updateNotifications.json?.data, 'notification-only update');
+
+    const updateOnboardingOnly = await requestJson({
+      method: 'PUT',
+      urlPath: '/api/user-preferences/me',
+      token: memberIdentity.token,
+      body: {
+        data: {
+          onboarding_progress: {
+            profile_completed: true,
+            first_place_selected: true,
+          },
+        },
+      },
+    });
+
+    if (updateOnboardingOnly.status === 200) {
+      pass('onboarding-only update accepted');
+    } else {
+      fail(`onboarding-only update expected 200, got ${updateOnboardingOnly.status}`);
+    }
+
+    const onboardingRow = updateOnboardingOnly.json?.data || {};
+    assertOnboardingShape(onboardingRow, 'onboarding-only update');
+
+    if (
+      onboardingRow?.onboarding_progress?.profile_completed === true &&
+      onboardingRow?.onboarding_progress?.first_place_selected === true
+    ) {
+      pass('onboarding-only update persisted expected progress flags');
+    } else {
+      fail('onboarding-only update did not persist expected progress flags');
+    }
+
+    if (
+      onboardingRow?.notifications_site_enabled === false &&
+      onboardingRow?.notifications_email_enabled === true &&
+      onboardingRow?.notifications_digest === 'weekly'
+    ) {
+      pass('onboarding-only update kept existing notification preferences');
+    } else {
+      fail('onboarding-only update unexpectedly changed notification preferences');
+    }
 
     const updateLanguageOnly = await requestJson({
       method: 'PUT',
@@ -322,6 +404,7 @@ const run = async () => {
     } else {
       fail('language-only update did not persist preferred language');
     }
+    assertOnboardingShape(languageRow, 'language-only update');
 
     if (
       languageRow?.notifications_site_enabled === false &&
@@ -331,6 +414,15 @@ const run = async () => {
       pass('language-only update kept existing notification preferences');
     } else {
       fail('language-only update unexpectedly changed notification preferences');
+    }
+
+    if (
+      languageRow?.onboarding_progress?.profile_completed === true &&
+      languageRow?.onboarding_progress?.first_place_selected === true
+    ) {
+      pass('language-only update kept onboarding progress values');
+    } else {
+      fail('language-only update unexpectedly changed onboarding progress values');
     }
 
     const invalidDigest = await requestJson({
@@ -367,6 +459,25 @@ const run = async () => {
       fail(`invalid notification boolean expected 400, got ${invalidBoolean.status}`);
     }
 
+    const invalidOnboarding = await requestJson({
+      method: 'PUT',
+      urlPath: '/api/user-preferences/me',
+      token: memberIdentity.token,
+      body: {
+        data: {
+          onboarding_progress: {
+            profile_completed: 'sometimes',
+          },
+        },
+      },
+    });
+
+    if (invalidOnboarding.status === 400) {
+      pass('invalid onboarding progress value is rejected with 400');
+    } else {
+      fail(`invalid onboarding progress expected 400, got ${invalidOnboarding.status}`);
+    }
+
     const finalGet = await requestJson({
       method: 'GET',
       urlPath: '/api/user-preferences/me',
@@ -378,6 +489,7 @@ const run = async () => {
       fail(`final GET expected 200, got ${finalGet.status}`);
     }
     assertPreferenceShape(finalGet.json?.data, 'final GET');
+    assertOnboardingShape(finalGet.json?.data, 'final GET');
 
     const finalData = finalGet.json?.data || {};
     if (
@@ -389,6 +501,15 @@ const run = async () => {
       pass('final preference state matches expected values');
     } else {
       fail('final preference state mismatch');
+    }
+
+    if (
+      finalData?.onboarding_progress?.profile_completed === true &&
+      finalData?.onboarding_progress?.first_place_selected === true
+    ) {
+      pass('final onboarding progress matches expected values');
+    } else {
+      fail('final onboarding progress mismatch');
     }
 
     console.log('==============================================================');

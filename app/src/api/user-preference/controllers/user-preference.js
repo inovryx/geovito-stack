@@ -8,6 +8,21 @@ const DIGEST_OPTIONS = new Set(['off', 'instant', 'daily', 'weekly']);
 const DEFAULT_NOTIFICATIONS_SITE_ENABLED = true;
 const DEFAULT_NOTIFICATIONS_EMAIL_ENABLED = true;
 const DEFAULT_NOTIFICATIONS_DIGEST = 'daily';
+const ONBOARDING_KEYS = [
+  'profile_completed',
+  'first_place_selected',
+  'first_post_started',
+  'share_prompt_seen',
+  'skipped',
+];
+const ONBOARDING_TRACKED_STEPS = ONBOARDING_KEYS.filter((key) => key !== 'skipped');
+const DEFAULT_ONBOARDING_PROGRESS = Object.freeze({
+  profile_completed: false,
+  first_place_selected: false,
+  first_post_started: false,
+  share_prompt_seen: false,
+  skipped: false,
+});
 
 const normalizeLanguage = (value) => {
   const normalized = String(value || '')
@@ -57,6 +72,44 @@ const parseOptionalDigest = (payload, key) => {
   return { present: true, value: normalized, valid: true };
 };
 
+const parseOnboardingBoolean = (value) => {
+  if (typeof value === 'boolean') return { valid: true, value };
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return { valid: true, value: true };
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return { valid: true, value: false };
+  return { valid: false, value: null };
+};
+
+const parseOptionalOnboarding = (payload, key) => {
+  if (!hasOwn(payload, key)) return { present: false, value: null, valid: true };
+
+  const raw = payload[key];
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { present: true, value: null, valid: false };
+  }
+
+  const entries = Object.entries(raw);
+  if (entries.length === 0) {
+    return { present: true, value: null, valid: false };
+  }
+
+  const patch = {};
+  for (const [entryKey, entryValue] of entries) {
+    if (!ONBOARDING_KEYS.includes(entryKey)) {
+      return { present: true, value: null, valid: false };
+    }
+    const parsed = parseOnboardingBoolean(entryValue);
+    if (!parsed.valid) {
+      return { present: true, value: null, valid: false };
+    }
+    patch[entryKey] = parsed.value;
+  }
+
+  return { present: true, value: patch, valid: true };
+};
+
 const getUserId = (ctx) => {
   const rawId = ctx?.state?.user?.id;
   const parsed = Number(rawId);
@@ -104,6 +157,58 @@ const getNotificationDefaults = async () => {
   }
 };
 
+const normalizeOnboardingProgress = (value, fallback = DEFAULT_ONBOARDING_PROGRESS) => {
+  const raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const normalized = {
+    profile_completed: parseBool(raw.profile_completed, fallback.profile_completed),
+    first_place_selected: parseBool(raw.first_place_selected, fallback.first_place_selected),
+    first_post_started: parseBool(raw.first_post_started, fallback.first_post_started),
+    share_prompt_seen: parseBool(raw.share_prompt_seen, fallback.share_prompt_seen),
+    skipped: parseBool(raw.skipped, fallback.skipped),
+  };
+
+  const completedSteps = ONBOARDING_TRACKED_STEPS.reduce((count, key) => {
+    return count + (normalized[key] ? 1 : 0);
+  }, 0);
+
+  const totalSteps = ONBOARDING_TRACKED_STEPS.length;
+  const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  const status = normalized.skipped
+    ? 'skipped'
+    : completedSteps >= totalSteps
+      ? 'completed'
+      : 'in_progress';
+
+  return {
+    ...normalized,
+    completed_steps: completedSteps,
+    total_steps: totalSteps,
+    progress_percent: progressPercent,
+    status,
+  };
+};
+
+const mergeOnboardingProgress = (currentValue, patch = {}) => {
+  const next = {
+    profile_completed: parseBool(currentValue?.profile_completed, DEFAULT_ONBOARDING_PROGRESS.profile_completed),
+    first_place_selected: parseBool(
+      currentValue?.first_place_selected,
+      DEFAULT_ONBOARDING_PROGRESS.first_place_selected
+    ),
+    first_post_started: parseBool(currentValue?.first_post_started, DEFAULT_ONBOARDING_PROGRESS.first_post_started),
+    share_prompt_seen: parseBool(currentValue?.share_prompt_seen, DEFAULT_ONBOARDING_PROGRESS.share_prompt_seen),
+    skipped: parseBool(currentValue?.skipped, DEFAULT_ONBOARDING_PROGRESS.skipped),
+  };
+
+  for (const key of ONBOARDING_KEYS) {
+    if (hasOwn(patch, key)) {
+      next[key] = patch[key] === true;
+    }
+  }
+
+  return next;
+};
+
 const serializePreference = (preference, defaults, source = 'profile') => ({
   preferred_ui_language: preference?.preferred_ui_language || DEFAULT_UI_LANGUAGE,
   notifications_site_enabled: parseBool(
@@ -118,6 +223,7 @@ const serializePreference = (preference, defaults, source = 'profile') => ({
     preference?.notifications_digest,
     defaults.notifications_digest
   ),
+  onboarding_progress: normalizeOnboardingProgress(preference?.onboarding_progress),
   source,
 });
 
@@ -146,6 +252,7 @@ module.exports = {
     const notificationsSite = parseOptionalBoolean(payload, 'notifications_site_enabled');
     const notificationsEmail = parseOptionalBoolean(payload, 'notifications_email_enabled');
     const notificationsDigest = parseOptionalDigest(payload, 'notifications_digest');
+    const onboardingProgress = parseOptionalOnboarding(payload, 'onboarding_progress');
 
     if (hasPreferredLanguage && !preferredLanguage) {
       return ctx.badRequest('preferred_ui_language is required and must be a valid language code.');
@@ -159,11 +266,17 @@ module.exports = {
     if (!notificationsDigest.valid) {
       return ctx.badRequest('notifications_digest must be one of: off, instant, daily, weekly.');
     }
+    if (!onboardingProgress.valid) {
+      return ctx.badRequest(
+        'onboarding_progress must be an object using boolean keys: profile_completed, first_place_selected, first_post_started, share_prompt_seen, skipped.'
+      );
+    }
     if (
       !hasPreferredLanguage &&
       !notificationsSite.present &&
       !notificationsEmail.present &&
-      !notificationsDigest.present
+      !notificationsDigest.present &&
+      !onboardingProgress.present
     ) {
       return ctx.badRequest('No preference fields were provided.');
     }
@@ -187,6 +300,9 @@ module.exports = {
       }
       if (notificationsDigest.present) {
         updateData.notifications_digest = notificationsDigest.value;
+      }
+      if (onboardingProgress.present) {
+        updateData.onboarding_progress = mergeOnboardingProgress(existing?.onboarding_progress, onboardingProgress.value);
       }
 
       const updated = await strapi.entityService.update(MODEL_UID, existing.id, {
@@ -215,6 +331,9 @@ module.exports = {
         notifications_digest: notificationsDigest.present
           ? notificationsDigest.value
           : notificationDefaults.notifications_digest,
+        onboarding_progress: onboardingProgress.present
+          ? mergeOnboardingProgress(DEFAULT_ONBOARDING_PROGRESS, onboardingProgress.value)
+          : { ...DEFAULT_ONBOARDING_PROGRESS },
         updated_from_ip: requestIp,
       },
     });

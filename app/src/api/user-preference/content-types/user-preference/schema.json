@@ -35,6 +35,9 @@
       "enum": ["off", "instant", "daily", "weekly"],
       "default": "daily"
     },
+    "onboarding_progress": {
+      "type": "json"
+    },
     "updated_from_ip": {
       "type": "string"
     },

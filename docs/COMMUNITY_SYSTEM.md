@@ -39,7 +39,7 @@ guest/member split, reply threading fields, moderation fields.
 - `community-setting` (single type):
 central policy controls for guest comments, link policy, moderation strictness, visibility defaults.
 - `user-preference` extension:
-member-scoped site language + notification preferences (`site/email enabled`, `digest`), partial update safe.
+member-scoped site language + notification preferences (`site/email enabled`, `digest`) plus onboarding progress snapshot (`profile/place/post/share/skipped`) with partial update safety.
 - `user-follow`:
 member follow graph foundation (`target_type=user|place`) controlled by `follow_system_enabled`.
 - `user-saved-list` + `user-saved-item`:
