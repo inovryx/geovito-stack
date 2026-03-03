@@ -34,6 +34,31 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
       target_ref: 'post-city-break',
     },
   ];
+  const preferenceState: {
+    preferred_ui_language: string;
+    notifications_site_enabled: boolean;
+    notifications_email_enabled: boolean;
+    notifications_digest: string;
+    onboarding_progress: {
+      profile_completed: boolean;
+      first_place_selected: boolean;
+      first_post_started: boolean;
+      share_prompt_seen: boolean;
+      skipped: boolean;
+    };
+  } = {
+    preferred_ui_language: 'en',
+    notifications_site_enabled: true,
+    notifications_email_enabled: true,
+    notifications_digest: 'daily',
+    onboarding_progress: {
+      profile_completed: true,
+      first_place_selected: true,
+      first_post_started: false,
+      share_prompt_seen: false,
+      skipped: false,
+    },
+  };
 
   await page.route(/\/api\/users\/me$/, async (route) => {
     await route.fulfill({
@@ -53,10 +78,35 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await page.route(/\/api\/user-preferences\/me$/, async (route) => {
     const method = route.request().method();
     if (method === 'PUT') {
+      let payload: any = {};
+      try {
+        payload = route.request().postDataJSON();
+      } catch {
+        payload = {};
+      }
+      const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
+      if (typeof data.preferred_ui_language === 'string') {
+        preferenceState.preferred_ui_language = data.preferred_ui_language;
+      }
+      if (typeof data.notifications_site_enabled === 'boolean') {
+        preferenceState.notifications_site_enabled = data.notifications_site_enabled;
+      }
+      if (typeof data.notifications_email_enabled === 'boolean') {
+        preferenceState.notifications_email_enabled = data.notifications_email_enabled;
+      }
+      if (typeof data.notifications_digest === 'string') {
+        preferenceState.notifications_digest = data.notifications_digest;
+      }
+      if (data.onboarding_progress && typeof data.onboarding_progress === 'object') {
+        preferenceState.onboarding_progress = {
+          ...preferenceState.onboarding_progress,
+          ...data.onboarding_progress,
+        };
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+        body: JSON.stringify({ data: preferenceState }),
       });
       return;
     }
@@ -64,7 +114,7 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+      body: JSON.stringify({ data: preferenceState }),
     });
   });
 
@@ -485,6 +535,14 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
   await expect(page.locator('[data-account-saved-lists-list]')).toContainText('post-city-break');
   await expect(page.locator('[data-account-community-citizen-card]')).toContainText('Enabled');
   await expect(page.locator('[data-account-community-badges]')).toContainText('Disabled');
+  await expect(page.locator('[data-account-onboarding-status]')).toContainText('In progress');
+  await expect(page.locator('[data-account-onboarding-progress]')).toContainText('50%');
+  await expect(page.locator('[data-account-onboarding-completed]')).toContainText('2/4');
+  await page.check('[data-account-onboarding-first-post-started]');
+  await page.click('[data-account-onboarding-form] button[type="submit"]');
+  await expect(page.locator('[data-account-onboarding-feedback]')).toContainText('saved');
+  await expect(page.locator('[data-account-onboarding-progress]')).toContainText('75%');
+  await expect(page.locator('[data-account-onboarding-completed]')).toContainText('3/4');
 
   await expect(page.locator('[data-account-language-select] option[value="tr"]')).toHaveText('TR · 12');
   await page.selectOption('[data-account-language-select]', 'tr');

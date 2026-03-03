@@ -282,6 +282,37 @@ const accountCopy = {
     {},
     'Network error while saving notification preferences.'
   ),
+  onboardingTitle: translate(ui, 'account.onboardingTitle', {}, 'Onboarding progress'),
+  onboardingDescription: translate(
+    ui,
+    'account.onboardingDescription',
+    {},
+    'Track setup milestones for profile, discovery, and first post workflows.'
+  ),
+  onboardingStatus: translate(ui, 'account.onboardingStatus', {}, 'Status'),
+  onboardingProgress: translate(ui, 'account.onboardingProgress', {}, 'Progress'),
+  onboardingCompleted: translate(ui, 'account.onboardingCompleted', {}, 'Completed steps'),
+  onboardingProfileCompleted: translate(ui, 'account.onboardingProfileCompleted', {}, 'Profile completed'),
+  onboardingFirstPlaceSelected: translate(ui, 'account.onboardingFirstPlaceSelected', {}, 'First place selected'),
+  onboardingFirstPostStarted: translate(ui, 'account.onboardingFirstPostStarted', {}, 'First post started'),
+  onboardingSharePromptSeen: translate(ui, 'account.onboardingSharePromptSeen', {}, 'Share prompt seen'),
+  onboardingSkipped: translate(ui, 'account.onboardingSkipped', {}, 'Skip onboarding'),
+  onboardingStatusInProgress: translate(ui, 'account.onboardingStatusInProgress', {}, 'In progress'),
+  onboardingStatusCompleted: translate(ui, 'account.onboardingStatusCompleted', {}, 'Completed'),
+  onboardingStatusSkipped: translate(ui, 'account.onboardingStatusSkipped', {}, 'Skipped'),
+  onboardingLoaded: translate(ui, 'account.onboardingLoaded', {}, 'Loaded onboarding progress.'),
+  onboardingSaving: translate(ui, 'account.onboardingSaving', {}, 'Saving onboarding progress...'),
+  onboardingSaved: translate(ui, 'account.onboardingSaved', {}, 'Onboarding progress saved.'),
+  onboardingSave: translate(ui, 'account.onboardingSave', {}, 'Save onboarding progress'),
+  onboardingSaveFailed: translate(ui, 'account.onboardingSaveFailed', {}, 'Failed to save onboarding progress.'),
+  onboardingNetworkError: translate(
+    ui,
+    'account.onboardingNetworkError',
+    {},
+    'Network error while saving onboarding progress.'
+  ),
+  onboardingUnknown: translate(ui, 'account.onboardingUnknown', {}, 'Unknown'),
+  onboardingStateSummary: translate(ui, 'account.onboardingStateSummary', {}, '{completed}/{total} steps'),
   followsTitle: translate(ui, 'account.followsTitle', {}, 'Following'),
   followsDescription: translate(
     ui,
@@ -714,6 +745,61 @@ const accountCopy = {
       </button>
       <p class="small account-feedback" data-account-notifications-feedback aria-live="polite"></p>
     </form>
+
+    <form class="gv-stack account-form" data-account-onboarding-form data-auth-base={authBaseUrl} novalidate>
+      <h3>{accountCopy.onboardingTitle}</h3>
+      <p class="small">{accountCopy.onboardingDescription}</p>
+
+      <div class="account-comments-stats">
+        <span>
+          {accountCopy.onboardingStatus}: <strong data-account-onboarding-status>{accountCopy.onboardingUnknown}</strong>
+        </span>
+        <span>
+          {accountCopy.onboardingProgress}: <strong data-account-onboarding-progress>0%</strong>
+        </span>
+        <span>
+          {accountCopy.onboardingCompleted}: <strong data-account-onboarding-completed>0/4</strong>
+        </span>
+      </div>
+
+      <div class="account-onboarding-grid">
+        <label class="account-field">
+          <span>
+            <input type="checkbox" data-account-onboarding-profile-completed />
+            {accountCopy.onboardingProfileCompleted}
+          </span>
+        </label>
+        <label class="account-field">
+          <span>
+            <input type="checkbox" data-account-onboarding-first-place-selected />
+            {accountCopy.onboardingFirstPlaceSelected}
+          </span>
+        </label>
+        <label class="account-field">
+          <span>
+            <input type="checkbox" data-account-onboarding-first-post-started />
+            {accountCopy.onboardingFirstPostStarted}
+          </span>
+        </label>
+        <label class="account-field">
+          <span>
+            <input type="checkbox" data-account-onboarding-share-prompt-seen />
+            {accountCopy.onboardingSharePromptSeen}
+          </span>
+        </label>
+        <label class="account-field">
+          <span>
+            <input type="checkbox" data-account-onboarding-skipped />
+            {accountCopy.onboardingSkipped}
+          </span>
+        </label>
+      </div>
+
+      <button type="submit" class="ui-button ui-button-primary ui-button-md">
+        <span class="ui-button-label">{accountCopy.onboardingSave}</span>
+      </button>
+      <p class="small account-feedback" data-account-onboarding-feedback aria-live="polite"></p>
+    </form>
   </section>
 
   <section class="card panel gv-stack" data-account-password hidden>
@@ -807,6 +893,16 @@ const accountCopy = {
       const notificationsEmail = document.querySelector('[data-account-notifications-email]');
       const notificationsDigest = document.querySelector('[data-account-notifications-digest]');
       const notificationsFeedback = document.querySelector('[data-account-notifications-feedback]');
+      const onboardingForm = document.querySelector('[data-account-onboarding-form]');
+      const onboardingProfileCompleted = document.querySelector('[data-account-onboarding-profile-completed]');
+      const onboardingFirstPlaceSelected = document.querySelector('[data-account-onboarding-first-place-selected]');
+      const onboardingFirstPostStarted = document.querySelector('[data-account-onboarding-first-post-started]');
+      const onboardingSharePromptSeen = document.querySelector('[data-account-onboarding-share-prompt-seen]');
+      const onboardingSkipped = document.querySelector('[data-account-onboarding-skipped]');
+      const onboardingStatus = document.querySelector('[data-account-onboarding-status]');
+      const onboardingProgress = document.querySelector('[data-account-onboarding-progress]');
+      const onboardingCompleted = document.querySelector('[data-account-onboarding-completed]');
+      const onboardingFeedback = document.querySelector('[data-account-onboarding-feedback]');
       const passwordForm = document.querySelector('[data-account-password-form]');
       const passwordFeedback = document.querySelector('[data-account-password-feedback]');
 
@@ -834,6 +930,19 @@ const accountCopy = {
         !(notificationsEmail instanceof HTMLInputElement) ||
         !(notificationsDigest instanceof HTMLSelectElement) ||
         !(notificationsFeedback instanceof HTMLElement)
+      )
+        return;
+      if (
+        !(onboardingForm instanceof HTMLFormElement) ||
+        !(onboardingProfileCompleted instanceof HTMLInputElement) ||
+        !(onboardingFirstPlaceSelected instanceof HTMLInputElement) ||
+        !(onboardingFirstPostStarted instanceof HTMLInputElement) ||
+        !(onboardingSharePromptSeen instanceof HTMLInputElement) ||
+        !(onboardingSkipped instanceof HTMLInputElement) ||
+        !(onboardingStatus instanceof HTMLElement) ||
+        !(onboardingProgress instanceof HTMLElement) ||
+        !(onboardingCompleted instanceof HTMLElement) ||
+        !(onboardingFeedback instanceof HTMLElement)
       )
         return;
       if (!(passwordForm instanceof HTMLFormElement) || !(passwordFeedback instanceof HTMLElement)) return;
@@ -900,6 +1009,43 @@ const accountCopy = {
         }
         return 'daily';
       };
+      const normalizeOnboardingProgressData = (value) => {
+        const source = value && typeof value === 'object' ? value : {};
+        const normalized = {
+          profile_completed: source.profile_completed === true,
+          first_place_selected: source.first_place_selected === true,
+          first_post_started: source.first_post_started === true,
+          share_prompt_seen: source.share_prompt_seen === true,
+          skipped: source.skipped === true,
+        };
+        const completedSteps = [
+          normalized.profile_completed,
+          normalized.first_place_selected,
+          normalized.first_post_started,
+          normalized.share_prompt_seen,
+        ].filter(Boolean).length;
+        const totalSteps = 4;
+        const progressPercent = Math.round((completedSteps / totalSteps) * 100);
+        const normalizedStatus = String(source.status || '').trim().toLowerCase();
+        const status =
+          normalizedStatus === 'completed' || normalizedStatus === 'skipped' || normalizedStatus === 'in_progress'
+            ? normalizedStatus
+            : normalized.skipped
+              ? 'skipped'
+              : completedSteps >= totalSteps
+                ? 'completed'
+                : 'in_progress';
+
+        return {
+          ...normalized,
+          completed_steps: completedSteps,
+          total_steps: totalSteps,
+          progress_percent: Number.isFinite(Number(source.progress_percent))
+            ? Math.max(0, Math.min(100, Math.round(Number(source.progress_percent))))
+            : progressPercent,
+          status,
+        };
+      };
       const normalizePreviewState = (value) => {
         const normalized = String(value || '').trim().toLowerCase();
         if (normalized === 'missing' || normalized === 'untranslated') return normalized;
@@ -961,6 +1107,11 @@ const accountCopy = {
       const setNotificationsFeedback = (message, isError = false) => {
         notificationsFeedback.textContent = message;
         notificationsFeedback.classList.toggle('is-error', isError);
+      };
+
+      const setOnboardingFeedback = (message, isError = false) => {
+        onboardingFeedback.textContent = message;
+        onboardingFeedback.classList.toggle('is-error', isError);
       };
 
       const setProfileFeedback = (message, isError = false) => {
@@ -1307,6 +1458,29 @@ const accountCopy = {
         notificationsDigest.value = normalizeNotificationDigest(source.notifications_digest);
       };
 
+      const getOnboardingStatusLabel = (status) => {
+        if (status === 'completed') return accountCopy.onboardingStatusCompleted;
+        if (status === 'skipped') return accountCopy.onboardingStatusSkipped;
+        return accountCopy.onboardingStatusInProgress;
+      };
+
+      const applyOnboardingPreference = (data) => {
+        const source = data && typeof data === 'object' ? data : {};
+        const normalized = normalizeOnboardingProgressData(source.onboarding_progress);
+
+        onboardingProfileCompleted.checked = normalized.profile_completed;
+        onboardingFirstPlaceSelected.checked = normalized.first_place_selected;
+        onboardingFirstPostStarted.checked = normalized.first_post_started;
+        onboardingSharePromptSeen.checked = normalized.share_prompt_seen;
+        onboardingSkipped.checked = normalized.skipped;
+        onboardingStatus.textContent = getOnboardingStatusLabel(normalized.status);
+        onboardingProgress.textContent = `${normalized.progress_percent}%`;
+        onboardingCompleted.textContent = String(accountCopy.onboardingStateSummary || '{completed}/{total} steps')
+          .replace('{completed}', String(normalized.completed_steps))
+          .replace('{total}', String(normalized.total_steps));
+      };
+      applyOnboardingPreference(null);
+
       const loadPreference = async () => {
         const localPreferred = normalizeLanguage(localStorage.getItem('geovito.ui_lang') || '');
         if (isAllowedLanguage(localPreferred)) {
@@ -1329,7 +1503,9 @@ const accountCopy = {
             setFeedback(accountCopy.loadedPreference);
           }
           applyNotificationPreference(preferenceData);
+          applyOnboardingPreference(preferenceData);
           setNotificationsFeedback(accountCopy.notificationsLoaded);
+          setOnboardingFeedback(accountCopy.onboardingLoaded);
         } catch {
           // no-op
         }
@@ -1917,6 +2093,45 @@ const accountCopy = {
           setNotificationsFeedback(accountCopy.notificationsSaved);
         } catch {
           setNotificationsFeedback(accountCopy.notificationsNetworkError, true);
+        }
+      });
+
+      onboardingForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        setOnboardingFeedback(accountCopy.onboardingSaving);
+
+        try {
+          const response = await fetch(`${authBase}/api/user-preferences/me`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              Authorization: `Bearer ${session.jwt}`,
+            },
+            body: JSON.stringify({
+              data: {
+                onboarding_progress: {
+                  profile_completed: Boolean(onboardingProfileCompleted.checked),
+                  first_place_selected: Boolean(onboardingFirstPlaceSelected.checked),
+                  first_post_started: Boolean(onboardingFirstPostStarted.checked),
+                  share_prompt_seen: Boolean(onboardingSharePromptSeen.checked),
+                  skipped: Boolean(onboardingSkipped.checked),
+                },
+              },
+            }),
+          });
+
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message = payload?.error?.message || accountCopy.onboardingSaveFailed;
+            setOnboardingFeedback(message, true);
+            return;
+          }
+
+          applyOnboardingPreference(payload?.data);
+          setOnboardingFeedback(accountCopy.onboardingSaved);
+        } catch {
+          setOnboardingFeedback(accountCopy.onboardingNetworkError, true);
         }
       });
 
@@ -2757,6 +2972,12 @@ const accountCopy = {
   .account-inline-field {
     max-width: 220px;
     min-width: 180px;
+  }
+
+  .account-onboarding-grid {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   .account-locale-filter {
