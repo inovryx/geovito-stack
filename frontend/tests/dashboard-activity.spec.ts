@@ -378,6 +378,10 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-onboarding-status]')).toHaveText('In progress');
   await expect(page.locator('[data-dashboard-onboarding-progress]')).toHaveText('50%');
   await expect(page.locator('[data-dashboard-onboarding-completed]')).toContainText('2/4');
+  await expect(page.locator('#dashboard-member-onboarding')).toContainText('Italy / Rome');
+  await expect(page.locator('#dashboard-member-onboarding')).toContainText(
+    'Rome in 48 Hours: A Simple First-Timer Plan'
+  );
 
   await page.check('[data-dashboard-activity-warn-only]');
   const warnBadges = (await page

@@ -2,6 +2,7 @@
 import MainLayout from '../../../layouts/MainLayout.astro';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
+import { ONBOARDING_FIRST_PLACE_EXAMPLES, ONBOARDING_FIRST_POST_EXAMPLES } from '../../../lib/onboardingExamples';
 import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
@@ -313,6 +314,9 @@ const accountCopy = {
   ),
   onboardingUnknown: translate(ui, 'account.onboardingUnknown', {}, 'Unknown'),
   onboardingStateSummary: translate(ui, 'account.onboardingStateSummary', {}, '{completed}/{total} steps'),
+  onboardingExamplesTitle: translate(ui, 'account.onboardingExamplesTitle', {}, 'Starter examples'),
+  onboardingExamplesPlacesTitle: translate(ui, 'account.onboardingExamplesPlacesTitle', {}, 'First place ideas'),
+  onboardingExamplesPostsTitle: translate(ui, 'account.onboardingExamplesPostsTitle', {}, 'First post draft ideas'),
   followsTitle: translate(ui, 'account.followsTitle', {}, 'Following'),
   followsDescription: translate(
     ui,
@@ -799,6 +803,34 @@ const accountCopy = {
             {accountCopy.onboardingSkipped}
           </span>
         </label>
+      </div>
+
+      <div class="account-onboarding-examples gv-stack">
+        <p class="small"><strong>{accountCopy.onboardingExamplesTitle}</strong></p>
+        <div class="account-onboarding-examples-grid">
+          <section class="account-onboarding-example-block">
+            <p class="small"><strong>{accountCopy.onboardingExamplesPlacesTitle}</strong></p>
+            <ul class="account-onboarding-example-list">
+              {ONBOARDING_FIRST_PLACE_EXAMPLES.map((example) => (
+                <li>
+                  <strong>{example.title}</strong>
+                  <span>{example.note}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section class="account-onboarding-example-block">
+            <p class="small"><strong>{accountCopy.onboardingExamplesPostsTitle}</strong></p>
+            <ul class="account-onboarding-example-list">
+              {ONBOARDING_FIRST_POST_EXAMPLES.map((example) => (
+                <li>
+                  <strong>{example.title}</strong>
+                  <span>{example.note}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
       </div>
 
       <button type="submit" class="ui-button ui-button-primary ui-button-md">
@@ -2984,6 +3016,50 @@ const accountCopy = {
     display: grid;
     gap: 0.5rem;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .account-onboarding-examples {
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 92%, white 8%);
+    padding: 0.7rem 0.78rem;
+  }
+
+  .account-onboarding-examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.65rem;
+  }
+
+  .account-onboarding-example-block {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    padding: 0.6rem 0.66rem;
+  }
+
+  .account-onboarding-example-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.48rem;
+  }
+
+  .account-onboarding-example-list li {
+    display: grid;
+    gap: 0.22rem;
+  }
+
+  .account-onboarding-example-list strong {
+    font-size: 0.8rem;
+    color: var(--ink);
+  }
+
+  .account-onboarding-example-list span {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    line-height: 1.4;
   }
 
   .account-locale-filter {

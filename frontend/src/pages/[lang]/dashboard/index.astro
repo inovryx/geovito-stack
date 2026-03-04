@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import { ONBOARDING_FIRST_PLACE_EXAMPLES, ONBOARDING_FIRST_POST_EXAMPLES } from '../../../lib/onboardingExamples';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
@@ -82,6 +83,8 @@ const dashboardCopy = {
   onboardingStatusCompleted: translate(ui, 'account.onboardingStatusCompleted', {}, 'Completed'),
   onboardingStatusSkipped: translate(ui, 'account.onboardingStatusSkipped', {}, 'Skipped'),
   onboardingStateSummary: translate(ui, 'account.onboardingStateSummary', {}, '{completed}/{total} steps'),
+  onboardingExamplesPlacesTitle: translate(ui, 'account.onboardingExamplesPlacesTitle', {}, 'First place ideas'),
+  onboardingExamplesPostsTitle: translate(ui, 'account.onboardingExamplesPostsTitle', {}, 'First post draft ideas'),
   onboardingLoadFailed: translate(ui, 'dashboard.onboardingLoadFailed', {}, 'Could not load onboarding progress.'),
   followTitle: translate(ui, 'dashboard.followTitle', {}, 'Follow status'),
   followBody: translate(
@@ -779,6 +782,30 @@ const dashboardCopy = {
               </p>
             </div>
             <p class="small" data-dashboard-onboarding-note hidden></p>
+            <div class="dashboard-onboarding-examples">
+              <div class="dashboard-onboarding-example-block">
+                <p class="small"><strong>{dashboardCopy.onboardingExamplesPlacesTitle}</strong></p>
+                <ul class="dashboard-mini-list">
+                  {ONBOARDING_FIRST_PLACE_EXAMPLES.map((example) => (
+                    <li class="dashboard-mini-item">
+                      <strong>{example.title}</strong>
+                      <span>{example.note}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div class="dashboard-onboarding-example-block">
+                <p class="small"><strong>{dashboardCopy.onboardingExamplesPostsTitle}</strong></p>
+                <ul class="dashboard-mini-list">
+                  {ONBOARDING_FIRST_POST_EXAMPLES.map((example) => (
+                    <li class="dashboard-mini-item">
+                      <strong>{example.title}</strong>
+                      <span>{example.note}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
             <div class="dashboard-actions">
               <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#onboarding-progress`}>
                 <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
@@ -4953,6 +4980,20 @@ const dashboardCopy = {
     padding: 0;
     display: grid;
     gap: 0.45rem;
+  }
+
+  .dashboard-onboarding-examples {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .dashboard-onboarding-example-block {
+    border: 1px solid var(--border);
+    border-radius: 0.65rem;
+    background: var(--surface-2);
+    padding: 0.5rem 0.56rem;
+    display: grid;
+    gap: 0.4rem;
   }
 
   .dashboard-mini-item {
