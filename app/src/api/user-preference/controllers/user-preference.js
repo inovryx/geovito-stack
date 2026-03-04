@@ -2,6 +2,7 @@
 
 const MODEL_UID = 'api::user-preference.user-preference';
 const { getCommunitySettings } = require('../../../modules/community-settings');
+const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
 const DEFAULT_UI_LANGUAGE = 'en';
 const LANGUAGE_PATTERN = /^[a-z]{2}(?:-[a-z0-9]{2,8})?$/i;
 const DIGEST_OPTIONS = new Set(['off', 'instant', 'daily', 'weekly']);
@@ -110,10 +111,20 @@ const parseOptionalOnboarding = (payload, key) => {
   return { present: true, value: patch, valid: true };
 };
 
-const getUserId = (ctx) => {
-  const rawId = ctx?.state?.user?.id;
-  const parsed = Number(rawId);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+const resolveAuthUser = async (ctx) => {
+  const stateUser = ctx?.state?.user;
+  const stateId = Number(stateUser?.id);
+  if (Number.isInteger(stateId) && stateId > 0) {
+    return stateUser;
+  }
+
+  const bearerUser = await authenticateFromBearer(strapi, ctx);
+  if (bearerUser?.id) {
+    ctx.state.user = bearerUser;
+    return bearerUser;
+  }
+
+  return null;
 };
 
 const findPreference = async (userId) => {
@@ -229,7 +240,8 @@ const serializePreference = (preference, defaults, source = 'profile') => ({
 
 module.exports = {
   async getMe(ctx) {
-    const userId = getUserId(ctx);
+    const authUser = await resolveAuthUser(ctx);
+    const userId = Number(authUser?.id || 0);
     if (!userId) return ctx.unauthorized('Authentication is required.');
 
     const preference = await findPreference(userId);
@@ -243,7 +255,8 @@ module.exports = {
   },
 
   async upsertMe(ctx) {
-    const userId = getUserId(ctx);
+    const authUser = await resolveAuthUser(ctx);
+    const userId = Number(authUser?.id || 0);
     if (!userId) return ctx.unauthorized('Authentication is required.');
 
     const payload = ctx.request.body?.data || ctx.request.body || {};

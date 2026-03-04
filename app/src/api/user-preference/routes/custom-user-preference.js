@@ -6,13 +6,17 @@ module.exports = {
       method: 'GET',
       path: '/user-preferences/me',
       handler: 'user-preference.getMe',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
     {
       method: 'PUT',
       path: '/user-preferences/me',
       handler: 'user-preference.upsertMe',
-      config: {},
+      config: {
+        auth: false,
+      },
     },
   ],
 };
