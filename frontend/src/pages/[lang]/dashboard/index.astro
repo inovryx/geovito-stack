@@ -3117,6 +3117,16 @@ const dashboardCopy = {
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
 
+      const resolveSessionEmail = (parsed) => {
+        const primary = typeof parsed?.email === 'string' ? parsed.email.trim() : '';
+        if (primary) return primary;
+        const nested = typeof parsed?.user?.email === 'string' ? parsed.user.email.trim() : '';
+        if (nested) return nested;
+        const legacy = typeof parsed?.identifier === 'string' ? parsed.identifier.trim() : '';
+        if (legacy.includes('@')) return legacy;
+        return '';
+      };
+
       const readSession = () => {
         try {
           const fromLocal = localStorage.getItem('geovito_auth_session');
@@ -3135,8 +3145,13 @@ const dashboardCopy = {
 
           return {
             jwt,
-            email: typeof parsed.email === 'string' ? parsed.email.trim() : '',
-            username: typeof parsed.username === 'string' ? parsed.username.trim() : '',
+            email: resolveSessionEmail(parsed),
+            username:
+              typeof parsed.username === 'string'
+                ? parsed.username.trim()
+                : typeof parsed?.user?.username === 'string'
+                  ? parsed.user.username.trim()
+                  : '',
             loginAt: typeof parsed.loginAt === 'string' ? parsed.loginAt.trim() : '',
           };
         } catch {

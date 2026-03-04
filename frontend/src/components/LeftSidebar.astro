@@ -305,6 +305,16 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
       return parts.length >= 2 && parts[1] === 'dashboard';
     })();
 
+    const resolveSessionEmail = (parsed) => {
+      const primary = typeof parsed?.email === 'string' ? parsed.email.trim() : '';
+      if (primary) return primary;
+      const nested = typeof parsed?.user?.email === 'string' ? parsed.user.email.trim() : '';
+      if (nested) return nested;
+      const legacy = typeof parsed?.identifier === 'string' ? parsed.identifier.trim() : '';
+      if (legacy.includes('@')) return legacy;
+      return '';
+    };
+
     const readSession = () => {
       try {
         const fromLocal = localStorage.getItem('geovito_auth_session');
@@ -320,8 +330,13 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
         if (!parsed || typeof parsed !== 'object') return null;
         const jwt = typeof parsed.jwt === 'string' ? parsed.jwt.trim() : '';
         if (!jwt) return null;
-        const username = typeof parsed.username === 'string' ? parsed.username.trim() : '';
-        const email = typeof parsed.email === 'string' ? parsed.email.trim() : '';
+        const username =
+          typeof parsed.username === 'string'
+            ? parsed.username.trim()
+            : typeof parsed?.user?.username === 'string'
+              ? parsed.user.username.trim()
+              : '';
+        const email = resolveSessionEmail(parsed);
         return { username, email, jwt };
       } catch {
         return null;
@@ -408,7 +423,15 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
           })()
         : [];
 
-      if (!session || !session.email || !authBaseUrl) {
+      if (!session) {
+        return 'member';
+      }
+
+      if (!authBaseUrl) {
+        return ownerHints.includes(normalize(session.email)) ? 'owner' : 'member';
+      }
+
+      if (!session.jwt) {
         return 'member';
       }
 
@@ -423,6 +446,9 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
           return ownerHints.includes(normalize(session.email)) ? 'owner' : 'member';
         }
         const payload = await response.json().catch(() => null);
+        if (!payload || typeof payload !== 'object') {
+          return ownerHints.includes(normalize(session.email)) ? 'owner' : 'member';
+        }
         return inferRole(payload, session, ownerHints);
       } catch {
         return ownerHints.includes(normalize(session.email)) ? 'owner' : 'member';
