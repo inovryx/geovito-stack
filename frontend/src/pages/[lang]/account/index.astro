@@ -746,7 +746,13 @@ const accountCopy = {
       <p class="small account-feedback" data-account-notifications-feedback aria-live="polite"></p>
     </form>
 
-    <form class="gv-stack account-form" data-account-onboarding-form data-auth-base={authBaseUrl} novalidate>
+    <form
+      class="gv-stack account-form"
+      data-account-onboarding-form
+      data-auth-base={authBaseUrl}
+      id="onboarding-progress"
+      novalidate
+    >
       <h3>{accountCopy.onboardingTitle}</h3>
       <p class="small">{accountCopy.onboardingDescription}</p>
 

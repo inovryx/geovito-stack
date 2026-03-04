@@ -179,6 +179,14 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
           notifications_site_enabled: false,
           notifications_email_enabled: false,
           notifications_digest: 'daily',
+          onboarding_progress: {
+            profile_completed: true,
+            first_place_selected: true,
+            first_post_started: false,
+            share_prompt_seen: false,
+            skipped: false,
+            status: 'in_progress',
+          },
         },
       }),
     });
@@ -367,6 +375,9 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
   await expect(page.locator('[data-dashboard-notifications-site]')).toHaveText('Disabled');
   await expect(page.locator('[data-dashboard-notifications-email]')).toHaveText('Disabled');
   await expect(page.locator('[data-dashboard-notifications-digest]')).toHaveText('Daily');
+  await expect(page.locator('[data-dashboard-onboarding-status]')).toHaveText('In progress');
+  await expect(page.locator('[data-dashboard-onboarding-progress]')).toHaveText('50%');
+  await expect(page.locator('[data-dashboard-onboarding-completed]')).toContainText('2/4');
 
   await page.check('[data-dashboard-activity-warn-only]');
   const warnBadges = (await page

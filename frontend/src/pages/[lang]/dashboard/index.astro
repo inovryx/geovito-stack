@@ -67,6 +67,22 @@ const dashboardCopy = {
     'Preferred UI language saved to your profile.'
   ),
   preferenceValue: translate(ui, 'dashboard.preferenceValue', {}, 'Preferred language'),
+  onboardingTitle: translate(ui, 'account.onboardingTitle', {}, 'Onboarding progress'),
+  onboardingBody: translate(
+    ui,
+    'account.onboardingDescription',
+    {},
+    'Track profile setup milestones before publishing and sharing content.'
+  ),
+  onboardingStatus: translate(ui, 'account.onboardingStatus', {}, 'Status'),
+  onboardingProgress: translate(ui, 'account.onboardingProgress', {}, 'Progress'),
+  onboardingCompleted: translate(ui, 'account.onboardingCompleted', {}, 'Completed steps'),
+  onboardingLoadedAt: translate(ui, 'dashboard.onboardingLoadedAt', {}, 'Loaded at'),
+  onboardingStatusInProgress: translate(ui, 'account.onboardingStatusInProgress', {}, 'In progress'),
+  onboardingStatusCompleted: translate(ui, 'account.onboardingStatusCompleted', {}, 'Completed'),
+  onboardingStatusSkipped: translate(ui, 'account.onboardingStatusSkipped', {}, 'Skipped'),
+  onboardingStateSummary: translate(ui, 'account.onboardingStateSummary', {}, '{completed}/{total} steps'),
+  onboardingLoadFailed: translate(ui, 'dashboard.onboardingLoadFailed', {}, 'Could not load onboarding progress.'),
   followTitle: translate(ui, 'dashboard.followTitle', {}, 'Follow status'),
   followBody: translate(
     ui,
@@ -741,7 +757,36 @@ const dashboardCopy = {
             </p>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-saved-lists">
+          <article class="card panel gv-stack" id="dashboard-member-onboarding">
+            <h3 class="dashboard-mini-title">{dashboardCopy.onboardingTitle}</h3>
+            <p class="small">{dashboardCopy.onboardingBody}</p>
+            <div class="dashboard-kpi-grid">
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.onboardingStatus}</span>
+                <strong data-dashboard-onboarding-status>{dashboardCopy.onboardingStatusInProgress}</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.onboardingProgress}</span>
+                <strong data-dashboard-onboarding-progress>0%</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.onboardingCompleted}</span>
+                <strong data-dashboard-onboarding-completed>0/4</strong>
+              </p>
+              <p class="dashboard-kpi">
+                <span>{dashboardCopy.onboardingLoadedAt}</span>
+                <strong data-dashboard-onboarding-loaded-at>{dashboardCopy.unknown}</strong>
+              </p>
+            </div>
+            <p class="small" data-dashboard-onboarding-note hidden></p>
+            <div class="dashboard-actions">
+              <a class="ui-button ui-button-secondary ui-button-sm" href={`${accountPath}#onboarding-progress`}>
+                <span class="ui-button-label">{dashboardCopy.quickAccount}</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card panel gv-stack" id="dashboard-member-follow">
             <h3 class="dashboard-mini-title">{dashboardCopy.followTitle}</h3>
             <p class="small">{dashboardCopy.followBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1606,6 +1651,11 @@ const dashboardCopy = {
       const notificationsDigestNode = document.querySelector('[data-dashboard-notifications-digest]');
       const notificationsLoadedAtNode = document.querySelector('[data-dashboard-notifications-loaded-at]');
       const notificationsNoteNode = document.querySelector('[data-dashboard-notifications-note]');
+      const onboardingStatusNode = document.querySelector('[data-dashboard-onboarding-status]');
+      const onboardingProgressNode = document.querySelector('[data-dashboard-onboarding-progress]');
+      const onboardingCompletedNode = document.querySelector('[data-dashboard-onboarding-completed]');
+      const onboardingLoadedAtNode = document.querySelector('[data-dashboard-onboarding-loaded-at]');
+      const onboardingNoteNode = document.querySelector('[data-dashboard-onboarding-note]');
       const savedListsTotalListsNode = document.querySelector('[data-dashboard-saved-lists-total-lists]');
       const savedListsTotalItemsNode = document.querySelector('[data-dashboard-saved-lists-total-items]');
       const savedListsTotalPostsNode = document.querySelector('[data-dashboard-saved-lists-total-posts]');
@@ -1843,6 +1893,57 @@ const dashboardCopy = {
         return Math.round(parsed);
       };
 
+      const normalizeOnboardingProgressData = (value) => {
+        const source = value && typeof value === 'object' ? value : {};
+        const normalized = {
+          profile_completed: source.profile_completed === true,
+          first_place_selected: source.first_place_selected === true,
+          first_post_started: source.first_post_started === true,
+          share_prompt_seen: source.share_prompt_seen === true,
+          skipped: source.skipped === true,
+        };
+        const completedSteps = [
+          normalized.profile_completed,
+          normalized.first_place_selected,
+          normalized.first_post_started,
+          normalized.share_prompt_seen,
+        ].filter(Boolean).length;
+        const totalSteps = 4;
+        const progressPercent = Math.round((completedSteps / totalSteps) * 100);
+        const normalizedStatus = String(source.status || '')
+          .trim()
+          .toLowerCase();
+        const status =
+          normalizedStatus === 'completed' || normalizedStatus === 'skipped' || normalizedStatus === 'in_progress'
+            ? normalizedStatus
+            : normalized.skipped
+              ? 'skipped'
+              : completedSteps >= totalSteps
+                ? 'completed'
+                : 'in_progress';
+
+        return {
+          ...normalized,
+          completed_steps: completedSteps,
+          total_steps: totalSteps,
+          progress_percent: Number.isFinite(Number(source.progress_percent))
+            ? Math.max(0, Math.min(100, Math.round(Number(source.progress_percent))))
+            : progressPercent,
+          status,
+        };
+      };
+
+      const formatOnboardingSummary = (completed, total) =>
+        String(dashboardCopy.onboardingStateSummary || '{completed}/{total} steps')
+          .replace('{completed}', String(completed))
+          .replace('{total}', String(total));
+
+      const onboardingStatusLabel = (value) => {
+        if (value === 'completed') return dashboardCopy.onboardingStatusCompleted;
+        if (value === 'skipped') return dashboardCopy.onboardingStatusSkipped;
+        return dashboardCopy.onboardingStatusInProgress;
+      };
+
       const boolLabel = (value) => {
         return value === true
           ? dashboardCopy.communityValueEnabled
@@ -1980,6 +2081,33 @@ const dashboardCopy = {
           toNode(notificationsNoteNode).hidden = true;
           toNode(notificationsNoteNode).textContent = '';
           toNode(notificationsNoteNode).classList.remove('is-error');
+        }
+      };
+
+      const resetOnboardingView = () => {
+        const normalized = normalizeOnboardingProgressData(null);
+        setText(onboardingStatusNode, onboardingStatusLabel(normalized.status));
+        setText(onboardingProgressNode, `${normalized.progress_percent}%`);
+        setText(onboardingCompletedNode, formatOnboardingSummary(normalized.completed_steps, normalized.total_steps));
+        setText(onboardingLoadedAtNode, dashboardCopy.unknown);
+        if (toNode(onboardingNoteNode)) {
+          toNode(onboardingNoteNode).hidden = true;
+          toNode(onboardingNoteNode).textContent = '';
+          toNode(onboardingNoteNode).classList.remove('is-error');
+        }
+      };
+
+      const applyOnboardingView = (payload, loadedAtIsoString) => {
+        const data = payload && typeof payload === 'object' ? payload : {};
+        const normalized = normalizeOnboardingProgressData(data?.onboarding_progress);
+        setText(onboardingStatusNode, onboardingStatusLabel(normalized.status));
+        setText(onboardingProgressNode, `${normalized.progress_percent}%`);
+        setText(onboardingCompletedNode, formatOnboardingSummary(normalized.completed_steps, normalized.total_steps));
+        setText(onboardingLoadedAtNode, formatDate(loadedAtIsoString));
+        if (toNode(onboardingNoteNode)) {
+          toNode(onboardingNoteNode).hidden = true;
+          toNode(onboardingNoteNode).textContent = '';
+          toNode(onboardingNoteNode).classList.remove('is-error');
         }
       };
 
@@ -3613,6 +3741,7 @@ const dashboardCopy = {
         setText(commentsRejectedNode, '0');
         resetFollowView();
         resetNotificationView();
+        resetOnboardingView();
         resetSavedListsView();
         setCreatorProfileView(null, {
           draftCount: 0,
@@ -3727,12 +3856,18 @@ const dashboardCopy = {
               setText(preferredNode, preferred.toUpperCase());
             }
             applyNotificationView(payload?.data, new Date().toISOString());
+            applyOnboardingView(payload?.data, new Date().toISOString());
           } else {
             hadErrors = true;
             if (toNode(notificationsNoteNode)) {
               toNode(notificationsNoteNode).hidden = false;
               toNode(notificationsNoteNode).textContent = dashboardCopy.notificationsLoadFailed;
               toNode(notificationsNoteNode).classList.add('is-error');
+            }
+            if (toNode(onboardingNoteNode)) {
+              toNode(onboardingNoteNode).hidden = false;
+              toNode(onboardingNoteNode).textContent = dashboardCopy.onboardingLoadFailed;
+              toNode(onboardingNoteNode).classList.add('is-error');
             }
           }
         } catch {
@@ -3741,6 +3876,11 @@ const dashboardCopy = {
             toNode(notificationsNoteNode).hidden = false;
             toNode(notificationsNoteNode).textContent = dashboardCopy.notificationsLoadFailed;
             toNode(notificationsNoteNode).classList.add('is-error');
+          }
+          if (toNode(onboardingNoteNode)) {
+            toNode(onboardingNoteNode).hidden = false;
+            toNode(onboardingNoteNode).textContent = dashboardCopy.onboardingLoadFailed;
+            toNode(onboardingNoteNode).classList.add('is-error');
           }
         }
 
