@@ -18,15 +18,14 @@ const { getClientIp, isLimited } = require('../../../modules/blog-engagement/rat
 const { log } = require('../../../modules/domain-logging');
 const { resolveActor } = require('../../../modules/domain-logging/context');
 const { getCommunitySettings } = require('../../../modules/community-settings');
+const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
 
 const UID = 'api::blog-comment.blog-comment';
 const BLOG_POST_UID = 'api::blog-post.blog-post';
 const BLOG_COMMENT_HELPFUL_UID = 'api::blog-comment-helpful.blog-comment-helpful';
 const USERS_PERMISSIONS_USER_UID = 'plugin::users-permissions.user';
 const COMMENT_STATUS_SET = new Set(Object.values(BLOG_COMMENT_STATUS));
-const OWNER_EMAIL_HINT = String(
-  process.env.OWNER_EMAIL || process.env.PUBLIC_OWNER_EMAIL || ''
-).trim().toLowerCase();
+const OWNER_EMAIL_HINTS = resolveOwnerEmailHints(process.env);
 
 const toPublicComment = (entry) => {
   if (!entry) return null;
@@ -219,7 +218,7 @@ const resolveModerationIdentity = async (strapi, ctx) => {
   const roleRaw = normalizeLower(user?.role?.type || user?.role?.name || '');
   const isAdmin = roleRaw.includes('super') || roleRaw.includes('admin');
   const isEditor = isAdmin || roleRaw.includes('editor');
-  const isOwner = Boolean(OWNER_EMAIL_HINT) && normalizeLower(user.email) === OWNER_EMAIL_HINT;
+  const isOwner = isOwnerEmail(user.email, OWNER_EMAIL_HINTS);
   const canModerate = isEditor || isOwner;
 
   return {

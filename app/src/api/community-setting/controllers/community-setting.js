@@ -3,11 +3,10 @@
 const { createCoreController } = require('@strapi/strapi').factories;
 const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
 const { getCommunitySettings } = require('../../../modules/community-settings');
+const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
 
 const USER_UID = 'plugin::users-permissions.user';
-const OWNER_EMAIL_HINT = String(process.env.OWNER_EMAIL || process.env.PUBLIC_OWNER_EMAIL || '')
-  .trim()
-  .toLowerCase();
+const OWNER_EMAIL_HINTS = resolveOwnerEmailHints(process.env);
 
 const resolveIdentity = async (strapi, ctx) => {
   const baseUser = ctx.state?.user?.id ? ctx.state.user : await authenticateFromBearer(strapi, ctx);
@@ -29,7 +28,7 @@ const resolveIdentity = async (strapi, ctx) => {
     .toLowerCase();
   const isAdmin = roleRaw.includes('super') || roleRaw.includes('admin');
   const isEditor = roleRaw.includes('editor');
-  const isOwner = Boolean(OWNER_EMAIL_HINT) && String(user.email || '').trim().toLowerCase() === OWNER_EMAIL_HINT;
+  const isOwner = isOwnerEmail(user.email, OWNER_EMAIL_HINTS);
 
   return {
     user,
@@ -50,4 +49,3 @@ module.exports = createCoreController('api::community-setting.community-setting'
     };
   },
 }));
-

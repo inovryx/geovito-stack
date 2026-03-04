@@ -6,6 +6,7 @@ const { authenticateFromBearer } = require('../../../modules/blog-engagement/aut
 const { detectUrlCount } = require('../../../modules/blog-engagement/comment-content-safety');
 const { getCommunitySettings } = require('../../../modules/community-settings');
 const { createRevision } = require('../../../modules/blog-engagement/revisions');
+const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
 
 const BLOG_POST_UID = 'api::blog-post.blog-post';
 const USER_UID = 'plugin::users-permissions.user';
@@ -14,9 +15,7 @@ const BLOG_LANGUAGES = new Set(['en', 'tr', 'de', 'es', 'ru', 'zh-cn']);
 const SUBMISSION_STATES = new Set(['draft', 'submitted', 'approved', 'rejected', 'spam', 'deleted']);
 const MODERATION_TARGET_STATES = new Set(['approved', 'rejected', 'spam', 'deleted']);
 const SITE_VISIBILITY_SET = new Set(['visible', 'hidden']);
-const OWNER_EMAIL_HINT = String(process.env.OWNER_EMAIL || process.env.PUBLIC_OWNER_EMAIL || '')
-  .trim()
-  .toLowerCase();
+const OWNER_EMAIL_HINTS = resolveOwnerEmailHints(process.env);
 
 const isTrue = (value, fallback = false) => {
   if (value === undefined || value === null || value === '') return fallback;
@@ -153,7 +152,7 @@ const resolveModerationIdentity = async (strapi, ctx) => {
     .toLowerCase();
   const isAdmin = roleRaw.includes('super') || roleRaw.includes('admin');
   const isEditor = isAdmin || roleRaw.includes('editor');
-  const isOwner = Boolean(OWNER_EMAIL_HINT) && String(user.email || '').trim().toLowerCase() === OWNER_EMAIL_HINT;
+  const isOwner = isOwnerEmail(user.email, OWNER_EMAIL_HINTS);
 
   return {
     user,

@@ -4,12 +4,11 @@ const crypto = require('crypto');
 const { createCoreController } = require('@strapi/strapi').factories;
 const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
 const { sanitizeText } = require('../../../modules/suggestions/sanitize');
+const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
 
 const UID = 'api::account-request.account-request';
 const USER_UID = 'plugin::users-permissions.user';
-const OWNER_EMAIL_HINT = String(process.env.OWNER_EMAIL || process.env.PUBLIC_OWNER_EMAIL || '')
-  .trim()
-  .toLowerCase();
+const OWNER_EMAIL_HINTS = resolveOwnerEmailHints(process.env);
 
 const REQUEST_TYPE_SET = new Set(['deactivate', 'delete']);
 const REQUEST_STATUS_SET = new Set(['new', 'approved', 'rejected', 'completed']);
@@ -57,7 +56,7 @@ const resolveModerationIdentity = async (strapi, ctx) => {
   const roleRaw = normalizeLower(user?.role?.type || user?.role?.name || '');
   const isAdmin = roleRaw.includes('super') || roleRaw.includes('admin');
   const isEditor = isAdmin || roleRaw.includes('editor');
-  const isOwner = Boolean(OWNER_EMAIL_HINT) && normalizeLower(user.email) === OWNER_EMAIL_HINT;
+  const isOwner = isOwnerEmail(user.email, OWNER_EMAIL_HINTS);
   return {
     user,
     canModerate: isAdmin || isEditor || isOwner,
@@ -208,4 +207,3 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
     };
   },
 }));
-

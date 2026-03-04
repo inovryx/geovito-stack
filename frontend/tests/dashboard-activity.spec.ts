@@ -1,7 +1,15 @@
 import { expect, test } from '@playwright/test';
 
 const MOCK_JWT = 'dashboard-activity-mock-jwt';
-const OWNER_EMAIL_HINT = String(process.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
+const OWNER_EMAIL_HINTS = Array.from(
+  new Set(
+    String(process.env.PUBLIC_OWNER_EMAILS || process.env.PUBLIC_OWNER_EMAIL || '')
+      .split(',')
+      .map((entry) => String(entry || '').trim().toLowerCase())
+      .filter(Boolean)
+  )
+);
+const OWNER_EMAIL_HINT = OWNER_EMAIL_HINTS[0] || '';
 
 test.beforeEach(async ({ page }) => {
   const savedListRows = [
@@ -974,7 +982,7 @@ dashboardRoleCases.forEach((roleCase) => {
 
 test('dashboard owner widgets show warning states when signals are present', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'Run owner widget warning smoke once on desktop');
-  test.skip(!OWNER_EMAIL_HINT, 'PUBLIC_OWNER_EMAIL is required to resolve owner role');
+  test.skip(!OWNER_EMAIL_HINT, 'PUBLIC_OWNER_EMAIL(S) is required to resolve owner role');
 
   await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
     await route.fulfill({
@@ -1186,7 +1194,7 @@ test('dashboard owner widgets show warning states when signals are present', asy
 
 test('dashboard locale widget uses info state when only untranslated locales are pending', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'Run untranslated-only locale smoke once on desktop');
-  test.skip(!OWNER_EMAIL_HINT, 'PUBLIC_OWNER_EMAIL is required to resolve owner role');
+  test.skip(!OWNER_EMAIL_HINT, 'PUBLIC_OWNER_EMAIL(S) is required to resolve owner role');
 
   await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
     await route.fulfill({

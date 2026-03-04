@@ -27,7 +27,15 @@ const releaseCommand = 'bash tools/release_deploy_smoke.sh --with-moderation --w
 const stackHealthCommand = 'bash tools/stack_health.sh';
 const smokeAccessCommand = 'bash tools/smoke_access.sh';
 const launchRunbookUrl = 'https://github.com/inovryx/geovito-stack/blob/main/docs/LAUNCH_RUNBOOK.md';
-const ownerEmailHint = String(import.meta.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
+const ownerEmailHintsCsv = String(
+  (import.meta.env.PUBLIC_OWNER_EMAILS as string | undefined) ||
+    (import.meta.env.PUBLIC_OWNER_EMAIL as string | undefined) ||
+    ''
+)
+  .split(',')
+  .map((entry) => String(entry || '').trim().toLowerCase())
+  .filter(Boolean)
+  .join(',');
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
   PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
@@ -1621,7 +1629,7 @@ const dashboardCopy = {
 
   </section>
 
-  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHint, launchRunbookUrl, accountPath, communitySettingsAdminUrl }}>
+  <script is:inline define:vars={{ authBaseUrl, dashboardCopy, ownerEmailHintsCsv, launchRunbookUrl, accountPath, communitySettingsAdminUrl }}>
     (() => {
       const loggedOutPanel = document.querySelector('[data-dashboard-logged-out]');
       const authedPanel = document.querySelector('[data-dashboard-authenticated]');
@@ -3151,6 +3159,14 @@ const dashboardCopy = {
       };
 
       const normalizeLanguage = (value) => String(value || '').trim().toLowerCase();
+      const ownerEmailHints = Array.from(
+        new Set(
+          String(ownerEmailHintsCsv || '')
+            .split(',')
+            .map((entry) => normalizeLanguage(entry))
+            .filter(Boolean)
+        )
+      );
 
       const getGovernanceCopy = (role) => {
         const normalized = String(role || '').toLowerCase();
@@ -3194,7 +3210,7 @@ const dashboardCopy = {
         }
 
         const email = normalizeLanguage(userPayload?.email || session?.email || '');
-        if (ownerEmailHint && email && email === normalizeLanguage(ownerEmailHint)) {
+        if (email && ownerEmailHints.includes(email)) {
           return 'owner';
         }
 

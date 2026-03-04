@@ -37,7 +37,16 @@ const authBaseUrl = resolveStrapiBaseUrl({
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
 const strapiAdminUrl = `${authBaseUrl.replace(/\/$/, '')}/admin`;
-const ownerEmailHint = String(import.meta.env.PUBLIC_OWNER_EMAIL || '').trim().toLowerCase();
+const ownerEmailHintsCsv = String(
+  (import.meta.env.PUBLIC_OWNER_EMAILS as string | undefined) ||
+    (import.meta.env.PUBLIC_OWNER_EMAIL as string | undefined) ||
+    ''
+)
+  .split(',')
+  .map((entry) => String(entry || '').trim().toLowerCase())
+  .filter(Boolean)
+  .join(',');
+const ownerEmailHint = ownerEmailHintsCsv.split(',')[0] || '';
 const loginLabel = translate(ui, 'auth.login', {}, 'Login');
 const registerLabel = translate(ui, 'auth.register', {}, 'Register');
 const dashboardLabel = translate(ui, 'dashboard.title', {}, 'Dashboard');
@@ -161,6 +170,7 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
     data-auth-shell
     data-signed-in-label={signedInLabel}
     data-auth-base-url={authBaseUrl}
+    data-owner-email-hints={ownerEmailHintsCsv}
     data-owner-email-hint={ownerEmailHint}
   >
     <p class="small sidebar-auth-user" data-auth-user hidden></p>
@@ -360,7 +370,15 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
       }
     };
 
-    const inferRole = (payload, session, ownerHint) => {
+    const parseOwnerHints = (value) => {
+      const values = String(value || '')
+        .split(',')
+        .map((entry) => normalize(entry))
+        .filter(Boolean);
+      return Array.from(new Set(values));
+    };
+
+    const inferRole = (payload, session, ownerHints) => {
       const roleRaw = normalize(payload?.role?.type || payload?.role?.name || payload?.role?.code);
       if (roleRaw.includes('super') || roleRaw.includes('admin') || roleRaw.includes('administrator')) {
         return 'admin';
@@ -369,7 +387,7 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
         return 'editor';
       }
       const email = normalize(payload?.email || session?.email || '');
-      if (ownerHint && email && email === ownerHint) {
+      if (email && ownerHints.includes(email)) {
         return 'owner';
       }
       return 'member';
@@ -381,9 +399,14 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
       const authBaseUrl = firstShell instanceof HTMLElement
         ? String(firstShell.getAttribute('data-auth-base-url') || '').trim()
         : '';
-      const ownerHint = firstShell instanceof HTMLElement
-        ? normalize(firstShell.getAttribute('data-owner-email-hint') || '')
-        : '';
+      const ownerHints = firstShell instanceof HTMLElement
+        ? (() => {
+            const values = parseOwnerHints(firstShell.getAttribute('data-owner-email-hints') || '');
+            if (values.length > 0) return values;
+            const legacy = normalize(firstShell.getAttribute('data-owner-email-hint') || '');
+            return legacy ? [legacy] : [];
+          })()
+        : [];
 
       if (!session || !session.email || !authBaseUrl) {
         return 'member';
@@ -397,12 +420,12 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
           },
         });
         if (!response.ok) {
-          return ownerHint && normalize(session.email) === ownerHint ? 'owner' : 'member';
+          return ownerHints.includes(normalize(session.email)) ? 'owner' : 'member';
         }
         const payload = await response.json().catch(() => null);
-        return inferRole(payload, session, ownerHint);
+        return inferRole(payload, session, ownerHints);
       } catch {
-        return ownerHint && normalize(session.email) === ownerHint ? 'owner' : 'member';
+        return ownerHints.includes(normalize(session.email)) ? 'owner' : 'member';
       }
     };
 
