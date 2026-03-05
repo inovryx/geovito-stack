@@ -30,7 +30,7 @@ const EXPECTED_KEYS = [
 ];
 
 const created = {
-  roleId: null,
+  roleIds: [],
   userIds: [],
 };
 
@@ -133,10 +133,10 @@ const cleanup = async (strapi) => {
     }
   }
 
-  if (created.roleId) {
+  for (const roleId of created.roleIds) {
     try {
       await strapi.db.query(ROLE_UID).delete({
-        where: { id: Number(created.roleId) },
+        where: { id: Number(roleId) },
       });
     } catch (_error) {
       // best effort cleanup
@@ -177,8 +177,18 @@ const run = async () => {
         type: `community-editor-${SUFFIX}`,
       },
     });
-    created.roleId = Number(editorRole.id);
+    created.roleIds.push(Number(editorRole.id));
     pass('temporary editor role created');
+
+    const adminRole = await roleQuery.create({
+      data: {
+        name: `Community Admin ${SUFFIX}`,
+        description: 'temporary role for community settings write smoke',
+        type: `community-admin-${SUFFIX}`,
+      },
+    });
+    created.roleIds.push(Number(adminRole.id));
+    pass('temporary admin role created');
 
     const memberIdentity = await createUserAndToken({
       strapi,
@@ -195,6 +205,14 @@ const run = async () => {
       email: `community-editor-${SUFFIX}@example.test`,
     });
     pass('temporary editor identity created');
+
+    const adminIdentity = await createUserAndToken({
+      strapi,
+      roleId: Number(adminRole.id),
+      username: `community-admin-${SUFFIX}`,
+      email: `community-admin-${SUFFIX}@example.test`,
+    });
+    pass('temporary admin identity created');
 
     const noAuthResponse = await requestJson({
       method: 'GET',
@@ -297,6 +315,85 @@ const run = async () => {
       pass('safety_notice_templates shape is valid');
     } else {
       fail('safety_notice_templates must be object or null');
+    }
+
+    const originalFollowEnabled = settings.follow_system_enabled === true;
+    const originalPostLinkLimit =
+      Number.isInteger(settings.post_link_limit) && settings.post_link_limit >= 0 ? settings.post_link_limit : 4;
+    const toggledFollowEnabled = !originalFollowEnabled;
+    const toggledPostLinkLimit = originalPostLinkLimit >= 50 ? 4 : originalPostLinkLimit + 1;
+
+    const editorPatchResponse = await requestJson({
+      method: 'PATCH',
+      urlPath: '/api/community-settings/effective',
+      token: editorIdentity.token,
+      body: {
+        data: {
+          follow_system_enabled: toggledFollowEnabled,
+        },
+      },
+    });
+    if (editorPatchResponse.status === 403) {
+      pass('editor cannot update community settings effective');
+    } else {
+      fail(`editor update expected 403, got ${editorPatchResponse.status}`);
+    }
+
+    const adminPatchResponse = await requestJson({
+      method: 'PATCH',
+      urlPath: '/api/community-settings/effective',
+      token: adminIdentity.token,
+      body: {
+        data: {
+          follow_system_enabled: toggledFollowEnabled,
+          post_link_limit: toggledPostLinkLimit,
+        },
+      },
+    });
+    if (adminPatchResponse.status !== 200) {
+      fail(`admin update expected 200, got ${adminPatchResponse.status}`);
+      throw new Error('admin_update_failed');
+    }
+    pass('admin can update community settings effective');
+
+    const patchedSettings = adminPatchResponse.json?.data;
+    if (patchedSettings?.follow_system_enabled === toggledFollowEnabled) {
+      pass('admin update persisted follow_system_enabled');
+    } else {
+      fail('admin update did not persist follow_system_enabled');
+    }
+    if (patchedSettings?.post_link_limit === toggledPostLinkLimit) {
+      pass('admin update persisted post_link_limit');
+    } else {
+      fail('admin update did not persist post_link_limit');
+    }
+
+    const editorReRead = await requestJson({
+      method: 'GET',
+      urlPath: '/api/community-settings/effective',
+      token: editorIdentity.token,
+    });
+    if (editorReRead.status === 200 && editorReRead.json?.data?.follow_system_enabled === toggledFollowEnabled) {
+      pass('updated community settings are visible to editor readers');
+    } else {
+      fail(`editor reread expected updated follow state, got status=${editorReRead.status}`);
+    }
+
+    const adminRestoreResponse = await requestJson({
+      method: 'PATCH',
+      urlPath: '/api/community-settings/effective',
+      token: adminIdentity.token,
+      body: {
+        data: {
+          follow_system_enabled: originalFollowEnabled,
+          post_link_limit: originalPostLinkLimit,
+        },
+      },
+    });
+    if (adminRestoreResponse.status === 200) {
+      pass('admin can restore community settings effective baseline');
+    } else {
+      fail(`admin restore expected 200, got ${adminRestoreResponse.status}`);
     }
   } finally {
     if (strapi) {

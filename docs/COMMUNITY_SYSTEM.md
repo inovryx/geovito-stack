@@ -51,6 +51,17 @@ deactivate/delete request flow for owner-managed account actions.
 - `blog-post-revision`:
 snapshot audit trail for post revisions.
 
+## Community Settings API
+- `GET /api/community-settings/effective`:
+  read effective community settings (editor/admin/owner).
+- `PATCH /api/community-settings/effective`:
+  update community settings (admin/owner only).
+  accepted keys:
+  `ugc_enabled`, `ugc_open_mode`, `guest_comments_enabled`, `post_links_enabled`, `comments_links_enabled`,
+  `post_link_limit`, `member_comment_link_limit`, `guest_comment_link_limit`, `default_profile_visibility`,
+  `moderation_strictness`, `citizen_card_visible`, `badges_visible`, `follow_system_enabled`,
+  `notifications_defaults`, `safety_notice_templates`.
+
 ## Creator Username Policy
 - `creator-profile.username` is immutable after first profile creation.
 - Reserved names are blocked for new profile creation (default set includes:

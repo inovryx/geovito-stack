@@ -10,6 +10,13 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: 'PATCH',
+      path: '/community-settings/effective',
+      handler: 'community-setting.updateEffective',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
-

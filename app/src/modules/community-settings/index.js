@@ -2,6 +2,23 @@
 
 const UID = 'api::community-setting.community-setting';
 const CACHE_TTL_MS = 30 * 1000;
+const ALLOWED_SETTINGS_KEYS = [
+  'ugc_enabled',
+  'ugc_open_mode',
+  'guest_comments_enabled',
+  'post_links_enabled',
+  'comments_links_enabled',
+  'post_link_limit',
+  'member_comment_link_limit',
+  'guest_comment_link_limit',
+  'default_profile_visibility',
+  'moderation_strictness',
+  'citizen_card_visible',
+  'badges_visible',
+  'follow_system_enabled',
+  'notifications_defaults',
+  'safety_notice_templates',
+];
 
 const parseBool = (value, fallback) => {
   if (value === undefined || value === null || value === '') return fallback;
@@ -114,6 +131,20 @@ const readRaw = async (strapi) => {
   }
 };
 
+const sanitizePartialSettings = (value = {}) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const output = {};
+  for (const key of ALLOWED_SETTINGS_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      output[key] = value[key];
+    }
+  }
+  return output;
+};
+
 const getCommunitySettings = async (strapi, options = {}) => {
   const refresh = Boolean(options.refresh);
   const now = Date.now();
@@ -136,8 +167,34 @@ const clearCommunitySettingsCache = () => {
   cache = null;
 };
 
+const upsertCommunitySettings = async (strapi, partial = {}) => {
+  const raw = await readRaw(strapi);
+  const sanitizedPartial = sanitizePartialSettings(partial);
+  const normalized = normalizeSettings({
+    ...(raw && typeof raw === 'object' ? raw : {}),
+    ...sanitizedPartial,
+  });
+
+  if (raw?.id) {
+    await strapi.db.query(UID).update({
+      where: { id: Number(raw.id) },
+      data: normalized,
+    });
+  } else {
+    await strapi.db.query(UID).create({
+      data: normalized,
+    });
+  }
+
+  clearCommunitySettingsCache();
+  return getCommunitySettings(strapi, { refresh: true });
+};
+
 module.exports = {
+  ALLOWED_SETTINGS_KEYS,
   getCommunitySettings,
   clearCommunitySettingsCache,
   normalizeSettings,
+  sanitizePartialSettings,
+  upsertCommunitySettings,
 };

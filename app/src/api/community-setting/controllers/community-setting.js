@@ -2,7 +2,12 @@
 
 const { createCoreController } = require('@strapi/strapi').factories;
 const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
-const { getCommunitySettings } = require('../../../modules/community-settings');
+const {
+  ALLOWED_SETTINGS_KEYS,
+  getCommunitySettings,
+  sanitizePartialSettings,
+  upsertCommunitySettings,
+} = require('../../../modules/community-settings');
 const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
 
 const USER_UID = 'plugin::users-permissions.user';
@@ -32,20 +37,62 @@ const resolveIdentity = async (strapi, ctx) => {
 
   return {
     user,
-    canAccess: isAdmin || isEditor || isOwner,
+    canRead: isAdmin || isEditor || isOwner,
+    canWrite: isAdmin || isOwner,
   };
+};
+
+const resolveUpdatePayload = (requestBody = {}) => {
+  if (requestBody && typeof requestBody === 'object' && !Array.isArray(requestBody)) {
+    if (requestBody.data && typeof requestBody.data === 'object' && !Array.isArray(requestBody.data)) {
+      return requestBody.data;
+    }
+    return requestBody;
+  }
+  return null;
 };
 
 module.exports = createCoreController('api::community-setting.community-setting', ({ strapi }) => ({
   async effective(ctx) {
     const identity = await resolveIdentity(strapi, ctx);
-    if (!identity?.canAccess) {
+    if (!identity?.canRead) {
       return ctx.forbidden('Moderator/Admin access required.');
     }
 
     const settings = await getCommunitySettings(strapi, { refresh: true });
     ctx.body = {
       data: settings,
+    };
+  },
+
+  async updateEffective(ctx) {
+    const identity = await resolveIdentity(strapi, ctx);
+    if (!identity?.canWrite) {
+      return ctx.forbidden('Admin/Owner access required.');
+    }
+
+    const payload = resolveUpdatePayload(ctx.request.body);
+    if (!payload) {
+      return ctx.badRequest('Settings payload is required.');
+    }
+
+    const sanitized = sanitizePartialSettings(payload);
+    const providedKeys = Object.keys(payload);
+    const unknownKeys = providedKeys.filter((key) => !ALLOWED_SETTINGS_KEYS.includes(key));
+    if (unknownKeys.length > 0) {
+      return ctx.badRequest(`Unknown community setting key(s): ${unknownKeys.join(', ')}`);
+    }
+
+    if (Object.keys(sanitized).length === 0) {
+      return ctx.badRequest('No valid community setting fields provided.');
+    }
+
+    const settings = await upsertCommunitySettings(strapi, sanitized);
+    ctx.body = {
+      data: settings,
+      meta: {
+        updated_by: Number(identity.user.id),
+      },
     };
   },
 }));
