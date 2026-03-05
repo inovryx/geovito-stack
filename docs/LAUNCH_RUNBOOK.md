@@ -490,6 +490,21 @@ Optional overrides:
 - `ALT_ADMIN_EMAIL`, `ALT_ADMIN_PASSWORD`, `ALT_ADMIN_FIRSTNAME`, `ALT_ADMIN_LASTNAME`
 - `MEMBER_USER_EMAIL`, `MEMBER_USER_USERNAME`, `MEMBER_USER_PASSWORD`
 
+UGC showcase seed (idempotent first-place / first-post examples):
+
+```bash
+bash tools/ugc_showcase_seed.sh
+```
+
+Optional owner/profile alignment:
+
+```bash
+SHOWCASE_CREATOR_USERNAME=olmysweet \
+SHOWCASE_OWNER_EMAIL=ali.koc.00@gmail.com \
+SHOWCASE_REASSIGN_PROFILE_OWNER=true \
+bash tools/ugc_showcase_seed.sh
+```
+
 Dashboard owner-role hint (for frontend role lanes):
 - `PUBLIC_OWNER_EMAILS=geovitoworld@gmail.com,ali.koc.00@gmail.com`
 - Backend moderation owner override uses `OWNER_EMAILS` with the same comma-separated list.

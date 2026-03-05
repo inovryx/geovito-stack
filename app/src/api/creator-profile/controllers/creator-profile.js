@@ -400,6 +400,9 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
       ],
       populate: {
         translations: true,
+        related_places: {
+          fields: ['place_id', 'place_type'],
+        },
       },
       sort: ['published_on:desc', 'createdAt:desc'],
       limit,
@@ -432,7 +435,7 @@ module.exports = createCoreController(PROFILE_UID, ({ strapi }) => ({
 
     ctx.body = {
       data: {
-        profile: toPublicProfile(profile),
+        profile: toPublicProfile(profile, computeCitizenStats(Array.isArray(posts) ? posts : [])),
         posts: rows,
       },
     };
