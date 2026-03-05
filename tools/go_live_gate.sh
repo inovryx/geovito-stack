@@ -13,6 +13,9 @@ HEALTH_ENV_FILE="${HEALTH_ENV_FILE:-$HOME/.config/geovito/health.env}"
 GO_LIVE_WITH_DEPLOY="${GO_LIVE_WITH_DEPLOY:-true}"
 GO_LIVE_WITH_SMTP="${GO_LIVE_WITH_SMTP:-false}"
 GO_LIVE_WITH_BACKUP_VERIFY="${GO_LIVE_WITH_BACKUP_VERIFY:-false}"
+GO_LIVE_WITH_UGC_SHOWCASE_MOD="${GO_LIVE_WITH_UGC_SHOWCASE_MOD:-false}"
+GO_LIVE_UGC_SHOWCASE_OWNER_EMAIL="${GO_LIVE_UGC_SHOWCASE_OWNER_EMAIL:-${SHOWCASE_OWNER_EMAIL:-}}"
+GO_LIVE_UGC_SHOWCASE_RESTORE_TO_SUBMITTED="${GO_LIVE_UGC_SHOWCASE_RESTORE_TO_SUBMITTED:-true}"
 GO_LIVE_REQUIRE_CREATOR="${GO_LIVE_REQUIRE_CREATOR:-false}"
 GO_LIVE_SKIP_PRE_IMPORT="${GO_LIVE_SKIP_PRE_IMPORT:-false}"
 GO_LIVE_SKIP_PRE_DESIGN="${GO_LIVE_SKIP_PRE_DESIGN:-false}"
@@ -48,6 +51,9 @@ Env toggles:
   GO_LIVE_REQUIRE_CREATOR=true    # fail if creator username missing
   GO_LIVE_WITH_DEPLOY=true|false  # run pages_deploy_force before smoke (default: true)
   GO_LIVE_WITH_BACKUP_VERIFY=true # verify latest backup snapshot integrity
+  GO_LIVE_WITH_UGC_SHOWCASE_MOD=true  # run seeded UGC moderation round-trip check
+  GO_LIVE_UGC_SHOWCASE_OWNER_EMAIL=<mail>  # optional owner for showcase moderation check
+  GO_LIVE_UGC_SHOWCASE_RESTORE_TO_SUBMITTED=true|false  # restore target post after check
   GO_LIVE_SKIP_PRE_IMPORT=true    # skip pre_import_index_gate_check
   GO_LIVE_SKIP_PRE_DESIGN=true    # skip pre_design_gate_check
   GO_LIVE_SKIP_UI=true            # skip account/dashboard playwright checks
@@ -68,6 +74,7 @@ Examples:
   CREATOR_USERNAME=olmysweet GO_LIVE_REQUIRE_CREATOR=true bash tools/go_live_gate.sh
   GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate.sh
   GO_LIVE_WITH_BACKUP_VERIFY=true bash tools/go_live_gate.sh
+  GO_LIVE_WITH_UGC_SHOWCASE_MOD=true CREATOR_USERNAME=olmysweet bash tools/go_live_gate.sh
   GO_LIVE_SKIP_UGC_API_CONTRACT=true bash tools/go_live_gate.sh
   GO_LIVE_SKIP_UI_PAGE_PROGRESS=true bash tools/go_live_gate.sh
 USAGE
@@ -135,7 +142,7 @@ echo "=============================================================="
 echo "GEOVITO GO-LIVE GATE"
 echo "expected_sha7=${EXPECTED_SHA7}"
 echo "creator_username=${CREATOR_USERNAME:-<empty>}"
-echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP} with_backup_verify=${GO_LIVE_WITH_BACKUP_VERIFY}"
+echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP} with_backup_verify=${GO_LIVE_WITH_BACKUP_VERIFY} with_ugc_showcase_mod=${GO_LIVE_WITH_UGC_SHOWCASE_MOD}"
 echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE} skip_community_settings_smoke=${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE} skip_ugc_api_contract=${GO_LIVE_SKIP_UGC_API_CONTRACT} skip_ui_page_progress=${GO_LIVE_SKIP_UI_PAGE_PROGRESS} skip_dashboard_role_smoke=${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE} skip_follow_smoke=${GO_LIVE_SKIP_FOLLOW_SMOKE} skip_notification_smoke=${GO_LIVE_SKIP_NOTIFICATION_SMOKE} skip_saved_list_smoke=${GO_LIVE_SKIP_SAVED_LIST_SMOKE}"
 echo "=============================================================="
 
@@ -219,6 +226,20 @@ else
   STEP_STATUS+=("SKIP")
   STEP_CODES+=("0")
   echo "RESULT: SKIP (UGC API Contract Check)"
+fi
+
+if [[ "$GO_LIVE_WITH_UGC_SHOWCASE_MOD" == "true" ]]; then
+  showcase_creator="${CREATOR_USERNAME:-olmysweet}"
+  if [[ -n "$GO_LIVE_UGC_SHOWCASE_OWNER_EMAIL" ]]; then
+    run_step "UGC Showcase Moderation Check" bash -lc "cd '$ROOT_DIR' && SHOWCASE_CREATOR_USERNAME='$showcase_creator' SHOWCASE_OWNER_EMAIL='$GO_LIVE_UGC_SHOWCASE_OWNER_EMAIL' RESTORE_TO_SUBMITTED='$GO_LIVE_UGC_SHOWCASE_RESTORE_TO_SUBMITTED' bash tools/ugc_showcase_moderation_check.sh"
+  else
+    run_step "UGC Showcase Moderation Check" bash -lc "cd '$ROOT_DIR' && SHOWCASE_CREATOR_USERNAME='$showcase_creator' RESTORE_TO_SUBMITTED='$GO_LIVE_UGC_SHOWCASE_RESTORE_TO_SUBMITTED' bash tools/ugc_showcase_moderation_check.sh"
+  fi
+else
+  STEP_NAMES+=("UGC Showcase Moderation Check")
+  STEP_STATUS+=("SKIP")
+  STEP_CODES+=("0")
+  echo "RESULT: SKIP (UGC Showcase Moderation Check)"
 fi
 
 if [[ "$GO_LIVE_SKIP_UI_PAGE_PROGRESS" != "true" ]]; then

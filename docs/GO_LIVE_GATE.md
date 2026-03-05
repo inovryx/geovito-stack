@@ -24,6 +24,15 @@ GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=you@example.com bash tools/go_live_gate
 # include backup integrity verify (latest snapshot under BACKUP_ROOT)
 GO_LIVE_WITH_BACKUP_VERIFY=true bash tools/go_live_gate.sh
 
+# include UGC showcase moderation round-trip check
+GO_LIVE_WITH_UGC_SHOWCASE_MOD=true CREATOR_USERNAME=olmysweet bash tools/go_live_gate.sh
+
+# optional explicit owner + keep-approved mode
+GO_LIVE_WITH_UGC_SHOWCASE_MOD=true \
+GO_LIVE_UGC_SHOWCASE_OWNER_EMAIL=ali.koc.00@gmail.com \
+GO_LIVE_UGC_SHOWCASE_RESTORE_TO_SUBMITTED=false \
+CREATOR_USERNAME=olmysweet bash tools/go_live_gate.sh
+
 # if /api/_health is token-protected
 HEALTH_TOKEN=your_token_here bash tools/go_live_gate.sh
 
@@ -86,6 +95,7 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/report_moderation_smoke.sh` PASS
 - [ ] `bash tools/community_settings_smoke.sh` PASS
 - [ ] `bash tools/ugc_api_contract_check.sh` PASS
+- [ ] `GO_LIVE_WITH_UGC_SHOWCASE_MOD=true bash tools/go_live_gate.sh` includes `UGC Showcase Moderation Check` PASS
 - [ ] `bash tools/ui_page_progress_report.sh` PASS
 - [ ] `bash tools/dashboard_role_smoke.sh` PASS
 - [ ] `bash tools/follow_system_smoke.sh` PASS
