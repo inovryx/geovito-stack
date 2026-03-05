@@ -505,6 +505,18 @@ SHOWCASE_REASSIGN_PROFILE_OWNER=true \
 bash tools/ugc_showcase_seed.sh
 ```
 
+UGC showcase moderation round-trip check (owner token, API path healthy):
+
+```bash
+bash tools/ugc_showcase_moderation_check.sh
+```
+
+Optional keep-approved mode (skip restore to submitted):
+
+```bash
+RESTORE_TO_SUBMITTED=false bash tools/ugc_showcase_moderation_check.sh
+```
+
 Dashboard owner-role hint (for frontend role lanes):
 - `PUBLIC_OWNER_EMAILS=geovitoworld@gmail.com,ali.koc.00@gmail.com`
 - Backend moderation owner override uses `OWNER_EMAILS` with the same comma-separated list.
