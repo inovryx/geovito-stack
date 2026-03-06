@@ -2,6 +2,43 @@
 
 Use this checklist before opening broader traffic.
 
+## Production Standard (No-Skip)
+Use the full hardening gate for production promotion:
+
+```bash
+bash tools/go_live_gate_full.sh
+```
+
+This command enforces:
+- legacy core gate chain (`tools/go_live_gate.sh`)
+- staging isolation checks
+- restore freshness SLA checks
+- kill-switch smoke
+- audit-log smoke
+- SEO drift check
+- error-rate check
+- storage pressure check
+
+Summary evidence is written under:
+- `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
+
+### Emergency override (controlled)
+Override is allowed only with explicit incident metadata and allowlist:
+
+```bash
+GO_LIVE_EMERGENCY_OVERRIDE=true \
+GO_LIVE_OVERRIDE_TICKET=INC-1234 \
+GO_LIVE_OVERRIDE_APPROVER=ops@geovito.com \
+GO_LIVE_OVERRIDE_REASON=\"infra provider incident\" \
+GO_LIVE_OVERRIDE_ALLOWLIST=\"Staging Isolation,Restore Freshness\" \
+bash tools/go_live_gate_full.sh
+```
+
+Rules:
+- missing ticket/approver/reason -> FAIL
+- failed step not in allowlist -> FAIL
+- override action is audit-logged
+
 ## One-command Gate
 Run:
 
@@ -70,6 +107,8 @@ nano ~/.config/geovito/health.env
 - [ ] `GO_LIVE_WITH_BACKUP_VERIFY=true bash tools/go_live_gate.sh` includes `Backup Verify` PASS
 - [ ] `bash tools/prod_health.sh` PASS
 - [ ] `bash tools/pages_build_check.sh` PASS
+- [ ] `bash tools/staging_isolation_check.sh` PASS
+- [ ] `bash tools/restore_freshness_check.sh` PASS
 
 ## Contract Gates
 - [ ] `bash tools/pre_import_index_gate_check.sh` PASS
@@ -102,6 +141,11 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/notification_preferences_smoke.sh` PASS
 - [ ] `bash tools/saved_list_smoke.sh` PASS
 - [ ] guest comment policy and link limits verified
+- [ ] `bash tools/kill_switch_smoke.sh` PASS
+- [ ] `bash tools/audit_log_smoke.sh` PASS
+- [ ] `bash tools/seo_drift_check.sh` PASS
+- [ ] `bash tools/error_rate_check.sh` PASS
+- [ ] `bash tools/storage_pressure_check.sh` PASS
 
 ## Profile + Routing
 - [ ] `/{lang}/@{username}` profile routes render
@@ -109,5 +153,6 @@ nano ~/.config/geovito/health.env
 - [ ] profile pages are noindex and excluded from sitemap
 
 ## Final Decision
-- PASS all required blocks -> Go live
-- Any FAIL -> hold release, patch, rerun full gate
+- Production: `tools/go_live_gate_full.sh` must be PASS with `0 failed`.
+- Any FAIL -> hold release, patch, rerun full gate.
+- Emergency override is exception-only and must include ticket + approver + reason.

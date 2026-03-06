@@ -2,6 +2,10 @@
 
 This runbook covers safe production activation for tags, analytics, ads, consent flow, and observability.
 
+Hardening note:
+- Production release standard is `bash tools/go_live_gate_full.sh` (no-skip).
+- Legacy gate `bash tools/go_live_gate.sh` remains available for scoped checks.
+
 ## 1) Environment Variables (Cloudflare Pages)
 
 Set the following in Cloudflare Pages project environment (Production and Preview as needed).
