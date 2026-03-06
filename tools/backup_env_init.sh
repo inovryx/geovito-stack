@@ -18,6 +18,22 @@ cat > "$TARGET_FILE" <<'EOF'
 BACKUP_ROOT="$HOME/backups/geovito"
 # Auto-prune snapshots older than N days after each backup.
 BACKUP_KEEP_DAYS=14
+
+# Retention tiers for offsite policy.
+BACKUP_RETENTION_DAILY=14
+BACKUP_RETENTION_WEEKLY=8
+BACKUP_RETENTION_MONTHLY=12
+
+# Cloudflare R2 (S3-compatible) offsite target.
+BACKUP_R2_BUCKET=
+BACKUP_R2_PREFIX=geovito-prod
+BACKUP_R2_ENDPOINT=
+BACKUP_R2_ACCESS_KEY_ID=
+BACKUP_R2_SECRET_ACCESS_KEY=
+
+# age encryption keys.
+BACKUP_AGE_RECIPIENT=
+BACKUP_AGE_KEY_FILE="$HOME/.config/geovito/keys/backup.agekey"
 EOF
 
 chmod 600 "$TARGET_FILE"
@@ -26,6 +42,7 @@ cat <<EOF
 PASS: olusturuldu -> $TARGET_FILE
 Sonraki adim:
   1) dosyayi ac: nano "$TARGET_FILE"
-  2) backup al: bash tools/backup_create.sh
-  3) backup dogrula: bash tools/backup_verify.sh
+  2) local backup al: bash tools/backup_create.sh
+  3) offsite encrypted backup al: bash tools/backup_run.sh
+  4) backup dogrula: BACKUP_VERIFY_OFFSITE=true bash tools/backup_verify.sh
 EOF

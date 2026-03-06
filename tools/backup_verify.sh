@@ -7,6 +7,12 @@ cd "$ROOT_DIR"
 BACKUP_ENV_FILE="${BACKUP_ENV_FILE:-$HOME/.config/geovito/backup.env}"
 BACKUP_ROOT="${BACKUP_ROOT:-$HOME/backups/geovito}"
 REQUESTED_STAMP="${1:-}"
+BACKUP_VERIFY_OFFSITE="${BACKUP_VERIFY_OFFSITE:-false}"
+BACKUP_R2_BUCKET="${BACKUP_R2_BUCKET:-}"
+BACKUP_R2_PREFIX="${BACKUP_R2_PREFIX:-geovito-prod}"
+BACKUP_R2_ENDPOINT="${BACKUP_R2_ENDPOINT:-}"
+BACKUP_R2_ACCESS_KEY_ID="${BACKUP_R2_ACCESS_KEY_ID:-}"
+BACKUP_R2_SECRET_ACCESS_KEY="${BACKUP_R2_SECRET_ACCESS_KEY:-}"
 
 if [[ -f "$BACKUP_ENV_FILE" ]]; then
   # shellcheck disable=SC1090
@@ -59,6 +65,28 @@ pass "postgres dump header looks valid"
 
 tar -tzf "${SNAPSHOT_DIR}/uploads.tgz" >/dev/null
 pass "uploads archive can be listed"
+
+if [[ "${BACKUP_VERIFY_OFFSITE}" == "true" ]]; then
+  command -v aws >/dev/null 2>&1 || fail "aws cli is required for BACKUP_VERIFY_OFFSITE=true"
+  [[ -n "${BACKUP_R2_BUCKET}" ]] || fail "BACKUP_R2_BUCKET is required for offsite verify"
+  [[ -n "${BACKUP_R2_ENDPOINT}" ]] || fail "BACKUP_R2_ENDPOINT is required for offsite verify"
+  [[ -n "${BACKUP_R2_ACCESS_KEY_ID}" ]] || fail "BACKUP_R2_ACCESS_KEY_ID is required for offsite verify"
+  [[ -n "${BACKUP_R2_SECRET_ACCESS_KEY}" ]] || fail "BACKUP_R2_SECRET_ACCESS_KEY is required for offsite verify"
+
+  export AWS_ACCESS_KEY_ID="${BACKUP_R2_ACCESS_KEY_ID}"
+  export AWS_SECRET_ACCESS_KEY="${BACKUP_R2_SECRET_ACCESS_KEY}"
+  export AWS_EC2_METADATA_DISABLED=true
+
+  stamp="$(basename "${SNAPSHOT_DIR}")"
+  remote_base="s3://${BACKUP_R2_BUCKET}/${BACKUP_R2_PREFIX}/${stamp}"
+  aws --endpoint-url "${BACKUP_R2_ENDPOINT}" --region auto --no-cli-pager \
+    s3 ls "${remote_base}/manifest.json" >/dev/null
+  pass "offsite manifest exists (${remote_base}/manifest.json)"
+
+  aws --endpoint-url "${BACKUP_R2_ENDPOINT}" --region auto --no-cli-pager \
+    s3 ls "${remote_base}/snapshot.bundle.tar.gz.age" >/dev/null
+  pass "offsite encrypted bundle exists (${remote_base}/snapshot.bundle.tar.gz.age)"
+fi
 
 echo "=============================================================="
 echo "BACKUP VERIFY: PASS"
