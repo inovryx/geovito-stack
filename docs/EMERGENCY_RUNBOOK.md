@@ -1,5 +1,10 @@
 # Geovito Emergency Runbook
 
+Primary operational runbook moved to:
+- `docs/INCIDENT_RUNBOOK.md`
+
+This file remains as a quick index and legacy reference.
+
 ## 1) Site or Build Mismatch
 Symptoms:
 - production shows old build SHA
