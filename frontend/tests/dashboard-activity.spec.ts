@@ -31,6 +31,23 @@ test.beforeEach(async ({ page }) => {
     { item_id: 'item-4', list_id: 'list-stories', target_type: 'post', target_ref: 'post-city-break' },
     { item_id: 'item-5', list_id: 'list-stories', target_type: 'post', target_ref: 'post-route-cues' },
   ];
+  let communitySettings = {
+    ugc_enabled: true,
+    ugc_open_mode: 'controlled',
+    guest_comments_enabled: true,
+    post_links_enabled: true,
+    comments_links_enabled: true,
+    post_link_limit: 4,
+    member_comment_link_limit: 2,
+    guest_comment_link_limit: 1,
+    default_profile_visibility: 'public',
+    moderation_strictness: 'balanced',
+    citizen_card_visible: true,
+    badges_visible: false,
+    follow_system_enabled: false,
+    notifications_defaults: null,
+    safety_notice_templates: null,
+  };
 
   await page.route(/\/api\/user-follows\/me\/list\?limit=500$/, async (route) => {
     await route.fulfill({
@@ -120,27 +137,36 @@ test.beforeEach(async ({ page }) => {
     });
   });
   await page.route(/\/api\/community-settings\/effective$/, async (route) => {
+    if (route.request().method().toUpperCase() === 'PATCH') {
+      let payload: Record<string, unknown> = {};
+      try {
+        payload = route.request().postDataJSON() as Record<string, unknown>;
+      } catch {
+        payload = {};
+      }
+      const data = payload?.data && typeof payload.data === 'object'
+        ? (payload.data as Record<string, unknown>)
+        : payload;
+      communitySettings = {
+        ...communitySettings,
+        ...data,
+      };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: communitySettings,
+          meta: { updated_by: 7 },
+        }),
+      });
+      return;
+    }
+
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        data: {
-          ugc_enabled: true,
-          ugc_open_mode: 'controlled',
-          guest_comments_enabled: true,
-          post_links_enabled: true,
-          comments_links_enabled: true,
-          post_link_limit: 4,
-          member_comment_link_limit: 2,
-          guest_comment_link_limit: 1,
-          default_profile_visibility: 'public',
-          moderation_strictness: 'balanced',
-          citizen_card_visible: true,
-          badges_visible: false,
-          follow_system_enabled: false,
-          notifications_defaults: null,
-          safety_notice_templates: null,
-        },
+        data: communitySettings,
       }),
     });
   });
@@ -412,6 +438,173 @@ test('dashboard activity feed supports warn filter and clear history', async ({ 
     }
   });
   expect(storedHistory).toEqual([]);
+});
+
+test('dashboard community settings form patches admin policy fields', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Run dashboard community settings smoke once on desktop');
+
+  await page.route(/\/api\/users\/me\?populate=role$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 17,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        createdAt: '2026-02-21T08:00:00.000Z',
+        role: {
+          type: 'admin',
+          name: 'Admin',
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/user-preferences\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { preferred_ui_language: 'en' } }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/me\/list\?limit=30$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/creator-profile\/me$/, async (route) => {
+    await route.fulfill({
+      status: 404,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: null }),
+    });
+  });
+
+  await page.route(/\/api\/blog-posts\/me\/list\?limit=120$/, async (route) => {
+    await route.fulfill({
+      status: 404,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [] }),
+    });
+  });
+
+  await page.route(/\/api\/blog-comments\/moderation\/list\?status=all&limit=40$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [],
+        meta: {
+          summary: {
+            pending_total: 0,
+            stale_pending_total: 0,
+            oldest_pending_hours: 0,
+            stale_threshold_hours: 24,
+          },
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/api\/ui-locales\/meta\/progress\?reference_locale=en$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          summary: {
+            locales_total: 1,
+            reference_locale: 'en',
+            locales_complete: 1,
+            locales_with_gaps: 0,
+            locales_with_missing: 0,
+            locales_with_untranslated: 0,
+            deploy_required_count: 0,
+          },
+          locales: [
+            {
+              ui_locale: 'en',
+              status: 'complete',
+              reference_locale: 'en',
+              deploy_required: false,
+              total_keys: 200,
+              translated_keys: 200,
+              missing_keys: 0,
+              untranslated_keys: 0,
+              coverage_percent: 100,
+            },
+          ],
+        },
+      }),
+    });
+  });
+
+  await page.route(/\/\.well-known\/geovito-build\.json$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        build_sha7: 'commset',
+        build_sha_full: 'commsetdeadbeef',
+        build_branch: 'main',
+        build_time_utc: '2026-02-21T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.addInitScript(([jwt]) => {
+    localStorage.setItem(
+      'geovito_auth_session',
+      JSON.stringify({
+        jwt,
+        username: 'admin-user',
+        email: 'admin@example.com',
+        confirmed: true,
+        blocked: false,
+        loginAt: '2026-02-21T10:00:00.000Z',
+      })
+    );
+  }, [MOCK_JWT]);
+
+  await page.goto('/en/dashboard/#dashboard-control');
+  await dismissConsentBanner(page);
+
+  const communityForm = page.locator('[data-dashboard-community-form]');
+  await expect(communityForm).toBeVisible();
+  await expect(page.locator('[data-dashboard-community-open-mode]')).toContainText('Controlled');
+  await expect(page.locator('[data-dashboard-community-follow-enabled]')).toContainText('Disabled');
+
+  await page.selectOption('[data-dashboard-community-input="ugc_open_mode"]', 'open');
+  await page.uncheck('[data-dashboard-community-input="ugc_enabled"]');
+  await page.check('[data-dashboard-community-input="follow_system_enabled"]');
+  await page.check('[data-dashboard-community-input="badges_visible"]');
+  await page.fill('[data-dashboard-community-input="post_link_limit"]', '6');
+  await page.fill('[data-dashboard-community-input="guest_comment_link_limit"]', '3');
+  await page.selectOption('[data-dashboard-community-input="default_profile_visibility"]', 'members');
+  await page.selectOption('[data-dashboard-community-input="moderation_strictness"]', 'strict');
+  await page.click('[data-dashboard-community-save]');
+
+  await expect(page.locator('[data-dashboard-feedback]')).toContainText('Community settings updated.');
+  await expect(page.locator('[data-dashboard-community-open-mode]')).toContainText('Open');
+  await expect(page.locator('[data-dashboard-community-ugc-enabled]')).toContainText('Disabled');
+  await expect(page.locator('[data-dashboard-community-follow-enabled]')).toContainText('Enabled');
+  await expect(page.locator('[data-dashboard-community-badges]')).toContainText('Enabled');
+  await expect(page.locator('[data-dashboard-community-post-link-limit]')).toHaveText('6');
+  await expect(page.locator('[data-dashboard-community-guest-link-limit]')).toHaveText('3');
+  await expect(page.locator('[data-dashboard-community-default-visibility]')).toContainText('members');
+  await expect(page.locator('[data-dashboard-community-strictness]')).toContainText('strict');
+
+  await page.uncheck('[data-dashboard-community-input="follow_system_enabled"]');
+  await page.fill('[data-dashboard-community-input="post_link_limit"]', '2');
+  await page.click('[data-dashboard-community-reset]');
+  await expect(page.locator('[data-dashboard-community-input="follow_system_enabled"]')).toBeChecked();
+  await expect(page.locator('[data-dashboard-community-input="post_link_limit"]')).toHaveValue('6');
 });
 
 test('dashboard editorial inbox renders report and account-request queues with moderation actions', async ({ page }, testInfo) => {

@@ -417,6 +417,23 @@ const dashboardCopy = {
   communityLoadFailed: translate(ui, 'dashboard.communityLoadFailed', {}, 'Could not load effective community settings.'),
   communityLoadedAt: translate(ui, 'dashboard.communityLoadedAt', {}, 'Loaded at'),
   communityManage: translate(ui, 'dashboard.communityManage', {}, 'Manage community settings'),
+  communitySave: translate(ui, 'dashboard.communitySave', {}, 'Save community settings'),
+  communitySaving: translate(ui, 'dashboard.communitySaving', {}, 'Saving...'),
+  communityReset: translate(ui, 'dashboard.communityReset', {}, 'Reset form'),
+  communitySaveSuccess: translate(ui, 'dashboard.communitySaveSuccess', {}, 'Community settings updated.'),
+  communitySaveFailed: translate(ui, 'dashboard.communitySaveFailed', {}, 'Community settings update failed.'),
+  communityVisibilityPublic: translate(ui, 'dashboard.communityVisibilityPublic', {}, 'Public'),
+  communityVisibilityMembers: translate(ui, 'dashboard.communityVisibilityMembers', {}, 'Members-only'),
+  communityVisibilityPrivate: translate(ui, 'dashboard.communityVisibilityPrivate', {}, 'Private'),
+  communityStrictnessLenient: translate(ui, 'dashboard.communityStrictnessLenient', {}, 'Lenient'),
+  communityStrictnessBalanced: translate(ui, 'dashboard.communityStrictnessBalanced', {}, 'Balanced'),
+  communityStrictnessStrict: translate(ui, 'dashboard.communityStrictnessStrict', {}, 'Strict'),
+  communityEditorHint: translate(
+    ui,
+    'dashboard.communityEditorHint',
+    {},
+    'Community settings can be edited by admin/owner roles from this card.'
+  ),
   activityCommunityUgcDisabled: translate(ui, 'dashboard.activityCommunityUgcDisabled', {}, 'UGC publishing is disabled in community settings.'),
   activityCommunityGuestDisabled: translate(ui, 'dashboard.activityCommunityGuestDisabled', {}, 'Guest comments are disabled in community settings.'),
   activityCommunityFollowDisabled: translate(ui, 'dashboard.activityCommunityFollowDisabled', {}, 'Follow system is disabled in community settings.'),
@@ -1370,6 +1387,106 @@ const dashboardCopy = {
                 <span class="ui-button-label">{dashboardCopy.communityManage}</span>
               </a>
             </div>
+            <form class="dashboard-community-form gv-stack" data-dashboard-community-form data-dashboard-role-gated data-min-role="admin" hidden>
+              <div class="dashboard-community-form-grid">
+                <label class="dashboard-activity-toggle">
+                  <input type="checkbox" data-dashboard-community-input="ugc_enabled" />
+                  <span>{dashboardCopy.communityUgcEnabled}</span>
+                </label>
+                <label class="dashboard-activity-toggle">
+                  <input type="checkbox" data-dashboard-community-input="guest_comments_enabled" />
+                  <span>{dashboardCopy.communityGuestComments}</span>
+                </label>
+                <label class="dashboard-activity-toggle">
+                  <input type="checkbox" data-dashboard-community-input="follow_system_enabled" />
+                  <span>{dashboardCopy.communityFollowSystem}</span>
+                </label>
+                <label class="dashboard-activity-toggle">
+                  <input type="checkbox" data-dashboard-community-input="citizen_card_visible" />
+                  <span>{dashboardCopy.communityCitizenCard}</span>
+                </label>
+                <label class="dashboard-activity-toggle">
+                  <input type="checkbox" data-dashboard-community-input="badges_visible" />
+                  <span>{dashboardCopy.communityBadges}</span>
+                </label>
+                <label class="dashboard-activity-toggle">
+                  <input type="checkbox" data-dashboard-community-input="post_links_enabled" />
+                  <span>{dashboardCopy.communityPostLinks}</span>
+                </label>
+                <label class="dashboard-activity-toggle">
+                  <input type="checkbox" data-dashboard-community-input="comments_links_enabled" />
+                  <span>{dashboardCopy.communityCommentLinks}</span>
+                </label>
+                <label class="ui-field">
+                  <span class="ui-field-label">{dashboardCopy.communityOpenMode}</span>
+                  <select class="ui-input" data-dashboard-community-input="ugc_open_mode">
+                    <option value="controlled">{dashboardCopy.communityOpenModeControlled}</option>
+                    <option value="open">{dashboardCopy.communityOpenModeOpen}</option>
+                  </select>
+                </label>
+                <label class="ui-field">
+                  <span class="ui-field-label">{dashboardCopy.communityDefaultVisibility}</span>
+                  <select class="ui-input" data-dashboard-community-input="default_profile_visibility">
+                    <option value="public">{dashboardCopy.communityVisibilityPublic}</option>
+                    <option value="members">{dashboardCopy.communityVisibilityMembers}</option>
+                    <option value="private">{dashboardCopy.communityVisibilityPrivate}</option>
+                  </select>
+                </label>
+                <label class="ui-field">
+                  <span class="ui-field-label">{dashboardCopy.communityStrictness}</span>
+                  <select class="ui-input" data-dashboard-community-input="moderation_strictness">
+                    <option value="lenient">{dashboardCopy.communityStrictnessLenient}</option>
+                    <option value="balanced">{dashboardCopy.communityStrictnessBalanced}</option>
+                    <option value="strict">{dashboardCopy.communityStrictnessStrict}</option>
+                  </select>
+                </label>
+                <label class="ui-field">
+                  <span class="ui-field-label">{dashboardCopy.communityPostLinkLimit}</span>
+                  <input
+                    class="ui-input"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    max="50"
+                    step="1"
+                    data-dashboard-community-input="post_link_limit"
+                  />
+                </label>
+                <label class="ui-field">
+                  <span class="ui-field-label">{dashboardCopy.communityMemberLinkLimit}</span>
+                  <input
+                    class="ui-input"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    max="20"
+                    step="1"
+                    data-dashboard-community-input="member_comment_link_limit"
+                  />
+                </label>
+                <label class="ui-field">
+                  <span class="ui-field-label">{dashboardCopy.communityGuestLinkLimit}</span>
+                  <input
+                    class="ui-input"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    max="20"
+                    step="1"
+                    data-dashboard-community-input="guest_comment_link_limit"
+                  />
+                </label>
+              </div>
+              <div class="dashboard-actions">
+                <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-community-save>
+                  <span class="ui-button-label">{dashboardCopy.communitySave}</span>
+                </button>
+                <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-community-reset>
+                  <span class="ui-button-label">{dashboardCopy.communityReset}</span>
+                </button>
+              </div>
+              <p class="small">{dashboardCopy.communityEditorHint}</p>
+            </form>
             <p class="small" data-dashboard-community-note hidden></p>
           </article>
 
@@ -1755,6 +1872,10 @@ const dashboardCopy = {
       const communityStrictnessNode = document.querySelector('[data-dashboard-community-strictness]');
       const communityLoadedAtNode = document.querySelector('[data-dashboard-community-loaded-at]');
       const communityNoteNode = document.querySelector('[data-dashboard-community-note]');
+      const communityFormNode = document.querySelector('[data-dashboard-community-form]');
+      const communitySaveButton = document.querySelector('[data-dashboard-community-save]');
+      const communityResetButton = document.querySelector('[data-dashboard-community-reset]');
+      const communityInputNodes = Array.from(document.querySelectorAll('[data-dashboard-community-input]'));
       const activityFeedNode = document.querySelector('[data-dashboard-activity-feed]');
       const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
@@ -1786,6 +1907,7 @@ const dashboardCopy = {
       let notificationsSiteEnabled = null;
       let notificationsEmailEnabled = null;
       let savedListsMutating = false;
+      let communitySettingsMutating = false;
       let lastActivityHasErrors = false;
       let activityHistory = [];
       let activityTickTimer = null;
@@ -2010,6 +2132,138 @@ const dashboardCopy = {
         return dashboardCopy.communityValueUnknown;
       };
 
+      const COMMUNITY_BOOL_FIELDS = new Set([
+        'ugc_enabled',
+        'guest_comments_enabled',
+        'follow_system_enabled',
+        'citizen_card_visible',
+        'badges_visible',
+        'post_links_enabled',
+        'comments_links_enabled',
+      ]);
+
+      const COMMUNITY_LIMIT_FIELDS = new Map([
+        ['post_link_limit', { fallback: 0, min: 0, max: 50 }],
+        ['member_comment_link_limit', { fallback: 0, min: 0, max: 20 }],
+        ['guest_comment_link_limit', { fallback: 0, min: 0, max: 20 }],
+      ]);
+
+      const COMMUNITY_SELECT_FIELDS = new Set([
+        'ugc_open_mode',
+        'default_profile_visibility',
+        'moderation_strictness',
+      ]);
+
+      const setCommunityFormDisabled = (disabled) => {
+        const next = Boolean(disabled);
+        communityInputNodes.forEach((node) => {
+          if (node instanceof HTMLInputElement || node instanceof HTMLSelectElement) {
+            node.disabled = next;
+          }
+        });
+        if (communitySaveButton instanceof HTMLButtonElement) {
+          communitySaveButton.disabled = next;
+        }
+        if (communityResetButton instanceof HTMLButtonElement) {
+          communityResetButton.disabled = next;
+        }
+      };
+
+      const resetCommunitySettingsForm = () => {
+        communityInputNodes.forEach((node) => {
+          if (!(node instanceof HTMLInputElement || node instanceof HTMLSelectElement)) return;
+          const field = String(node.dataset.dashboardCommunityInput || '').trim();
+          if (!field) return;
+
+          if (node instanceof HTMLInputElement && node.type === 'checkbox') {
+            node.checked = false;
+            return;
+          }
+
+          if (COMMUNITY_LIMIT_FIELDS.has(field)) {
+            const config = COMMUNITY_LIMIT_FIELDS.get(field);
+            node.value = String(config?.fallback ?? 0);
+            return;
+          }
+
+          if (field === 'ugc_open_mode') {
+            node.value = 'controlled';
+            return;
+          }
+
+          if (field === 'default_profile_visibility') {
+            node.value = 'public';
+            return;
+          }
+
+          if (field === 'moderation_strictness') {
+            node.value = 'balanced';
+          }
+        });
+      };
+
+      const applyCommunitySettingsForm = (settings) => {
+        if (!toNode(communityFormNode)) return;
+        const source = settings && typeof settings === 'object' ? settings : {};
+
+        communityInputNodes.forEach((node) => {
+          if (!(node instanceof HTMLInputElement || node instanceof HTMLSelectElement)) return;
+          const field = String(node.dataset.dashboardCommunityInput || '').trim();
+          if (!field) return;
+
+          if (node instanceof HTMLInputElement && node.type === 'checkbox' && COMMUNITY_BOOL_FIELDS.has(field)) {
+            node.checked = source[field] === true;
+            return;
+          }
+
+          if (COMMUNITY_LIMIT_FIELDS.has(field)) {
+            const config = COMMUNITY_LIMIT_FIELDS.get(field) || { fallback: 0, min: 0, max: 100 };
+            const next = normalizeCount(source[field], config.fallback);
+            node.value = String(Math.max(config.min, Math.min(config.max, next)));
+            return;
+          }
+
+          if (COMMUNITY_SELECT_FIELDS.has(field)) {
+            const raw = String(source[field] || '').trim().toLowerCase();
+            if (raw) {
+              node.value = raw;
+            }
+          }
+        });
+
+        toNode(communityFormNode).hidden = false;
+        setCommunityFormDisabled(false);
+      };
+
+      const readCommunitySettingsFormPayload = () => {
+        const payload = {};
+        communityInputNodes.forEach((node) => {
+          if (!(node instanceof HTMLInputElement || node instanceof HTMLSelectElement)) return;
+          const field = String(node.dataset.dashboardCommunityInput || '').trim();
+          if (!field) return;
+
+          if (node instanceof HTMLInputElement && node.type === 'checkbox' && COMMUNITY_BOOL_FIELDS.has(field)) {
+            payload[field] = node.checked;
+            return;
+          }
+
+          if (COMMUNITY_LIMIT_FIELDS.has(field)) {
+            const config = COMMUNITY_LIMIT_FIELDS.get(field) || { fallback: 0, min: 0, max: 100 };
+            const parsed = Number.parseInt(String(node.value || ''), 10);
+            const safe = Number.isFinite(parsed) ? parsed : config.fallback;
+            payload[field] = Math.max(config.min, Math.min(config.max, safe));
+            node.value = String(payload[field]);
+            return;
+          }
+
+          if (COMMUNITY_SELECT_FIELDS.has(field)) {
+            payload[field] = String(node.value || '').trim().toLowerCase();
+          }
+        });
+
+        return payload;
+      };
+
       const resetCommunitySettingsView = () => {
         communitySettingsPayload = null;
         setText(communityOpenModeNode, dashboardCopy.communityValueUnknown);
@@ -2026,9 +2280,15 @@ const dashboardCopy = {
         setText(communityDefaultVisibilityNode, dashboardCopy.communityValueUnknown);
         setText(communityStrictnessNode, dashboardCopy.communityValueUnknown);
         setText(communityLoadedAtNode, dashboardCopy.communityValueUnknown);
+        resetCommunitySettingsForm();
+        if (toNode(communityFormNode)) {
+          toNode(communityFormNode).hidden = true;
+        }
+        setCommunityFormDisabled(false);
         if (toNode(communityNoteNode)) {
           toNode(communityNoteNode).hidden = true;
           toNode(communityNoteNode).textContent = '';
+          toNode(communityNoteNode).classList.remove('is-success');
           toNode(communityNoteNode).classList.remove('is-error');
         }
       };
@@ -2050,6 +2310,13 @@ const dashboardCopy = {
         setText(communityDefaultVisibilityNode, String(data?.default_profile_visibility || dashboardCopy.communityValueUnknown));
         setText(communityStrictnessNode, String(data?.moderation_strictness || dashboardCopy.communityValueUnknown));
         setText(communityLoadedAtNode, formatDate(loadedAtIsoString));
+        applyCommunitySettingsForm(data);
+        if (toNode(communityNoteNode)) {
+          toNode(communityNoteNode).hidden = true;
+          toNode(communityNoteNode).textContent = '';
+          toNode(communityNoteNode).classList.remove('is-success');
+          toNode(communityNoteNode).classList.remove('is-error');
+        }
       };
 
       const resetFollowView = () => {
@@ -3775,6 +4042,37 @@ const dashboardCopy = {
         return true;
       };
 
+      const runCommunitySettingsUpdateAction = async (session, payload) => {
+        if (!session?.jwt || !payload || typeof payload !== 'object') return null;
+
+        const response = await fetch(`${authBaseUrl}/api/community-settings/effective`, {
+          method: 'PATCH',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.jwt}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          const message = String(body?.error?.message || dashboardCopy.communitySaveFailed);
+          setFeedback(message, true);
+          if (toNode(communityNoteNode)) {
+            toNode(communityNoteNode).hidden = false;
+            toNode(communityNoteNode).textContent = message;
+            toNode(communityNoteNode).classList.remove('is-success');
+            toNode(communityNoteNode).classList.add('is-error');
+          }
+          return null;
+        }
+
+        const body = await response.json().catch(() => ({}));
+        const settings = body?.data && typeof body.data === 'object' ? body.data : null;
+        return settings;
+      };
+
       const loadDashboard = async (session) => {
         if (isLoading) return;
         isLoading = true;
@@ -4325,6 +4623,54 @@ const dashboardCopy = {
           });
         }
 
+        if (communitySaveButton instanceof HTMLButtonElement) {
+          communitySaveButton.addEventListener('click', async () => {
+            if (!currentSession || communitySettingsMutating) return;
+            communitySettingsMutating = true;
+            setCommunityFormDisabled(true);
+            setFeedback(dashboardCopy.communitySaving);
+            const label = communitySaveButton.querySelector('.ui-button-label');
+            if (label) label.textContent = dashboardCopy.communitySaving;
+
+            try {
+              const payload = readCommunitySettingsFormPayload();
+              const updatedSettings = await runCommunitySettingsUpdateAction(currentSession, payload);
+              if (!updatedSettings) return;
+
+              applyCommunitySettingsView(updatedSettings, new Date().toISOString());
+              setFeedback(dashboardCopy.communitySaveSuccess);
+              if (toNode(communityNoteNode)) {
+                toNode(communityNoteNode).hidden = false;
+                toNode(communityNoteNode).textContent = dashboardCopy.communitySaveSuccess;
+                toNode(communityNoteNode).classList.remove('is-error');
+                toNode(communityNoteNode).classList.add('is-success');
+              }
+            } finally {
+              communitySettingsMutating = false;
+              setCommunityFormDisabled(false);
+              if (label) label.textContent = dashboardCopy.communitySave;
+            }
+          });
+        }
+
+        if (communityResetButton instanceof HTMLButtonElement) {
+          communityResetButton.addEventListener('click', () => {
+            if (communitySettingsMutating) return;
+            if (communitySettingsPayload && typeof communitySettingsPayload === 'object') {
+              applyCommunitySettingsForm(communitySettingsPayload);
+            } else {
+              resetCommunitySettingsForm();
+            }
+            setFeedback('');
+            if (toNode(communityNoteNode)) {
+              toNode(communityNoteNode).hidden = true;
+              toNode(communityNoteNode).textContent = '';
+              toNode(communityNoteNode).classList.remove('is-success');
+              toNode(communityNoteNode).classList.remove('is-error');
+            }
+          });
+        }
+
         if (moderationListNode instanceof HTMLElement) {
           moderationListNode.addEventListener('click', async (event) => {
             const target = event.target;
@@ -4692,6 +5038,30 @@ const dashboardCopy = {
   .dashboard-control-card-ops .ui-button {
     min-width: 11.2rem;
     justify-content: center;
+  }
+
+  .dashboard-community-form {
+    border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
+    border-radius: 0.72rem;
+    background: color-mix(in srgb, var(--surface-2) 82%, var(--brand-soft));
+    padding: 0.62rem;
+  }
+
+  .dashboard-community-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .dashboard-community-form .dashboard-activity-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dashboard-community-form .dashboard-activity-toggle span {
+    color: var(--ink);
+    font-size: 0.78rem;
+    font-weight: 600;
   }
 
   .dashboard-dl {
@@ -5079,6 +5449,16 @@ const dashboardCopy = {
     font-weight: 600;
   }
 
+  [data-dashboard-community-note].is-success {
+    color: #1f8d4c;
+    font-weight: 600;
+  }
+
+  [data-dashboard-community-note].is-error {
+    color: #b9382f;
+    font-weight: 600;
+  }
+
   .dashboard-action-row {
     display: flex;
     flex-wrap: wrap;
@@ -5117,6 +5497,10 @@ const dashboardCopy = {
     }
 
     .dashboard-owner-widgets {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-community-form-grid {
       grid-template-columns: 1fr;
     }
   }
