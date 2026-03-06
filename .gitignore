@@ -3,6 +3,7 @@
 !.env.example
 !.env.prod.example
 !.env.import.example
+!.env.staging.example
 .pnpm-store/
 **/node_modules/
 frontend/dist/
