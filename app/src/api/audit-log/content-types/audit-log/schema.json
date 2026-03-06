@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "audit_logs",
+  "info": {
+    "singularName": "audit-log",
+    "pluralName": "audit-logs",
+    "displayName": "Audit Log",
+    "description": "Append-only audit records for security-sensitive operations"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "event_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "actor_user_id": {
+      "type": "integer"
+    },
+    "actor_email": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "actor_role": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "action": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    },
+    "target_type": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "target_ref": {
+      "type": "string",
+      "maxLength": 220
+    },
+    "payload": {
+      "type": "json"
+    }
+  }
+}

@@ -5,6 +5,7 @@ const { createCoreController } = require('@strapi/strapi').factories;
 const { authenticateFromBearer } = require('../../../modules/blog-engagement/auth');
 const { sanitizeText } = require('../../../modules/suggestions/sanitize');
 const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
+const { resolveActorFromIdentity, writeAuditLog } = require('../../../modules/security/audit-log');
 
 const UID = 'api::account-request.account-request';
 const USER_UID = 'plugin::users-permissions.user';
@@ -200,6 +201,20 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         resolved_at: new Date().toISOString(),
       },
       fields: ['request_id', 'request_type', 'status', 'reason', 'resolution_note', 'resolved_by', 'resolved_at', 'createdAt', 'updatedAt'],
+    });
+
+    await writeAuditLog(strapi, {
+      actor: resolveActorFromIdentity({
+        user: identity.user,
+        roleRaw: identity.user?.role?.type || identity.user?.role?.name || '',
+      }),
+      action: 'moderation.account_request.set',
+      targetType: 'account-request',
+      targetRef: updated.request_id,
+      payload: {
+        from_status: existing.status,
+        to_status: updated.status,
+      },
     });
 
     ctx.body = {

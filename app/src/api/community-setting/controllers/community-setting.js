@@ -9,6 +9,7 @@ const {
   upsertCommunitySettings,
 } = require('../../../modules/community-settings');
 const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
+const { resolveActorFromIdentity, writeAuditLog } = require('../../../modules/security/audit-log');
 
 const USER_UID = 'plugin::users-permissions.user';
 const OWNER_EMAIL_HINTS = resolveOwnerEmailHints(process.env);
@@ -88,6 +89,18 @@ module.exports = createCoreController('api::community-setting.community-setting'
     }
 
     const settings = await upsertCommunitySettings(strapi, sanitized);
+    await writeAuditLog(strapi, {
+      actor: resolveActorFromIdentity({
+        user: identity.user,
+        roleRaw: identity.user?.role?.type || identity.user?.role?.name || '',
+      }),
+      action: 'community.settings.update',
+      targetType: 'community-setting',
+      targetRef: 'effective',
+      payload: {
+        updated_keys: Object.keys(sanitized),
+      },
+    });
     ctx.body = {
       data: settings,
       meta: {

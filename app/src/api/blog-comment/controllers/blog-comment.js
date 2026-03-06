@@ -19,6 +19,7 @@ const { log } = require('../../../modules/domain-logging');
 const { resolveActor } = require('../../../modules/domain-logging/context');
 const { getCommunitySettings } = require('../../../modules/community-settings');
 const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
+const { resolveActorFromIdentity, writeAuditLog } = require('../../../modules/security/audit-log');
 
 const UID = 'api::blog-comment.blog-comment';
 const BLOG_POST_UID = 'api::blog-post.blog-post';
@@ -680,6 +681,20 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         entity_ref: updated.comment_id,
       }
     );
+
+    await writeAuditLog(strapi, {
+      actor: resolveActorFromIdentity({
+        user: identity.user,
+        roleRaw: identity.roleRaw || identity.user?.role?.type || identity.user?.role?.name || '',
+      }),
+      action: 'moderation.blog_comment.set',
+      targetType: 'blog-comment',
+      targetRef: updated.comment_id,
+      payload: {
+        from_status: existing.status || null,
+        to_status: updated.status || null,
+      },
+    });
 
     ctx.body = {
       data: toOwnComment(updated),

@@ -6,6 +6,7 @@ const { authenticateFromBearer } = require('../../../modules/blog-engagement/aut
 const { getClientIp, isLimited } = require('../../../modules/blog-engagement/rate-limit');
 const { sanitizeText } = require('../../../modules/suggestions/sanitize');
 const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
+const { resolveActorFromIdentity, writeAuditLog } = require('../../../modules/security/audit-log');
 
 const UID = 'api::content-report.content-report';
 const BLOG_COMMENT_UID = 'api::blog-comment.blog-comment';
@@ -281,6 +282,20 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         'createdAt',
         'updatedAt',
       ],
+    });
+
+    await writeAuditLog(strapi, {
+      actor: resolveActorFromIdentity({
+        user: identity.user,
+        roleRaw: identity.user?.role?.type || identity.user?.role?.name || '',
+      }),
+      action: 'moderation.content_report.set',
+      targetType: 'content-report',
+      targetRef: updated.report_id,
+      payload: {
+        from_status: existing.status,
+        to_status: updated.status,
+      },
     });
 
     ctx.body = {

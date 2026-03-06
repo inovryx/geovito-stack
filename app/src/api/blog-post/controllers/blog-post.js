@@ -7,6 +7,7 @@ const { detectUrlCount } = require('../../../modules/blog-engagement/comment-con
 const { getCommunitySettings } = require('../../../modules/community-settings');
 const { createRevision } = require('../../../modules/blog-engagement/revisions');
 const { resolveOwnerEmailHints, isOwnerEmail } = require('../../../modules/security/owner-emails');
+const { resolveActorFromIdentity, writeAuditLog } = require('../../../modules/security/audit-log');
 
 const BLOG_POST_UID = 'api::blog-post.blog-post';
 const USER_UID = 'plugin::users-permissions.user';
@@ -674,6 +675,21 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
       data,
       populate: {
         translations: true,
+      },
+    });
+
+    await writeAuditLog(strapi, {
+      actor: resolveActorFromIdentity({
+        user: identity.user,
+        roleRaw: identity.user?.role?.type || identity.user?.role?.name || '',
+      }),
+      action: 'moderation.blog_post.set',
+      targetType: 'blog-post',
+      targetRef: updated.post_id,
+      payload: {
+        from_state: post.submission_state || null,
+        to_state: updated.submission_state || null,
+        site_visibility: updated.site_visibility || null,
       },
     });
 
