@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 
+export const prerender = false;
+
 const normalizeBaseUrl = (value: string | undefined, site: URL | undefined): string => {
   const raw = String(value || site?.origin || '').trim();
   if (!raw) return '';
@@ -12,15 +14,18 @@ const isEnabled = (value: string | undefined): boolean => {
 };
 
 export const GET: APIRoute = ({ site, request }) => {
-  const requestHost = (() => {
+  const requestUrlHost = (() => {
     try {
       return new URL(request.url).hostname.toLowerCase();
     } catch (_) {
       return '';
     }
   })();
+  const headerHost = String(
+    request.headers.get('x-forwarded-host') || request.headers.get('host') || requestUrlHost
+  ).toLowerCase();
 
-  const hostLockdownEnabled = requestHost.includes('staging.');
+  const hostLockdownEnabled = headerHost.includes('staging.');
   const envLockdownEnabled = isEnabled(
     (import.meta.env.PUBLIC_SITE_LOCKDOWN_ENABLED as string | undefined) ||
       (process.env.PUBLIC_SITE_LOCKDOWN_ENABLED as string | undefined)
