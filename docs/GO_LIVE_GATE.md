@@ -22,6 +22,13 @@ This command enforces:
 Summary evidence is written under:
 - `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
 
+## Latest Stable Checkpoint
+- Date (UTC): `2026-03-07`
+- Tag: `checkpoint-go-live-full-pass-20260307-1632`
+- Commit: `483ac6d`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260307T162112Z.txt`
+- Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
+
 ### Emergency override (controlled)
 Override is allowed only with explicit incident metadata and allowlist:
 
