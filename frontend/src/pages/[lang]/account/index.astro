@@ -1369,10 +1369,10 @@ const accountCopy = {
         const response = await fetch(
           `${authBase}/api/ui-locales/meta/${encodeURIComponent(normalized)}/reference-preview?reference_locale=en&state=${encodeURIComponent(normalizedState)}&limit=${limit}`,
           {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-locale-preview'),
           }
         );
         const payload = await response.json().catch(() => ({}));
@@ -1476,6 +1476,23 @@ const accountCopy = {
       notificationsEmail.checked = true;
       notificationsDigest.value = 'daily';
 
+      const createRequestId = (scope = 'account') => {
+        const tag = String(scope || 'account')
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]+/g, '-')
+          .slice(0, 24) || 'account';
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return `gv-${tag}-${crypto.randomUUID()}`;
+        }
+        return `gv-${tag}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      };
+
+      const withRequestId = (headers, scope) => ({
+        ...(headers || {}),
+        'X-Request-Id': createRequestId(scope),
+      });
+
       const applyPreferredLanguage = (language) => {
         const normalized = normalizeLanguage(language);
         if (!isAllowedLanguage(normalized)) return false;
@@ -1528,10 +1545,10 @@ const accountCopy = {
 
         try {
           const response = await fetch(`${authBase}/api/user-preferences/me`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-preference-load'),
           });
           if (!response.ok) return;
           const payload = await response.json().catch(() => null);
@@ -1552,10 +1569,10 @@ const accountCopy = {
       const loadProfile = async () => {
         try {
           const response = await fetch(`${authBase}/api/users/me`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-profile-load'),
           });
           if (!response.ok) {
             setProfileFeedback(accountCopy.profileSyncFallback, true);
@@ -1683,10 +1700,10 @@ const accountCopy = {
         setCommentsFeedback(accountCopy.commentsLoading);
         try {
           const response = await fetch(`${authBase}/api/blog-comments/me/list?limit=30`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-comments-load'),
           });
 
           const payload = await response.json().catch(() => ({}));
@@ -1716,10 +1733,10 @@ const accountCopy = {
         setAccountRequestsFeedback(accountCopy.accountRequestsLoading);
         try {
           const response = await fetch(`${authBase}/api/account-requests/me/list?limit=60`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-requests-load'),
           });
           const payload = await response.json().catch(() => ({}));
           if (!response.ok) {
@@ -1757,11 +1774,11 @@ const accountCopy = {
         try {
           const response = await fetch(`${authBase}/api/account-requests/me/submit`, {
             method: 'POST',
-            headers: {
+            headers: withRequestId({
               'Content-Type': 'application/json',
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-requests-submit'),
             body: JSON.stringify({
               request_type: requestType,
               reason,
@@ -2001,10 +2018,10 @@ const accountCopy = {
         setLocaleProgressFeedback(accountCopy.localeProgressLoading);
         try {
           const response = await fetch(`${authBase}/api/ui-locales/meta/progress?reference_locale=en`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-locale-progress'),
           });
 
           const payload = await response.json().catch(() => ({}));
@@ -2068,11 +2085,11 @@ const accountCopy = {
         try {
           const response = await fetch(`${authBase}/api/user-preferences/me`, {
             method: 'PUT',
-            headers: {
+            headers: withRequestId({
               'Content-Type': 'application/json',
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-language-save'),
             body: JSON.stringify({
               data: {
                 preferred_ui_language: selected,
@@ -2106,11 +2123,11 @@ const accountCopy = {
         try {
           const response = await fetch(`${authBase}/api/user-preferences/me`, {
             method: 'PUT',
-            headers: {
+            headers: withRequestId({
               'Content-Type': 'application/json',
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-notification-save'),
             body: JSON.stringify({
               data: {
                 notifications_site_enabled: Boolean(notificationsSite.checked),
@@ -2141,11 +2158,11 @@ const accountCopy = {
         try {
           const response = await fetch(`${authBase}/api/user-preferences/me`, {
             method: 'PUT',
-            headers: {
+            headers: withRequestId({
               'Content-Type': 'application/json',
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-onboarding-save'),
             body: JSON.stringify({
               data: {
                 onboarding_progress: {
@@ -2208,11 +2225,11 @@ const accountCopy = {
         try {
           const response = await fetch(`${authBase}/api/auth/change-password`, {
             method: 'POST',
-            headers: {
+            headers: withRequestId({
               'Content-Type': 'application/json',
               Accept: 'application/json',
               Authorization: `Bearer ${session.jwt}`,
-            },
+            }, 'account-password-change'),
             body: JSON.stringify({
               currentPassword,
               password,
@@ -2409,6 +2426,21 @@ const accountCopy = {
       }
 
       section.hidden = false;
+      const createRequestId = (scope = 'account-saved') => {
+        const tag = String(scope || 'account-saved')
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]+/g, '-')
+          .slice(0, 24) || 'account-saved';
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return `gv-${tag}-${crypto.randomUUID()}`;
+        }
+        return `gv-${tag}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      };
+      const withRequestId = (headers, scope) => ({
+        ...(headers || {}),
+        'X-Request-Id': createRequestId(scope),
+      });
       const escapeHtml = (value) =>
         String(value ?? '')
           .replaceAll('&', '&amp;')
@@ -2548,10 +2580,10 @@ const accountCopy = {
         setFeedback(accountCopy.savedListsLoading);
         try {
           const listResponse = await fetch(`${authBase}/api/user-saved-lists/me/lists?limit=200`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${jwt}`,
-            },
+            }, 'account-saved-lists-load'),
           });
 
           if (!listResponse.ok) {
@@ -2571,10 +2603,10 @@ const accountCopy = {
           currentLists = Array.isArray(listPayload?.data?.items) ? listPayload.data.items : [];
 
           const itemResponse = await fetch(`${authBase}/api/user-saved-lists/me/items?limit=500`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${jwt}`,
-            },
+            }, 'account-saved-items-load'),
           });
           if (itemResponse.ok) {
             const itemPayload = await itemResponse.json().catch(() => ({}));
@@ -2617,11 +2649,11 @@ const accountCopy = {
         try {
           const response = await fetch(`${authBase}/api/user-saved-lists/me/items/toggle`, {
             method: 'POST',
-            headers: {
+            headers: withRequestId({
               'Content-Type': 'application/json',
               Accept: 'application/json',
               Authorization: `Bearer ${jwt}`,
-            },
+            }, 'account-saved-item-remove'),
             body: JSON.stringify({
               list_id: listId,
               target_type: targetType,
@@ -2708,6 +2740,21 @@ const accountCopy = {
       }
 
       section.hidden = false;
+      const createRequestId = (scope = 'account-follows') => {
+        const tag = String(scope || 'account-follows')
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]+/g, '-')
+          .slice(0, 24) || 'account-follows';
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return `gv-${tag}-${crypto.randomUUID()}`;
+        }
+        return `gv-${tag}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      };
+      const withRequestId = (headers, scope) => ({
+        ...(headers || {}),
+        'X-Request-Id': createRequestId(scope),
+      });
       const escapeHtml = (value) =>
         String(value ?? '')
           .replaceAll('&', '&amp;')
@@ -2744,10 +2791,10 @@ const accountCopy = {
         resetCommunityVisibilityView();
         try {
           const response = await fetch(`${authBase}/api/community-settings/effective`, {
-            headers: {
+            headers: withRequestId({
               Accept: 'application/json',
               Authorization: `Bearer ${jwt}`,
-            },
+            }, 'account-community-visibility-load'),
           });
           const payload = await response.json().catch(() => ({}));
           if (response.status === 403) {
@@ -2821,10 +2868,10 @@ const accountCopy = {
 
       const fetchRows = async () => {
         const response = await fetch(`${authBase}/api/user-follows/me/list?limit=500`, {
-          headers: {
+          headers: withRequestId({
             Accept: 'application/json',
             Authorization: `Bearer ${jwt}`,
-          },
+          }, 'account-follows-load'),
         });
         const payload = await response.json().catch(() => ({}));
         return {
@@ -2883,11 +2930,11 @@ const accountCopy = {
         try {
           const response = await fetch(`${authBase}/api/user-follows/me/toggle`, {
             method: 'POST',
-            headers: {
+            headers: withRequestId({
               'Content-Type': 'application/json',
               Accept: 'application/json',
               Authorization: `Bearer ${jwt}`,
-            },
+            }, 'account-follows-toggle'),
             body: JSON.stringify({
               target_type: targetType,
               target_ref: targetRef,

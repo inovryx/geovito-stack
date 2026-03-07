@@ -153,6 +153,20 @@ let creatorProfilesCachePromise: Promise<CreatorProfile[]> | null = null;
 
 const normalizeBaseUrl = (baseUrl: string) => baseUrl.replace(/\/$/, '');
 
+const createRequestId = (scope: string) => {
+  const tag =
+    String(scope || 'strapi')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .slice(0, 24) || 'strapi';
+  const random =
+    typeof globalThis.crypto !== 'undefined' && typeof globalThis.crypto.randomUUID === 'function'
+      ? globalThis.crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  return `gv-${tag}-${random}`;
+};
+
 const asEntity = <T extends Record<string, any>>(item: any): T => {
   if (!item) return item;
   if (item.attributes) {
@@ -188,6 +202,7 @@ const fetchJson = async (path: string, params: Record<string, string> = {}) => {
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
+    'X-Request-Id': createRequestId('frontend-strapi-fetch'),
   };
 
   if (STRAPI_API_TOKEN) {

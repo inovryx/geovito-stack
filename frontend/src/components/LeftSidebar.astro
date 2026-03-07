@@ -408,6 +408,18 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
       return 'member';
     };
 
+    const createRequestId = (scope = 'sidebar') => {
+      const tag = String(scope || 'sidebar')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '-')
+        .slice(0, 24) || 'sidebar';
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return `gv-${tag}-${crypto.randomUUID()}`;
+      }
+      return `gv-${tag}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    };
+
     const resolveSessionRole = async (session) => {
       const shells = Array.from(document.querySelectorAll('[data-auth-shell]'));
       const firstShell = shells.find((shell) => shell instanceof HTMLElement);
@@ -440,6 +452,7 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${session.jwt}`,
+            'X-Request-Id': createRequestId('sidebar-role-load'),
           },
         });
         if (!response.ok) {

@@ -3923,6 +3923,24 @@ const dashboardCopy = {
         host.appendChild(fragment);
       };
 
+      const createRequestId = (scope = 'dashboard') => {
+        const tag = String(scope || 'dashboard')
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]+/g, '-')
+          .slice(0, 24) || 'dashboard';
+
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return `gv-${tag}-${crypto.randomUUID()}`;
+        }
+        return `gv-${tag}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      };
+
+      const withRequestId = (headers, scope) => ({
+        ...(headers || {}),
+        'X-Request-Id': createRequestId(scope),
+      });
+
       const runModerationAction = async (session, commentId, status) => {
         if (!session?.jwt || !commentId || !status) return false;
 
@@ -3937,11 +3955,11 @@ const dashboardCopy = {
 
         const response = await fetch(`${authBaseUrl}/api/blog-comments/moderation/set`, {
           method: 'POST',
-          headers: {
+          headers: withRequestId({
             Accept: 'application/json',
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.jwt}`,
-          },
+          }, 'dashboard-moderation-set'),
           body: JSON.stringify({
             comment_id: commentId,
             status,
@@ -3965,11 +3983,11 @@ const dashboardCopy = {
 
         const response = await fetch(`${authBaseUrl}/api/content-reports/moderation/set`, {
           method: 'POST',
-          headers: {
+          headers: withRequestId({
             Accept: 'application/json',
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.jwt}`,
-          },
+          }, 'dashboard-report-set'),
           body: JSON.stringify({
             report_id: reportId,
             next_status: nextStatus,
@@ -3992,11 +4010,11 @@ const dashboardCopy = {
 
         const response = await fetch(`${authBaseUrl}/api/account-requests/moderation/set`, {
           method: 'POST',
-          headers: {
+          headers: withRequestId({
             Accept: 'application/json',
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.jwt}`,
-          },
+          }, 'dashboard-account-request-set'),
           body: JSON.stringify({
             request_id: requestId,
             next_status: nextStatus,
@@ -4019,11 +4037,11 @@ const dashboardCopy = {
 
         const response = await fetch(`${authBaseUrl}/api/user-saved-lists/me/items/toggle`, {
           method: 'POST',
-          headers: {
+          headers: withRequestId({
             Accept: 'application/json',
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.jwt}`,
-          },
+          }, 'dashboard-saved-remove'),
           body: JSON.stringify({
             list_id: listId,
             target_type: targetType,
@@ -4047,11 +4065,11 @@ const dashboardCopy = {
 
         const response = await fetch(`${authBaseUrl}/api/community-settings/effective`, {
           method: 'PATCH',
-          headers: {
+          headers: withRequestId({
             Accept: 'application/json',
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.jwt}`,
-          },
+          }, 'dashboard-community-update'),
           body: JSON.stringify(payload),
         });
 
@@ -4147,10 +4165,10 @@ const dashboardCopy = {
 
         let hadErrors = false;
 
-        const authHeaders = {
+        const authHeaders = withRequestId({
           Accept: 'application/json',
           Authorization: `Bearer ${session.jwt}`,
-        };
+        }, 'dashboard-auth-load');
 
         let userPayload = null;
 
