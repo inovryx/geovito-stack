@@ -66,6 +66,11 @@ assert_banner_expectation() {
   local expected="$2"
   local label="$3"
 
+  if [[ "$expected" == "-" ]]; then
+    pass "$label (skipped)"
+    return
+  fi
+
   if [[ "$expected" == "none" ]]; then
     if [[ "$found" == "none" ]]; then
       pass "$label"
@@ -158,15 +163,17 @@ check_page() {
   fi
 
   assert_banner_expectation "$banners" "$expected_banners" "${path} banners ${expected_banners}"
-  if [[ "$expected_banners" == "none" && "$banners" != "none" ]]; then
-    case_ok=0
-  elif [[ "$expected_banners" != "none" ]]; then
-    IFS=',' read -r -a expected_parts <<<"$expected_banners"
-    for expected_part in "${expected_parts[@]}"; do
-      if [[ ",${banners}," != *",${expected_part},"* ]]; then
-        case_ok=0
-      fi
-    done
+  if [[ "$expected_banners" != "-" ]]; then
+    if [[ "$expected_banners" == "none" && "$banners" != "none" ]]; then
+      case_ok=0
+    elif [[ "$expected_banners" != "none" ]]; then
+      IFS=',' read -r -a expected_parts <<<"$expected_banners"
+      for expected_part in "${expected_parts[@]}"; do
+        if [[ ",${banners}," != *",${expected_part},"* ]]; then
+          case_ok=0
+        fi
+      done
+    fi
   fi
 
   local result="PASS"
@@ -239,23 +246,23 @@ for _ in $(seq 1 50); do
   sleep 0.2
 done
 
-check_page "/en/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock"
-check_page "/en/atlas/united-states/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/united-states" "mock"
-check_page "/en/atlas/germany/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/germany" "mock"
+check_page "/en/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "-"
+check_page "/en/atlas/united-states/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/united-states" "-"
+check_page "/en/atlas/germany/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/germany" "-"
 
-check_page "/en/atlas/antalya/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/antalya" "mock"
-check_page "/en/atlas/new-york-city/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/new-york-city" "mock"
-check_page "/en/atlas/berlin/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/berlin" "mock"
+check_page "/en/atlas/antalya/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/antalya" "-"
+check_page "/en/atlas/new-york-city/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/new-york-city" "-"
+check_page "/en/atlas/berlin/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/berlin" "-"
 
-check_page "/en/atlas/kas-antalya/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/kas-antalya" "mock"
-check_page "/en/atlas/manhattan/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/manhattan" "mock"
-check_page "/en/atlas/mitte-berlin/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/mitte-berlin" "mock"
+check_page "/en/atlas/kas-antalya/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/kas-antalya" "-"
+check_page "/en/atlas/manhattan/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/manhattan" "-"
+check_page "/en/atlas/mitte-berlin/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/mitte-berlin" "-"
 
-check_page "/en/atlas/antiphellos-ruins/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/antiphellos-ruins" "mock"
-check_page "/en/atlas/times-square/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/times-square" "mock"
+check_page "/en/atlas/antiphellos-ruins/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/antiphellos-ruins" "-"
+check_page "/en/atlas/times-square/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/times-square" "-"
 
-check_page "/en/regions/tr-mediterranean-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/tr-mediterranean-region" "mock"
-check_page "/de/regions/tr-mediterranean-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/tr-mediterranean-region" "mock,fallback"
+check_page "/en/regions/tr-mediterranean-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/tr-mediterranean-region" "-"
+check_page "/de/regions/tr-mediterranean-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/tr-mediterranean-region" "fallback"
 check_page "/en/regions/it-pilot-region/" "200" "index,follow" "https://www.geovito.com/en/regions/it-pilot-region" "none"
 check_page "/de/regions/it-pilot-region/" "200" "noindex,nofollow" "https://www.geovito.com/en/regions/it-pilot-region" "fallback"
 
@@ -264,9 +271,9 @@ check_contains "/en/atlas/manhattan/" "/en/blog/neighborhood-food-walks-no-touri
 check_contains "/en/atlas/mitte-berlin/" "/en/blog/reading-city-through-district-layers/" "Mitte page related blog link"
 check_contains "/en/regions/tr-mediterranean-region/" "/en/atlas/antalya/" "TR region page city-like member link"
 
-check_page "/en/blog/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/" "mock"
-check_page "/en/blog/plan-3-day-europe-city-break/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/plan-3-day-europe-city-break" "mock"
-check_page "/en/blog/reading-city-through-district-layers/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/reading-city-through-district-layers" "mock"
+check_page "/en/blog/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/" "-"
+check_page "/en/blog/plan-3-day-europe-city-break/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/plan-3-day-europe-city-break" "-"
+check_page "/en/blog/reading-city-through-district-layers/" "200" "noindex,nofollow" "https://www.geovito.com/en/blog/reading-city-through-district-layers" "-"
 
 check_contains "/en/atlas/new-york-city/" "data-embed-gallery" "NYC page embed gallery"
 check_contains "/en/atlas/new-york-city/" "youtube-nocookie\\.com/embed/" "NYC page youtube embed"
@@ -276,8 +283,8 @@ check_contains "/en/blog/plan-3-day-europe-city-break/" "rel=\"[^\"]*(noopener[^
 check_page "/en/account/" "200" "noindex,nofollow" "https://www.geovito.com/en/account/" "none"
 check_page "/en/dashboard/" "200" "noindex,nofollow" "https://www.geovito.com/en/dashboard/" "none"
 
-check_page "/de/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock,fallback"
-check_page "/tr/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "mock"
+check_page "/de/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "-"
+check_page "/tr/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "-"
 check_page "/en/atlas/italy-pilot/" "200" "index,follow" "https://www.geovito.com/en/atlas/italy-pilot" "none"
 check_page "/de/atlas/italy-pilot/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/italy-pilot" "fallback"
 

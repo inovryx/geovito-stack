@@ -37,8 +37,19 @@ gv_log_contract_init() {
 
   if [[ "$GV_LOG_CONTRACT_ENABLED" == "true" && "$GV_LOG_CONTRACT_FILE_ENABLED" == "true" ]]; then
     if ! mkdir -p "$GV_LOG_CONTRACT_FILE_ROOT" 2>/dev/null; then
-      echo "WARN: contract log file root is not writable (${GV_LOG_CONTRACT_FILE_ROOT}); file output disabled." >&2
+      echo "WARN: contract log file root is not creatable (${GV_LOG_CONTRACT_FILE_ROOT}); file output disabled." >&2
       GV_LOG_CONTRACT_FILE_ENABLED="false"
+    elif [[ ! -w "$GV_LOG_CONTRACT_FILE_ROOT" ]]; then
+      local fallback_root
+      fallback_root="${LOG_CONTRACT_FILE_FALLBACK_ROOT:-artifacts/logs/channels}"
+      fallback_root="$(realpath -m "$fallback_root")"
+      if mkdir -p "$fallback_root" 2>/dev/null && [[ -w "$fallback_root" ]]; then
+        echo "WARN: contract log file root is not writable (${GV_LOG_CONTRACT_FILE_ROOT}); using fallback ${fallback_root}." >&2
+        GV_LOG_CONTRACT_FILE_ROOT="$fallback_root"
+      else
+        echo "WARN: contract log file root is not writable (${GV_LOG_CONTRACT_FILE_ROOT}) and fallback is unavailable; file output disabled." >&2
+        GV_LOG_CONTRACT_FILE_ENABLED="false"
+      fi
     fi
   fi
 

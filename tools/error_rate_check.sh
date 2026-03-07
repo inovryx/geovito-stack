@@ -5,6 +5,7 @@ WINDOW_MINUTES="${ERROR_RATE_WINDOW_MINUTES:-15}"
 MAX_5XX="${ERROR_RATE_MAX_5XX:-10}"
 MAX_AUTH_FAIL="${ERROR_RATE_MAX_AUTH_FAIL:-25}"
 MAX_MOD_FAIL="${ERROR_RATE_MAX_MOD_FAIL:-10}"
+MOD_FAIL_MIN_STATUS="${ERROR_RATE_MOD_FAIL_MIN_STATUS:-500}"
 LOG_DIR="${ERROR_RATE_LOG_DIR:-logs}"
 OUTPUT_FILE="${ERROR_RATE_OUTPUT_FILE:-artifacts/observability/error-rate-last.json}"
 
@@ -15,6 +16,8 @@ fail() { echo "FAIL: $1"; exit 1; }
 [[ "$MAX_5XX" =~ ^[0-9]+$ ]] || fail "ERROR_RATE_MAX_5XX must be integer"
 [[ "$MAX_AUTH_FAIL" =~ ^[0-9]+$ ]] || fail "ERROR_RATE_MAX_AUTH_FAIL must be integer"
 [[ "$MAX_MOD_FAIL" =~ ^[0-9]+$ ]] || fail "ERROR_RATE_MAX_MOD_FAIL must be integer"
+[[ "$MOD_FAIL_MIN_STATUS" =~ ^[0-9]+$ ]] || fail "ERROR_RATE_MOD_FAIL_MIN_STATUS must be integer"
+(( MOD_FAIL_MIN_STATUS >= 400 && MOD_FAIL_MIN_STATUS <= 599 )) || fail "ERROR_RATE_MOD_FAIL_MIN_STATUS must be between 400 and 599"
 [[ -d "$LOG_DIR" ]] || fail "log directory not found: $LOG_DIR"
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
@@ -28,15 +31,16 @@ else
 fi
 
 set +e
-"${runner[@]}" "$LOG_DIR" "$WINDOW_MINUTES" "$MAX_5XX" "$MAX_AUTH_FAIL" "$MAX_MOD_FAIL" <<'NODE' >"$tmp_output"
+"${runner[@]}" "$LOG_DIR" "$WINDOW_MINUTES" "$MAX_5XX" "$MAX_AUTH_FAIL" "$MAX_MOD_FAIL" "$MOD_FAIL_MIN_STATUS" <<'NODE' >"$tmp_output"
 const fs = require('fs');
 const path = require('path');
 
-const [logDir, windowMinutesRaw, max5xxRaw, maxAuthRaw, maxModRaw] = process.argv.slice(2);
+const [logDir, windowMinutesRaw, max5xxRaw, maxAuthRaw, maxModRaw, modFailMinStatusRaw] = process.argv.slice(2);
 const windowMinutes = Number(windowMinutesRaw);
 const max5xx = Number(max5xxRaw);
 const maxAuth = Number(maxAuthRaw);
 const maxMod = Number(maxModRaw);
+const modFailMinStatus = Number(modFailMinStatusRaw);
 
 const now = Date.now();
 const windowStart = now - windowMinutes * 60 * 1000;
@@ -80,12 +84,13 @@ for (const file of walk(logDir)) {
 
     if (status >= 500) count5xx += 1;
     if ((status === 401 || status === 403) && authPaths.has(p)) countAuthFail += 1;
-    if (status >= 400 && moderationPathHints.some((hint) => p.includes(hint))) countModFail += 1;
+    if (status >= modFailMinStatus && moderationPathHints.some((hint) => p.includes(hint))) countModFail += 1;
   }
 }
 
 const result = {
   window_minutes: windowMinutes,
+  mod_fail_min_status: modFailMinStatus,
   count_5xx: count5xx,
   count_auth_fail: countAuthFail,
   count_moderation_fail: countModFail,

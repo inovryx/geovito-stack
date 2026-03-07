@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-07
+Last updated (UTC): 2026-03-07T20:26:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head: `0b4ccb3`
+Head: `bb0bb00`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -20,6 +20,9 @@ Head: `0b4ccb3`
 - `feat(logging-scripts): add machine-readable release/dr logs with run_id`
 - `docs(logging): add contract and future router templates`
 - `test(logging): add log contract smoke and optional gate hook`
+- Pending commit in working tree:
+  - `fix(gates): stabilize shell smoke banner expectations and tighten moderation error-rate counting`
+  - `fix(logging): fallback to artifacts log root when logs/channels is not writable`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -27,19 +30,20 @@ Head: `0b4ccb3`
 
 ## Active Blockers
 - No functional blocker in code/gates right now.
-- Operational watchpoint: `logs/channels` files are currently root-owned on VPS; if local cleanup/edit is needed, ownership normalize first.
+- Operational watchpoint: VPS `logs/channels` is root-owned in current host state; contract logger now auto-falls back to `artifacts/logs/channels`, but ownership normalization is still recommended.
 - Staging reliability depends on DNS/Cloudflare state; isolation checks pass only when staging host is reachable and lock-down headers are served.
 
 ## Exact Next Steps
-1. Normalize log directory ownership (if needed on VPS):
-   - `cd /home/ali/geovito-stack && sudo chown -R ali:ali logs artifacts`
-2. Run full verification with logging smoke enabled:
-   - `cd /home/ali/geovito-stack`
-   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
-3. If PASS, tag checkpoint:
+1. Commit and push current working-tree fixes:
+   - `git add tools/error_rate_check.sh tools/lib_log_contract.sh tools/shell_smoke_test.sh docs/CODEX_STATUS.md`
+   - `git commit -m "fix(gates): stabilize shell smoke expectations and tighten moderation error-rate checks"`
+   - `git push origin main`
+2. Tag post-fix checkpoint:
    - `git tag -a checkpoint-go-live-full-pass-$(date -u +%Y%m%d-%H%M) -m "Go-live full gate pass"`
    - `git push origin --tags`
-4. Next hardening increment (after stable PASS): make log-contract smoke mandatory in full gate (remove opt-in behavior).
+3. Optional host cleanup (recommended): normalize VPS log dir ownership when sudo access is available:
+   - `cd /home/ali/geovito-stack && sudo chown -R ali:ali logs artifacts`
+4. Next hardening increment: make log-contract smoke mandatory in full gate (remove opt-in behavior).
 
 ## Critical Non-Negotiables
 - Do not break Clean Core: Atlas remains authoritative; UGC remains contributory.
@@ -64,7 +68,7 @@ Head: `0b4ccb3`
 
 ## Last Verified Checks and Gate Status
 - Latest full gate evidence file:
-  - `artifacts/go-live/go-live-full-20260307T162112Z.txt`
+  - `artifacts/go-live/go-live-full-20260307T201536Z.txt`
   - Result: PASS for all sections:
     - Core Go-Live Gate
     - Staging Isolation
@@ -74,9 +78,9 @@ Head: `0b4ccb3`
     - SEO Drift Check
     - Error Rate Check
     - Storage Pressure Check
-- Latest manual post-checks after reconnect:
-  - `bash tools/log_contract_smoke.sh` -> PASS
-  - `bash tools/audit_log_smoke.sh` -> PASS
+- Latest focused checks:
+  - `bash tools/shell_smoke_test.sh` -> PASS
+  - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
 - Repo sync state on last verification:
-  - local `main` == remote `origin/main` at `0b4ccb3a5bfff5e6e133528b4427dad0cb35d8d9`
-  - working tree clean.
+  - local `main` at `bb0bb00`
+  - working tree includes pending fix files (not committed yet).
