@@ -687,6 +687,7 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         user: identity.user,
         roleRaw: identity.roleRaw || identity.user?.role?.type || identity.user?.role?.name || '',
       }),
+      requestId,
       action: 'moderation.blog_comment.set',
       targetType: 'blog-comment',
       targetRef: updated.comment_id,

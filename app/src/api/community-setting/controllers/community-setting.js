@@ -94,6 +94,7 @@ module.exports = createCoreController('api::community-setting.community-setting'
         user: identity.user,
         roleRaw: identity.user?.role?.type || identity.user?.role?.name || '',
       }),
+      requestId: ctx.state?.requestId || null,
       action: 'community.settings.update',
       targetType: 'community-setting',
       targetRef: 'effective',

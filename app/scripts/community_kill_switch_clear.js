@@ -58,6 +58,7 @@ const run = async () => {
         actorEmail: String(process.env.OPERATOR_EMAIL || 'ops@system.local'),
         actorRole: 'system',
       },
+      requestId: String(process.env.RUN_ID || process.env.REQUEST_ID || '').trim() || null,
       action: 'safety.kill_switch.clear',
       targetType: 'community-setting',
       targetRef: 'effective',

@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const { log } = require('../domain-logging');
 
 const AUDIT_UID = 'api::audit-log.audit-log';
 
@@ -54,6 +55,34 @@ const writeAuditLog = async (strapi, input = {}) => {
     };
 
     await strapi.entityService.create(AUDIT_UID, { data: entry });
+
+    await log(
+      'ops',
+      'INFO',
+      `audit.${entry.action}`,
+      `Audit action recorded: ${entry.action}`,
+      {
+        service: 'strapi',
+        status: 200,
+        actor_user_id: entry.actor_user_id,
+        actor_role: entry.actor_role,
+        action: entry.action,
+        target_type: entry.target_type,
+        target_ref: entry.target_ref,
+      },
+      {
+        request_id: normalizeText(input.requestId || input.request_id, 160),
+        actor: entry.actor_role || 'system',
+        entity_ref: entry.target_ref,
+        route_or_action: entry.action,
+        channel: 'audit',
+        user_ref:
+          entry.actor_user_id !== null && entry.actor_user_id !== undefined
+            ? `user:${entry.actor_user_id}`
+            : normalizeText(entry.actor_email, 200),
+      }
+    );
+
     return true;
   } catch (error) {
     strapi.log?.warn?.(

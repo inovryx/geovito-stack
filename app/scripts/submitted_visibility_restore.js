@@ -63,6 +63,7 @@ const run = async () => {
         actorEmail: approverEmail,
         actorRole: 'system',
       },
+      requestId: String(process.env.RUN_ID || process.env.REQUEST_ID || '').trim() || null,
       action: 'safety.submitted_visibility.restore',
       targetType: 'blog-post',
       targetRef: incidentId,

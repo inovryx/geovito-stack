@@ -208,6 +208,7 @@ module.exports = createCoreController(UID, ({ strapi }) => ({
         user: identity.user,
         roleRaw: identity.user?.role?.type || identity.user?.role?.name || '',
       }),
+      requestId: ctx.state?.requestId || null,
       action: 'moderation.account_request.set',
       targetType: 'account-request',
       targetRef: updated.request_id,

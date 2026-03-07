@@ -683,6 +683,7 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
         user: identity.user,
         roleRaw: identity.user?.role?.type || identity.user?.role?.name || '',
       }),
+      requestId: ctx.state?.requestId || null,
       action: 'moderation.blog_post.set',
       targetType: 'blog-post',
       targetRef: updated.post_id,
