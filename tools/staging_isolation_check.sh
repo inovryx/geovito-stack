@@ -2,6 +2,7 @@
 set -euo pipefail
 
 INPUT_STAGING_BASE_URL="${STAGING_BASE_URL-}"
+INPUT_STAGING_API_BASE="${STAGING_API_BASE-}"
 INPUT_STAGING_SMTP_MODE="${STAGING_SMTP_MODE-}"
 INPUT_STAGING_SMTP_BLOCK_REAL="${STAGING_SMTP_BLOCK_REAL-}"
 INPUT_STAGING_CF_ACCESS_CLIENT_ID="${STAGING_CF_ACCESS_CLIENT_ID-}"
@@ -14,12 +15,14 @@ if [[ -f "$STAGING_ENV_FILE" ]]; then
 fi
 
 [[ -n "$INPUT_STAGING_BASE_URL" ]] && STAGING_BASE_URL="$INPUT_STAGING_BASE_URL"
+[[ -n "$INPUT_STAGING_API_BASE" ]] && STAGING_API_BASE="$INPUT_STAGING_API_BASE"
 [[ -n "$INPUT_STAGING_SMTP_MODE" ]] && STAGING_SMTP_MODE="$INPUT_STAGING_SMTP_MODE"
 [[ -n "$INPUT_STAGING_SMTP_BLOCK_REAL" ]] && STAGING_SMTP_BLOCK_REAL="$INPUT_STAGING_SMTP_BLOCK_REAL"
 [[ -n "$INPUT_STAGING_CF_ACCESS_CLIENT_ID" ]] && STAGING_CF_ACCESS_CLIENT_ID="$INPUT_STAGING_CF_ACCESS_CLIENT_ID"
 [[ -n "$INPUT_STAGING_CF_ACCESS_CLIENT_SECRET" ]] && STAGING_CF_ACCESS_CLIENT_SECRET="$INPUT_STAGING_CF_ACCESS_CLIENT_SECRET"
 
 STAGING_BASE_URL="${STAGING_BASE_URL:-}"
+STAGING_API_BASE="${STAGING_API_BASE:-}"
 STAGING_SMTP_MODE="${STAGING_SMTP_MODE:-mailsink}"
 STAGING_SMTP_BLOCK_REAL="${STAGING_SMTP_BLOCK_REAL:-true}"
 STAGING_CF_ACCESS_CLIENT_ID="${STAGING_CF_ACCESS_CLIENT_ID:-}"
@@ -27,8 +30,28 @@ STAGING_CF_ACCESS_CLIENT_SECRET="${STAGING_CF_ACCESS_CLIENT_SECRET:-}"
 
 pass() { echo "PASS: $1"; }
 fail() { echo "FAIL: $1"; exit 1; }
+extract_host() {
+  local url="$1"
+  local host="${url#*://}"
+  host="${host%%/*}"
+  host="${host%%:*}"
+  printf '%s' "$host"
+}
+ensure_dns() {
+  local label="$1"
+  local url="$2"
+  local host
+  host="$(extract_host "$url")"
+  [[ -n "$host" ]] || fail "${label} host parse failed (${url})"
+  if getent hosts "$host" >/dev/null 2>&1; then
+    pass "${label} dns resolves (${host})"
+    return 0
+  fi
+  fail "${label} dns does not resolve (${host}); create DNS record first"
+}
 
 [[ -n "$STAGING_BASE_URL" ]] || fail "STAGING_BASE_URL is required"
+[[ -n "$STAGING_API_BASE" ]] || fail "STAGING_API_BASE is required"
 if [[ "$STAGING_BASE_URL" == "https://geovito.com" || "$STAGING_BASE_URL" == "http://geovito.com" || "$STAGING_BASE_URL" == "https://www.geovito.com" || "$STAGING_BASE_URL" == "http://www.geovito.com" ]]; then
   fail "staging base points to production domain"
 fi
@@ -47,6 +70,9 @@ if [[ "$STAGING_SMTP_BLOCK_REAL" == "true" || "$STAGING_SMTP_BLOCK_REAL" == "1" 
 else
   fail "STAGING_SMTP_BLOCK_REAL must be true"
 fi
+
+ensure_dns "staging base" "$STAGING_BASE_URL"
+ensure_dns "staging api" "$STAGING_API_BASE"
 
 hdrs=()
 if [[ -n "$STAGING_CF_ACCESS_CLIENT_ID" && -n "$STAGING_CF_ACCESS_CLIENT_SECRET" ]]; then

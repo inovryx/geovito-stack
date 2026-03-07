@@ -14,11 +14,16 @@ This document defines the release discipline for `dev -> staging -> production`.
 - Robots always `noindex,nofollow`.
 - SMTP runs in `mailsink` mode only.
 - External side effects are disabled by default.
+- DNS records must exist and resolve for:
+  - `staging.geovito.com` (frontend)
+  - `cms-staging.geovito.com` (staging API)
 
 Use:
 - `bash tools/staging_env_init.sh`
 - `bash tools/staging_health.sh`
 - `bash tools/staging_isolation_check.sh`
+
+If staging checks fail with DNS resolution, create records first, then rerun the commands above.
 
 ## Deployment flow
 1. Merge changes to `main`.
