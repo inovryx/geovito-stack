@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
+source "$ROOT_DIR/tools/lib_log_contract.sh"
+gv_log_contract_init "scripts"
 
 BACKUP_ENV_FILE="${BACKUP_ENV_FILE:-$HOME/.config/geovito/backup.env}"
 if [[ -f "$BACKUP_ENV_FILE" ]]; then
@@ -20,7 +22,11 @@ BACKUP_AGE_RECIPIENT="${BACKUP_AGE_RECIPIENT:-}"
 STAMP="${BACKUP_STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
 
 pass() { echo "PASS: $1"; }
-fail() { echo "FAIL: $1"; exit 1; }
+fail() {
+  echo "FAIL: $1"
+  gv_log_contract_emit "dr" "error" "Backup run failed" "dr.backup_run.error" 1 0 "$1"
+  exit 1
+}
 
 command -v age >/dev/null 2>&1 || fail "age binary is required"
 command -v aws >/dev/null 2>&1 || fail "aws cli is required"
@@ -33,6 +39,7 @@ command -v aws >/dev/null 2>&1 || fail "aws cli is required"
 export AWS_ACCESS_KEY_ID="$BACKUP_R2_ACCESS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$BACKUP_R2_SECRET_ACCESS_KEY"
 export AWS_EC2_METADATA_DISABLED=true
+gv_log_contract_emit "dr" "info" "Backup run started" "dr.backup_run.start" 0 0 "stamp=${STAMP};bucket=${BACKUP_R2_BUCKET}"
 
 export BACKUP_STAMP="$STAMP"
 bash tools/backup_create.sh
@@ -82,6 +89,7 @@ aws --endpoint-url "$BACKUP_R2_ENDPOINT" \
   s3 cp "$MANIFEST_PATH" "${r2_base}/manifest.json" \
   --content-type application/json >/dev/null
 pass "offsite upload completed"
+gv_log_contract_emit "dr" "info" "Backup run completed" "dr.backup_run.complete" 0 0 "stamp=${STAMP};r2_prefix=${BACKUP_R2_PREFIX}"
 
 echo "=============================================================="
 echo "BACKUP RUN: PASS"

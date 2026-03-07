@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
+source "$ROOT_DIR/tools/lib_log_contract.sh"
+gv_log_contract_init "scripts"
 
 BACKUP_ENV_FILE="${BACKUP_ENV_FILE:-$HOME/.config/geovito/backup.env}"
 if [[ -f "$BACKUP_ENV_FILE" ]]; then
@@ -22,7 +24,11 @@ RESTORE_TARGET="${RESTORE_TARGET:-staging}"
 WORK_DIR="${RESTORE_WORK_DIR:-${BACKUP_ROOT}/_restore/${STAMP}}"
 
 pass() { echo "PASS: $1"; }
-fail() { echo "FAIL: $1"; exit 1; }
+fail() {
+  echo "FAIL: $1"
+  gv_log_contract_emit "dr" "error" "Restore run failed" "dr.restore_run.error" 1 0 "$1"
+  exit 1
+}
 
 [[ -n "$STAMP" ]] || fail "backup stamp is required (arg1 or BACKUP_STAMP)"
 [[ -n "$BACKUP_R2_BUCKET" ]] || fail "BACKUP_R2_BUCKET is required"
@@ -37,6 +43,7 @@ command -v aws >/dev/null 2>&1 || fail "aws cli is required"
 export AWS_ACCESS_KEY_ID="$BACKUP_R2_ACCESS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$BACKUP_R2_SECRET_ACCESS_KEY"
 export AWS_EC2_METADATA_DISABLED=true
+gv_log_contract_emit "dr" "info" "Restore run started" "dr.restore_run.start" 0 0 "stamp=${STAMP};target=${RESTORE_TARGET}"
 
 mkdir -p "$WORK_DIR"
 
@@ -86,6 +93,7 @@ cat > artifacts/dr/restore-last.json <<JSON
 }
 JSON
 pass "restore evidence updated"
+gv_log_contract_emit "dr" "info" "Restore run completed" "dr.restore_run.complete" 0 0 "stamp=${STAMP};target=${RESTORE_TARGET}"
 
 echo "=============================================================="
 echo "RESTORE RUN: PASS"

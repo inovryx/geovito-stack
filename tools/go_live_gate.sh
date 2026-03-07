@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
+source "$ROOT_DIR/tools/lib_log_contract.sh"
+gv_log_contract_init "scripts"
 
 EXPECTED_SHA7="${EXPECTED_SHA7:-$(git rev-parse --short=7 HEAD)}"
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
@@ -28,6 +30,7 @@ GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE="${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE:-false}"
 GO_LIVE_SKIP_FOLLOW_SMOKE="${GO_LIVE_SKIP_FOLLOW_SMOKE:-false}"
 GO_LIVE_SKIP_NOTIFICATION_SMOKE="${GO_LIVE_SKIP_NOTIFICATION_SMOKE:-false}"
 GO_LIVE_SKIP_SAVED_LIST_SMOKE="${GO_LIVE_SKIP_SAVED_LIST_SMOKE:-false}"
+GO_LIVE_WITH_LOG_CONTRACT_SMOKE="${GO_LIVE_WITH_LOG_CONTRACT_SMOKE:-false}"
 
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
 
@@ -65,6 +68,7 @@ Env toggles:
   GO_LIVE_SKIP_FOLLOW_SMOKE=true  # skip follow system foundation smoke
   GO_LIVE_SKIP_NOTIFICATION_SMOKE=true  # skip notification preferences smoke
   GO_LIVE_SKIP_SAVED_LIST_SMOKE=true  # skip saved list foundation smoke
+  GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true  # run log contract smoke (optional)
   GO_LIVE_WITH_SMTP=true          # run password reset smoke (requires RESET_SMOKE_EMAIL)
   RESET_SMOKE_EMAIL=<mail>        # required when GO_LIVE_WITH_SMTP=true
 
@@ -121,20 +125,33 @@ run_step() {
   echo
   echo ">>> ${label}"
   echo "CMD: $*"
+  local started_at_ms
+  started_at_ms="$(date +%s%3N 2>/dev/null || true)"
+  if [[ ! "$started_at_ms" =~ ^[0-9]+$ ]]; then
+    started_at_ms="$(( $(date +%s) * 1000 ))"
+  fi
 
   set +e
   "$@"
   local code=$?
   set -e
+  local ended_at_ms latency_ms
+  ended_at_ms="$(date +%s%3N 2>/dev/null || true)"
+  if [[ ! "$ended_at_ms" =~ ^[0-9]+$ ]]; then
+    ended_at_ms="$(( $(date +%s) * 1000 ))"
+  fi
+  latency_ms="$((ended_at_ms - started_at_ms))"
 
   STEP_NAMES+=("$label")
   STEP_CODES+=("$code")
   if [[ $code -eq 0 ]]; then
     STEP_STATUS+=("PASS")
     echo "RESULT: PASS (${label})"
+    gv_log_contract_emit "release" "info" "Go-live step passed" "go_live_gate.step" 200 "$latency_ms" "step=${label};result=PASS"
   else
     STEP_STATUS+=("FAIL")
     echo "RESULT: FAIL (${label}) exit=${code}"
+    gv_log_contract_emit "release" "error" "Go-live step failed" "go_live_gate.step" "$code" "$latency_ms" "step=${label};result=FAIL"
   fi
 }
 
@@ -145,6 +162,7 @@ echo "creator_username=${CREATOR_USERNAME:-<empty>}"
 echo "with_deploy=${GO_LIVE_WITH_DEPLOY} with_smtp=${GO_LIVE_WITH_SMTP} with_backup_verify=${GO_LIVE_WITH_BACKUP_VERIFY} with_ugc_showcase_mod=${GO_LIVE_WITH_UGC_SHOWCASE_MOD}"
 echo "skip_pre_import=${GO_LIVE_SKIP_PRE_IMPORT} skip_pre_design=${GO_LIVE_SKIP_PRE_DESIGN} skip_ui=${GO_LIVE_SKIP_UI} skip_report_smoke=${GO_LIVE_SKIP_REPORT_SMOKE} skip_community_settings_smoke=${GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE} skip_ugc_api_contract=${GO_LIVE_SKIP_UGC_API_CONTRACT} skip_ui_page_progress=${GO_LIVE_SKIP_UI_PAGE_PROGRESS} skip_dashboard_role_smoke=${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE} skip_follow_smoke=${GO_LIVE_SKIP_FOLLOW_SMOKE} skip_notification_smoke=${GO_LIVE_SKIP_NOTIFICATION_SMOKE} skip_saved_list_smoke=${GO_LIVE_SKIP_SAVED_LIST_SMOKE}"
 echo "=============================================================="
+gv_log_contract_emit "release" "info" "Go-live gate started" "go_live_gate.start" 0 0 "with_deploy=${GO_LIVE_WITH_DEPLOY};with_smtp=${GO_LIVE_WITH_SMTP}"
 
 if [[ "$HEALTH_TOKEN" == *"REPLACE_WITH_"* ]]; then
   HEALTH_TOKEN=""
@@ -287,6 +305,15 @@ else
   echo "RESULT: SKIP (Saved List Smoke)"
 fi
 
+if [[ "$GO_LIVE_WITH_LOG_CONTRACT_SMOKE" == "true" ]]; then
+  run_step "Log Contract Smoke" bash tools/log_contract_smoke.sh
+else
+  STEP_NAMES+=("Log Contract Smoke")
+  STEP_STATUS+=("SKIP")
+  STEP_CODES+=("0")
+  echo "RESULT: SKIP (Log Contract Smoke)"
+fi
+
 if [[ "$GO_LIVE_SKIP_UI" != "true" ]]; then
   run_step "Account Queue UI Smoke" bash tools/account_comment_queue_test.sh
   run_step "Dashboard Activity UI Smoke" bash tools/dashboard_activity_ui_playwright.sh
@@ -336,8 +363,10 @@ done
 echo "==============================================="
 
 if [[ $fail_count -gt 0 ]]; then
+  gv_log_contract_emit "release" "error" "Go-live gate failed" "go_live_gate.summary" 1 0 "failed=${fail_count};skipped=${skip_count}"
   echo "GO-LIVE GATE: FAIL (${fail_count} failed, ${skip_count} skipped)"
   exit 1
 fi
 
+gv_log_contract_emit "release" "info" "Go-live gate passed" "go_live_gate.summary" 0 0 "failed=0;skipped=${skip_count}"
 echo "GO-LIVE GATE: PASS (${skip_count} skipped)"
