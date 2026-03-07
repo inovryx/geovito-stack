@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { createStrapi } = require('@strapi/core');
@@ -78,6 +79,41 @@ const run = async () => {
         pass(`required action present: ${action}`);
       } else {
         fail(`required action missing: ${action}`);
+      }
+    }
+
+    const contractRoot = process.env.LOG_CONTRACT_FILE_ROOT
+      ? path.resolve(process.env.LOG_CONTRACT_FILE_ROOT)
+      : path.resolve(APP_DIR, '..', 'logs', 'channels');
+    const auditChannelFile = path.join(contractRoot, 'audit.jsonl');
+    if (!fs.existsSync(auditChannelFile)) {
+      fail(`audit channel file not found: ${auditChannelFile}`);
+    } else {
+      const lines = fs
+        .readFileSync(auditChannelFile, 'utf8')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(-2000);
+
+      const channelActions = new Set();
+      for (const line of lines) {
+        try {
+          const row = JSON.parse(line);
+          if (String(row?.channel || '') !== 'audit') continue;
+          const action = String(row?.route_or_action || row?.meta?.action || '').trim();
+          if (action) channelActions.add(action);
+        } catch {
+          // ignore malformed lines in smoke
+        }
+      }
+
+      for (const action of REQUIRED_ACTIONS) {
+        if (channelActions.has(action)) {
+          pass(`required audit channel action present: ${action}`);
+        } else {
+          fail(`required audit channel action missing: ${action}`);
+        }
       }
     }
   } finally {
