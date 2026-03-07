@@ -1,0 +1,29 @@
+# logvps_ingest.template
+# Pseudocode template for log VPS ingest service (disabled by default)
+
+listen:
+  protocol: "tcp"
+  address: "0.0.0.0"
+  port: "${LOG_VPS_PORT}"
+
+ingest:
+  format: "jsonl"
+  validate_required_fields:
+    - ts
+    - env
+    - channel
+    - level
+    - msg
+    - request_id
+    - service
+    - route_or_action
+    - meta
+
+store:
+  root: "/var/log/geovito/channels"
+  file_pattern: "${channel}/%Y-%m-%d.jsonl"
+
+rotation:
+  hot_retention_days: "${LOG_RETENTION_DAYS_HOT:-14}"
+  archive_days: "${LOG_ARCHIVE_DAYS:-90}"
+  compress_archives: true

@@ -1,0 +1,28 @@
+# prod_log_router.template
+# Pseudocode template for production log router (disabled by default)
+
+input:
+  source: "logs/channels/*.jsonl"
+  format: "jsonl"
+
+pipeline:
+  parse_json: true
+  split_by_channel: true
+  add_fields:
+    origin: "prod"
+
+output_local_buffer:
+  path: "/var/log/geovito-router/buffer"
+  retention_hours: "${PROD_BUFFER_HOURS:-48}"
+
+output_remote:
+  protocol: "tcp"
+  host: "${LOG_VPS_HOST}"
+  port: "${LOG_VPS_PORT}"
+  retry: true
+  backoff: "exponential"
+
+rotation:
+  by_channel: true
+  hot_retention_days: "${LOG_RETENTION_DAYS_HOT:-14}"
+  archive_days: "${LOG_ARCHIVE_DAYS:-90}"
