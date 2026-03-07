@@ -168,9 +168,12 @@ const run = async () => {
       `INFO: target post current state=${normalizeState(targetPost.submission_state)} visibility=${normalizeState(targetPost.site_visibility)}`
     );
 
-    if (normalizeState(targetPost.submission_state) !== 'submitted') {
+    if (
+      normalizeState(targetPost.submission_state) !== 'submitted' ||
+      normalizeState(targetPost.site_visibility) !== 'visible'
+    ) {
       await forceSubmitted(strapi, cfg.targetPostId);
-      console.log('PASS: target post forced to submitted for deterministic moderation test');
+      console.log('PASS: target post forced to submitted+visible for deterministic moderation test');
     }
 
     const listBefore = await requestJson({
