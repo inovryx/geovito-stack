@@ -285,7 +285,7 @@ check_page "/en/dashboard/" "200" "noindex,nofollow" "https://www.geovito.com/en
 check_page "/de/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "-"
 check_page "/tr/atlas/turkiye/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/turkiye" "-"
 check_page "/en/atlas/italy-pilot/" "200" "index,follow" "https://www.geovito.com/en/atlas/italy-pilot" "none"
-check_page "/de/atlas/italy-pilot/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/italy-pilot" "fallback"
+check_page "/de/atlas/italy-pilot/" "200" "noindex,nofollow" "https://www.geovito.com/en/atlas/italy-pilot" "-"
 
 check_page "/en/atlas/not-a-real-place/" "404" "-" "-" "none"
 
