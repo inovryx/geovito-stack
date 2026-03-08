@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T12:35:00Z
+Last updated (UTC): 2026-03-08T12:50:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `4204166`
@@ -43,6 +43,7 @@ Head at last full verification: `4204166`
 - `ops(obs): cron-path sample write verified via cron log file (manual simulation)`
 - `feat(obs): add observability_cron_freshness_check.sh for automated cron recency verification`
 - `feat(gate): include observability cron freshness check in full go-live gate`
+- `feat(obs): add baseline readiness check and gate weekly baseline refresh on readiness`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -59,6 +60,7 @@ Head at last full verification: `4204166`
    - `GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE=false bash tools/go_live_gate_full.sh`
 3. Collect one week of observability history and regenerate baseline:
    - `bash tools/observability_sample.sh` (daily)
+   - `bash tools/observability_baseline_readiness.sh`
    - `OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh` (weekly)
    - Review `artifacts/observability/threshold-baseline-summary.json`
 4. Verify cron recency with dedicated check:
@@ -108,6 +110,8 @@ Head at last full verification: `4204166`
   - latest observability sample evidence: `artifacts/observability/sample-20260308T110116Z.txt`
   - `bash tools/observability_cron_freshness_check.sh` -> PASS
   - latest cron freshness evidence: `artifacts/observability/cron-freshness-last.json`
+  - `bash tools/observability_baseline_readiness.sh` -> WARN (expected until >=7 distinct days)
+  - latest readiness evidence: `artifacts/observability/baseline-readiness-last.json`
 - Repo sync state on last verification:
   - local `main` at `4204166`
   - working tree clean.

@@ -12,6 +12,7 @@ SUMMARY_FILE="${OBS_SAMPLE_SUMMARY_FILE:-${SUMMARY_DIR}/sample-${STAMP}.txt}"
 
 OBS_SAMPLE_WITH_SEO="${OBS_SAMPLE_WITH_SEO:-false}"
 OBS_SAMPLE_WITH_BASELINE="${OBS_SAMPLE_WITH_BASELINE:-false}"
+OBS_SAMPLE_BASELINE_REQUIRE_READY="${OBS_SAMPLE_BASELINE_REQUIRE_READY:-true}"
 OBS_SAMPLE_ALERT_ON_FAIL="${OBS_SAMPLE_ALERT_ON_FAIL:-false}"
 OBS_SAMPLE_ALERT_ALLOW_PARTIAL="${OBS_SAMPLE_ALERT_ALLOW_PARTIAL:-true}"
 
@@ -72,7 +73,17 @@ if [[ "$OBS_SAMPLE_WITH_SEO" == "true" ]]; then
 fi
 
 if [[ "$OBS_SAMPLE_WITH_BASELINE" == "true" ]]; then
-  run_step "Threshold Baseline Refresh" bash tools/observability_threshold_baseline.sh
+  run_step "Baseline Readiness Check" bash tools/observability_baseline_readiness.sh
+  if [[ "$OBS_SAMPLE_BASELINE_REQUIRE_READY" == "true" ]]; then
+    if rg -q '"ready":true' artifacts/observability/baseline-readiness-last.json; then
+      run_step "Threshold Baseline Refresh" bash tools/observability_threshold_baseline.sh
+    else
+      echo "INFO: baseline readiness not satisfied, skipping threshold baseline refresh."
+      gv_log_contract_emit "release" "warn" "Threshold baseline refresh skipped" "observability_sample.baseline" 200 0 "reason=not_ready"
+    fi
+  else
+    run_step "Threshold Baseline Refresh" bash tools/observability_threshold_baseline.sh
+  fi
 fi
 
 echo "================ OBSERVABILITY SAMPLE SUMMARY ================"
@@ -84,6 +95,7 @@ done
 printf 'timestamp_utc=%s\n' "$STAMP" >> "$SUMMARY_FILE"
 printf 'with_seo=%s\n' "$OBS_SAMPLE_WITH_SEO" >> "$SUMMARY_FILE"
 printf 'with_baseline=%s\n' "$OBS_SAMPLE_WITH_BASELINE" >> "$SUMMARY_FILE"
+printf 'baseline_require_ready=%s\n' "$OBS_SAMPLE_BASELINE_REQUIRE_READY" >> "$SUMMARY_FILE"
 echo "summary_file=${SUMMARY_FILE}"
 
 if [[ "$fail_count" -gt 0 ]]; then

@@ -43,6 +43,26 @@ Send test alert:
   - rolling history: `artifacts/observability/storage-pressure-history.jsonl`
 
 ## Threshold baseline calibration
+Check readiness before locking thresholds:
+
+```bash
+bash tools/observability_baseline_readiness.sh
+```
+
+Defaults:
+- needs at least `7` samples per stream in last `7` days
+- needs at least `7` distinct days per stream
+- non-strict mode returns `WARN` (exit `0`) when not ready
+
+Strict mode:
+
+```bash
+OBS_BASELINE_READINESS_STRICT=true bash tools/observability_baseline_readiness.sh
+```
+
+Readiness artifact:
+- `artifacts/observability/baseline-readiness-last.json`
+
 Generate 7-day baseline recommendations:
 
 ```bash
@@ -82,6 +102,9 @@ OBS_SAMPLE_WITH_SEO=true bash tools/observability_sample.sh
 
 # refresh threshold baseline in the same run (recommended weekly)
 OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh
+
+# force baseline refresh even if readiness is not met
+OBS_SAMPLE_WITH_BASELINE=true OBS_SAMPLE_BASELINE_REQUIRE_READY=false bash tools/observability_sample.sh
 
 # send alert if any step fails
 OBS_SAMPLE_ALERT_ON_FAIL=true bash tools/observability_sample.sh
