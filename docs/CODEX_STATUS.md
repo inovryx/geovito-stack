@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T16:45:00Z
+Last updated (UTC): 2026-03-08T17:04:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head at last full verification: `02eaf35`
+Head at last full verification: `ecfd1fc`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -34,6 +34,7 @@ Head at last full verification: `02eaf35`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1443`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1546`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1614`
+- New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1654`
 - `feat(gate): enforce mandatory log-contract smoke in legacy go_live_gate`
 - `feat(gate): tighten full-gate emergency override policy allowlist + metadata validation`
 - `fix(smoke): relax de italy-pilot banner expectation in shell smoke`
@@ -99,7 +100,7 @@ Head at last full verification: `02eaf35`
 
 ## Last Verified Checks and Gate Status
 - Latest full gate evidence file:
-  - `artifacts/go-live/go-live-full-20260308T160233Z.txt`
+  - `artifacts/go-live/go-live-full-20260308T164534Z.txt`
   - Result: PASS for all sections:
     - Core Go-Live Gate
     - Staging Isolation
@@ -116,12 +117,12 @@ Head at last full verification: `02eaf35`
   - `bash tools/shell_smoke_test.sh` -> PASS
   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
   - `bash tools/observability_sample.sh >> artifacts/observability/cron-sample.log 2>&1` -> PASS
-  - latest observability sample evidence: `artifacts/observability/sample-20260308T110116Z.txt`
+  - latest observability sample evidence: `artifacts/observability/sample-20260308T170336Z.txt`
   - `bash tools/observability_cron_freshness_check.sh` -> PASS
   - latest cron freshness evidence: `artifacts/observability/cron-freshness-last.json`
   - `bash tools/observability_baseline_readiness.sh` -> WARN (expected until >=7 distinct days)
   - latest readiness evidence: `artifacts/observability/baseline-readiness-last.json`
   - `GO_LIVE_BASELINE_READINESS_STRICT=true ... bash tools/go_live_gate_full.sh` -> FAIL (expected contract behavior until readiness=true)
 - Repo sync state on last verification:
-  - local `main` at `02eaf35`
+  - local `main` at `ecfd1fc`
   - working tree clean.
