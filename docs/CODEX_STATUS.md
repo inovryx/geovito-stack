@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T10:05:00Z
+Last updated (UTC): 2026-03-08T10:20:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head at last full verification: `b8c0156`
+Head at last full verification: `e86b277`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -28,6 +28,7 @@ Head at last full verification: `b8c0156`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0711`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0805`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0911`
+- New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0945`
 - `feat(gate): enforce mandatory log-contract smoke in legacy go_live_gate`
 - `feat(gate): tighten full-gate emergency override policy allowlist + metadata validation`
 - `fix(smoke): relax de italy-pilot banner expectation in shell smoke`
@@ -40,16 +41,14 @@ Head at last full verification: `b8c0156`
 
 ## Active Blockers
 - No functional blocker in code/gates right now.
-- Operational watchpoint: VPS `logs/channels` is root-owned in current host state; contract logger now auto-falls back to `artifacts/logs/channels`, but ownership normalization is still recommended.
 - Staging reliability depends on DNS/Cloudflare state; isolation checks pass only when staging host is reachable and lock-down headers are served.
 
 ## Exact Next Steps
 1. Run one fresh full verification after any next hardening commit:
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
-2. Optional host cleanup (recommended): normalize VPS log dir ownership when sudo access is available:
-   - `cd /home/ali/geovito-stack && sudo chown -R ali:ali logs artifacts`
-3. Keep override-policy smoke default ON; only disable for emergency debugging:
+2. Keep override-policy smoke default ON; only disable for emergency debugging:
    - `GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE=false bash tools/go_live_gate_full.sh`
+3. Tune observability thresholds (`tools/error_rate_check.sh`, `tools/storage_pressure_check.sh`) based on one-week baseline before locking production alert thresholds.
 
 ## Critical Non-Negotiables
 - Do not break Clean Core: Atlas remains authoritative; UGC remains contributory.
@@ -74,7 +73,7 @@ Head at last full verification: `b8c0156`
 
 ## Last Verified Checks and Gate Status
 - Latest full gate evidence file:
-  - `artifacts/go-live/go-live-full-20260308T090201Z.txt`
+  - `artifacts/go-live/go-live-full-20260308T093309Z.txt`
   - Result: PASS for all sections:
     - Core Go-Live Gate
     - Staging Isolation
@@ -84,9 +83,10 @@ Head at last full verification: `b8c0156`
     - SEO Drift Check
     - Error Rate Check
     - Storage Pressure Check
+    - Override Policy Smoke
 - Latest focused checks:
   - `bash tools/shell_smoke_test.sh` -> PASS
   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
 - Repo sync state on last verification:
-  - local `main` at `b8c0156`
+  - local `main` at `e86b277`
   - working tree clean.
