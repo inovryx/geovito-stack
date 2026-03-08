@@ -55,6 +55,22 @@ Rules:
   - `Storage Pressure Check`
 - override action is audit-logged
 
+Override-policy smoke (optional):
+
+```bash
+bash tools/go_live_override_policy_smoke.sh
+```
+
+Optional hook from full gate:
+
+```bash
+GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE=true \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
 ## One-command Gate
 Run:
 

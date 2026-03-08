@@ -15,6 +15,9 @@ GO_LIVE_OVERRIDE_TICKET="${GO_LIVE_OVERRIDE_TICKET:-}"
 GO_LIVE_OVERRIDE_APPROVER="${GO_LIVE_OVERRIDE_APPROVER:-}"
 GO_LIVE_OVERRIDE_REASON="${GO_LIVE_OVERRIDE_REASON:-}"
 GO_LIVE_OVERRIDE_ALLOWLIST="${GO_LIVE_OVERRIDE_ALLOWLIST:-}"
+GO_LIVE_POLICY_TEST_MODE="${GO_LIVE_POLICY_TEST_MODE:-false}"
+GO_LIVE_POLICY_TEST_FAILED_STEPS="${GO_LIVE_POLICY_TEST_FAILED_STEPS:-}"
+GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE="${GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE:-false}"
 
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
@@ -125,15 +128,35 @@ echo "creator_username=${CREATOR_USERNAME:-<empty>}"
 echo "override=${GO_LIVE_EMERGENCY_OVERRIDE}"
 echo "=============================================================="
 gv_log_contract_emit "release" "info" "Go-live full gate started" "go_live_gate_full.start" 0 0 "override=${GO_LIVE_EMERGENCY_OVERRIDE};creator=${CREATOR_USERNAME}"
-
-run_step "Core Go-Live Gate" bash -lc "cd '$ROOT_DIR' && GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_UGC_SHOWCASE_MOD=true GO_LIVE_REQUIRE_CREATOR=true GO_LIVE_WITH_SMTP=true GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true GO_LIVE_SKIP_PRE_IMPORT=false GO_LIVE_SKIP_PRE_DESIGN=false GO_LIVE_SKIP_UI=false GO_LIVE_SKIP_REPORT_SMOKE=false GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=false GO_LIVE_SKIP_UGC_API_CONTRACT=false GO_LIVE_SKIP_UI_PAGE_PROGRESS=false GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=false GO_LIVE_SKIP_FOLLOW_SMOKE=false GO_LIVE_SKIP_NOTIFICATION_SMOKE=false GO_LIVE_SKIP_SAVED_LIST_SMOKE=false CREATOR_USERNAME='${CREATOR_USERNAME}' RESET_SMOKE_EMAIL='${RESET_SMOKE_EMAIL}' bash tools/go_live_gate.sh"
-run_step "Staging Isolation" bash tools/staging_isolation_check.sh
-run_step "Restore Freshness" bash tools/restore_freshness_check.sh
-run_step "Kill Switch Smoke" bash tools/kill_switch_smoke.sh
-run_step "Audit Log Smoke" bash tools/audit_log_smoke.sh
-run_step "SEO Drift Check" bash tools/seo_drift_check.sh
-run_step "Error Rate Check" bash tools/error_rate_check.sh
-run_step "Storage Pressure Check" bash tools/storage_pressure_check.sh
+if [[ "$GO_LIVE_POLICY_TEST_MODE" == "true" ]]; then
+  echo "INFO: GO_LIVE_POLICY_TEST_MODE=true (skipping runtime checks, simulating failed steps)."
+  IFS=',' read -r -a failed_simulated_raw <<<"$GO_LIVE_POLICY_TEST_FAILED_STEPS"
+  for item in "${failed_simulated_raw[@]}"; do
+    item_trimmed="$(trim_value "$item")"
+    if [[ -n "$item_trimmed" ]]; then
+      STEP_NAMES+=("$item_trimmed")
+      STEP_STATUS+=("FAIL")
+      STEP_CODES+=("99")
+    fi
+  done
+  if [[ ${#STEP_NAMES[@]} -eq 0 ]]; then
+    STEP_NAMES+=("Policy Smoke Probe")
+    STEP_STATUS+=("PASS")
+    STEP_CODES+=("0")
+  fi
+else
+  run_step "Core Go-Live Gate" bash -lc "cd '$ROOT_DIR' && GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_UGC_SHOWCASE_MOD=true GO_LIVE_REQUIRE_CREATOR=true GO_LIVE_WITH_SMTP=true GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true GO_LIVE_SKIP_PRE_IMPORT=false GO_LIVE_SKIP_PRE_DESIGN=false GO_LIVE_SKIP_UI=false GO_LIVE_SKIP_REPORT_SMOKE=false GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=false GO_LIVE_SKIP_UGC_API_CONTRACT=false GO_LIVE_SKIP_UI_PAGE_PROGRESS=false GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=false GO_LIVE_SKIP_FOLLOW_SMOKE=false GO_LIVE_SKIP_NOTIFICATION_SMOKE=false GO_LIVE_SKIP_SAVED_LIST_SMOKE=false CREATOR_USERNAME='${CREATOR_USERNAME}' RESET_SMOKE_EMAIL='${RESET_SMOKE_EMAIL}' bash tools/go_live_gate.sh"
+  run_step "Staging Isolation" bash tools/staging_isolation_check.sh
+  run_step "Restore Freshness" bash tools/restore_freshness_check.sh
+  run_step "Kill Switch Smoke" bash tools/kill_switch_smoke.sh
+  run_step "Audit Log Smoke" bash tools/audit_log_smoke.sh
+  run_step "SEO Drift Check" bash tools/seo_drift_check.sh
+  run_step "Error Rate Check" bash tools/error_rate_check.sh
+  run_step "Storage Pressure Check" bash tools/storage_pressure_check.sh
+  if [[ "$GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE" == "true" ]]; then
+    run_step "Override Policy Smoke" bash tools/go_live_override_policy_smoke.sh
+  fi
+fi
 
 echo "================ GO-LIVE FULL SUMMARY ================"
 fail_count=0
