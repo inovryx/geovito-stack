@@ -26,9 +26,9 @@ Summary evidence is written under:
 
 ## Latest Stable Checkpoint
 - Date (UTC): `2026-03-08`
-- Tag: `checkpoint-go-live-full-pass-20260308-1225`
-- Commit: `4204166`
-- Full gate summary artifact: `artifacts/go-live/go-live-full-20260308T113413Z.txt`
+- Tag: `checkpoint-go-live-full-pass-20260308-1443`
+- Commit: `9b987e4`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260308T143031Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
 
 ### Emergency override (controlled)

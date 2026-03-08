@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T12:50:00Z
+Last updated (UTC): 2026-03-08T14:50:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head at last full verification: `4204166`
+Head at last full verification: `9b987e4`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -31,6 +31,7 @@ Head at last full verification: `4204166`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0945`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1009`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1225`
+- New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1443`
 - `feat(gate): enforce mandatory log-contract smoke in legacy go_live_gate`
 - `feat(gate): tighten full-gate emergency override policy allowlist + metadata validation`
 - `fix(smoke): relax de italy-pilot banner expectation in shell smoke`
@@ -91,7 +92,7 @@ Head at last full verification: `4204166`
 
 ## Last Verified Checks and Gate Status
 - Latest full gate evidence file:
-  - `artifacts/go-live/go-live-full-20260308T113413Z.txt`
+  - `artifacts/go-live/go-live-full-20260308T143031Z.txt`
   - Result: PASS for all sections:
     - Core Go-Live Gate
     - Staging Isolation
@@ -113,5 +114,5 @@ Head at last full verification: `4204166`
   - `bash tools/observability_baseline_readiness.sh` -> WARN (expected until >=7 distinct days)
   - latest readiness evidence: `artifacts/observability/baseline-readiness-last.json`
 - Repo sync state on last verification:
-  - local `main` at `4204166`
+  - local `main` at `9b987e4`
   - working tree clean.
