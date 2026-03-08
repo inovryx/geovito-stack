@@ -25,6 +25,7 @@ Head: `3f984a0`
 - `feat(gate): enforce log contract smoke in full gate`
 - `fix(smoke): stabilize region and related-link checks for shell smoke`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260307-2031`
+- New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0711`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
