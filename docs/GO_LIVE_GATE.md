@@ -25,9 +25,9 @@ Summary evidence is written under:
 
 ## Latest Stable Checkpoint
 - Date (UTC): `2026-03-08`
-- Tag: `checkpoint-go-live-full-pass-20260308-0711`
-- Commit: `b6b7190`
-- Full gate summary artifact: `artifacts/go-live/go-live-full-20260308T071132Z.txt`
+- Tag: `checkpoint-go-live-full-pass-20260308-0911`
+- Commit: `b8c0156`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260308T090201Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
 
 ### Emergency override (controlled)
@@ -55,16 +55,16 @@ Rules:
   - `Storage Pressure Check`
 - override action is audit-logged
 
-Override-policy smoke (optional):
+Override-policy smoke:
 
 ```bash
 bash tools/go_live_override_policy_smoke.sh
 ```
 
-Optional hook from full gate:
+Disable override-policy smoke for emergency debugging only:
 
 ```bash
-GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE=true \
+GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE=false \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \
