@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T16:00:00Z
+Last updated (UTC): 2026-03-08T16:20:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head at last full verification: `55c35a1`
+Head at last full verification: `02eaf35`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -33,6 +33,7 @@ Head at last full verification: `55c35a1`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1225`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1443`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1546`
+- New checkpoint tag: `checkpoint-go-live-full-pass-20260308-1614`
 - `feat(gate): enforce mandatory log-contract smoke in legacy go_live_gate`
 - `feat(gate): tighten full-gate emergency override policy allowlist + metadata validation`
 - `fix(smoke): relax de italy-pilot banner expectation in shell smoke`
@@ -97,7 +98,7 @@ Head at last full verification: `55c35a1`
 
 ## Last Verified Checks and Gate Status
 - Latest full gate evidence file:
-  - `artifacts/go-live/go-live-full-20260308T151425Z.txt`
+  - `artifacts/go-live/go-live-full-20260308T160233Z.txt`
   - Result: PASS for all sections:
     - Core Go-Live Gate
     - Staging Isolation
@@ -108,6 +109,7 @@ Head at last full verification: `55c35a1`
     - Error Rate Check
     - Storage Pressure Check
     - Observability Cron Freshness
+    - Baseline Readiness Check
     - Override Policy Smoke
 - Latest focused checks:
   - `bash tools/shell_smoke_test.sh` -> PASS
@@ -120,5 +122,5 @@ Head at last full verification: `55c35a1`
   - latest readiness evidence: `artifacts/observability/baseline-readiness-last.json`
   - `GO_LIVE_BASELINE_READINESS_STRICT=true ... bash tools/go_live_gate_full.sh` -> FAIL (expected contract behavior until readiness=true)
 - Repo sync state on last verification:
-  - local `main` at `55c35a1`
+  - local `main` at `02eaf35`
   - working tree clean.
