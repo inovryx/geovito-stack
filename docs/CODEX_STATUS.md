@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T06:58:48Z
+Last updated (UTC): 2026-03-08T07:21:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head: `16221d4`
+Head: `3f984a0`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -22,6 +22,8 @@ Head: `16221d4`
 - `test(logging): add log contract smoke and full-gate integration hook`
 - `fix(gates): stabilize shell smoke banner expectations and tighten moderation error-rate counting`
 - `fix(logging): fallback to artifacts log root when logs/channels is not writable`
+- `feat(gate): enforce log contract smoke in full gate`
+- `fix(smoke): stabilize region and related-link checks for shell smoke`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260307-2031`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
@@ -34,8 +36,8 @@ Head: `16221d4`
 - Staging reliability depends on DNS/Cloudflare state; isolation checks pass only when staging host is reachable and lock-down headers are served.
 
 ## Exact Next Steps
-1. Commit and push the current hardening increment (`go_live_gate_full` mandatory log smoke + docs sync).
-2. Run one fresh full verification after commit:
+1. Create a fresh checkpoint tag for the latest full-gate PASS (`20260308T071132Z`) and push it.
+2. Run one fresh full verification after any next hardening commit:
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
 3. Optional host cleanup (recommended): normalize VPS log dir ownership when sudo access is available:
    - `cd /home/ali/geovito-stack && sudo chown -R ali:ali logs artifacts`
@@ -64,7 +66,7 @@ Head: `16221d4`
 
 ## Last Verified Checks and Gate Status
 - Latest full gate evidence file:
-  - `artifacts/go-live/go-live-full-20260307T201536Z.txt`
+  - `artifacts/go-live/go-live-full-20260308T071132Z.txt`
   - Result: PASS for all sections:
     - Core Go-Live Gate
     - Staging Isolation
@@ -76,7 +78,7 @@ Head: `16221d4`
     - Storage Pressure Check
 - Latest focused checks:
   - `bash tools/shell_smoke_test.sh` -> PASS
-  - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
+  - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
 - Repo sync state on last verification:
-  - local `main` at `16221d4`
-  - working tree contains pending hardening increment commit.
+  - local `main` at `3f984a0`
+  - working tree clean.
