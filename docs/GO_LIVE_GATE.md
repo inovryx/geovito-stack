@@ -19,6 +19,7 @@ This command enforces:
 - SEO drift check
 - error-rate check
 - storage pressure check
+- observability cron freshness check
 
 Summary evidence is written under:
 - `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
@@ -180,6 +181,7 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/seo_drift_check.sh` PASS
 - [ ] `bash tools/error_rate_check.sh` PASS
 - [ ] `bash tools/storage_pressure_check.sh` PASS
+- [ ] `bash tools/observability_cron_freshness_check.sh` PASS
 
 ## Profile + Routing
 - [ ] `/{lang}/@{username}` profile routes render

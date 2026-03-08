@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T11:22:00Z
+Last updated (UTC): 2026-03-08T11:32:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `beb69ad`
@@ -41,6 +41,7 @@ Head at last full verification: `beb69ad`
 - `ops(obs): cron sampling schedule applied on VPS + logrotate for cron-sample.log validated`
 - `ops(obs): cron-path sample write verified via cron log file (manual simulation)`
 - `feat(obs): add observability_cron_freshness_check.sh for automated cron recency verification`
+- `feat(gate): include observability cron freshness check in full go-live gate`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`

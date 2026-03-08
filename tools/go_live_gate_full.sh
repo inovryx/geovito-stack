@@ -153,6 +153,7 @@ else
   run_step "SEO Drift Check" bash tools/seo_drift_check.sh
   run_step "Error Rate Check" bash tools/error_rate_check.sh
   run_step "Storage Pressure Check" bash tools/storage_pressure_check.sh
+  run_step "Observability Cron Freshness" bash tools/observability_cron_freshness_check.sh
   if [[ "$GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE" == "true" ]]; then
     run_step "Override Policy Smoke" bash tools/go_live_override_policy_smoke.sh
   fi
