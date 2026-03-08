@@ -20,6 +20,7 @@ This command enforces:
 - error-rate check
 - storage pressure check
 - observability cron freshness check
+- baseline readiness check (non-strict by default)
 
 Summary evidence is written under:
 - `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
@@ -66,6 +67,16 @@ Disable override-policy smoke for emergency debugging only:
 
 ```bash
 GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE=false \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Baseline readiness strict mode (optional hard enforcement):
+
+```bash
+GO_LIVE_BASELINE_READINESS_STRICT=true \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \
@@ -182,6 +193,7 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/error_rate_check.sh` PASS
 - [ ] `bash tools/storage_pressure_check.sh` PASS
 - [ ] `bash tools/observability_cron_freshness_check.sh` PASS
+- [ ] `bash tools/observability_baseline_readiness.sh` PASS/WARN (strict mode requires PASS)
 
 ## Profile + Routing
 - [ ] `/{lang}/@{username}` profile routes render

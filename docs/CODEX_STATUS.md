@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T14:50:00Z
+Last updated (UTC): 2026-03-08T15:05:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `9b987e4`
@@ -45,6 +45,7 @@ Head at last full verification: `9b987e4`
 - `feat(obs): add observability_cron_freshness_check.sh for automated cron recency verification`
 - `feat(gate): include observability cron freshness check in full go-live gate`
 - `feat(obs): add baseline readiness check and gate weekly baseline refresh on readiness`
+- `feat(gate): add baseline readiness step to full go-live gate (non-strict default, strict opt-in)`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -68,6 +69,8 @@ Head at last full verification: `9b987e4`
    - `bash tools/observability_cron_freshness_check.sh`
 5. After baseline review, run one full gate verification:
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
+6. When observability history reaches target coverage, enforce strict baseline readiness in release runs:
+   - `GO_LIVE_BASELINE_READINESS_STRICT=true bash tools/go_live_gate_full.sh`
 
 ## Critical Non-Negotiables
 - Do not break Clean Core: Atlas remains authoritative; UGC remains contributory.
