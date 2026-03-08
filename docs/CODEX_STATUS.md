@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T17:04:00Z
+Last updated (UTC): 2026-03-08T17:25:05Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `ecfd1fc`
@@ -76,6 +76,8 @@ Head at last full verification: `ecfd1fc`
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
 6. When observability history reaches target coverage, enforce strict baseline readiness in release runs:
    - `GO_LIVE_BASELINE_READINESS_STRICT=true bash tools/go_live_gate_full.sh`
+7. Strict readiness enforcement target window:
+   - earliest expected run after daily cron accumulation: `2026-03-14 02:10 UTC`
 
 ## Critical Non-Negotiables
 - Do not break Clean Core: Atlas remains authoritative; UGC remains contributory.
@@ -122,7 +124,8 @@ Head at last full verification: `ecfd1fc`
   - latest cron freshness evidence: `artifacts/observability/cron-freshness-last.json`
   - `bash tools/observability_baseline_readiness.sh` -> WARN (expected until >=7 distinct days)
   - latest readiness evidence: `artifacts/observability/baseline-readiness-last.json`
+  - latest readiness observed counts: `error_samples=19`, `storage_samples=19`, `error_distinct_days=1`, `storage_distinct_days=1` (deficit: 6 day each)
   - `GO_LIVE_BASELINE_READINESS_STRICT=true ... bash tools/go_live_gate_full.sh` -> FAIL (expected contract behavior until readiness=true)
 - Repo sync state on last verification:
-  - local `main` at `ecfd1fc`
+  - local `main` at `e5980f1`
   - working tree clean.
