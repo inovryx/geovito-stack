@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T07:21:00Z
+Last updated (UTC): 2026-03-08T07:36:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head: `3f984a0`
+Head: `4e24ead`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -26,6 +26,7 @@ Head: `3f984a0`
 - `fix(smoke): stabilize region and related-link checks for shell smoke`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260307-2031`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0711`
+- `feat(gate): enforce mandatory log-contract smoke in legacy go_live_gate`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -37,12 +38,11 @@ Head: `3f984a0`
 - Staging reliability depends on DNS/Cloudflare state; isolation checks pass only when staging host is reachable and lock-down headers are served.
 
 ## Exact Next Steps
-1. Create a fresh checkpoint tag for the latest full-gate PASS (`20260308T071132Z`) and push it.
-2. Run one fresh full verification after any next hardening commit:
+1. Run one fresh full verification after any next hardening commit:
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
-3. Optional host cleanup (recommended): normalize VPS log dir ownership when sudo access is available:
+2. Optional host cleanup (recommended): normalize VPS log dir ownership when sudo access is available:
    - `cd /home/ali/geovito-stack && sudo chown -R ali:ali logs artifacts`
-4. Next hardening increment: evaluate making `tools/go_live_gate.sh` (legacy gate) also mandatory for log smoke, not only full gate.
+3. Next hardening increment: tighten emergency override allowlist policy and add explicit runbook examples.
 
 ## Critical Non-Negotiables
 - Do not break Clean Core: Atlas remains authoritative; UGC remains contributory.
@@ -81,5 +81,5 @@ Head: `3f984a0`
   - `bash tools/shell_smoke_test.sh` -> PASS
   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
 - Repo sync state on last verification:
-  - local `main` at `3f984a0`
+  - local `main` at `4e24ead`
   - working tree clean.

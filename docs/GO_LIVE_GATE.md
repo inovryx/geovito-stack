@@ -24,10 +24,10 @@ Summary evidence is written under:
 - `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
 
 ## Latest Stable Checkpoint
-- Date (UTC): `2026-03-07`
-- Tag: `checkpoint-go-live-full-pass-20260307-2031`
-- Commit: `16221d4`
-- Full gate summary artifact: `artifacts/go-live/go-live-full-20260307T201536Z.txt`
+- Date (UTC): `2026-03-08`
+- Tag: `checkpoint-go-live-full-pass-20260308-0711`
+- Commit: `b6b7190`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260308T071132Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
 
 ### Emergency override (controlled)
@@ -53,6 +53,8 @@ Run:
 ```bash
 bash tools/go_live_gate.sh
 ```
+
+`Log Contract Smoke` now runs by default in `tools/go_live_gate.sh` and is not skipped.
 
 Useful toggles:
 

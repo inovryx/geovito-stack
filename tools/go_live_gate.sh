@@ -30,7 +30,7 @@ GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE="${GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE:-false}"
 GO_LIVE_SKIP_FOLLOW_SMOKE="${GO_LIVE_SKIP_FOLLOW_SMOKE:-false}"
 GO_LIVE_SKIP_NOTIFICATION_SMOKE="${GO_LIVE_SKIP_NOTIFICATION_SMOKE:-false}"
 GO_LIVE_SKIP_SAVED_LIST_SMOKE="${GO_LIVE_SKIP_SAVED_LIST_SMOKE:-false}"
-GO_LIVE_WITH_LOG_CONTRACT_SMOKE="${GO_LIVE_WITH_LOG_CONTRACT_SMOKE:-false}"
+GO_LIVE_WITH_LOG_CONTRACT_SMOKE="${GO_LIVE_WITH_LOG_CONTRACT_SMOKE:-true}"
 
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
 
@@ -68,7 +68,7 @@ Env toggles:
   GO_LIVE_SKIP_FOLLOW_SMOKE=true  # skip follow system foundation smoke
   GO_LIVE_SKIP_NOTIFICATION_SMOKE=true  # skip notification preferences smoke
   GO_LIVE_SKIP_SAVED_LIST_SMOKE=true  # skip saved list foundation smoke
-  GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true  # run log contract smoke (optional)
+  GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true|false  # deprecated toggle; log contract smoke always runs
   GO_LIVE_WITH_SMTP=true          # run password reset smoke (requires RESET_SMOKE_EMAIL)
   RESET_SMOKE_EMAIL=<mail>        # required when GO_LIVE_WITH_SMTP=true
 
@@ -116,6 +116,10 @@ if [[ "$GO_LIVE_REQUIRE_CREATOR" == "true" && -z "$CREATOR_USERNAME" ]]; then
   echo "FAIL: GO_LIVE_REQUIRE_CREATOR=true but CREATOR_USERNAME is missing."
   echo "Set CREATOR_USERNAME or update $SMOKE_ACCESS_ENV_FILE"
   exit 1
+fi
+
+if [[ "$GO_LIVE_WITH_LOG_CONTRACT_SMOKE" != "true" ]]; then
+  echo "WARN: GO_LIVE_WITH_LOG_CONTRACT_SMOKE=false is deprecated; forcing Log Contract Smoke."
 fi
 
 run_step() {
@@ -305,14 +309,7 @@ else
   echo "RESULT: SKIP (Saved List Smoke)"
 fi
 
-if [[ "$GO_LIVE_WITH_LOG_CONTRACT_SMOKE" == "true" ]]; then
-  run_step "Log Contract Smoke" bash tools/log_contract_smoke.sh
-else
-  STEP_NAMES+=("Log Contract Smoke")
-  STEP_STATUS+=("SKIP")
-  STEP_CODES+=("0")
-  echo "RESULT: SKIP (Log Contract Smoke)"
-fi
+run_step "Log Contract Smoke" bash tools/log_contract_smoke.sh
 
 if [[ "$GO_LIVE_SKIP_UI" != "true" ]]; then
   run_step "Account Queue UI Smoke" bash tools/account_comment_queue_test.sh
