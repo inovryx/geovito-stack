@@ -84,6 +84,13 @@ const ready =
   errorDays.size >= minDistinctDays &&
   storageDays.size >= minDistinctDays;
 
+const deficits = {
+  error_samples: Math.max(0, minSamples - errorRows.length),
+  storage_samples: Math.max(0, minSamples - storageRows.length),
+  error_distinct_days: Math.max(0, minDistinctDays - errorDays.size),
+  storage_distinct_days: Math.max(0, minDistinctDays - storageDays.size),
+};
+
 const report = {
   measured_at: new Date().toISOString(),
   baseline_days: baselineDays,
@@ -97,6 +104,7 @@ const report = {
     error_distinct_days: errorDays.size,
     storage_distinct_days: storageDays.size,
   },
+  deficits,
   ready,
 };
 
@@ -120,10 +128,30 @@ if [[ $status -eq 0 ]]; then
   exit 0
 fi
 
+deficit_summary="$(
+  if command -v node >/dev/null 2>&1; then
+    node - "$summary_json" <<'NODE'
+const row = JSON.parse(process.argv[2] || '{}');
+const d = row.deficits || {};
+process.stdout.write(
+  `error_samples=${d.error_samples ?? "?"},storage_samples=${d.storage_samples ?? "?"},error_days=${d.error_distinct_days ?? "?"},storage_days=${d.storage_distinct_days ?? "?"}`
+);
+NODE
+  else
+    docker run --rm -i -v "$PWD":/work -w /work node:20-alpine node - "$summary_json" <<'NODE'
+const row = JSON.parse(process.argv[2] || '{}');
+const d = row.deficits || {};
+process.stdout.write(
+  `error_samples=${d.error_samples ?? "?"},storage_samples=${d.storage_samples ?? "?"},error_days=${d.error_distinct_days ?? "?"},storage_days=${d.storage_distinct_days ?? "?"}`
+);
+NODE
+  fi
+)"
+
 if [[ "$STRICT_MODE" == "true" ]]; then
-  fail "baseline readiness is not satisfied (strict mode)"
+  fail "baseline readiness is not satisfied (strict mode, deficits: ${deficit_summary})"
 fi
 
-warn "baseline readiness is not satisfied yet (non-strict mode)"
+warn "baseline readiness is not satisfied yet (non-strict mode, deficits: ${deficit_summary})"
 echo "OBS BASELINE READINESS: WARN"
 exit 0

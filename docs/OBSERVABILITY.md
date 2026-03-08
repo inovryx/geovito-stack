@@ -62,6 +62,7 @@ OBS_BASELINE_READINESS_STRICT=true bash tools/observability_baseline_readiness.s
 
 Readiness artifact:
 - `artifacts/observability/baseline-readiness-last.json`
+  - includes `observed` and `deficits` blocks for sample/day gaps
 
 Generate 7-day baseline recommendations:
 
