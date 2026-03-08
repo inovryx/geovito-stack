@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DEFAULT_THRESHOLD_FILE="${ROOT_DIR}/artifacts/observability/thresholds.env"
+THRESHOLD_FILE="${OBSERVABILITY_THRESHOLD_FILE:-}"
+if [[ -z "$THRESHOLD_FILE" && -f "$DEFAULT_THRESHOLD_FILE" ]]; then
+  THRESHOLD_FILE="$DEFAULT_THRESHOLD_FILE"
+fi
+if [[ -n "$THRESHOLD_FILE" ]]; then
+  [[ -f "$THRESHOLD_FILE" ]] || { echo "FAIL: threshold file not found: $THRESHOLD_FILE"; exit 1; }
+  # shellcheck disable=SC1090
+  source "$THRESHOLD_FILE"
+fi
+
 WINDOW_MINUTES="${ERROR_RATE_WINDOW_MINUTES:-15}"
 MAX_5XX="${ERROR_RATE_MAX_5XX:-10}"
 MAX_AUTH_FAIL="${ERROR_RATE_MAX_AUTH_FAIL:-25}"
@@ -8,6 +20,7 @@ MAX_MOD_FAIL="${ERROR_RATE_MAX_MOD_FAIL:-10}"
 MOD_FAIL_MIN_STATUS="${ERROR_RATE_MOD_FAIL_MIN_STATUS:-500}"
 LOG_DIR="${ERROR_RATE_LOG_DIR:-logs}"
 OUTPUT_FILE="${ERROR_RATE_OUTPUT_FILE:-artifacts/observability/error-rate-last.json}"
+HISTORY_FILE="${ERROR_RATE_HISTORY_FILE:-artifacts/observability/error-rate-history.jsonl}"
 
 pass() { echo "PASS: $1"; }
 fail() { echo "FAIL: $1"; exit 1; }
@@ -21,6 +34,7 @@ fail() { echo "FAIL: $1"; exit 1; }
 [[ -d "$LOG_DIR" ]] || fail "log directory not found: $LOG_DIR"
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
+mkdir -p "$(dirname "$HISTORY_FILE")"
 tmp_output="$(mktemp)"
 
 if command -v node >/dev/null 2>&1; then
@@ -109,6 +123,23 @@ json_line="$(sed -n 's/^JSON_OUTPUT://p' "$tmp_output" | tail -n 1)"
 [[ -n "$json_line" ]] || fail "error-rate parser did not emit JSON_OUTPUT"
 printf '%s\n' "$json_line" > "$OUTPUT_FILE"
 rm -f "$tmp_output"
+
+history_line="$(
+  "${runner[@]}" "$json_line" "$MAX_5XX" "$MAX_AUTH_FAIL" "$MAX_MOD_FAIL" "$MOD_FAIL_MIN_STATUS" <<'NODE'
+const [jsonLine, max5xx, maxAuth, maxMod, minStatus] = process.argv.slice(2);
+const row = JSON.parse(jsonLine);
+row.measured_at = new Date().toISOString();
+row.thresholds = {
+  max_5xx: Number(max5xx),
+  max_auth_fail: Number(maxAuth),
+  max_mod_fail: Number(maxMod),
+  mod_fail_min_status: Number(minStatus),
+};
+process.stdout.write(JSON.stringify(row));
+NODE
+)"
+printf '%s\n' "$history_line" >> "$HISTORY_FILE"
+pass "history appended -> ${HISTORY_FILE}"
 
 if [[ $status -eq 0 ]]; then
   pass "error-rate thresholds are within limits"
