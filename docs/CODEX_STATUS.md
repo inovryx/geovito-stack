@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T11:15:00Z
+Last updated (UTC): 2026-03-08T11:22:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `beb69ad`
@@ -40,6 +40,7 @@ Head at last full verification: `beb69ad`
 - `feat(obs): add observability_sample.sh for daily/weekly sampling workflow`
 - `ops(obs): cron sampling schedule applied on VPS + logrotate for cron-sample.log validated`
 - `ops(obs): cron-path sample write verified via cron log file (manual simulation)`
+- `feat(obs): add observability_cron_freshness_check.sh for automated cron recency verification`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -58,9 +59,8 @@ Head at last full verification: `beb69ad`
    - `bash tools/observability_sample.sh` (daily)
    - `OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh` (weekly)
    - Review `artifacts/observability/threshold-baseline-summary.json`
-4. Confirm scheduled cron trigger at next UTC window by checking:
-   - `tail -n 120 artifacts/observability/cron-sample.log`
-   - `ls -lah artifacts/observability | rg 'cron-sample.log'`
+4. Verify cron recency with dedicated check:
+   - `bash tools/observability_cron_freshness_check.sh`
 5. After baseline review, run one full gate verification:
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
 
@@ -103,6 +103,8 @@ Head at last full verification: `beb69ad`
   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
   - `bash tools/observability_sample.sh >> artifacts/observability/cron-sample.log 2>&1` -> PASS
   - latest observability sample evidence: `artifacts/observability/sample-20260308T110116Z.txt`
+  - `bash tools/observability_cron_freshness_check.sh` -> PASS
+  - latest cron freshness evidence: `artifacts/observability/cron-freshness-last.json`
 - Repo sync state on last verification:
   - local `main` at `beb69ad`
   - working tree clean.

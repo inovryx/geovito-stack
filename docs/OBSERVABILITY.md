@@ -137,6 +137,21 @@ sudo logrotate -d /etc/logrotate.d/geovito-observability
 sudo logrotate -f /etc/logrotate.d/geovito-observability
 ```
 
+## Cron freshness check
+Validate that the latest cron sample is recent enough:
+
+```bash
+bash tools/observability_cron_freshness_check.sh
+```
+
+Optional tuning:
+- `OBS_CRON_MAX_AGE_MINUTES` (default: `1560`, ~26h)
+- `OBS_CRON_LOG_FILE` (default: `artifacts/observability/cron-sample.log`)
+- `OBS_CRON_REQUIRE_PASS_MARKER` (default: `true`)
+
+Output:
+- `artifacts/observability/cron-freshness-last.json`
+
 ## Full gate integration
 `tools/go_live_gate_full.sh` includes SEO drift, error-rate and storage checks by default.
 
