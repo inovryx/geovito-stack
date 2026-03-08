@@ -11,6 +11,7 @@ bash tools/go_live_gate_full.sh
 
 This command enforces:
 - legacy core gate chain (`tools/go_live_gate.sh`)
+- mandatory `Log Contract Smoke` inside the core gate path
 - staging isolation checks
 - restore freshness SLA checks
 - kill-switch smoke
@@ -24,9 +25,9 @@ Summary evidence is written under:
 
 ## Latest Stable Checkpoint
 - Date (UTC): `2026-03-07`
-- Tag: `checkpoint-go-live-full-pass-20260307-1632`
-- Commit: `483ac6d`
-- Full gate summary artifact: `artifacts/go-live/go-live-full-20260307T162112Z.txt`
+- Tag: `checkpoint-go-live-full-pass-20260307-2031`
+- Commit: `16221d4`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260307T201536Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
 
 ### Emergency override (controlled)
