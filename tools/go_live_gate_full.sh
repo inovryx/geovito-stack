@@ -33,6 +33,7 @@ declare -a OVERRIDE_POLICY_STEPS=(
   "Error Rate Check"
   "Storage Pressure Check"
 )
+BASELINE_READINESS_STATE="not_checked"
 
 mkdir -p "$SUMMARY_DIR"
 
@@ -158,6 +159,23 @@ else
   run_step "Observability Cron Freshness" bash tools/observability_cron_freshness_check.sh
   if [[ "$GO_LIVE_WITH_BASELINE_READINESS_CHECK" == "true" ]]; then
     run_step "Baseline Readiness Check" bash -lc "cd '$ROOT_DIR' && OBS_BASELINE_READINESS_STRICT='${GO_LIVE_BASELINE_READINESS_STRICT}' bash tools/observability_baseline_readiness.sh"
+    if [[ -f "$ROOT_DIR/artifacts/observability/baseline-readiness-last.json" ]]; then
+      if rg -q '"ready"\s*:\s*true' "$ROOT_DIR/artifacts/observability/baseline-readiness-last.json"; then
+        BASELINE_READINESS_STATE="ready"
+      else
+        BASELINE_READINESS_STATE="not_ready"
+        if [[ "$GO_LIVE_BASELINE_READINESS_STRICT" != "true" ]]; then
+          echo "WARN: baseline readiness not satisfied (non-strict mode)."
+          gv_log_contract_emit "release" "warn" "Baseline readiness not satisfied" "go_live_gate_full.baseline_readiness" 200 0 "mode=non-strict;state=not_ready"
+        fi
+      fi
+    else
+      BASELINE_READINESS_STATE="missing_report"
+      echo "WARN: baseline readiness report missing after check."
+      gv_log_contract_emit "release" "warn" "Baseline readiness report missing" "go_live_gate_full.baseline_readiness" 200 0 "state=missing_report"
+    fi
+  else
+    BASELINE_READINESS_STATE="disabled"
   fi
   if [[ "$GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE" == "true" ]]; then
     run_step "Override Policy Smoke" bash tools/go_live_override_policy_smoke.sh
@@ -174,6 +192,7 @@ printf 'timestamp_utc=%s\n' "$STAMP" >> "$SUMMARY_FILE"
 printf 'override=%s\n' "$GO_LIVE_EMERGENCY_OVERRIDE" >> "$SUMMARY_FILE"
 printf 'creator_username=%s\n' "${CREATOR_USERNAME:-}" >> "$SUMMARY_FILE"
 printf 'override_policy_allowlist=%s\n' "$(join_array_csv "${OVERRIDE_POLICY_STEPS[@]}")" >> "$SUMMARY_FILE"
+printf 'baseline_readiness_state=%s\n' "$BASELINE_READINESS_STATE" >> "$SUMMARY_FILE"
 echo "summary_file=${SUMMARY_FILE}"
 
 if [[ "$fail_count" -eq 0 ]]; then

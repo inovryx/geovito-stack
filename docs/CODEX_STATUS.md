@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T15:50:00Z
+Last updated (UTC): 2026-03-08T16:00:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `55c35a1`
@@ -47,6 +47,7 @@ Head at last full verification: `55c35a1`
 - `feat(gate): include observability cron freshness check in full go-live gate`
 - `feat(obs): add baseline readiness check and gate weekly baseline refresh on readiness`
 - `feat(gate): add baseline readiness step to full go-live gate (non-strict default, strict opt-in)`
+- `feat(gate): surface baseline_readiness_state in full-gate summary and emit explicit non-strict WARN`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`

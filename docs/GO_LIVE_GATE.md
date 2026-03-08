@@ -24,6 +24,7 @@ This command enforces:
 
 Summary evidence is written under:
 - `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
+- summary includes `baseline_readiness_state` (`ready|not_ready|missing_report|disabled`)
 
 ## Latest Stable Checkpoint
 - Date (UTC): `2026-03-08`
