@@ -101,6 +101,42 @@ Example cron (UTC):
 20 2 * * 1 cd /home/ali/geovito-stack && OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh >> artifacts/observability/cron-sample.log 2>&1
 ```
 
+## Cron log rotation
+Keep `cron-sample.log` bounded with logrotate:
+
+```conf
+/home/ali/geovito-stack/artifacts/observability/cron-sample.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    su ali ali
+}
+```
+
+Setup and verify:
+
+```bash
+sudo tee /etc/logrotate.d/geovito-observability >/dev/null <<'EOF'
+/home/ali/geovito-stack/artifacts/observability/cron-sample.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    su ali ali
+}
+EOF
+
+sudo logrotate -d /etc/logrotate.d/geovito-observability
+sudo logrotate -f /etc/logrotate.d/geovito-observability
+```
+
 ## Full gate integration
 `tools/go_live_gate_full.sh` includes SEO drift, error-rate and storage checks by default.
 

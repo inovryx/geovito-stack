@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T10:50:00Z
+Last updated (UTC): 2026-03-08T11:05:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `beb69ad`
@@ -38,6 +38,7 @@ Head at last full verification: `beb69ad`
 - `feat(obs): add threshold-profile loading + history output for error/storage checks`
 - `feat(obs): add 7-day baseline threshold generator (observability_threshold_baseline.sh)`
 - `feat(obs): add observability_sample.sh for daily/weekly sampling workflow`
+- `ops(obs): cron sampling schedule applied on VPS + logrotate for cron-sample.log validated`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -56,7 +57,10 @@ Head at last full verification: `beb69ad`
    - `bash tools/observability_sample.sh` (daily)
    - `OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh` (weekly)
    - Review `artifacts/observability/threshold-baseline-summary.json`
-4. After baseline review, run one full gate verification:
+4. Confirm cron runs at next scheduled window by checking:
+   - `tail -n 120 artifacts/observability/cron-sample.log`
+   - `ls -lah artifacts/observability | rg 'cron-sample.log'`
+5. After baseline review, run one full gate verification:
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
 
 ## Critical Non-Negotiables
