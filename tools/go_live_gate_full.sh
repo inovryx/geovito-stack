@@ -22,8 +22,35 @@ RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
 declare -a STEP_NAMES=()
 declare -a STEP_STATUS=()
 declare -a STEP_CODES=()
+declare -a OVERRIDE_POLICY_STEPS=(
+  "Staging Isolation"
+  "Restore Freshness"
+  "Error Rate Check"
+  "Storage Pressure Check"
+)
 
 mkdir -p "$SUMMARY_DIR"
+
+trim_value() {
+  echo "${1:-}" | xargs
+}
+
+array_contains_exact() {
+  local needle="$1"
+  shift
+  local item
+  for item in "$@"; do
+    if [[ "$item" == "$needle" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+join_array_csv() {
+  local IFS=','
+  echo "$*"
+}
 
 audit_override_event() {
   local failed_csv="$1"
@@ -117,6 +144,7 @@ done
 printf 'timestamp_utc=%s\n' "$STAMP" >> "$SUMMARY_FILE"
 printf 'override=%s\n' "$GO_LIVE_EMERGENCY_OVERRIDE" >> "$SUMMARY_FILE"
 printf 'creator_username=%s\n' "${CREATOR_USERNAME:-}" >> "$SUMMARY_FILE"
+printf 'override_policy_allowlist=%s\n' "$(join_array_csv "${OVERRIDE_POLICY_STEPS[@]}")" >> "$SUMMARY_FILE"
 echo "summary_file=${SUMMARY_FILE}"
 
 if [[ "$fail_count" -eq 0 ]]; then
@@ -145,17 +173,43 @@ fi
 [[ -n "$GO_LIVE_OVERRIDE_REASON" ]] || { echo "FAIL: GO_LIVE_OVERRIDE_REASON is required"; exit 1; }
 [[ -n "$GO_LIVE_OVERRIDE_ALLOWLIST" ]] || { echo "FAIL: GO_LIVE_OVERRIDE_ALLOWLIST is required"; exit 1; }
 
-IFS=',' read -r -a allowed <<<"$GO_LIVE_OVERRIDE_ALLOWLIST"
-for failed in "${failed_steps[@]}"; do
-  found=false
-  for item in "${allowed[@]}"; do
-    if [[ "$(echo "$item" | xargs)" == "$failed" ]]; then
-      found=true
-      break
-    fi
-  done
+if ! [[ "$GO_LIVE_OVERRIDE_TICKET" =~ ^[A-Z][A-Z0-9_-]*-[0-9]+$ ]]; then
+  echo "FAIL: GO_LIVE_OVERRIDE_TICKET must match pattern like INC-1234"
+  exit 1
+fi
 
-  if [[ "$found" != "true" ]]; then
+if ! [[ "$GO_LIVE_OVERRIDE_APPROVER" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]]; then
+  echo "FAIL: GO_LIVE_OVERRIDE_APPROVER must be a valid email"
+  exit 1
+fi
+
+if [[ ${#GO_LIVE_OVERRIDE_REASON} -lt 12 ]]; then
+  echo "FAIL: GO_LIVE_OVERRIDE_REASON must be at least 12 characters"
+  exit 1
+fi
+
+IFS=',' read -r -a allowed_raw <<<"$GO_LIVE_OVERRIDE_ALLOWLIST"
+allowed=()
+for item in "${allowed_raw[@]}"; do
+  item_trimmed="$(trim_value "$item")"
+  if [[ -n "$item_trimmed" ]]; then
+    allowed+=("$item_trimmed")
+  fi
+done
+
+if [[ ${#allowed[@]} -eq 0 ]]; then
+  echo "FAIL: GO_LIVE_OVERRIDE_ALLOWLIST must contain at least one step name"
+  exit 1
+fi
+
+for failed in "${failed_steps[@]}"; do
+  if ! array_contains_exact "$failed" "${OVERRIDE_POLICY_STEPS[@]}"; then
+    echo "FAIL: override policy forbids step: $failed"
+    echo "Allowed by policy: $(join_array_csv "${OVERRIDE_POLICY_STEPS[@]}")"
+    exit 1
+  fi
+
+  if ! array_contains_exact "$failed" "${allowed[@]}"; then
     echo "FAIL: override does not allow failed step: $failed"
     exit 1
   fi

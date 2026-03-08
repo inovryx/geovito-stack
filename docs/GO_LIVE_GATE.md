@@ -44,7 +44,15 @@ bash tools/go_live_gate_full.sh
 
 Rules:
 - missing ticket/approver/reason -> FAIL
+- ticket format must look like `INC-1234` -> FAIL otherwise
+- approver must be a valid email -> FAIL otherwise
+- reason must be at least 12 chars -> FAIL otherwise
 - failed step not in allowlist -> FAIL
+- failed step must also be policy-allowed; fixed policy allowlist is:
+  - `Staging Isolation`
+  - `Restore Freshness`
+  - `Error Rate Check`
+  - `Storage Pressure Check`
 - override action is audit-logged
 
 ## One-command Gate

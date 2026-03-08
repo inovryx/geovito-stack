@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T08:06:00Z
+Last updated (UTC): 2026-03-08T08:14:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head: `6f4e580`
+Head: `b41eb50`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -28,6 +28,7 @@ Head: `6f4e580`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0711`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0805`
 - `feat(gate): enforce mandatory log-contract smoke in legacy go_live_gate`
+- `feat(gate): tighten full-gate emergency override policy allowlist + metadata validation`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -43,7 +44,7 @@ Head: `6f4e580`
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
 2. Optional host cleanup (recommended): normalize VPS log dir ownership when sudo access is available:
    - `cd /home/ali/geovito-stack && sudo chown -R ali:ali logs artifacts`
-3. Next hardening increment: tighten emergency override allowlist policy and add explicit runbook examples.
+3. Next hardening increment: add a focused override-policy smoke (format + allowlist + forbidden step cases).
 
 ## Critical Non-Negotiables
 - Do not break Clean Core: Atlas remains authoritative; UGC remains contributory.
@@ -82,5 +83,5 @@ Head: `6f4e580`
   - `bash tools/shell_smoke_test.sh` -> PASS
   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
 - Repo sync state on last verification:
-  - local `main` at `6f4e580`
+  - local `main` at `b41eb50`
   - working tree clean.
