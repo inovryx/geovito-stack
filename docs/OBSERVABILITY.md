@@ -176,6 +176,29 @@ Optional tuning:
 Output:
 - `artifacts/observability/cron-freshness-last.json`
 
+## Readiness watch (strict gate preparation)
+Track baseline readiness transitions automatically:
+
+```bash
+bash tools/observability_readiness_watch.sh
+```
+
+Outputs:
+- state snapshot: `artifacts/observability/readiness-watch-state.json`
+- latest readiness report: `artifacts/observability/baseline-readiness-last.json`
+
+Behavior:
+- runs baseline readiness check in non-strict mode
+- records `ready/not_ready` state and transition info
+- if state transitions from `not_ready` to `ready`, optionally sends alert via `tools/alert_send.sh`
+- alert body includes strict full-gate command to run immediately
+
+Suggested cron (UTC), after daily sample:
+
+```cron
+30 2 * * * cd /home/ali/geovito-stack && bash tools/observability_readiness_watch.sh >> artifacts/observability/cron-readiness.log 2>&1
+```
+
 ## Full gate integration
 `tools/go_live_gate_full.sh` includes SEO drift, error-rate and storage checks by default.
 
