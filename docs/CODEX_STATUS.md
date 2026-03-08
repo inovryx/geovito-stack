@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T11:05:00Z
+Last updated (UTC): 2026-03-08T11:15:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Head at last full verification: `beb69ad`
@@ -39,6 +39,7 @@ Head at last full verification: `beb69ad`
 - `feat(obs): add 7-day baseline threshold generator (observability_threshold_baseline.sh)`
 - `feat(obs): add observability_sample.sh for daily/weekly sampling workflow`
 - `ops(obs): cron sampling schedule applied on VPS + logrotate for cron-sample.log validated`
+- `ops(obs): cron-path sample write verified via cron log file (manual simulation)`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -57,7 +58,7 @@ Head at last full verification: `beb69ad`
    - `bash tools/observability_sample.sh` (daily)
    - `OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh` (weekly)
    - Review `artifacts/observability/threshold-baseline-summary.json`
-4. Confirm cron runs at next scheduled window by checking:
+4. Confirm scheduled cron trigger at next UTC window by checking:
    - `tail -n 120 artifacts/observability/cron-sample.log`
    - `ls -lah artifacts/observability | rg 'cron-sample.log'`
 5. After baseline review, run one full gate verification:
@@ -100,6 +101,8 @@ Head at last full verification: `beb69ad`
 - Latest focused checks:
   - `bash tools/shell_smoke_test.sh` -> PASS
   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
+  - `bash tools/observability_sample.sh >> artifacts/observability/cron-sample.log 2>&1` -> PASS
+  - latest observability sample evidence: `artifacts/observability/sample-20260308T110116Z.txt`
 - Repo sync state on last verification:
   - local `main` at `beb69ad`
   - working tree clean.
