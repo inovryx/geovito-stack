@@ -67,6 +67,40 @@ Recommendation:
 - regenerate baseline weekly
 - promote threshold changes only after at least 7 days of history
 
+## Daily sampling workflow
+Run a daily sample (updates history files + snapshot reports):
+
+```bash
+bash tools/observability_sample.sh
+```
+
+Optional flags:
+
+```bash
+# include seo drift in the same sample run
+OBS_SAMPLE_WITH_SEO=true bash tools/observability_sample.sh
+
+# refresh threshold baseline in the same run (recommended weekly)
+OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh
+
+# send alert if any step fails
+OBS_SAMPLE_ALERT_ON_FAIL=true bash tools/observability_sample.sh
+```
+
+Suggested schedule:
+- daily: `bash tools/observability_sample.sh`
+- weekly: `OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh`
+
+Example cron (UTC):
+
+```cron
+# daily sample at 02:10 UTC
+10 2 * * * cd /home/ali/geovito-stack && bash tools/observability_sample.sh >> artifacts/observability/cron-sample.log 2>&1
+
+# weekly baseline refresh at 02:20 UTC on Monday
+20 2 * * 1 cd /home/ali/geovito-stack && OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh >> artifacts/observability/cron-sample.log 2>&1
+```
+
 ## Full gate integration
 `tools/go_live_gate_full.sh` includes SEO drift, error-rate and storage checks by default.
 
