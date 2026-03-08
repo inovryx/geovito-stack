@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-08T08:14:00Z
+Last updated (UTC): 2026-03-08T09:12:00Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Head: `b41eb50`
+Head: `8ba4a9d`
 
 ## Current Project Snapshot
 - Core is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and existing smoke/gate chain are preserved.
@@ -27,8 +27,10 @@ Head: `b41eb50`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260307-2031`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0711`
 - New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0805`
+- New checkpoint tag: `checkpoint-go-live-full-pass-20260308-0911`
 - `feat(gate): enforce mandatory log-contract smoke in legacy go_live_gate`
 - `feat(gate): tighten full-gate emergency override policy allowlist + metadata validation`
+- `fix(smoke): relax de italy-pilot banner expectation in shell smoke`
 - Checkpoint tags exist:
   - `checkpoint-go-live-pass`
   - `checkpoint-go-live-pass-20260306-1707`
@@ -69,7 +71,7 @@ Head: `b41eb50`
 
 ## Last Verified Checks and Gate Status
 - Latest full gate evidence file:
-  - `artifacts/go-live/go-live-full-20260308T075512Z.txt`
+  - `artifacts/go-live/go-live-full-20260308T090201Z.txt`
   - Result: PASS for all sections:
     - Core Go-Live Gate
     - Staging Isolation
@@ -83,5 +85,5 @@ Head: `b41eb50`
   - `bash tools/shell_smoke_test.sh` -> PASS
   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh` -> PASS
 - Repo sync state on last verification:
-  - local `main` at `b41eb50`
+  - local `main` at `8ba4a9d`
   - working tree clean.
