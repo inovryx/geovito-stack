@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-09T17:48:21Z
+Last updated (UTC): 2026-03-09T17:51:03Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head: `0987a0b`
+Current head before this status update commit: `5b592eb`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -17,6 +17,7 @@ Current head: `0987a0b`
 - `feat(obs): add readiness watch automation for strict gate transition`
 - `feat(obs): add readiness watch transition smoke and gate hook`
 - `feat(obs): add cron schedule drift check and gate hook`
+- `feat(release): add strict readiness cutover wrapper for post-2026-03-14 runs`
 - `docs(status): sync latest full-gate/observability evidence and strict-readiness window`
 
 Recent full-pass checkpoints:
@@ -36,7 +37,7 @@ Recent full-pass checkpoints:
 2. Continue non-strict full verification after hardening commits:
    - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
 3. On/after 2026-03-14 02:10 UTC, attempt strict baseline enforcement:
-   - `GO_LIVE_BASELINE_READINESS_STRICT=true GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
+   - `RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/strict_readiness_cutover.sh`
 4. If strict full gate passes, create/push new checkpoint tag.
 
 ## Critical Non-Negotiables

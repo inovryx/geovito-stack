@@ -117,6 +117,21 @@ RESET_SMOKE_EMAIL=you@example.com \
 bash tools/go_live_gate_full.sh
 ```
 
+Strict cutover wrapper (recommended on/after 2026-03-14 UTC):
+
+```bash
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/strict_readiness_cutover.sh
+```
+
+Early dry-run (before cutover date):
+
+```bash
+ALLOW_EARLY_CUTOVER=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/strict_readiness_cutover.sh
+```
+
 ## One-command Gate
 Run:
 
