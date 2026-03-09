@@ -175,6 +175,22 @@ Optional tuning:
 
 Output:
 - `artifacts/observability/cron-freshness-last.json`
+- if current log file is empty after rotation, checker falls back to `.1`
+
+Validate readiness-watch cron freshness:
+
+```bash
+bash tools/observability_readiness_cron_freshness_check.sh
+```
+
+Optional tuning:
+- `OBS_READINESS_CRON_MAX_AGE_MINUTES` (default: `1560`, ~26h)
+- `OBS_READINESS_CRON_LOG_FILE` (default: `artifacts/observability/cron-readiness.log`)
+- `OBS_READINESS_CRON_REQUIRE_MARKER` (default: `true`)
+
+Output:
+- `artifacts/observability/readiness-cron-freshness-last.json`
+- if current log file is empty after rotation, checker falls back to `.1`
 
 ## Readiness watch (strict gate preparation)
 Track baseline readiness transitions automatically:

@@ -20,6 +20,7 @@ GO_LIVE_POLICY_TEST_FAILED_STEPS="${GO_LIVE_POLICY_TEST_FAILED_STEPS:-}"
 GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE="${GO_LIVE_WITH_OVERRIDE_POLICY_SMOKE:-true}"
 GO_LIVE_WITH_BASELINE_READINESS_CHECK="${GO_LIVE_WITH_BASELINE_READINESS_CHECK:-true}"
 GO_LIVE_BASELINE_READINESS_STRICT="${GO_LIVE_BASELINE_READINESS_STRICT:-false}"
+GO_LIVE_WITH_READINESS_CRON_FRESHNESS="${GO_LIVE_WITH_READINESS_CRON_FRESHNESS:-true}"
 
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
@@ -157,6 +158,9 @@ else
   run_step "Error Rate Check" bash tools/error_rate_check.sh
   run_step "Storage Pressure Check" bash tools/storage_pressure_check.sh
   run_step "Observability Cron Freshness" bash tools/observability_cron_freshness_check.sh
+  if [[ "$GO_LIVE_WITH_READINESS_CRON_FRESHNESS" == "true" ]]; then
+    run_step "Readiness Cron Freshness" bash tools/observability_readiness_cron_freshness_check.sh
+  fi
   if [[ "$GO_LIVE_WITH_BASELINE_READINESS_CHECK" == "true" ]]; then
     run_step "Baseline Readiness Check" bash -lc "cd '$ROOT_DIR' && OBS_BASELINE_READINESS_STRICT='${GO_LIVE_BASELINE_READINESS_STRICT}' bash tools/observability_baseline_readiness.sh"
     if [[ -f "$ROOT_DIR/artifacts/observability/baseline-readiness-last.json" ]]; then

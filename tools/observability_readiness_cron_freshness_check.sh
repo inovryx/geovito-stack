@@ -4,15 +4,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-CRON_LOG_FILE="${OBS_CRON_LOG_FILE:-artifacts/observability/cron-sample.log}"
-MAX_AGE_MINUTES="${OBS_CRON_MAX_AGE_MINUTES:-1560}"
-REQUIRE_PASS_MARKER="${OBS_CRON_REQUIRE_PASS_MARKER:-true}"
-OUTPUT_FILE="${OBS_CRON_OUTPUT_FILE:-artifacts/observability/cron-freshness-last.json}"
+CRON_LOG_FILE="${OBS_READINESS_CRON_LOG_FILE:-artifacts/observability/cron-readiness.log}"
+MAX_AGE_MINUTES="${OBS_READINESS_CRON_MAX_AGE_MINUTES:-1560}"
+REQUIRE_MARKER="${OBS_READINESS_CRON_REQUIRE_MARKER:-true}"
+OUTPUT_FILE="${OBS_READINESS_CRON_OUTPUT_FILE:-artifacts/observability/readiness-cron-freshness-last.json}"
 
 pass() { echo "PASS: $1"; }
 fail() { echo "FAIL: $1"; exit 1; }
 
-[[ "$MAX_AGE_MINUTES" =~ ^[0-9]+$ ]] || fail "OBS_CRON_MAX_AGE_MINUTES must be integer"
+[[ "$MAX_AGE_MINUTES" =~ ^[0-9]+$ ]] || fail "OBS_READINESS_CRON_MAX_AGE_MINUTES must be integer"
 resolve_log_file() {
   local primary="$1"
   local rotated="${primary}.1"
@@ -27,22 +27,22 @@ resolve_log_file() {
     return
   fi
 
-  fail "cron log is missing or empty (checked: ${primary}, ${rotated})"
+  fail "readiness cron log is missing or empty (checked: ${primary}, ${rotated})"
 }
 
 ACTIVE_LOG_FILE="$(resolve_log_file "$CRON_LOG_FILE")"
 if [[ "$ACTIVE_LOG_FILE" != "$CRON_LOG_FILE" ]]; then
-  echo "WARN: using rotated cron log fallback: ${ACTIVE_LOG_FILE}"
+  echo "WARN: using rotated readiness cron log fallback: ${ACTIVE_LOG_FILE}"
 fi
 
-if [[ "$REQUIRE_PASS_MARKER" == "true" ]]; then
-  if ! rg -q "OBSERVABILITY SAMPLE: PASS" "$ACTIVE_LOG_FILE"; then
-    fail "cron log has no OBSERVABILITY SAMPLE: PASS marker (${ACTIVE_LOG_FILE})"
+if [[ "$REQUIRE_MARKER" == "true" ]]; then
+  if ! rg -q "OBSERVABILITY READINESS WATCH: (READY|NOT_READY)" "$ACTIVE_LOG_FILE"; then
+    fail "readiness cron log has no readiness completion marker (${ACTIVE_LOG_FILE})"
   fi
 fi
 
 latest_ts="$(rg -o '"ts":"[^"]+"' "$ACTIVE_LOG_FILE" | tail -n 1 | sed -E 's/^"ts":"([^"]+)"$/\1/')"
-[[ -n "$latest_ts" ]] || fail "could not extract latest ts from cron log"
+[[ -n "$latest_ts" ]] || fail "could not extract latest ts from readiness cron log"
 
 now_epoch="$(date -u +%s)"
 latest_epoch="$(date -u -d "$latest_ts" +%s 2>/dev/null || true)"
@@ -52,7 +52,7 @@ fi
 
 age_minutes="$(( (now_epoch - latest_epoch) / 60 ))"
 if (( age_minutes < 0 )); then
-  fail "cron timestamp is in the future (latest_ts=${latest_ts})"
+  fail "readiness cron timestamp is in the future (latest_ts=${latest_ts})"
 fi
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
@@ -67,7 +67,7 @@ report_json="$(
 const [latestTs, ageMinutes, maxAgeMinutes, statusValue, logFile] = process.argv.slice(2);
 const payload = {
   measured_at: new Date().toISOString(),
-  latest_sample_ts: latestTs,
+  latest_readiness_ts: latestTs,
   age_minutes: Number(ageMinutes),
   max_age_minutes: Number(maxAgeMinutes),
   status: statusValue,
@@ -80,7 +80,7 @@ NODE
 const [latestTs, ageMinutes, maxAgeMinutes, statusValue, logFile] = process.argv.slice(2);
 const payload = {
   measured_at: new Date().toISOString(),
-  latest_sample_ts: latestTs,
+  latest_readiness_ts: latestTs,
   age_minutes: Number(ageMinutes),
   max_age_minutes: Number(maxAgeMinutes),
   status: statusValue,
@@ -93,9 +93,9 @@ NODE
 printf '%s\n' "$report_json" > "$OUTPUT_FILE"
 
 if (( age_minutes > MAX_AGE_MINUTES )); then
-  fail "cron sample is stale (age=${age_minutes}m > max=${MAX_AGE_MINUTES}m). report=${OUTPUT_FILE}"
+  fail "readiness cron sample is stale (age=${age_minutes}m > max=${MAX_AGE_MINUTES}m). report=${OUTPUT_FILE}"
 fi
 
-pass "cron sample freshness age=${age_minutes}m within max=${MAX_AGE_MINUTES}m"
+pass "readiness cron freshness age=${age_minutes}m within max=${MAX_AGE_MINUTES}m"
 pass "report written -> ${OUTPUT_FILE}"
-echo "OBSERVABILITY CRON FRESHNESS: PASS"
+echo "OBSERVABILITY READINESS CRON FRESHNESS: PASS"
