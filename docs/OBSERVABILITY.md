@@ -177,6 +177,21 @@ Output:
 - `artifacts/observability/cron-freshness-last.json`
 - if current log file is empty after rotation, checker falls back to `.1`
 
+Validate cron schedule drift (required entries exist in current user crontab):
+
+```bash
+bash tools/observability_cron_schedule_check.sh
+```
+
+Optional tuning:
+- `OBS_CRON_EXPECT_ROOT_DIR` (default: current repo path)
+- `OBS_CRON_SCHEDULE_DAILY_REGEX` (default: `10 2 * * *` equivalent regex)
+- `OBS_CRON_SCHEDULE_WEEKLY_REGEX` (default: `20 2 * * 1` equivalent regex)
+- `OBS_CRON_SCHEDULE_READINESS_REGEX` (default: `30 2 * * *` equivalent regex)
+
+Output:
+- `artifacts/observability/cron-schedule-last.json`
+
 Validate readiness-watch cron freshness:
 
 ```bash

@@ -22,6 +22,7 @@ GO_LIVE_WITH_BASELINE_READINESS_CHECK="${GO_LIVE_WITH_BASELINE_READINESS_CHECK:-
 GO_LIVE_BASELINE_READINESS_STRICT="${GO_LIVE_BASELINE_READINESS_STRICT:-false}"
 GO_LIVE_WITH_READINESS_CRON_FRESHNESS="${GO_LIVE_WITH_READINESS_CRON_FRESHNESS:-true}"
 GO_LIVE_WITH_READINESS_WATCH_SMOKE="${GO_LIVE_WITH_READINESS_WATCH_SMOKE:-true}"
+GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK="${GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK:-true}"
 
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
@@ -158,6 +159,9 @@ else
   run_step "SEO Drift Check" bash tools/seo_drift_check.sh
   run_step "Error Rate Check" bash tools/error_rate_check.sh
   run_step "Storage Pressure Check" bash tools/storage_pressure_check.sh
+  if [[ "$GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK" == "true" ]]; then
+    run_step "Observability Cron Schedule" bash tools/observability_cron_schedule_check.sh
+  fi
   run_step "Observability Cron Freshness" bash tools/observability_cron_freshness_check.sh
   if [[ "$GO_LIVE_WITH_READINESS_CRON_FRESHNESS" == "true" ]]; then
     run_step "Readiness Cron Freshness" bash tools/observability_readiness_cron_freshness_check.sh

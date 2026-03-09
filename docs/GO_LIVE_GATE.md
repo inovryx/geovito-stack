@@ -19,6 +19,7 @@ This command enforces:
 - SEO drift check
 - error-rate check
 - storage pressure check
+- observability cron schedule check
 - observability cron freshness check
 - readiness-watch cron freshness check
 - baseline readiness check (non-strict by default)
@@ -90,6 +91,16 @@ Disable readiness-watch smoke only for emergency debugging:
 
 ```bash
 GO_LIVE_WITH_READINESS_WATCH_SMOKE=false \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Disable observability cron schedule check only for emergency debugging:
+
+```bash
+GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK=false \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \
@@ -215,6 +226,7 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/seo_drift_check.sh` PASS
 - [ ] `bash tools/error_rate_check.sh` PASS
 - [ ] `bash tools/storage_pressure_check.sh` PASS
+- [ ] `bash tools/observability_cron_schedule_check.sh` PASS
 - [ ] `bash tools/observability_cron_freshness_check.sh` PASS
 - [ ] `bash tools/observability_readiness_cron_freshness_check.sh` PASS
 - [ ] `bash tools/observability_baseline_readiness.sh` PASS/WARN (strict mode requires PASS)
