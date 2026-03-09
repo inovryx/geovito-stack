@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-09T17:51:03Z
+Last updated (UTC): 2026-03-09T18:00:23Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `5b592eb`
+Current head before this status update commit: `cc00989`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -18,6 +18,7 @@ Current head before this status update commit: `5b592eb`
 - `feat(obs): add readiness watch transition smoke and gate hook`
 - `feat(obs): add cron schedule drift check and gate hook`
 - `feat(release): add strict readiness cutover wrapper for post-2026-03-14 runs`
+- `fix(gate): use plain docker compose output in pre-design runtime prep`
 - `docs(status): sync latest full-gate/observability evidence and strict-readiness window`
 
 Recent full-pass checkpoints:
