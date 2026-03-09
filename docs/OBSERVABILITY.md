@@ -209,10 +209,20 @@ Behavior:
 - if state transitions from `not_ready` to `ready`, optionally sends alert via `tools/alert_send.sh`
 - alert body includes strict full-gate command to run immediately
 
+Optional tuning:
+- `OBS_READINESS_WATCH_SKIP_BASELINE_CHECK` (default: `false`) to reuse an existing report file
+- `OBS_READINESS_WATCH_ALERT_ON_READY` (default: `true`)
+
 Suggested cron (UTC), after daily sample:
 
 ```cron
 30 2 * * * cd /home/ali/geovito-stack && bash tools/observability_readiness_watch.sh >> artifacts/observability/cron-readiness.log 2>&1
+```
+
+Validate watch transition behavior locally:
+
+```bash
+bash tools/observability_readiness_watch_smoke.sh
 ```
 
 ## Full gate integration

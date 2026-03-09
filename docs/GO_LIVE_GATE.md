@@ -22,6 +22,7 @@ This command enforces:
 - observability cron freshness check
 - readiness-watch cron freshness check
 - baseline readiness check (non-strict by default)
+- readiness-watch state-transition smoke
 
 Summary evidence is written under:
 - `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
@@ -79,6 +80,16 @@ Disable readiness-watch cron freshness check only for emergency debugging:
 
 ```bash
 GO_LIVE_WITH_READINESS_CRON_FRESHNESS=false \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Disable readiness-watch smoke only for emergency debugging:
+
+```bash
+GO_LIVE_WITH_READINESS_WATCH_SMOKE=false \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \
@@ -207,6 +218,7 @@ nano ~/.config/geovito/health.env
 - [ ] `bash tools/observability_cron_freshness_check.sh` PASS
 - [ ] `bash tools/observability_readiness_cron_freshness_check.sh` PASS
 - [ ] `bash tools/observability_baseline_readiness.sh` PASS/WARN (strict mode requires PASS)
+- [ ] `bash tools/observability_readiness_watch_smoke.sh` PASS
 
 ## Profile + Routing
 - [ ] `/{lang}/@{username}` profile routes render

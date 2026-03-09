@@ -10,6 +10,7 @@ REPORT_FILE="${OBS_BASELINE_READINESS_OUTPUT_FILE:-artifacts/observability/basel
 STATE_FILE="${OBS_READINESS_WATCH_STATE_FILE:-artifacts/observability/readiness-watch-state.json}"
 ALERT_ON_READY="${OBS_READINESS_WATCH_ALERT_ON_READY:-true}"
 ALERT_ALLOW_PARTIAL="${OBS_READINESS_WATCH_ALERT_ALLOW_PARTIAL:-true}"
+SKIP_BASELINE_CHECK="${OBS_READINESS_WATCH_SKIP_BASELINE_CHECK:-false}"
 STRICT_CMD="${OBS_READINESS_WATCH_STRICT_CMD:-GO_LIVE_BASELINE_READINESS_STRICT=true GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh}"
 
 pass() { echo "PASS: $1"; }
@@ -31,14 +32,19 @@ echo "alert_on_ready=${ALERT_ON_READY}"
 echo "=============================================================="
 gv_log_contract_emit "release" "info" "Readiness watch started" "observability_readiness_watch.start" 0 0 "state_file=${STATE_FILE}"
 
-set +e
-bash tools/observability_baseline_readiness.sh
-readiness_code=$?
-set -e
+if [[ "$SKIP_BASELINE_CHECK" == "true" ]]; then
+  warn "skipping baseline readiness refresh and reusing report file"
+  gv_log_contract_emit "release" "warn" "Readiness watch baseline refresh skipped" "observability_readiness_watch.baseline" 0 0 "skip=true;report_file=${REPORT_FILE}"
+else
+  set +e
+  bash tools/observability_baseline_readiness.sh
+  readiness_code=$?
+  set -e
 
-if [[ $readiness_code -ne 0 ]]; then
-  gv_log_contract_emit "release" "error" "Readiness watch baseline check failed" "observability_readiness_watch.baseline" "$readiness_code" 0 "report_file=${REPORT_FILE}"
-  fail "baseline readiness check failed (exit=${readiness_code})"
+  if [[ $readiness_code -ne 0 ]]; then
+    gv_log_contract_emit "release" "error" "Readiness watch baseline check failed" "observability_readiness_watch.baseline" "$readiness_code" 0 "report_file=${REPORT_FILE}"
+    fail "baseline readiness check failed (exit=${readiness_code})"
+  fi
 fi
 
 [[ -f "$REPORT_FILE" ]] || fail "missing readiness report: $REPORT_FILE"
