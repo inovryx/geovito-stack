@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-09T18:00:23Z
+Last updated (UTC): 2026-03-09T18:11:17Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `cc00989`
+Current head before this status update commit: `c99e543`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -60,12 +60,12 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260309T172824Z.txt`
+  - `artifacts/go-live/go-live-full-20260309T180105Z.txt`
   - Result: PASS
   - Includes: Core Gate, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Baseline Readiness Check (non-strict), Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=false`, observed: `error_samples=27`, `storage_samples=27`, `error_distinct_days=2`, `storage_distinct_days=2`.
+  - `ready=false`, observed: `error_samples=28`, `storage_samples=28`, `error_distinct_days=2`, `storage_distinct_days=2`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
