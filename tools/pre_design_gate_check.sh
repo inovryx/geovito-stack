@@ -35,7 +35,7 @@ echo "=============================================================="
 echo "GEOVITO PRE-DESIGN GATE CHECK"
 echo "=============================================================="
 
-run_gate "Prepare Strapi Runtime" docker compose up -d --build strapi
+run_gate "Prepare Strapi Runtime" env COMPOSE_PROGRESS=plain docker compose --ansi never up -d --build strapi
 
 run_gate "Production Health" bash tools/prod_health.sh
 run_gate "Media Policy Guard" bash tools/media_policy_check.sh
