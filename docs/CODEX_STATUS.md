@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-14T16:20:46Z
+Last updated (UTC): 2026-03-14T16:42:49Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `0e13bb2`
+Current head before this status update commit: `8b237ae`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -23,11 +23,13 @@ Current head before this status update commit: `0e13bb2`
 - `docs(status): sync latest full-gate/observability evidence and strict-readiness window`
 - `ops(release): strict readiness cutover executed on 2026-03-14 (second run PASS; first run failed due flaky dashboard UI test)`
 - `ops(release): strict full-pass checkpoint tag pushed after cutover`
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-14-1642)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
 - `checkpoint-go-live-full-pass-20260309-1723`
 - `checkpoint-go-live-full-pass-20260314-1615`
+- `checkpoint-go-live-full-pass-20260314-1642`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -58,12 +60,12 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260314T143327Z.txt`
+  - `artifacts/go-live/go-live-full-20260314T162740Z.txt`
   - Result: PASS
   - Includes: Core Gate, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Baseline Readiness Check (strict PASS), Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=35`, `storage_samples=35`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=36`, `storage_samples=36`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
@@ -74,4 +76,4 @@ Recent full-pass checkpoints:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `0e13bb2`.
+  - `main` pushed at `8b237ae`.
