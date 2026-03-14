@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-14T14:43:21Z
+Last updated (UTC): 2026-03-14T16:20:46Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `0f03ee4`
+Current head before this status update commit: `0e13bb2`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -13,6 +13,7 @@ Current head before this status update commit: `0f03ee4`
 - Observability readiness reached strict threshold (`7/7` distinct days + samples) and strict cutover validation has been executed successfully.
 
 ## Completed Recent Work
+- `test(dashboard): stabilize admin lane hash activation assertion` (`frontend/tests/dashboard-activity.spec.ts`)
 - `feat(obs): add readiness cron freshness gate check with rotated-log fallback`
 - `feat(obs): add readiness watch automation for strict gate transition`
 - `feat(obs): add readiness watch transition smoke and gate hook`
@@ -21,21 +22,22 @@ Current head before this status update commit: `0f03ee4`
 - `fix(gate): use plain docker compose output in pre-design runtime prep`
 - `docs(status): sync latest full-gate/observability evidence and strict-readiness window`
 - `ops(release): strict readiness cutover executed on 2026-03-14 (second run PASS; first run failed due flaky dashboard UI test)`
+- `ops(release): strict full-pass checkpoint tag pushed after cutover`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
 - `checkpoint-go-live-full-pass-20260309-1723`
+- `checkpoint-go-live-full-pass-20260314-1615`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
-- Residual risk: `dashboard_activity_ui_playwright` has intermittent flake on admin hash/nav assertion; one strict run failed once, immediate rerun passed.
+- Residual risk: monitor `dashboard_activity_ui_playwright` stability after the nav/hash assertion hardening; targeted suite currently PASS.
 
 ## Exact Next Steps
-1. Create/push strict-pass checkpoint tag for the successful cutover run.
-2. Keep strict mode as release default for full gate:
+1. Keep strict mode as release default for full gate:
    - `GO_LIVE_BASELINE_READINESS_STRICT=true GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
-3. Stabilize flaky dashboard UI assertion (preferred: retry/robust wait around `#dashboard-control` active class check in `frontend/tests/dashboard-activity.spec.ts`).
-4. Continue daily cron collection and readiness watch for drift detection.
+2. Run one more full gate under strict mode before next release cut to keep fresh strict evidence.
+3. Continue daily cron collection and readiness watch for drift detection.
 
 ## Critical Non-Negotiables
 - Atlas stays authoritative; UGC stays contributory.
@@ -68,5 +70,8 @@ Recent full-pass checkpoints:
   - `artifacts/observability/readiness-cron-freshness-last.json` -> PASS
 - Latest readiness watch state:
   - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `transitioned_to_ready=true`, `first_ready_at=2026-03-14T02:30:02.137Z`.
+- Latest dashboard activity targeted smoke after flake patch:
+  - `bash tools/dashboard_activity_ui_playwright.sh`
+  - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `0f03ee4`.
+  - `main` pushed at `0e13bb2`.
