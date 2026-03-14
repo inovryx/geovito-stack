@@ -1868,6 +1868,7 @@ test('dashboard section nav tracks hash and click for admin lanes', async ({ pag
 
   const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]').first();
   const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
+  const controlLane = page.locator('#dashboard-control');
 
   await expect(controlPill).toBeVisible();
   await expect(memberPill).toHaveClass(/is-active/);
@@ -1875,10 +1876,17 @@ test('dashboard section nav tracks hash and click for admin lanes', async ({ pag
   await page.evaluate(() => {
     window.location.hash = '#dashboard-control';
   });
-  await expect(controlPill).toHaveClass(/is-active/);
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-control');
+  await expect(controlLane).toBeVisible();
+  await expect
+    .poll(async () => (await controlPill.getAttribute('class')) || '')
+    .toMatch(/is-active/);
 
   await memberPill.click();
-  await expect(memberPill).toHaveClass(/is-active/);
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-member');
+  await expect
+    .poll(async () => (await memberPill.getAttribute('class')) || '')
+    .toMatch(/is-active/);
 });
 
 test('dashboard admin tools links open matching module lanes', async ({ page }, testInfo) => {
