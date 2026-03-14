@@ -1,16 +1,16 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-09T18:11:17Z
+Last updated (UTC): 2026-03-14T14:43:21Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `c99e543`
+Current head before this status update commit: `0f03ee4`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
 - UGC + Community contracts are active: creator profile, moderation/report flow, follow/preferences/saved-list, dashboard role gates.
 - Hardening pack is integrated: staging isolation, DR freshness, kill switch smoke, audit log smoke, SEO drift/error/storage checks.
 - Log Foundation v1 is active in dual-write mode: structured contract channels (`app/security/moderation/audit/release/dr`) + legacy domain logs preserved.
-- Observability rollout is in pre-strict phase: cron schedule/freshness checks are enforced; baseline readiness is still `not_ready` because distinct-day history is not yet 7/7.
+- Observability readiness reached strict threshold (`7/7` distinct days + samples) and strict cutover validation has been executed successfully.
 
 ## Completed Recent Work
 - `feat(obs): add readiness cron freshness gate check with rotated-log fallback`
@@ -20,26 +20,22 @@ Current head before this status update commit: `c99e543`
 - `feat(release): add strict readiness cutover wrapper for post-2026-03-14 runs`
 - `fix(gate): use plain docker compose output in pre-design runtime prep`
 - `docs(status): sync latest full-gate/observability evidence and strict-readiness window`
+- `ops(release): strict readiness cutover executed on 2026-03-14 (second run PASS; first run failed due flaky dashboard UI test)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
 - `checkpoint-go-live-full-pass-20260309-1723`
 
 ## Active Blockers
-- No functional blocker in code/gates.
-- Strict baseline enforcement is intentionally blocked until enough day coverage is accumulated.
-  - Current deficits from latest readiness report: `error_distinct_days=5`, `storage_distinct_days=5`.
+- No functional blocker in contracts/gates.
+- Residual risk: `dashboard_activity_ui_playwright` has intermittent flake on admin hash/nav assertion; one strict run failed once, immediate rerun passed.
 
 ## Exact Next Steps
-1. Keep daily cron collection running without changing strict mode before 2026-03-14.
-   - `10 2 * * * ... tools/observability_sample.sh`
-   - `20 2 * * 1 ... OBS_SAMPLE_WITH_BASELINE=true tools/observability_sample.sh`
-   - `30 2 * * * ... tools/observability_readiness_watch.sh`
-2. Continue non-strict full verification after hardening commits:
-   - `GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
-3. On/after 2026-03-14 02:10 UTC, attempt strict baseline enforcement:
-   - `RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/strict_readiness_cutover.sh`
-4. If strict full gate passes, create/push new checkpoint tag.
+1. Create/push strict-pass checkpoint tag for the successful cutover run.
+2. Keep strict mode as release default for full gate:
+   - `GO_LIVE_BASELINE_READINESS_STRICT=true GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_SMTP=true RESET_SMOKE_EMAIL=geovitoworld@gmail.com bash tools/go_live_gate_full.sh`
+3. Stabilize flaky dashboard UI assertion (preferred: retry/robust wait around `#dashboard-control` active class check in `frontend/tests/dashboard-activity.spec.ts`).
+4. Continue daily cron collection and readiness watch for drift detection.
 
 ## Critical Non-Negotiables
 - Atlas stays authoritative; UGC stays contributory.
@@ -60,17 +56,17 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260309T180105Z.txt`
+  - `artifacts/go-live/go-live-full-20260314T143327Z.txt`
   - Result: PASS
-  - Includes: Core Gate, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Baseline Readiness Check (non-strict), Readiness Watch Smoke, Override Policy Smoke.
+  - Includes: Core Gate, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Baseline Readiness Check (strict PASS), Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=false`, observed: `error_samples=28`, `storage_samples=28`, `error_distinct_days=2`, `storage_distinct_days=2`.
+  - `ready=true`, observed: `error_samples=35`, `storage_samples=35`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
   - `artifacts/observability/readiness-cron-freshness-last.json` -> PASS
 - Latest readiness watch state:
-  - `artifacts/observability/readiness-watch-state.json` -> `ready=false`, `transitioned_to_ready=false`.
+  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `transitioned_to_ready=true`, `first_ready_at=2026-03-14T02:30:02.137Z`.
 - Repo sync:
-  - `main` pushed at `0987a0b`.
+  - `main` pushed at `0f03ee4`.
