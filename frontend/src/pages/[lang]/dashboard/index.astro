@@ -4613,6 +4613,9 @@ const dashboardCopy = {
           applyModuleView(window.location.hash, { syncHash: true, focusTarget: true });
         });
 
+        // If hash changed while dashboard data was loading, reconcile once after handlers are bound.
+        applyModuleView(window.location.hash, { syncHash: false, focusTarget: false });
+
         copyCommandButtons.forEach((button) => {
           if (!(button instanceof HTMLButtonElement)) return;
           button.addEventListener('click', async () => {
