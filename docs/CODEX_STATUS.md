@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T09:54:35Z
+Last updated (UTC): 2026-03-17T10:01:02Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `b6dcd0b`
+Current head before this status update commit: `7fbc424`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -44,6 +44,7 @@ Current head before this status update commit: `b6dcd0b`
 - `ops(observability): readiness watch refreshed -> READY at 2026-03-17T09:36:49Z`
 - `ops(observability): trend report cron scheduled at 02:40 UTC`
 - `ops(observability): trend report run PASS at 2026-03-17T09:54:36Z`
+- `ops(observability): trend logrotate verified (daily, rotate 14, compress)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -103,10 +104,13 @@ Recent full-pass checkpoints:
 - Latest observability trend report:
   - `artifacts/observability/trend-report-last.txt` -> `OVERALL=PASS`
   - `artifacts/observability/trend-report-last.json` -> `status.all_green=true`
+- Latest trend log rotation check:
+  - `/etc/logrotate.d/geovito-observability-trend` active
+  - test rotate produced `artifacts/observability/cron-trend.log.1` and reset `artifacts/observability/cron-trend.log`
 - Latest readiness watch state:
   - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-17T09:36:49.558Z`.
 - Latest dashboard activity targeted smoke after flake patch:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `b6dcd0b`.
+  - `main` pushed at `7fbc424`.

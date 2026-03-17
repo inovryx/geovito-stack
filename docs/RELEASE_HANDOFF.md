@@ -1,6 +1,6 @@
 # RELEASE HANDOFF
 
-Last updated (UTC): 2026-03-17T09:54:35Z
+Last updated (UTC): 2026-03-17T10:01:02Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 
@@ -11,7 +11,8 @@ Branch: `main`
 - Latest readiness state: `ready=true` (`error_samples=21`, `storage_samples=21`, `error_distinct_days=7`, `storage_distinct_days=7`)
 - Latest readiness watch check: `2026-03-17T09:36:49.558Z`
 - Latest trend report: `artifacts/observability/trend-report-last.txt` (`OVERALL=PASS`, generated at `2026-03-17T09:54:36Z`)
-- Latest pushed commit at handoff creation: `b6dcd0b`
+- Trend logrotate: `/etc/logrotate.d/geovito-observability-trend` verified (`cron-trend.log.1` produced)
+- Latest pushed commit at handoff creation: `7fbc424`
 
 ## PASS Matrix (Latest Strict Pass)
 - `Core Go-Live Gate` -> PASS
