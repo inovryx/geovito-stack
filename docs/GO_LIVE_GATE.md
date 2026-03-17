@@ -22,6 +22,7 @@ This command enforces:
 - observability cron schedule check
 - observability cron freshness check
 - readiness-watch cron freshness check
+- observability trend freshness check
 - baseline readiness check (non-strict by default)
 - readiness-watch state-transition smoke
 
@@ -30,10 +31,10 @@ Summary evidence is written under:
 - summary includes `baseline_readiness_state` (`ready|not_ready|missing_report|disabled`)
 
 ## Latest Stable Checkpoint
-- Date (UTC): `2026-03-08`
-- Tag: `checkpoint-go-live-full-pass-20260308-1614`
-- Commit: `02eaf35`
-- Full gate summary artifact: `artifacts/go-live/go-live-full-20260308T160233Z.txt`
+- Date (UTC): `2026-03-17`
+- Tag: `checkpoint-go-live-full-pass-20260317-1005`
+- Commit: `17a4ca2`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260317T102121Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
 
 ### Emergency override (controlled)
@@ -101,6 +102,16 @@ Disable observability cron schedule check only for emergency debugging:
 
 ```bash
 GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK=false \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Disable observability trend freshness check only for emergency debugging:
+
+```bash
+GO_LIVE_WITH_OBS_TREND_FRESHNESS_CHECK=false \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \

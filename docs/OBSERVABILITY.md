@@ -114,6 +114,7 @@ OBS_SAMPLE_ALERT_ON_FAIL=true bash tools/observability_sample.sh
 Suggested schedule:
 - daily: `bash tools/observability_sample.sh`
 - weekly: `OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh`
+- daily trend summary: `bash tools/observability_trend_report.sh`
 
 Example cron (UTC):
 
@@ -123,6 +124,9 @@ Example cron (UTC):
 
 # weekly baseline refresh at 02:20 UTC on Monday
 20 2 * * 1 cd /home/ali/geovito-stack && OBS_SAMPLE_WITH_BASELINE=true bash tools/observability_sample.sh >> artifacts/observability/cron-sample.log 2>&1
+
+# daily trend report at 02:40 UTC
+40 2 * * * cd /home/ali/geovito-stack && bash tools/observability_trend_report.sh >> artifacts/observability/cron-trend.log 2>&1
 ```
 
 ## Cron log rotation
@@ -207,6 +211,22 @@ Output:
 - `artifacts/observability/readiness-cron-freshness-last.json`
 - if current log file is empty after rotation, checker falls back to `.1`
 
+Validate trend-report freshness:
+
+```bash
+bash tools/observability_trend_freshness_check.sh
+```
+
+Optional tuning:
+- `OBS_TREND_REPORT_FILE` (default: `artifacts/observability/trend-report-last.json`)
+- `OBS_TREND_MAX_AGE_MINUTES` (default: `1560`, ~26h)
+- `OBS_TREND_REQUIRE_GREEN_STATUS` (default: `true`)
+- `OBS_TREND_OUTPUT_FILE` (default: `artifacts/observability/trend-freshness-last.json`)
+
+Output:
+- `artifacts/observability/trend-freshness-last.json`
+- fails if trend timestamp is stale or `status.all_green` is not `true`
+
 ## Readiness watch (strict gate preparation)
 Track baseline readiness transitions automatically:
 
@@ -241,7 +261,7 @@ bash tools/observability_readiness_watch_smoke.sh
 ```
 
 ## Full gate integration
-`tools/go_live_gate_full.sh` includes SEO drift, error-rate and storage checks by default.
+`tools/go_live_gate_full.sh` includes SEO drift, error-rate, storage, cron schedule/freshness, readiness-watch checks, and trend freshness checks by default.
 
 ## Response guidance
 - Any critical check fail blocks production promotion.
