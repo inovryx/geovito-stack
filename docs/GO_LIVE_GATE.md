@@ -12,6 +12,7 @@ bash tools/go_live_gate_full.sh
 This command enforces:
 - legacy core gate chain (`tools/go_live_gate.sh`)
 - mandatory `Log Contract Smoke` inside the core gate path
+- release docs sync check (`tools/release_docs_sync_check.sh`)
 - staging isolation checks
 - restore freshness SLA checks
 - kill-switch smoke
@@ -118,6 +119,16 @@ RESET_SMOKE_EMAIL=you@example.com \
 bash tools/go_live_gate_full.sh
 ```
 
+Disable release docs sync check only for emergency debugging:
+
+```bash
+GO_LIVE_WITH_RELEASE_DOCS_SYNC_CHECK=false \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
 Baseline readiness strict mode (optional hard enforcement):
 
 ```bash
@@ -213,6 +224,7 @@ nano ~/.config/geovito/health.env
 - [ ] `GO_LIVE_WITH_BACKUP_VERIFY=true bash tools/go_live_gate.sh` includes `Backup Verify` PASS
 - [ ] `bash tools/prod_health.sh` PASS
 - [ ] `bash tools/pages_build_check.sh` PASS
+- [ ] `bash tools/release_docs_sync_check.sh` PASS
 - [ ] `bash tools/staging_isolation_check.sh` PASS
 - [ ] `bash tools/restore_freshness_check.sh` PASS
 
