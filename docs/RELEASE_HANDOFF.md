@@ -1,6 +1,6 @@
 # RELEASE HANDOFF
 
-Last updated (UTC): 2026-03-17T12:18:03Z
+Last updated (UTC): 2026-03-17T12:27:11Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 
@@ -8,13 +8,13 @@ Branch: `main`
 - Latest strict full-gate PASS evidence: `artifacts/go-live/go-live-full-20260317T105604Z.txt`
 - Latest strict full-gate run id: `gv-run-20260317T105604Z-16051`
 - Latest strict full-pass checkpoint tag: `checkpoint-go-live-full-pass-20260317-1105`
-- Latest checkpoint tag (post-pass docs sync): `checkpoint-go-live-full-pass-20260317-1213`
+- Latest checkpoint tag (post-pass docs sync): `checkpoint-go-live-full-pass-20260317-1221`
 - Latest readiness state: `ready=true` (`error_samples=23`, `storage_samples=23`, `error_distinct_days=7`, `storage_distinct_days=7`)
 - Latest readiness watch check: `2026-03-17T09:36:49.558Z`
 - Latest trend report: `artifacts/observability/trend-report-last.txt` (`OVERALL=PASS`, generated at `2026-03-17T09:54:36Z`)
 - Latest trend freshness: `artifacts/observability/trend-freshness-last.json` (`status=pass`, `age_minutes=70`)
 - Trend logrotate: `/etc/logrotate.d/geovito-observability-trend` verified (`cron-trend.log.1` produced)
-- Latest pushed commit at handoff creation: `8c1af98`
+- Latest pushed commit at handoff creation: `e4272b8`
 
 ## PASS Matrix (Latest Strict Pass)
 - `Core Go-Live Gate` -> PASS
