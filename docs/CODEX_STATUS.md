@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T08:08:06Z
+Last updated (UTC): 2026-03-17T08:13:11Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `78de8a2`
+Current head before this status update commit: `442ffbc`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -30,6 +30,7 @@ Current head before this status update commit: `78de8a2`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0749)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0807)`
 - `ops(observability): strict readiness re-validated at 2026-03-17T08:07:42Z`
+- `ops(observability): cron freshness + readiness watch manual validation PASS at 2026-03-17T08:09Z`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -83,9 +84,9 @@ Recent full-pass checkpoints:
   - `artifacts/observability/cron-freshness-last.json` -> PASS
   - `artifacts/observability/readiness-cron-freshness-last.json` -> PASS
 - Latest readiness watch state:
-  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-17T02:30:02.359Z`.
+  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-17T08:09:53.949Z`.
 - Latest dashboard activity targeted smoke after flake patch:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `78de8a2`.
+  - `main` pushed at `442ffbc`.
