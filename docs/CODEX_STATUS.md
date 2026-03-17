@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-14T17:14:57Z
+Last updated (UTC): 2026-03-17T07:18:15Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `d437a26`
+Current head before this status update commit: `be64550`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -11,6 +11,7 @@ Current head before this status update commit: `d437a26`
 - Hardening pack is integrated: staging isolation, DR freshness, kill switch smoke, audit log smoke, SEO drift/error/storage checks.
 - Log Foundation v1 is active in dual-write mode: structured contract channels (`app/security/moderation/audit/release/dr`) + legacy domain logs preserved.
 - Observability readiness remains strict-ready (`7/7` distinct days + sample floors satisfied).
+- Handoff quick file: `docs/RELEASE_HANDOFF.md` (release snapshot + new-session command block).
 
 ## Completed Recent Work
 - `test(dashboard): stabilize admin lane hash activation assertion` (`frontend/tests/dashboard-activity.spec.ts`)
