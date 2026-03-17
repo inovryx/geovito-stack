@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T19:05:13Z
+Last updated (UTC): 2026-03-17T19:28:50Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `682ccc0`
+Current head before this status update commit: `d5ae9fb`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -62,6 +62,8 @@ Current head before this status update commit: `682ccc0`
 - `ops(observability): trend logrotate verified (daily, rotate 14, compress)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-1844)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-1903)`
+- `feat(gate): baseline readiness strict default enabled in full gate`
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-1928)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -88,6 +90,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260317-1221`
 - `checkpoint-go-live-full-pass-20260317-1844`
 - `checkpoint-go-live-full-pass-20260317-1903`
+- `checkpoint-go-live-full-pass-20260317-1928`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -120,7 +123,7 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260317T185421Z.txt`
+  - `artifacts/go-live/go-live-full-20260317T190851Z.txt`
   - Result: PASS
   - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
@@ -143,4 +146,4 @@ Recent full-pass checkpoints:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `682ccc0`.
+  - `main` pushed at `d5ae9fb`.
