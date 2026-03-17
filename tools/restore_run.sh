@@ -22,6 +22,8 @@ BACKUP_R2_SECRET_ACCESS_KEY="${BACKUP_R2_SECRET_ACCESS_KEY:-}"
 BACKUP_AGE_KEY_FILE="${BACKUP_AGE_KEY_FILE:-}"
 RESTORE_TARGET="${RESTORE_TARGET:-staging}"
 WORK_DIR="${RESTORE_WORK_DIR:-${BACKUP_ROOT}/_restore/${STAMP}}"
+RESTORE_RUN_RESET_DB="${RESTORE_RUN_RESET_DB:-true}"
+RESTORE_RUN_ALLOW_NON_STAGING_RESET="${RESTORE_RUN_ALLOW_NON_STAGING_RESET:-false}"
 
 pass() { echo "PASS: $1"; }
 fail() {
@@ -73,11 +75,34 @@ done
 )
 pass "checksum verified after restore download"
 
-docker compose up -d db strapi >/dev/null
+wait_for_db_ready() {
+  local tries=0
+  local max_tries=30
+  while (( tries < max_tries )); do
+    if docker compose exec -T db sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1;" >/dev/null 2>&1'; then
+      return 0
+    fi
+    tries=$((tries + 1))
+    sleep 2
+  done
+  return 1
+}
+
+docker compose up -d db >/dev/null
+wait_for_db_ready || fail "database is not ready for restore"
+
+if [[ "$RESTORE_RUN_RESET_DB" == "true" ]]; then
+  if [[ "$RESTORE_TARGET" != "staging" && "$RESTORE_RUN_ALLOW_NON_STAGING_RESET" != "true" ]]; then
+    fail "refusing schema reset for non-staging target (${RESTORE_TARGET}); set RESTORE_RUN_ALLOW_NON_STAGING_RESET=true to proceed"
+  fi
+  docker compose exec -T db sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO \"$POSTGRES_USER\"; GRANT ALL ON SCHEMA public TO PUBLIC;"' >/dev/null
+  pass "database schema reset"
+fi
 
 cat "${WORK_DIR}/extract/postgres.sql" | docker compose exec -T db sh -lc 'PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' >/dev/null
 pass "database restored"
 
+docker compose up -d strapi >/dev/null
 cat "${WORK_DIR}/extract/uploads.tgz" | docker compose exec -T strapi sh -lc 'rm -rf /opt/app/public/uploads && tar -C /opt/app/public -xzf -' >/dev/null
 pass "uploads restored"
 

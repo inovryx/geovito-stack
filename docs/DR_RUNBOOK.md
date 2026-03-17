@@ -23,6 +23,9 @@ Daily cron (UTC):
 1. Identify backup stamp (example `20260306T170700Z`).
 2. Restore data:
    - `bash tools/restore_run.sh <STAMP>`
+   - note: restore run resets DB schema by default before importing dump (`RESTORE_RUN_RESET_DB=true`)
+   - non-staging target schema reset is blocked unless explicitly allowed:
+     - `RESTORE_RUN_ALLOW_NON_STAGING_RESET=true`
 3. Run restore smoke:
    - `BACKUP_STAMP=<STAMP> RESTORE_TARGET=staging bash tools/restore_smoke.sh`
 4. Validate freshness SLA:
