@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T09:36:39Z
+Last updated (UTC): 2026-03-17T09:54:35Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `78a98a8`
+Current head before this status update commit: `b6dcd0b`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -36,11 +36,14 @@ Current head before this status update commit: `78a98a8`
 - `docs(release): sync status after strict full pass and checkpoint` (`78a98a8`)
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0919)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0936)`
+- `feat(obs): add consolidated observability trend report script` (`b6dcd0b`)
 - `ops(observability): strict readiness re-validated at 2026-03-17T08:07:42Z`
 - `ops(observability): cron freshness + readiness watch manual validation PASS at 2026-03-17T08:09Z`
 - `ops(observability): readiness watch refreshed -> READY at 2026-03-17T09:00:48Z`
 - `ops(observability): readiness watch refreshed -> READY at 2026-03-17T09:15:10Z`
 - `ops(observability): readiness watch refreshed -> READY at 2026-03-17T09:36:49Z`
+- `ops(observability): trend report cron scheduled at 02:40 UTC`
+- `ops(observability): trend report run PASS at 2026-03-17T09:54:36Z`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -97,10 +100,13 @@ Recent full-pass checkpoints:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
   - `artifacts/observability/readiness-cron-freshness-last.json` -> PASS
+- Latest observability trend report:
+  - `artifacts/observability/trend-report-last.txt` -> `OVERALL=PASS`
+  - `artifacts/observability/trend-report-last.json` -> `status.all_green=true`
 - Latest readiness watch state:
   - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-17T09:36:49.558Z`.
 - Latest dashboard activity targeted smoke after flake patch:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `78a98a8`.
+  - `main` pushed at `b6dcd0b`.
