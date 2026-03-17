@@ -103,7 +103,7 @@ cat "${WORK_DIR}/extract/postgres.sql" | docker compose exec -T db sh -lc 'PGPAS
 pass "database restored"
 
 docker compose up -d strapi >/dev/null
-cat "${WORK_DIR}/extract/uploads.tgz" | docker compose exec -T strapi sh -lc 'rm -rf /opt/app/public/uploads && tar -C /opt/app/public -xzf -' >/dev/null
+cat "${WORK_DIR}/extract/uploads.tgz" | docker compose exec -T strapi sh -lc 'mkdir -p /opt/app/public/uploads && find /opt/app/public/uploads -mindepth 1 -exec rm -rf {} + && tar -C /opt/app/public -xzf -' >/dev/null
 pass "uploads restored"
 
 mkdir -p artifacts/dr
