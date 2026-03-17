@@ -1,14 +1,14 @@
 # RELEASE HANDOFF
 
-Last updated (UTC): 2026-03-17T07:49:55Z
+Last updated (UTC): 2026-03-17T08:08:06Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 
 ## Release Snapshot
-- Latest strict full-gate PASS evidence: `artifacts/go-live/go-live-full-20260317T074004Z.txt`
-- Latest strict full-gate run id: `gv-run-20260317T074004Z-2500`
-- Latest strict full-pass checkpoint tag: `checkpoint-go-live-full-pass-20260317-0749`
-- Latest readiness state: `ready=true` (`error_samples=15`, `storage_samples=15`, `error_distinct_days=7`, `storage_distinct_days=7`)
+- Latest strict full-gate PASS evidence: `artifacts/go-live/go-live-full-20260317T075843Z.txt`
+- Latest strict full-gate run id: `gv-run-20260317T075843Z-21204`
+- Latest strict full-pass checkpoint tag: `checkpoint-go-live-full-pass-20260317-0807`
+- Latest readiness state: `ready=true` (`error_samples=16`, `storage_samples=16`, `error_distinct_days=7`, `storage_distinct_days=7`)
 - Latest pushed commit at handoff creation: `78de8a2`
 
 ## PASS Matrix (Latest Strict Pass)

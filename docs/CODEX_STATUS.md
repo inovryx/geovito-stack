@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T07:49:55Z
+Last updated (UTC): 2026-03-17T08:08:06Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Current head before this status update commit: `78de8a2`
@@ -28,7 +28,8 @@ Current head before this status update commit: `78de8a2`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-14-1703)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-14-1714)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0749)`
-- `ops(observability): strict readiness re-validated at 2026-03-17T07:49:29Z`
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0807)`
+- `ops(observability): strict readiness re-validated at 2026-03-17T08:07:42Z`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -38,6 +39,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260314-1703`
 - `checkpoint-go-live-full-pass-20260314-1714`
 - `checkpoint-go-live-full-pass-20260317-0749`
+- `checkpoint-go-live-full-pass-20260317-0807`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -70,12 +72,12 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260317T074004Z.txt`
+  - `artifacts/go-live/go-live-full-20260317T075843Z.txt`
   - Result: PASS
   - Includes: Core Gate, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Baseline Readiness Check (strict PASS), Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=15`, `storage_samples=15`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=16`, `storage_samples=16`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
