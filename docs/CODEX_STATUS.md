@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T09:01:04Z
+Last updated (UTC): 2026-03-17T09:15:20Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `198b90c`
+Current head before this status update commit: `52e8260`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -31,9 +31,12 @@ Current head before this status update commit: `198b90c`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0807)`
 - `fix(dashboard): resync section nav after hash listener bind` (`198b90c`)
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0858)`
+- `docs(release): refresh status and handoff after latest strict pass` (`52e8260`)
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0914)`
 - `ops(observability): strict readiness re-validated at 2026-03-17T08:07:42Z`
 - `ops(observability): cron freshness + readiness watch manual validation PASS at 2026-03-17T08:09Z`
 - `ops(observability): readiness watch refreshed -> READY at 2026-03-17T09:00:48Z`
+- `ops(observability): readiness watch refreshed -> READY at 2026-03-17T09:15:10Z`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -45,6 +48,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260317-0749`
 - `checkpoint-go-live-full-pass-20260317-0807`
 - `checkpoint-go-live-full-pass-20260317-0858`
+- `checkpoint-go-live-full-pass-20260317-0914`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -77,20 +81,20 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260317T084855Z.txt`
+  - `artifacts/go-live/go-live-full-20260317T090521Z.txt`
   - Result: PASS
   - Includes: Core Gate, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Baseline Readiness Check (strict PASS), Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=19`, `storage_samples=19`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=20`, `storage_samples=20`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
   - `artifacts/observability/readiness-cron-freshness-last.json` -> PASS
 - Latest readiness watch state:
-  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-17T09:00:48.057Z`.
+  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-17T09:15:10.049Z`.
 - Latest dashboard activity targeted smoke after flake patch:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `198b90c`.
+  - `main` pushed at `52e8260`.
