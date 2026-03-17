@@ -37,8 +37,9 @@ fi
 if [[ -n "$REQUESTED_STAMP" ]]; then
   SNAPSHOT_DIR="${BACKUP_ROOT}/${REQUESTED_STAMP}"
 else
-  SNAPSHOT_DIR="$(find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | tail -n 1)"
-  SNAPSHOT_DIR="${BACKUP_ROOT}/${SNAPSHOT_DIR}"
+  latest_stamp="$(find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | rg '^[0-9]{8}T[0-9]{6}Z$' | sort | tail -n 1 || true)"
+  [[ -n "$latest_stamp" ]] || fail "no timestamp snapshot directory found under ${BACKUP_ROOT}"
+  SNAPSHOT_DIR="${BACKUP_ROOT}/${latest_stamp}"
 fi
 
 echo "=============================================================="
