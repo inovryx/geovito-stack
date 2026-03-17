@@ -32,8 +32,8 @@ Summary evidence is written under:
 
 ## Latest Stable Checkpoint
 - Date (UTC): `2026-03-17`
-- Tag: `checkpoint-go-live-full-pass-20260317-1005`
-- Commit: `17a4ca2`
+- Tag: `checkpoint-go-live-full-pass-20260317-1034`
+- Commit: `bca2326`
 - Full gate summary artifact: `artifacts/go-live/go-live-full-20260317T102121Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
 
