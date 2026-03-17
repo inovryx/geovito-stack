@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T19:55:25Z
+Last updated (UTC): 2026-03-17T20:21:54Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `c728812`
+Current head before this status update commit: `4a33915`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -65,6 +65,8 @@ Current head before this status update commit: `c728812`
 - `feat(gate): baseline readiness strict default enabled in full gate`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-1928)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-1954)`
+- `feat(dr): add weekly restore cycle and cron schedule check` (`4a33915`)
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-2021)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -93,6 +95,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260317-1903`
 - `checkpoint-go-live-full-pass-20260317-1928`
 - `checkpoint-go-live-full-pass-20260317-1954`
+- `checkpoint-go-live-full-pass-20260317-2021`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -125,17 +128,18 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260317T194434Z.txt`
+  - `artifacts/go-live/go-live-full-20260317T200937Z.txt`
   - Result: PASS
-  - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
+  - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, DR Cron Schedule, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=28`, `storage_samples=28`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=29`, `storage_samples=29`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
   - `artifacts/observability/readiness-cron-freshness-last.json` -> PASS
   - `artifacts/observability/trend-freshness-last.json` -> PASS
+  - `artifacts/dr/cron-schedule-last.json` -> PASS
 - Latest observability trend report:
   - `artifacts/observability/trend-report-last.txt` -> `OVERALL=PASS`
   - `artifacts/observability/trend-report-last.json` -> `status.all_green=true`
@@ -148,4 +152,4 @@ Recent full-pass checkpoints:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `c728812`.
+  - `main` pushed at `4a33915`.
