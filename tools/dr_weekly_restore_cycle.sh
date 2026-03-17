@@ -48,7 +48,7 @@ cat > "$OUTPUT_FILE" <<JSON
   "measured_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "backup_stamp": "${BACKUP_STAMP}",
   "restore_target": "${RESTORE_TARGET}",
-  "run_id": "${GV_LOG_REQUEST_ID}"
+  "run_id": "${GV_LOG_RUN_ID:-}"
 }
 JSON
 pass "report written -> ${OUTPUT_FILE}"
