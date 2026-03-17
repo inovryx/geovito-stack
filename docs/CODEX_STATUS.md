@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T12:58:48Z
+Last updated (UTC): 2026-03-17T18:45:34Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `b4e27cd`
+Current head before this status update commit: `eb70d4a`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -60,6 +60,7 @@ Current head before this status update commit: `b4e27cd`
 - `ops(observability): trend report cron scheduled at 02:40 UTC`
 - `ops(observability): trend report run PASS at 2026-03-17T09:54:36Z`
 - `ops(observability): trend logrotate verified (daily, rotate 14, compress)`
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-1844)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -84,6 +85,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260317-1210`
 - `checkpoint-go-live-full-pass-20260317-1213`
 - `checkpoint-go-live-full-pass-20260317-1221`
+- `checkpoint-go-live-full-pass-20260317-1844`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -116,9 +118,9 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260317T105604Z.txt`
+  - `artifacts/go-live/go-live-full-20260317T183458Z.txt`
   - Result: PASS
-  - Includes: Core Gate, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check (strict PASS), Readiness Watch Smoke, Override Policy Smoke.
+  - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
   - `ready=true`, observed: `error_samples=23`, `storage_samples=23`, `error_distinct_days=7`, `storage_distinct_days=7`.
@@ -139,4 +141,4 @@ Recent full-pass checkpoints:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `b4e27cd`.
+  - `main` pushed at `eb70d4a`.
