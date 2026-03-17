@@ -24,7 +24,7 @@ This command enforces:
 - observability cron freshness check
 - readiness-watch cron freshness check
 - observability trend freshness check
-- baseline readiness check (non-strict by default)
+- baseline readiness check (strict by default)
 - readiness-watch state-transition smoke
 
 Summary evidence is written under:
@@ -129,10 +129,20 @@ RESET_SMOKE_EMAIL=you@example.com \
 bash tools/go_live_gate_full.sh
 ```
 
-Baseline readiness strict mode (optional hard enforcement):
+Baseline readiness mode override (strict is default):
 
 ```bash
 GO_LIVE_BASELINE_READINESS_STRICT=true \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Temporary non-strict run (emergency/debug only):
+
+```bash
+GO_LIVE_BASELINE_READINESS_STRICT=false \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \
