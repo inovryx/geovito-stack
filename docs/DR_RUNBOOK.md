@@ -12,6 +12,13 @@ Recover service state using one-command restore workflow and validate with smoke
 1. `bash tools/backup_run.sh`
 2. `BACKUP_VERIFY_OFFSITE=true bash tools/backup_verify.sh`
 
+### Scheduled backup (recommended)
+Daily cron (UTC):
+
+```bash
+15 1 * * * cd /home/ali/geovito-stack && bash tools/backup_run.sh >> artifacts/dr/cron-backup.log 2>&1
+```
+
 ## Restore flow (staging-first)
 1. Identify backup stamp (example `20260306T170700Z`).
 2. Restore data:
@@ -20,6 +27,19 @@ Recover service state using one-command restore workflow and validate with smoke
    - `BACKUP_STAMP=<STAMP> RESTORE_TARGET=staging bash tools/restore_smoke.sh`
 4. Validate freshness SLA:
    - `bash tools/restore_freshness_check.sh`
+
+### Scheduled restore smoke (recommended)
+Weekly cron (UTC, Monday):
+
+```bash
+45 1 * * 1 cd /home/ali/geovito-stack && bash tools/dr_weekly_restore_cycle.sh >> artifacts/dr/cron-restore.log 2>&1
+```
+
+Validate cron schedule contract:
+
+```bash
+bash tools/dr_cron_schedule_check.sh
+```
 
 ## Evidence artifacts
 - `artifacts/dr/restore-last.json`

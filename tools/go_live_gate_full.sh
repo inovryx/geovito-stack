@@ -25,6 +25,7 @@ GO_LIVE_WITH_READINESS_WATCH_SMOKE="${GO_LIVE_WITH_READINESS_WATCH_SMOKE:-true}"
 GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK="${GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK:-true}"
 GO_LIVE_WITH_OBS_TREND_FRESHNESS_CHECK="${GO_LIVE_WITH_OBS_TREND_FRESHNESS_CHECK:-true}"
 GO_LIVE_WITH_RELEASE_DOCS_SYNC_CHECK="${GO_LIVE_WITH_RELEASE_DOCS_SYNC_CHECK:-true}"
+GO_LIVE_WITH_DR_CRON_SCHEDULE_CHECK="${GO_LIVE_WITH_DR_CRON_SCHEDULE_CHECK:-false}"
 
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
@@ -159,6 +160,9 @@ else
   fi
   run_step "Staging Isolation" bash tools/staging_isolation_check.sh
   run_step "Restore Freshness" bash tools/restore_freshness_check.sh
+  if [[ "$GO_LIVE_WITH_DR_CRON_SCHEDULE_CHECK" == "true" ]]; then
+    run_step "DR Cron Schedule" bash tools/dr_cron_schedule_check.sh
+  fi
   run_step "Kill Switch Smoke" bash tools/kill_switch_smoke.sh
   run_step "Audit Log Smoke" bash tools/audit_log_smoke.sh
   run_step "SEO Drift Check" bash tools/seo_drift_check.sh

@@ -15,6 +15,7 @@ This command enforces:
 - release docs sync check (`tools/release_docs_sync_check.sh`)
 - staging isolation checks
 - restore freshness SLA checks
+- optional DR cron schedule check
 - kill-switch smoke
 - audit-log smoke
 - SEO drift check
@@ -123,6 +124,16 @@ Disable release docs sync check only for emergency debugging:
 
 ```bash
 GO_LIVE_WITH_RELEASE_DOCS_SYNC_CHECK=false \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Enable DR cron schedule check (recommended after DR cron jobs are installed):
+
+```bash
+GO_LIVE_WITH_DR_CRON_SCHEDULE_CHECK=true \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \
