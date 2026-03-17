@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T10:01:02Z
+Last updated (UTC): 2026-03-17T10:04:04Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `7fbc424`
+Current head before this status update commit: `0d76a75`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -37,6 +37,10 @@ Current head before this status update commit: `7fbc424`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0919)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-0936)`
 - `feat(obs): add consolidated observability trend report script` (`b6dcd0b`)
+- `docs(obs): record trend-report automation and latest status` (`7fbc424`)
+- `docs(obs): record trend logrotate verification` (`0d76a75`)
+- `ops(release): checkpoint tag pushed (2026-03-17-0938)`
+- `ops(release): checkpoint tag pushed (2026-03-17-1001)`
 - `ops(observability): strict readiness re-validated at 2026-03-17T08:07:42Z`
 - `ops(observability): cron freshness + readiness watch manual validation PASS at 2026-03-17T08:09Z`
 - `ops(observability): readiness watch refreshed -> READY at 2026-03-17T09:00:48Z`
@@ -59,6 +63,8 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260317-0914`
 - `checkpoint-go-live-full-pass-20260317-0919`
 - `checkpoint-go-live-full-pass-20260317-0936`
+- `checkpoint-go-live-full-pass-20260317-0938`
+- `checkpoint-go-live-full-pass-20260317-1001`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -113,4 +119,4 @@ Recent full-pass checkpoints:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `7fbc424`.
+  - `main` pushed at `0d76a75`.
