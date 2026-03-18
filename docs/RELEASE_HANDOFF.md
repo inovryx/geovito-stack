@@ -1,26 +1,27 @@
 # RELEASE HANDOFF
 
-Last updated (UTC): 2026-03-18T08:21:51Z
+Last updated (UTC): 2026-03-18T08:44:34Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 
 ## Release Snapshot
-- Latest strict full-gate PASS evidence: `artifacts/go-live/go-live-full-20260318T081219Z.txt`
-- Latest strict full-gate run id: `gv-run-20260318T081219Z-23890`
-- Latest strict full-pass checkpoint tag: `checkpoint-go-live-full-pass-20260318-0821`
-- Latest checkpoint tag (post-pass docs sync): `checkpoint-go-live-full-pass-20260318-0821`
-- Latest readiness state: `ready=true` (`error_samples=33`, `storage_samples=33`, `error_distinct_days=7`, `storage_distinct_days=7`)
+- Latest strict full-gate PASS evidence: `artifacts/go-live/go-live-full-20260318T083444Z.txt`
+- Latest strict full-gate run id: `gv-run-20260318T083444Z-29429`
+- Latest strict full-pass checkpoint tag: `checkpoint-go-live-full-pass-20260318-0844`
+- Latest checkpoint tag (post-pass docs sync): `checkpoint-go-live-full-pass-20260318-0844`
+- Latest readiness state: `ready=true` (`error_samples=34`, `storage_samples=34`, `error_distinct_days=7`, `storage_distinct_days=7`)
 - Latest readiness watch check: `2026-03-18T02:30:02.029Z`
 - Latest trend report: `artifacts/observability/trend-report-last.txt` (`OVERALL=PASS`, generated at `2026-03-18T02:40:01.686Z`)
-- Latest trend freshness: `artifacts/observability/trend-freshness-last.json` (`status=pass`, `age_minutes=341`)
+- Latest trend freshness: `artifacts/observability/trend-freshness-last.json` (`status=pass`, `age_minutes=363`)
 - Trend logrotate: `/etc/logrotate.d/geovito-observability-trend` verified (`cron-trend.log.1` produced)
-- Latest pushed commit at handoff creation: `560bf04`
+- Latest pushed commit at handoff creation: `b67752b`
 
 ## PASS Matrix (Latest Strict Pass)
 - `Core Go-Live Gate` -> PASS
 - `Release Docs Sync Check` -> PASS
 - `Staging Isolation` -> PASS
 - `Restore Freshness` -> PASS
+- `DR Cron Schedule` -> PASS
 - `Kill Switch Smoke` -> PASS
 - `Audit Log Smoke` -> PASS
 - `SEO Drift Check` -> PASS

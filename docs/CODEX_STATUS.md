@@ -74,6 +74,7 @@ Current head before this status update commit: `253c746`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-18-0748)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-18-0805)`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-18-0821)`
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-18-0844)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -106,6 +107,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260318-0748`
 - `checkpoint-go-live-full-pass-20260318-0805`
 - `checkpoint-go-live-full-pass-20260318-0821`
+- `checkpoint-go-live-full-pass-20260318-0844`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -138,12 +140,12 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260318T081219Z.txt`
+  - `artifacts/go-live/go-live-full-20260318T083444Z.txt`
   - Result: PASS
-  - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
+  - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, DR Cron Schedule, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=33`, `storage_samples=33`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=34`, `storage_samples=34`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
@@ -162,4 +164,4 @@ Recent full-pass checkpoints:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `253c746`.
+  - `main` pushed at `b67752b`.
