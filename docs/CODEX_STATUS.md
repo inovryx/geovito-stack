@@ -72,6 +72,7 @@ Current head before this status update commit: `253c746`
 - `fix(dr): use GV_LOG_RUN_ID in weekly restore report` (`1a0b196`)
 - `fix(dr): ignore non-snapshot dirs when selecting latest backup` (`253c746`)
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-18-0748)`
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-18-0805)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -102,6 +103,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260317-1954`
 - `checkpoint-go-live-full-pass-20260317-2021`
 - `checkpoint-go-live-full-pass-20260318-0748`
+- `checkpoint-go-live-full-pass-20260318-0805`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -134,12 +136,12 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260318T073621Z.txt`
+  - `artifacts/go-live/go-live-full-20260318T075048Z.txt`
   - Result: PASS
   - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, DR Cron Schedule, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=31`, `storage_samples=31`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=32`, `storage_samples=32`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
