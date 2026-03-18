@@ -34,9 +34,9 @@ Summary evidence is written under:
 
 ## Latest Stable Checkpoint
 - Date (UTC): `2026-03-18`
-- Tag: `checkpoint-go-live-full-pass-20260318-1534`
-- Commit: `84f3c3f`
-- Full gate summary artifact: `artifacts/go-live/go-live-full-20260318T152515Z.txt`
+- Tag: `checkpoint-go-live-full-pass-20260318-1554`
+- Commit: `a702b21`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260318T154423Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS`
 
 ### Emergency override (controlled)
