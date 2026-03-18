@@ -21,7 +21,6 @@ Branch: `main`
 - `Release Docs Sync Check` -> PASS
 - `Staging Isolation` -> PASS
 - `Restore Freshness` -> PASS
-- `DR Cron Schedule` -> PASS
 - `Kill Switch Smoke` -> PASS
 - `Audit Log Smoke` -> PASS
 - `SEO Drift Check` -> PASS
