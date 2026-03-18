@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-17T20:21:54Z
+Last updated (UTC): 2026-03-18T07:48:19Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `4a33915`
+Current head before this status update commit: `253c746`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -67,6 +67,11 @@ Current head before this status update commit: `4a33915`
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-1954)`
 - `feat(dr): add weekly restore cycle and cron schedule check` (`4a33915`)
 - `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-17-2021)`
+- `fix(dr): reset staging schema before restore import` (`002bbb1`)
+- `fix(dr): avoid deleting uploads mount point during restore` (`67be87f`)
+- `fix(dr): use GV_LOG_RUN_ID in weekly restore report` (`1a0b196`)
+- `fix(dr): ignore non-snapshot dirs when selecting latest backup` (`253c746`)
+- `ops(release): strict full gate rerun PASS + checkpoint tag pushed (2026-03-18-0748)`
 
 Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260308-1654`
@@ -96,6 +101,7 @@ Recent full-pass checkpoints:
 - `checkpoint-go-live-full-pass-20260317-1928`
 - `checkpoint-go-live-full-pass-20260317-1954`
 - `checkpoint-go-live-full-pass-20260317-2021`
+- `checkpoint-go-live-full-pass-20260318-0748`
 
 ## Active Blockers
 - No functional blocker in contracts/gates.
@@ -128,12 +134,12 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260317T200937Z.txt`
+  - `artifacts/go-live/go-live-full-20260318T073621Z.txt`
   - Result: PASS
   - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, DR Cron Schedule, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=29`, `storage_samples=29`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=31`, `storage_samples=31`, `error_distinct_days=7`, `storage_distinct_days=7`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
@@ -147,9 +153,9 @@ Recent full-pass checkpoints:
   - `/etc/logrotate.d/geovito-observability-trend` active
   - test rotate produced `artifacts/observability/cron-trend.log.1` and reset `artifacts/observability/cron-trend.log`
 - Latest readiness watch state:
-  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-17T09:36:49.558Z`.
+  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-18T02:30:02.029Z`.
 - Latest dashboard activity targeted smoke after flake patch:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
 - Repo sync:
-  - `main` pushed at `4a33915`.
+  - `main` pushed at `253c746`.

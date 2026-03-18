@@ -1,20 +1,20 @@
 # RELEASE HANDOFF
 
-Last updated (UTC): 2026-03-17T20:21:54Z
+Last updated (UTC): 2026-03-18T07:48:19Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 
 ## Release Snapshot
-- Latest strict full-gate PASS evidence: `artifacts/go-live/go-live-full-20260317T200937Z.txt`
-- Latest strict full-gate run id: `gv-run-20260317T200937Z-23839`
-- Latest strict full-pass checkpoint tag: `checkpoint-go-live-full-pass-20260317-2021`
-- Latest checkpoint tag (post-pass docs sync): `checkpoint-go-live-full-pass-20260317-2021`
-- Latest readiness state: `ready=true` (`error_samples=29`, `storage_samples=29`, `error_distinct_days=7`, `storage_distinct_days=7`)
-- Latest readiness watch check: `2026-03-17T09:36:49.558Z`
-- Latest trend report: `artifacts/observability/trend-report-last.txt` (`OVERALL=PASS`, generated at `2026-03-17T09:54:36Z`)
-- Latest trend freshness: `artifacts/observability/trend-freshness-last.json` (`status=pass`, `age_minutes=623`)
+- Latest strict full-gate PASS evidence: `artifacts/go-live/go-live-full-20260318T073621Z.txt`
+- Latest strict full-gate run id: `gv-run-20260318T073621Z-6553`
+- Latest strict full-pass checkpoint tag: `checkpoint-go-live-full-pass-20260318-0748`
+- Latest checkpoint tag (post-pass docs sync): `checkpoint-go-live-full-pass-20260318-0748`
+- Latest readiness state: `ready=true` (`error_samples=31`, `storage_samples=31`, `error_distinct_days=7`, `storage_distinct_days=7`)
+- Latest readiness watch check: `2026-03-18T02:30:02.029Z`
+- Latest trend report: `artifacts/observability/trend-report-last.txt` (`OVERALL=PASS`, generated at `2026-03-18T02:40:01.686Z`)
+- Latest trend freshness: `artifacts/observability/trend-freshness-last.json` (`status=pass`, `age_minutes=305`)
 - Trend logrotate: `/etc/logrotate.d/geovito-observability-trend` verified (`cron-trend.log.1` produced)
-- Latest pushed commit at handoff creation: `4a33915`
+- Latest pushed commit at handoff creation: `253c746`
 
 ## PASS Matrix (Latest Strict Pass)
 - `Core Go-Live Gate` -> PASS

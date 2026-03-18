@@ -33,10 +33,10 @@ Summary evidence is written under:
 - summary includes `baseline_readiness_state` (`ready|not_ready|missing_report|disabled`)
 
 ## Latest Stable Checkpoint
-- Date (UTC): `2026-03-17`
-- Tag: `checkpoint-go-live-full-pass-20260317-2021`
-- Commit: `4a33915`
-- Full gate summary artifact: `artifacts/go-live/go-live-full-20260317T200937Z.txt`
+- Date (UTC): `2026-03-18`
+- Tag: `checkpoint-go-live-full-pass-20260318-0748`
+- Commit: `253c746`
+- Full gate summary artifact: `artifacts/go-live/go-live-full-20260318T073621Z.txt`
 - Outcome: `GO-LIVE FULL GATE: PASS (0 failed)`
 
 ### Emergency override (controlled)
