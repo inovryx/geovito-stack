@@ -200,7 +200,7 @@ perl -0777 -i -pe '
   END { die "CODEX_STATUS replace failed\n" if $ok < 5; }
 ' "$STATUS_DOC"
 
-insert_after_last_match_if_missing "$STATUS_DOC" '^- `ops\(release\): strict full gate rerun PASS \+ checkpoint tag pushed \([^)]+\)`$' "$ops_line"
+insert_after_last_match_if_missing "$STATUS_DOC" '^- `ops[(]release[)]: strict full gate rerun PASS [+] checkpoint tag pushed [(][^)]+[)]`$' "$ops_line"
 insert_after_last_match_if_missing "$STATUS_DOC" '^- `checkpoint-go-live-full-pass-[^`]+`$' "$tag_line"
 
 pass "docs synced for tag ${RELEASE_DOCS_TAG}"
