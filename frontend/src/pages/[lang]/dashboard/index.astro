@@ -585,8 +585,8 @@ const dashboardCopy = {
   showTools={true}
   toolsContext={dashboardCopy.title}
 >
-  <h1>{dashboardCopy.title}</h1>
-  <p class="small">{dashboardCopy.description}</p>
+  <h1 class="dashboard-page-title">{dashboardCopy.title}</h1>
+  <p class="small dashboard-page-lead">{dashboardCopy.description}</p>
 
   <section class="card panel gv-stack" data-dashboard-logged-out hidden>
     <h2>{dashboardCopy.loginRequiredTitle}</h2>
@@ -3201,8 +3201,14 @@ const dashboardCopy = {
           }
         }
 
+        const activeSubSectionKey = String(activeSubSectionLink?.dataset.dashboardSubsectionKey || '').trim();
         setText(activeTopModuleStateNode, effectiveTopModuleKey || '');
-        setText(activeSubSectionStateNode, String(activeSubSectionLink?.dataset.dashboardSubsectionKey || '').trim());
+        setText(activeSubSectionStateNode, activeSubSectionKey);
+        const dashboardShellNode = toNode(authedPanel);
+        if (dashboardShellNode) {
+          dashboardShellNode.dataset.dashboardSubsection = activeSubSectionKey;
+          dashboardShellNode.classList.toggle('is-dashboard-home', activeSubSectionKey === 'general');
+        }
 
         if (visibleModuleCards.length === 0) return;
 
@@ -5459,21 +5465,72 @@ const dashboardCopy = {
 </MainLayout>
 
 <style>
+  .dashboard-page-title {
+    margin: 0 0 0.22rem;
+    font-size: clamp(1.46rem, 1.2rem + 0.8vw, 1.94rem);
+    letter-spacing: -0.012em;
+    line-height: 1.14;
+  }
+
+  .dashboard-page-lead {
+    margin: 0 0 0.78rem;
+    max-width: 74ch;
+    color: color-mix(in srgb, var(--ink-muted) 92%, #0f172a);
+    line-height: 1.45;
+  }
+
   .dashboard-shell {
+    --dashboard-border: color-mix(in srgb, var(--brand) 14%, var(--border));
+    --dashboard-surface-soft: color-mix(in srgb, var(--surface-2) 84%, #ffffff);
+    --dashboard-surface-strong: color-mix(in srgb, var(--surface) 92%, #ffffff);
+    --dashboard-shadow-soft: 0 14px 30px rgb(15 23 42 / 0.08);
+    --dashboard-shadow-strong: 0 18px 38px rgb(15 23 42 / 0.12);
     gap: 1rem;
+    padding: 0.58rem;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 1.1rem;
+    background:
+      radial-gradient(circle at 4% 0%, color-mix(in srgb, var(--brand) 14%, transparent) 0, transparent 36%),
+      radial-gradient(circle at 96% 100%, color-mix(in srgb, var(--brand) 12%, transparent) 0, transparent 32%),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface) 92%, #ffffff),
+        color-mix(in srgb, var(--surface-2) 88%, #ffffff)
+      );
+    box-shadow: var(--dashboard-shadow-soft);
+  }
+
+  .dashboard-shell.is-dashboard-home {
+    border-color: color-mix(in srgb, var(--brand) 18%, var(--border));
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) {
+    border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+    box-shadow: var(--dashboard-shadow-strong);
   }
 
   .dashboard-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.85rem;
+    padding: 0.68rem 0.78rem;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 0.9rem;
+    background: var(--dashboard-surface-strong);
+  }
+
+  .dashboard-head [data-dashboard-feedback] {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--ink-muted) 90%, #0f172a);
   }
 
   .dashboard-head-actions {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.6rem;
     flex-wrap: wrap;
     justify-content: flex-end;
   }
@@ -5482,11 +5539,11 @@ const dashboardCopy = {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
     border-radius: 999px;
-    background: var(--surface-2);
-    padding: 0.24rem 0.58rem;
-    font-size: 0.74rem;
+    background: color-mix(in srgb, var(--brand-soft) 44%, var(--surface-2));
+    padding: 0.28rem 0.62rem;
+    font-size: 0.76rem;
     color: var(--ink-muted);
     user-select: none;
   }
@@ -5497,41 +5554,79 @@ const dashboardCopy = {
   }
 
   .dashboard-top-module-nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.52rem;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--dashboard-surface-soft) 88%, var(--brand-soft));
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) .dashboard-top-module-nav {
+    gap: 0.38rem;
+    padding: 0.34rem;
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+    background: color-mix(in srgb, var(--dashboard-surface-soft) 88%, transparent);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
   }
 
   .dashboard-top-module-pill {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     min-height: 2rem;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--surface-2) 72%, var(--brand-soft));
+    border-radius: 0.76rem;
+    border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
+    background: var(--dashboard-surface-strong);
     color: var(--ink);
     font-size: 0.8rem;
     font-weight: 700;
-    padding: 0.22rem 0.72rem;
+    padding: 0.26rem 0.72rem;
     letter-spacing: 0.01em;
+    box-shadow: 0 5px 14px rgb(15 23 42 / 0.06);
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) .dashboard-top-module-pill {
+    min-height: 1.72rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    border-radius: 0.64rem;
+    box-shadow: none;
+    opacity: 0.82;
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) .dashboard-top-module-pill.is-active {
+    opacity: 1;
+    font-weight: 700;
   }
 
   .dashboard-top-module-pill:hover {
     text-decoration: none;
-    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 58%, var(--surface-2));
+    border-color: color-mix(in srgb, var(--brand) 42%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 38%, var(--dashboard-surface-soft));
   }
 
   .dashboard-top-module-pill.is-active {
-    border-color: color-mix(in srgb, var(--brand) 48%, var(--border));
+    border-color: color-mix(in srgb, var(--brand) 54%, var(--border));
     color: var(--brand-strong);
-    background: color-mix(in srgb, var(--brand-soft) 82%, var(--surface-2));
+    background: color-mix(in srgb, var(--brand-soft) 74%, var(--dashboard-surface-soft));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 24%, transparent);
   }
 
   .dashboard-section-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
+    gap: 0.5rem;
+    padding: 0.44rem 0.38rem 0.22rem;
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) .dashboard-section-nav {
+    padding: 0.56rem;
+    border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--border));
+    border-radius: 0.82rem;
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 92%, #ffffff);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
   }
 
   .dashboard-section-pill {
@@ -5539,47 +5634,60 @@ const dashboardCopy = {
     align-items: center;
     min-height: 1.9rem;
     border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--surface-2);
+    border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
+    background: var(--dashboard-surface-strong);
     color: var(--ink);
-    font-size: 0.78rem;
+    font-size: 0.79rem;
     font-weight: 600;
-    padding: 0.18rem 0.64rem;
+    padding: 0.2rem 0.7rem;
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) .dashboard-section-pill {
+    min-height: 2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-color: color-mix(in srgb, var(--brand) 24%, var(--border));
   }
 
   .dashboard-section-pill:hover {
     text-decoration: none;
-    border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
-    background: var(--brand-soft);
+    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 42%, var(--dashboard-surface-soft));
   }
 
   .dashboard-section-pill.is-active {
-    border-color: color-mix(in srgb, var(--brand) 36%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 70%, var(--surface-2));
+    border-color: color-mix(in srgb, var(--brand) 42%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 76%, var(--dashboard-surface-soft));
     color: var(--brand-strong);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 20%, transparent);
   }
 
   .dashboard-module-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.58rem;
+    padding: 0.5rem;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 0.88rem;
+    background: color-mix(in srgb, var(--dashboard-surface-soft) 90%, var(--brand-soft));
   }
 
   .dashboard-module-card {
     display: grid;
-    gap: 0.28rem;
-    padding: 0.58rem 0.68rem;
-    border: 1px solid var(--border);
-    border-radius: 0.74rem;
-    background: var(--surface-2);
+    gap: 0.3rem;
+    padding: 0.62rem 0.72rem;
+    border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
+    border-radius: 0.82rem;
+    background: var(--dashboard-surface-strong);
     color: var(--ink);
     text-decoration: none;
+    box-shadow: 0 5px 14px rgb(15 23 42 / 0.05);
   }
 
   .dashboard-module-card:hover {
     text-decoration: none;
-    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 22%, var(--surface-2));
+    border-color: color-mix(in srgb, var(--brand) 38%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 24%, var(--dashboard-surface-soft));
   }
 
   .dashboard-module-card strong {
@@ -5611,29 +5719,114 @@ const dashboardCopy = {
   }
 
   .dashboard-module-card.is-active {
-    border-color: color-mix(in srgb, var(--brand) 44%, var(--border));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 24%, transparent);
-    background: color-mix(in srgb, var(--brand-soft) 44%, var(--surface-2));
+    border-color: color-mix(in srgb, var(--brand) 46%, var(--border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 24%, transparent), 0 8px 18px rgb(15 23 42 / 0.08);
+    background: color-mix(in srgb, var(--brand-soft) 46%, var(--dashboard-surface-soft));
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) .dashboard-head {
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 26%, var(--dashboard-surface-strong));
+  }
+
+  .dashboard-shell:not(.is-dashboard-home) .dashboard-module-grid {
+    display: none;
+  }
+
+  :global(html.shell-dashboard-auth .left-nav-card) {
+    border-color: color-mix(in srgb, var(--brand) 20%, var(--border));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 96%, #ffffff),
+      color-mix(in srgb, var(--surface-2) 94%, #ffffff)
+    );
+    box-shadow: 0 16px 30px rgb(15 23 42 / 0.11);
+  }
+
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .sidebar-block) {
+    border-radius: 0.78rem;
+    border-color: color-mix(in srgb, var(--brand) 20%, var(--border));
+    background: color-mix(in srgb, var(--surface-strong) 92%, #ffffff);
+  }
+
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list .small-link),
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .sidebar-workspace-list .small-link),
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .sidebar-admin-list .small-link) {
+    display: flex;
+    align-items: center;
+    min-height: 1.95rem;
+    border-radius: 0.58rem;
+    border: 1px solid transparent;
+    padding: 0.16rem 0.44rem;
+    text-decoration: none;
+  }
+
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list .small-link:hover),
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .sidebar-workspace-list .small-link:hover),
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .sidebar-admin-list .small-link:hover) {
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 28%, var(--surface-subtle));
+    text-decoration: none;
+  }
+
+  :global(html.shell-dashboard-auth .left-sidebar-stack.is-dashboard-route .small-link.is-active) {
+    border-color: color-mix(in srgb, var(--brand) 46%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 58%, var(--surface-subtle));
+    box-shadow: inset 2px 0 0 color-mix(in srgb, var(--brand) 58%, transparent);
+    text-decoration: none;
+    color: var(--brand-strong);
+  }
+
+  :global(html.shell-dashboard-auth .right-column) {
+    border-color: color-mix(in srgb, var(--brand) 22%, var(--border));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 96%, #ffffff),
+      color-mix(in srgb, var(--surface-2) 94%, #ffffff)
+    );
+    box-shadow: 0 16px 30px rgb(15 23 42 / 0.11);
+  }
+
+  :global(html.shell-dashboard-auth .right-column .card.panel) {
+    border-radius: 0.78rem;
+    border-color: color-mix(in srgb, var(--brand) 18%, var(--border));
+    background: color-mix(in srgb, var(--surface-strong) 92%, #ffffff);
+    box-shadow: 0 8px 22px rgb(15 23 42 / 0.06);
+  }
+
+  :global(html.shell-dashboard-auth .right-column .card.panel h2) {
+    font-size: 0.94rem;
+    letter-spacing: 0.01em;
+  }
+
+  :global(html.shell-dashboard-auth .right-column .card.panel .small) {
+    line-height: 1.44;
+    color: color-mix(in srgb, var(--ink-muted) 92%, #0f172a);
   }
 
   .dashboard-lanes {
     display: grid;
-    gap: 0.95rem;
+    gap: 1rem;
   }
 
   .dashboard-lane {
-    border: 1px solid var(--border);
-    border-radius: 0.9rem;
-    background: color-mix(in srgb, var(--surface-2) 68%, transparent);
-    padding: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
+    border-radius: 1rem;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--dashboard-surface-strong) 94%, #ffffff),
+      color-mix(in srgb, var(--dashboard-surface-soft) 92%, #ffffff)
+    );
+    box-shadow: 0 10px 26px rgb(15 23 42 / 0.07);
+    padding: 0.88rem;
   }
 
   .dashboard-lane-control {
-    border-color: color-mix(in srgb, var(--brand) 28%, var(--border));
+    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--brand-soft) 36%, var(--surface-2)),
-      color-mix(in srgb, var(--surface-2) 72%, transparent)
+      color-mix(in srgb, var(--brand-soft) 48%, var(--dashboard-surface-soft)),
+      color-mix(in srgb, var(--dashboard-surface-soft) 82%, #ffffff)
     );
   }
 
@@ -5641,7 +5834,7 @@ const dashboardCopy = {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.85rem;
   }
 
   .dashboard-lane-title-wrap {
@@ -5651,8 +5844,9 @@ const dashboardCopy = {
 
   .dashboard-lane-title {
     margin: 0;
-    font-size: 1.02rem;
+    font-size: 1.08rem;
     font-weight: 700;
+    letter-spacing: -0.008em;
   }
 
   .dashboard-lane-toggle {
@@ -5679,10 +5873,10 @@ const dashboardCopy = {
     display: grid;
     gap: 0.1rem;
     text-align: right;
-    padding: 0.42rem 0.58rem;
-    border: 1px solid var(--border);
+    padding: 0.44rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--brand) 24%, var(--border));
     border-radius: 0.72rem;
-    background: var(--surface-2);
+    background: color-mix(in srgb, var(--brand-soft) 44%, var(--dashboard-surface-strong));
   }
 
   .dashboard-role-pill span {
@@ -5699,7 +5893,7 @@ const dashboardCopy = {
 
   .dashboard-grid {
     display: grid;
-    gap: 0.875rem;
+    gap: 0.92rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -5720,8 +5914,8 @@ const dashboardCopy = {
     gap: 0.14rem;
     padding: 0.52rem 0.62rem;
     border-radius: 0.72rem;
-    border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 60%, var(--surface-2));
+    border: 1px solid color-mix(in srgb, var(--brand) 34%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 62%, var(--dashboard-surface-soft));
   }
 
   .dashboard-control-pill span {
@@ -5738,8 +5932,9 @@ const dashboardCopy = {
   }
 
   .dashboard-control-card {
-    border-color: color-mix(in srgb, var(--brand) 18%, var(--border));
-    background: color-mix(in srgb, var(--surface) 84%, var(--brand-soft));
+    border-color: color-mix(in srgb, var(--brand) 22%, var(--border));
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 86%, var(--brand-soft));
+    box-shadow: 0 8px 20px rgb(15 23 42 / 0.06);
   }
 
   .dashboard-control-card .dashboard-mini-title {
@@ -5828,9 +6023,26 @@ const dashboardCopy = {
     flex-direction: column;
     gap: 0.12rem;
     padding: 0.55rem 0.65rem;
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
     border-radius: 0.75rem;
-    background: var(--surface-2);
+    background: var(--dashboard-surface-strong);
+  }
+
+  .dashboard-shell .ui-button {
+    border-radius: 0.66rem;
+    border-color: color-mix(in srgb, var(--brand) 22%, var(--border));
+  }
+
+  .dashboard-shell .ui-button:hover {
+    border-color: color-mix(in srgb, var(--brand) 40%, var(--border));
+  }
+
+  .dashboard-shell .ui-button-secondary {
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 92%, var(--brand-soft));
+  }
+
+  .dashboard-shell .ui-button-secondary:hover {
+    background: color-mix(in srgb, var(--brand-soft) 36%, var(--dashboard-surface-soft));
   }
 
   .dashboard-kpi span {
@@ -5861,7 +6073,8 @@ const dashboardCopy = {
     padding: 0.6rem;
     border: 1px solid color-mix(in srgb, var(--brand) 26%, var(--border));
     border-radius: 0.72rem;
-    background: color-mix(in srgb, var(--surface-2) 86%, var(--brand-soft));
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 90%, var(--brand-soft));
+    box-shadow: 0 8px 20px rgb(15 23 42 / 0.05);
   }
 
   .dashboard-command-card strong {
@@ -5891,9 +6104,10 @@ const dashboardCopy = {
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.5rem 0.65rem;
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--border));
     border-radius: 0.65rem;
-    background: var(--surface-2);
+    background: var(--dashboard-surface-strong);
+    box-shadow: 0 5px 14px rgb(15 23 42 / 0.04);
   }
 
   .dashboard-owner-summary-list span {
@@ -5913,12 +6127,13 @@ const dashboardCopy = {
   }
 
   .dashboard-owner-widget {
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
     border-radius: 0.72rem;
-    background: var(--surface-2);
+    background: var(--dashboard-surface-strong);
     padding: 0.55rem 0.62rem;
     display: grid;
     gap: 0.32rem;
+    box-shadow: 0 6px 16px rgb(15 23 42 / 0.04);
   }
 
   .dashboard-owner-widget header {
@@ -5993,12 +6208,13 @@ const dashboardCopy = {
   }
 
   .dashboard-activity-item {
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
     border-radius: 0.65rem;
-    background: var(--surface-2);
+    background: var(--dashboard-surface-strong);
     padding: 0.5rem 0.6rem;
     display: grid;
     gap: 0.2rem;
+    box-shadow: 0 5px 14px rgb(15 23 42 / 0.04);
   }
 
   .dashboard-activity-item strong {
@@ -6026,9 +6242,9 @@ const dashboardCopy = {
     gap: 0.45rem;
     width: fit-content;
     padding: 0.18rem 0.5rem;
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
     border-radius: 999px;
-    background: var(--surface-2);
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 94%, var(--brand-soft));
     font-size: 0.76rem;
     color: var(--ink);
   }
@@ -6095,8 +6311,8 @@ const dashboardCopy = {
     gap: 0.75rem;
     padding: 0.5rem 0.65rem;
     border-radius: 0.65rem;
-    border: 1px solid var(--border);
-    background: var(--surface-2);
+    border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
+    background: var(--dashboard-surface-strong);
     font-size: 0.84rem;
   }
 
@@ -6121,18 +6337,18 @@ const dashboardCopy = {
   }
 
   .dashboard-onboarding-example-block {
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
     border-radius: 0.65rem;
-    background: var(--surface-2);
+    background: var(--dashboard-surface-strong);
     padding: 0.5rem 0.56rem;
     display: grid;
     gap: 0.4rem;
   }
 
   .dashboard-mini-item {
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
     border-radius: 0.65rem;
-    background: var(--surface-2);
+    background: var(--dashboard-surface-strong);
     padding: 0.5rem 0.6rem;
     display: grid;
     gap: 0.2rem;
@@ -6198,6 +6414,18 @@ const dashboardCopy = {
   }
 
   @media (max-width: 960px) {
+    .dashboard-shell {
+      padding: 0.48rem;
+    }
+
+    .dashboard-top-module-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-section-nav {
+      padding-inline: 0.1rem;
+    }
+
     .dashboard-lane-head {
       flex-direction: column;
       align-items: flex-start;
@@ -6233,6 +6461,12 @@ const dashboardCopy = {
     }
 
     .dashboard-community-form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .dashboard-top-module-nav {
       grid-template-columns: 1fr;
     }
   }

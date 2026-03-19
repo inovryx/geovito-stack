@@ -682,19 +682,35 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
 }
 
 .left-sidebar-stack.is-dashboard-route {
-    gap: 0.62rem;
+    gap: 0.66rem;
+}
+
+.left-sidebar-stack.is-dashboard-route .sidebar-block {
+    border-radius: 0.8rem;
+    box-shadow: 0 10px 22px rgb(15 23 42 / 0.07);
+}
+
+.left-sidebar-stack.is-dashboard-route .sidebar-title {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.69rem;
+    color: color-mix(in srgb, var(--ink-muted) 92%, #0f172a);
+}
+
+.left-sidebar-stack.is-dashboard-route .small {
+    line-height: 1.45;
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules {
     order: 1;
-    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 42%, var(--surface-strong));
+    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 30%, var(--surface-strong));
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-dashboard-session {
     order: 2;
-    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 36%, var(--surface-strong));
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 24%, var(--surface-strong));
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-dashboard-session .sidebar-auth-row {
@@ -706,35 +722,84 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list .small-link {
-    font-size: 0.92rem;
-    display: inline-block;
+    font-size: 0.9rem;
     line-height: 1.25;
+    display: flex;
+    align-items: center;
+    min-height: 1.95rem;
+    border: 1px solid transparent;
+    border-radius: 0.56rem;
+    padding: 0.16rem 0.44rem;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list .small-link:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 24%, var(--surface-subtle));
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-dashboard-modules-list .small-link.is-active {
     font-weight: 700;
     color: var(--brand-strong);
-    text-decoration: underline;
-    text-decoration-thickness: 1.4px;
-    text-underline-offset: 2px;
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 44%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 52%, var(--surface-subtle));
+    box-shadow: inset 2px 0 0 color-mix(in srgb, var(--brand) 58%, transparent);
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-admin-tools .small-link.is-active {
     font-weight: 700;
     color: var(--brand-strong);
-    text-decoration: underline;
-    text-decoration-thickness: 1.4px;
-    text-underline-offset: 2px;
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 44%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 52%, var(--surface-subtle));
+    box-shadow: inset 2px 0 0 color-mix(in srgb, var(--brand) 58%, transparent);
+}
+
+.left-sidebar-stack.is-dashboard-route .sidebar-admin-list .small-link:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 24%, var(--surface-subtle));
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-workspace {
     order: 3;
-    border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 54%, var(--surface-strong));
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 24%, var(--surface-strong));
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-workspace-list .small-link {
-    font-size: 0.93rem;
+    font-size: 0.9rem;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    min-height: 1.95rem;
+    border: 1px solid transparent;
+    border-radius: 0.56rem;
+    padding: 0.16rem 0.44rem;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.left-sidebar-stack.is-dashboard-route .sidebar-admin-list .small-link {
+    font-weight: 600;
+}
+
+.left-sidebar-stack.is-dashboard-route .sidebar-workspace-list .small-link:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 26%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 24%, var(--surface-subtle));
+}
+
+.left-sidebar-stack.is-dashboard-route .sidebar-workspace-list .small-link.is-active {
+    font-weight: 700;
+    color: var(--brand-strong);
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 44%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 52%, var(--surface-subtle));
+    box-shadow: inset 2px 0 0 color-mix(in srgb, var(--brand) 58%, transparent);
 }
 
 .left-sidebar-stack.is-dashboard-route .sidebar-auth-links {
