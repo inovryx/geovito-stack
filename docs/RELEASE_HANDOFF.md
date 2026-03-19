@@ -1,6 +1,6 @@
 # RELEASE HANDOFF
 
-Last updated (UTC): 2026-03-18T19:15:49Z
+Last updated (UTC): 2026-03-19T08:21:58Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 
@@ -14,7 +14,11 @@ Branch: `main`
 - Latest trend report: `artifacts/observability/trend-report-last.txt` (`OVERALL=PASS`, generated at `2026-03-18T02:40:01.686Z`)
 - Latest trend freshness: `artifacts/observability/trend-freshness-last.json` (`status=pass`, `age_minutes=995`)
 - Trend logrotate: `/etc/logrotate.d/geovito-observability-trend` verified (`cron-trend.log.1` produced)
-- Latest pushed commit at handoff creation: `f56fd3a`
+- Latest pushed commit at handoff creation: `534520c`
+
+## Additional Ops Checkpoints (Non-Gate)
+- Dashboard modular menu rollout checkpoint: `checkpoint-dashboard-menu-modularization-20260319-0818`
+- Dashboard modularization implementation commit: `1c08c15`
 
 ## PASS Matrix (Latest Strict Pass)
 - `Core Go-Live Gate` -> PASS
