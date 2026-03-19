@@ -27,6 +27,24 @@
 - Owner:
   - Admin + owner widgets (release/moderation/locale)
 
+## Menu Modules (Focus Mode Ready)
+- Top modules: `Account`, `Content`, `Community`, `Ops`, `Admin`
+- Sub-section mapping:
+  - `Account`: `#dashboard-member`, `#dashboard-member-settings`
+  - `Content`: `#dashboard-editorial-moderation`, `#dashboard-editorial-reports`, `#dashboard-editorial-account-requests`
+  - `Community`: `#dashboard-editorial-locale`, `#dashboard-member-follow`, `#dashboard-member-notifications`, `#dashboard-member-saved-lists`
+  - `Ops`: `#dashboard-control`, `#dashboard-control-ads`
+  - `Admin`: `#dashboard-admin-release`, `#dashboard-admin-moderation`, `#dashboard-admin-locale`
+- Persistence keys:
+  - `geovito_dashboard_focus_mode_v1`
+  - `geovito_dashboard_active_module_v1`
+  - `geovito_dashboard_last_subsection_v1`
+- Init precedence:
+  1. URL hash
+  2. persisted last subsection
+  3. persisted/selected top-module default subsection
+  4. role fallback (`#dashboard-member`)
+
 ## Hash Alias Map (Locked)
 - `#dashboard-general` -> `#dashboard-member`
 - `#dashboard-settings` -> `#dashboard-member-settings`

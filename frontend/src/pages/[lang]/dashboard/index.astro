@@ -509,11 +509,26 @@ const dashboardCopy = {
   loading: translate(ui, 'dashboard.loading', {}, 'Loading dashboard data...'),
   loadFailed: translate(ui, 'dashboard.loadFailed', {}, 'Some dashboard cards could not be loaded.'),
   moduleNavTitle: translate(ui, 'dashboard.moduleNavTitle', {}, 'Dashboard modules'),
+  topModuleNavTitle: translate(ui, 'dashboard.topModuleNavTitle', {}, 'Dashboard menu'),
+  subSectionNavTitle: translate(ui, 'dashboard.subSectionNavTitle', {}, 'Module sections'),
+  topModuleAccount: translate(ui, 'dashboard.topModuleAccount', {}, 'Account'),
+  topModuleContent: translate(ui, 'dashboard.topModuleContent', {}, 'Content'),
+  topModuleCommunity: translate(ui, 'dashboard.topModuleCommunity', {}, 'Community'),
+  topModuleOps: translate(ui, 'dashboard.topModuleOps', {}, 'Ops'),
+  topModuleAdmin: translate(ui, 'dashboard.topModuleAdmin', {}, 'Admin'),
   moduleGeneral: translate(ui, 'dashboard.moduleGeneral', {}, 'General'),
   moduleSeo: translate(ui, 'dashboard.moduleSeo', {}, 'SEO'),
   moduleAds: translate(ui, 'dashboard.moduleAds', {}, 'Ads'),
   moduleModeration: translate(ui, 'dashboard.moduleModeration', {}, 'Moderation'),
+  moduleReports: translate(ui, 'dashboard.moduleReports', {}, 'Reports'),
+  moduleAccountRequests: translate(ui, 'dashboard.moduleAccountRequests', {}, 'Account requests'),
   moduleTranslation: translate(ui, 'dashboard.moduleTranslation', {}, 'Translation'),
+  moduleCommunityFollow: translate(ui, 'dashboard.moduleCommunityFollow', {}, 'Follows'),
+  moduleCommunityNotifications: translate(ui, 'dashboard.moduleCommunityNotifications', {}, 'Notifications'),
+  moduleCommunitySaved: translate(ui, 'dashboard.moduleCommunitySaved', {}, 'Saved lists'),
+  moduleAdminRelease: translate(ui, 'dashboard.moduleAdminRelease', {}, 'Release status'),
+  moduleAdminModeration: translate(ui, 'dashboard.moduleAdminModeration', {}, 'Moderation ops'),
+  moduleAdminLocale: translate(ui, 'dashboard.moduleAdminLocale', {}, 'Locale ops'),
   moduleSettings: translate(ui, 'dashboard.moduleSettings', {}, 'Settings'),
   moduleGeneralBody: translate(
     ui,
@@ -554,6 +569,7 @@ const dashboardCopy = {
   moduleRoleMember: translate(ui, 'dashboard.moduleRoleMember', {}, 'Member'),
   moduleRoleEditor: translate(ui, 'dashboard.moduleRoleEditor', {}, 'Editor+'),
   moduleRoleAdmin: translate(ui, 'dashboard.moduleRoleAdmin', {}, 'Admin+'),
+  focusModeToggle: translate(ui, 'dashboard.focusModeToggle', {}, 'Focus mode'),
 };
 ---
 
@@ -581,29 +597,218 @@ const dashboardCopy = {
   <section class="dashboard-shell gv-stack" data-dashboard-authenticated hidden>
     <div class="dashboard-head">
       <p class="small" data-dashboard-feedback aria-live="polite">{dashboardCopy.loading}</p>
-      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-refresh>
-        <span class="ui-button-label">{dashboardCopy.refresh}</span>
-      </button>
+      <div class="dashboard-head-actions">
+        <label class="dashboard-focus-mode">
+          <input type="checkbox" data-dashboard-focus-mode data-testid="dashboard-focus-mode-toggle" />
+          <span>{dashboardCopy.focusModeToggle}</span>
+        </label>
+        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-dashboard-refresh>
+          <span class="ui-button-label">{dashboardCopy.refresh}</span>
+        </button>
+      </div>
     </div>
 
-    <nav class="dashboard-section-nav" aria-label={dashboardCopy.moduleNavTitle}>
+    <div class="dashboard-state-markers" hidden>
+      <span data-dashboard-active-module data-testid="dashboard-active-module"></span>
+      <span data-dashboard-active-subsection data-testid="dashboard-active-subsection"></span>
+    </div>
+
+    <nav class="dashboard-top-module-nav" aria-label={dashboardCopy.topModuleNavTitle}>
+      <a
+        class="dashboard-top-module-pill"
+        href="#dashboard-member"
+        data-dashboard-top-module-link
+        data-dashboard-top-module-key="account"
+        data-dashboard-role-gated
+        data-min-role="member"
+        data-testid="dashboard-top-module-account"
+      >
+        {dashboardCopy.topModuleAccount}
+      </a>
+      <a
+        class="dashboard-top-module-pill"
+        href="#dashboard-editorial-moderation"
+        data-dashboard-top-module-link
+        data-dashboard-top-module-key="content"
+        data-dashboard-role-gated
+        data-min-role="editor"
+        data-testid="dashboard-top-module-content"
+        hidden
+      >
+        {dashboardCopy.topModuleContent}
+      </a>
+      <a
+        class="dashboard-top-module-pill"
+        href="#dashboard-member-follow"
+        data-dashboard-top-module-link
+        data-dashboard-top-module-key="community"
+        data-dashboard-role-gated
+        data-min-role="member"
+        data-testid="dashboard-top-module-community"
+      >
+        {dashboardCopy.topModuleCommunity}
+      </a>
+      <a
+        class="dashboard-top-module-pill"
+        href="#dashboard-control"
+        data-dashboard-top-module-link
+        data-dashboard-top-module-key="ops"
+        data-dashboard-role-gated
+        data-min-role="admin"
+        data-testid="dashboard-top-module-ops"
+        hidden
+      >
+        {dashboardCopy.topModuleOps}
+      </a>
+      <a
+        class="dashboard-top-module-pill"
+        href="#dashboard-admin-release"
+        data-dashboard-top-module-link
+        data-dashboard-top-module-key="admin"
+        data-dashboard-role-gated
+        data-min-role="admin"
+        data-testid="dashboard-top-module-admin"
+        hidden
+      >
+        {dashboardCopy.topModuleAdmin}
+      </a>
+    </nav>
+
+    <nav class="dashboard-section-nav" aria-label={dashboardCopy.subSectionNavTitle}>
       <a
         class="dashboard-section-pill"
         href="#dashboard-member"
         data-dashboard-section-pill
+        data-dashboard-subsection-key="general"
+        data-dashboard-top-module-key="account"
         data-dashboard-target-lane="dashboard-member"
         data-dashboard-role-gated
         data-min-role="member"
+        data-testid="dashboard-subsection-general"
       >
         {dashboardCopy.moduleGeneral}
       </a>
       <a
         class="dashboard-section-pill"
+        href="#dashboard-member-settings"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="settings"
+        data-dashboard-top-module-key="account"
+        data-dashboard-target-lane="dashboard-member"
+        data-dashboard-role-gated
+        data-min-role="member"
+        data-testid="dashboard-subsection-settings"
+      >
+        {dashboardCopy.moduleSettings}
+      </a>
+      <a
+        class="dashboard-section-pill"
+        href="#dashboard-editorial-moderation"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="moderation"
+        data-dashboard-top-module-key="content"
+        data-dashboard-target-lane="dashboard-editorial"
+        data-dashboard-role-gated
+        data-min-role="editor"
+        data-testid="dashboard-subsection-moderation"
+        hidden
+      >
+        {dashboardCopy.moduleModeration}
+      </a>
+      <a
+        class="dashboard-section-pill"
+        href="#dashboard-editorial-reports"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="reports"
+        data-dashboard-top-module-key="content"
+        data-dashboard-target-lane="dashboard-editorial"
+        data-dashboard-role-gated
+        data-min-role="editor"
+        data-testid="dashboard-subsection-reports"
+        hidden
+      >
+        {dashboardCopy.moduleReports}
+      </a>
+      <a
+        class="dashboard-section-pill"
+        href="#dashboard-editorial-account-requests"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="accountRequests"
+        data-dashboard-top-module-key="content"
+        data-dashboard-target-lane="dashboard-editorial"
+        data-dashboard-role-gated
+        data-min-role="editor"
+        data-testid="dashboard-subsection-accountRequests"
+        hidden
+      >
+        {dashboardCopy.moduleAccountRequests}
+      </a>
+      <a
+        class="dashboard-section-pill"
+        href="#dashboard-editorial-locale"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="translation"
+        data-dashboard-top-module-key="community"
+        data-dashboard-target-lane="dashboard-editorial"
+        data-dashboard-role-gated
+        data-min-role="editor"
+        data-testid="dashboard-subsection-translation"
+        hidden
+      >
+        {dashboardCopy.moduleTranslation}
+      </a>
+      <a
+        class="dashboard-section-pill"
+        href="#dashboard-member-follow"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="communityFollow"
+        data-dashboard-top-module-key="community"
+        data-dashboard-target-lane="dashboard-member"
+        data-dashboard-focus-target="dashboard-member-follow"
+        data-dashboard-role-gated
+        data-min-role="member"
+        data-testid="dashboard-subsection-communityFollow"
+      >
+        {dashboardCopy.moduleCommunityFollow}
+      </a>
+      <a
+        class="dashboard-section-pill"
+        href="#dashboard-member-notifications"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="communityNotifications"
+        data-dashboard-top-module-key="community"
+        data-dashboard-target-lane="dashboard-member"
+        data-dashboard-focus-target="dashboard-member-notifications"
+        data-dashboard-role-gated
+        data-min-role="member"
+        data-testid="dashboard-subsection-communityNotifications"
+      >
+        {dashboardCopy.moduleCommunityNotifications}
+      </a>
+      <a
+        class="dashboard-section-pill"
+        href="#dashboard-member-saved-lists"
+        data-dashboard-section-pill
+        data-dashboard-subsection-key="communitySaved"
+        data-dashboard-top-module-key="community"
+        data-dashboard-target-lane="dashboard-member"
+        data-dashboard-focus-target="dashboard-member-saved-lists"
+        data-dashboard-role-gated
+        data-min-role="member"
+        data-testid="dashboard-subsection-communitySaved"
+      >
+        {dashboardCopy.moduleCommunitySaved}
+      </a>
+      <a
+        class="dashboard-section-pill"
         href="#dashboard-control"
         data-dashboard-section-pill
+        data-dashboard-subsection-key="seo"
+        data-dashboard-top-module-key="ops"
         data-dashboard-target-lane="dashboard-control"
         data-dashboard-role-gated
         data-min-role="admin"
+        data-testid="dashboard-subsection-seo"
         hidden
       >
         {dashboardCopy.moduleSeo}
@@ -612,44 +817,57 @@ const dashboardCopy = {
         class="dashboard-section-pill"
         href="#dashboard-control-ads"
         data-dashboard-section-pill
+        data-dashboard-subsection-key="ads"
+        data-dashboard-top-module-key="ops"
         data-dashboard-target-lane="dashboard-control"
         data-dashboard-role-gated
         data-min-role="admin"
+        data-testid="dashboard-subsection-ads"
         hidden
       >
         {dashboardCopy.moduleAds}
       </a>
       <a
         class="dashboard-section-pill"
-        href="#dashboard-editorial-moderation"
+        href="#dashboard-admin-release"
         data-dashboard-section-pill
-        data-dashboard-target-lane="dashboard-editorial"
+        data-dashboard-subsection-key="adminRelease"
+        data-dashboard-top-module-key="admin"
+        data-dashboard-target-lane="dashboard-control"
         data-dashboard-role-gated
-        data-min-role="editor"
+        data-min-role="admin"
+        data-testid="dashboard-subsection-adminRelease"
         hidden
       >
-        {dashboardCopy.moduleModeration}
+        {dashboardCopy.moduleAdminRelease}
       </a>
       <a
         class="dashboard-section-pill"
-        href="#dashboard-editorial-locale"
+        href="#dashboard-admin-moderation"
         data-dashboard-section-pill
+        data-dashboard-subsection-key="adminModeration"
+        data-dashboard-top-module-key="admin"
         data-dashboard-target-lane="dashboard-editorial"
         data-dashboard-role-gated
-        data-min-role="editor"
+        data-min-role="admin"
+        data-testid="dashboard-subsection-adminModeration"
         hidden
       >
-        {dashboardCopy.moduleTranslation}
+        {dashboardCopy.moduleAdminModeration}
       </a>
       <a
         class="dashboard-section-pill"
-        href="#dashboard-member-settings"
+        href="#dashboard-admin-locale"
         data-dashboard-section-pill
-        data-dashboard-target-lane="dashboard-member"
+        data-dashboard-subsection-key="adminLocale"
+        data-dashboard-top-module-key="admin"
+        data-dashboard-target-lane="dashboard-editorial"
         data-dashboard-role-gated
-        data-min-role="member"
+        data-min-role="admin"
+        data-testid="dashboard-subsection-adminLocale"
+        hidden
       >
-        {dashboardCopy.moduleSettings}
+        {dashboardCopy.moduleAdminLocale}
       </a>
     </nav>
 
@@ -658,6 +876,8 @@ const dashboardCopy = {
         class="dashboard-module-card"
         href="#dashboard-member"
         data-dashboard-module-link
+        data-dashboard-subsection-key="general"
+        data-dashboard-top-module-key="account"
         data-dashboard-role-gated
         data-min-role="member"
       >
@@ -669,6 +889,8 @@ const dashboardCopy = {
         class="dashboard-module-card"
         href="#dashboard-member-settings"
         data-dashboard-module-link
+        data-dashboard-subsection-key="settings"
+        data-dashboard-top-module-key="account"
         data-dashboard-role-gated
         data-min-role="member"
       >
@@ -680,6 +902,8 @@ const dashboardCopy = {
         class="dashboard-module-card"
         href="#dashboard-editorial-moderation"
         data-dashboard-module-link
+        data-dashboard-subsection-key="moderation"
+        data-dashboard-top-module-key="content"
         data-dashboard-role-gated
         data-min-role="editor"
         hidden
@@ -692,6 +916,8 @@ const dashboardCopy = {
         class="dashboard-module-card"
         href="#dashboard-editorial-locale"
         data-dashboard-module-link
+        data-dashboard-subsection-key="translation"
+        data-dashboard-top-module-key="community"
         data-dashboard-role-gated
         data-min-role="editor"
         hidden
@@ -704,6 +930,8 @@ const dashboardCopy = {
         class="dashboard-module-card"
         href="#dashboard-control-seo"
         data-dashboard-module-link
+        data-dashboard-subsection-key="seo"
+        data-dashboard-top-module-key="ops"
         data-dashboard-role-gated
         data-min-role="admin"
         hidden
@@ -716,6 +944,8 @@ const dashboardCopy = {
         class="dashboard-module-card"
         href="#dashboard-control-ads"
         data-dashboard-module-link
+        data-dashboard-subsection-key="ads"
+        data-dashboard-top-module-key="ops"
         data-dashboard-role-gated
         data-min-role="admin"
         hidden
@@ -750,7 +980,7 @@ const dashboardCopy = {
         </header>
 
         <div class="dashboard-grid" data-dashboard-lane-content>
-          <article class="card panel gv-stack" id="dashboard-member-follow">
+          <article class="card panel gv-stack" id="dashboard-member-overview">
             <h3 class="dashboard-mini-title">{dashboardCopy.overviewTitle}</h3>
             <dl class="dashboard-dl">
               <div>
@@ -776,7 +1006,7 @@ const dashboardCopy = {
             </dl>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-notifications">
+          <article class="card panel gv-stack" id="dashboard-member-preferences">
             <h3 class="dashboard-mini-title">{dashboardCopy.preferenceTitle}</h3>
             <p class="small">{dashboardCopy.preferenceBody}</p>
             <p class="dashboard-kpi">
@@ -871,7 +1101,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" id="dashboard-member-notifications">
             <h3 class="dashboard-mini-title">{dashboardCopy.notificationsTitle}</h3>
             <p class="small">{dashboardCopy.notificationsBody}</p>
             <div class="dashboard-kpi-grid">
@@ -900,7 +1130,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" id="dashboard-member-saved-lists">
             <h3 class="dashboard-mini-title">{dashboardCopy.savedListsTitle}</h3>
             <p class="small">{dashboardCopy.savedListsBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1751,6 +1981,7 @@ const dashboardCopy = {
       const loggedOutPanel = document.querySelector('[data-dashboard-logged-out]');
       const authedPanel = document.querySelector('[data-dashboard-authenticated]');
       const refreshButton = document.querySelector('[data-dashboard-refresh]');
+      const focusModeToggle = document.querySelector('[data-dashboard-focus-mode]');
       const feedback = document.querySelector('[data-dashboard-feedback]');
       const localeNote = document.querySelector('[data-dashboard-locale-note]');
       const controlNote = document.querySelector('[data-dashboard-control-note]');
@@ -1880,6 +2111,9 @@ const dashboardCopy = {
       const activityEmptyNode = document.querySelector('[data-dashboard-activity-empty]');
       const activityWarnOnlyNode = document.querySelector('[data-dashboard-activity-warn-only]');
       const activityClearNode = document.querySelector('[data-dashboard-activity-clear]');
+      const activeTopModuleStateNode = document.querySelector('[data-dashboard-active-module]');
+      const activeSubSectionStateNode = document.querySelector('[data-dashboard-active-subsection]');
+      const topModuleLinks = Array.from(document.querySelectorAll('[data-dashboard-top-module-link]'));
       const sectionPillLinks = Array.from(document.querySelectorAll('[data-dashboard-section-pill]'));
       const sectionNavPillLinks = Array.from(
         document.querySelectorAll('.dashboard-section-nav [data-dashboard-section-pill]')
@@ -1916,71 +2150,169 @@ const dashboardCopy = {
       const ACTIVITY_HISTORY_STORAGE_KEY = 'geovito_dashboard_activity_history_v1';
       const ACTIVITY_HISTORY_LIMIT = 20;
       const LANE_STATE_STORAGE_KEY = 'geovito_dashboard_lane_state_v1';
+      const FOCUS_MODE_STORAGE_KEY = 'geovito_dashboard_focus_mode_v1';
+      const ACTIVE_TOP_MODULE_STORAGE_KEY = 'geovito_dashboard_active_module_v1';
+      const LAST_SUBSECTION_STORAGE_KEY = 'geovito_dashboard_last_subsection_v1';
       const roleRanks = {
         member: 0,
         editor: 1,
         admin: 2,
         owner: 3,
       };
-      const dashboardModules = {
+      const subSections = {
         general: {
           hash: '#dashboard-member',
           laneId: 'dashboard-member',
           minRole: 'member',
           focusId: 'dashboard-member',
+          topModuleKey: 'account',
         },
         settings: {
           hash: '#dashboard-member-settings',
           laneId: 'dashboard-member',
           minRole: 'member',
           focusId: 'dashboard-member-settings',
+          topModuleKey: 'account',
         },
         moderation: {
           hash: '#dashboard-editorial-moderation',
           laneId: 'dashboard-editorial',
           minRole: 'editor',
           focusId: 'dashboard-editorial-moderation',
+          topModuleKey: 'content',
         },
         reports: {
           hash: '#dashboard-editorial-reports',
           laneId: 'dashboard-editorial',
           minRole: 'editor',
           focusId: 'dashboard-editorial-reports',
+          topModuleKey: 'content',
         },
         accountRequests: {
           hash: '#dashboard-editorial-account-requests',
           laneId: 'dashboard-editorial',
           minRole: 'editor',
           focusId: 'dashboard-editorial-account-requests',
+          topModuleKey: 'content',
         },
         translation: {
           hash: '#dashboard-editorial-locale',
           laneId: 'dashboard-editorial',
           minRole: 'editor',
           focusId: 'dashboard-editorial-locale',
+          topModuleKey: 'community',
+        },
+        communityFollow: {
+          hash: '#dashboard-member-follow',
+          laneId: 'dashboard-member',
+          minRole: 'member',
+          focusId: 'dashboard-member-follow',
+          topModuleKey: 'community',
+        },
+        communityNotifications: {
+          hash: '#dashboard-member-notifications',
+          laneId: 'dashboard-member',
+          minRole: 'member',
+          focusId: 'dashboard-member-notifications',
+          topModuleKey: 'community',
+        },
+        communitySaved: {
+          hash: '#dashboard-member-saved-lists',
+          laneId: 'dashboard-member',
+          minRole: 'member',
+          focusId: 'dashboard-member-saved-lists',
+          topModuleKey: 'community',
         },
         seo: {
           hash: '#dashboard-control',
           laneId: 'dashboard-control',
           minRole: 'admin',
           focusId: 'dashboard-control-seo',
+          topModuleKey: 'ops',
         },
         ads: {
           hash: '#dashboard-control-ads',
           laneId: 'dashboard-control',
           minRole: 'admin',
           focusId: 'dashboard-control-ads',
+          topModuleKey: 'ops',
+        },
+        adminRelease: {
+          hash: '#dashboard-admin-release',
+          laneId: 'dashboard-control',
+          minRole: 'admin',
+          focusId: 'dashboard-control',
+          topModuleKey: 'admin',
+        },
+        adminModeration: {
+          hash: '#dashboard-admin-moderation',
+          laneId: 'dashboard-editorial',
+          minRole: 'admin',
+          focusId: 'dashboard-editorial-moderation',
+          topModuleKey: 'admin',
+        },
+        adminLocale: {
+          hash: '#dashboard-admin-locale',
+          laneId: 'dashboard-editorial',
+          minRole: 'admin',
+          focusId: 'dashboard-editorial-locale',
+          topModuleKey: 'admin',
         },
       };
-      const dashboardModuleOrder = [
+      const subSectionOrder = [
         'general',
         'settings',
         'moderation',
         'reports',
         'accountRequests',
         'translation',
+        'communityFollow',
+        'communityNotifications',
+        'communitySaved',
         'seo',
         'ads',
+        'adminRelease',
+        'adminModeration',
+        'adminLocale',
+      ];
+      const topModules = {
+        account: {
+          minRole: 'member',
+          defaultSubSectionKey: 'general',
+          subSectionKeys: ['general', 'settings'],
+          laneIds: ['dashboard-member'],
+        },
+        content: {
+          minRole: 'editor',
+          defaultSubSectionKey: 'moderation',
+          subSectionKeys: ['moderation', 'reports', 'accountRequests'],
+          laneIds: ['dashboard-editorial'],
+        },
+        community: {
+          minRole: 'member',
+          defaultSubSectionKey: 'communityFollow',
+          subSectionKeys: ['translation', 'communityFollow', 'communityNotifications', 'communitySaved'],
+          laneIds: ['dashboard-member', 'dashboard-editorial'],
+        },
+        ops: {
+          minRole: 'admin',
+          defaultSubSectionKey: 'seo',
+          subSectionKeys: ['seo', 'ads'],
+          laneIds: ['dashboard-control'],
+        },
+        admin: {
+          minRole: 'admin',
+          defaultSubSectionKey: 'adminRelease',
+          subSectionKeys: ['adminRelease', 'adminModeration', 'adminLocale'],
+          laneIds: ['dashboard-control', 'dashboard-editorial'],
+        },
+      };
+      const topModuleOrder = [
+        'account',
+        'content',
+        'community',
+        'ops',
+        'admin',
       ];
       const moduleHashAliases = {
         '#dashboard-general': '#dashboard-member',
@@ -1992,6 +2324,8 @@ const dashboardCopy = {
         '#dashboard-seo': '#dashboard-control',
         '#dashboard-control-seo': '#dashboard-control',
         '#dashboard-ads': '#dashboard-control-ads',
+        '#dashboard-release': '#dashboard-admin-release',
+        '#dashboard-admin-ops': '#dashboard-admin-release',
       };
       const sectionHashAliases = {
         '#dashboard-editorial-reports': '#dashboard-editorial-moderation',
@@ -2002,6 +2336,9 @@ const dashboardCopy = {
       const accountCommentPendingHref = `${accountLocaleBasePath}?commentState=pending#comments`;
       let laneCollapsedState = {};
       let currentRoleRank = Number(roleRanks.member);
+      let focusedModuleView = false;
+      let activeTopModuleKey = 'account';
+      let lastSubSectionByTopModule = {};
 
       const toNode = (value) => (value instanceof HTMLElement ? value : null);
       const setText = (node, value) => {
@@ -2670,6 +3007,78 @@ const dashboardCopy = {
         }
       };
 
+      const readFocusModeState = () => {
+        try {
+          const raw = localStorage.getItem(FOCUS_MODE_STORAGE_KEY);
+          return raw === '1';
+        } catch {
+          return false;
+        }
+      };
+
+      const persistFocusModeState = () => {
+        try {
+          localStorage.setItem(FOCUS_MODE_STORAGE_KEY, focusedModuleView ? '1' : '0');
+        } catch {
+          // ignore storage write failures (private mode / quota)
+        }
+      };
+
+      const readActiveTopModuleState = () => {
+        try {
+          const raw = String(localStorage.getItem(ACTIVE_TOP_MODULE_STORAGE_KEY) || '').trim().toLowerCase();
+          if (!raw) return '';
+          return raw;
+        } catch {
+          return '';
+        }
+      };
+
+      const persistActiveTopModuleState = () => {
+        try {
+          localStorage.setItem(ACTIVE_TOP_MODULE_STORAGE_KEY, String(activeTopModuleKey || '').trim().toLowerCase());
+        } catch {
+          // ignore storage write failures (private mode / quota)
+        }
+      };
+
+      const readLastSubSectionState = () => {
+        try {
+          const raw = localStorage.getItem(LAST_SUBSECTION_STORAGE_KEY);
+          if (!raw) return {};
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+          return parsed;
+        } catch {
+          return {};
+        }
+      };
+
+      const persistLastSubSectionState = () => {
+        try {
+          localStorage.setItem(LAST_SUBSECTION_STORAGE_KEY, JSON.stringify(lastSubSectionByTopModule));
+        } catch {
+          // ignore storage write failures (private mode / quota)
+        }
+      };
+
+      const applyFocusMode = (enabled, { persist = true, syncView = true } = {}) => {
+        focusedModuleView = Boolean(enabled);
+        if (focusModeToggle instanceof HTMLInputElement) {
+          focusModeToggle.checked = focusedModuleView;
+        }
+        const shellNode = toNode(authedPanel);
+        if (shellNode) {
+          shellNode.classList.toggle('is-focus-mode', focusedModuleView);
+        }
+        if (persist) {
+          persistFocusModeState();
+        }
+        if (syncView) {
+          applyModuleView(window.location.hash, { syncHash: false, focusTarget: false });
+        }
+      };
+
       const updateLaneCollapsedState = (laneNode, isCollapsed, { persist = true } = {}) => {
         if (!(laneNode instanceof HTMLElement)) return;
         const laneId = String(laneNode.id || '').trim();
@@ -2702,6 +3111,12 @@ const dashboardCopy = {
           return !link.hidden;
         });
       };
+      const getVisibleTopModuleLinks = () => {
+        return topModuleLinks.filter((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return false;
+          return !link.hidden;
+        });
+      };
 
       const resolveModuleHash = (hash) => {
         const normalizedHash = String(hash || '').trim().toLowerCase();
@@ -2713,11 +3128,19 @@ const dashboardCopy = {
         return String(sectionHashAliases[normalizedHash] || normalizedHash);
       };
 
-      const setActiveSectionPill = (hash) => {
+      const setActiveSectionPill = (hash, options = {}) => {
+        const preferredTopModuleKey = String(options.topModuleKey || '').trim().toLowerCase();
+        const preferredSubSectionKey = String(options.subSectionKey || '').trim();
         const visibleLinks = getVisibleSectionLinks();
+        const visibleTopLinks = getVisibleTopModuleLinks();
         const visibleModuleCards = moduleCardLinks.filter((link) => {
           if (!(link instanceof HTMLAnchorElement)) return false;
           return !link.hidden;
+        });
+        topModuleLinks.forEach((link) => {
+          if (link instanceof HTMLElement) {
+            link.classList.remove('is-active');
+          }
         });
         sectionNavPillLinks.forEach((link) => {
           if (link instanceof HTMLElement) {
@@ -2734,10 +3157,24 @@ const dashboardCopy = {
 
         const requestedHash = String(hash || '').trim();
         const normalizedHash = resolveSectionHash(requestedHash);
-        const matchingLinks = visibleLinks.filter((link) => {
+        const exactMatchingLinks = visibleLinks.filter((link) => {
           const href = String(link.getAttribute('href') || '');
-          return href === requestedHash || href === normalizedHash;
+          return href === requestedHash;
         });
+        const canonicalMatchingLinks = visibleLinks.filter((link) => {
+          const href = String(link.getAttribute('href') || '');
+          return href === normalizedHash;
+        });
+        const preferredSubSectionMatches = visibleLinks.filter((link) => {
+          const key = String(link.dataset.dashboardSubsectionKey || '').trim();
+          return key && key === preferredSubSectionKey;
+        });
+        const matchingLinks =
+          exactMatchingLinks.length > 0
+            ? exactMatchingLinks
+            : preferredSubSectionMatches.length > 0
+              ? preferredSubSectionMatches
+              : canonicalMatchingLinks;
         if (matchingLinks.length > 0) {
           matchingLinks.forEach((link) => link.classList.add('is-active'));
         } else {
@@ -2747,55 +3184,136 @@ const dashboardCopy = {
             .forEach((link) => link.classList.add('is-active'));
         }
 
-        if (visibleModuleCards.length === 0) return;
-
-        const matchingModuleCards = visibleModuleCards.filter((link) => {
-          const href = String(link.getAttribute('href') || '');
-          return href === requestedHash || resolveSectionHash(href) === normalizedHash;
-        });
-        if (matchingModuleCards.length > 0) {
-          matchingModuleCards.forEach((link) => link.classList.add('is-active'));
-          return;
+        const activeSubSectionLink = matchingLinks[0] || visibleLinks.find((link) => link.classList.contains('is-active')) || null;
+        const effectiveTopModuleKey =
+          preferredTopModuleKey ||
+          String(activeSubSectionLink?.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
+        if (visibleTopLinks.length > 0) {
+          const topMatches = visibleTopLinks.filter((link) => {
+            const key = String(link.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
+            return key && key === effectiveTopModuleKey;
+          });
+          if (topMatches.length > 0) {
+            topMatches.forEach((link) => link.classList.add('is-active'));
+          } else {
+            visibleTopLinks[0]?.classList.add('is-active');
+          }
         }
 
-        const fallbackCard = visibleModuleCards[0];
-        if (fallbackCard instanceof HTMLElement) {
-          fallbackCard.classList.add('is-active');
+        setText(activeTopModuleStateNode, effectiveTopModuleKey || '');
+        setText(activeSubSectionStateNode, String(activeSubSectionLink?.dataset.dashboardSubsectionKey || '').trim());
+
+        if (visibleModuleCards.length === 0) return;
+
+        const exactCardMatches = visibleModuleCards.filter((link) => {
+          const href = String(link.getAttribute('href') || '');
+          return href === requestedHash;
+        });
+        const canonicalCardMatches = visibleModuleCards.filter((link) => {
+          const href = String(link.getAttribute('href') || '');
+          return resolveSectionHash(href) === normalizedHash;
+        });
+        const matchingModuleCards = exactCardMatches.length > 0 ? exactCardMatches : canonicalCardMatches;
+        if (matchingModuleCards.length > 0) {
+          matchingModuleCards.forEach((link) => link.classList.add('is-active'));
+        } else {
+          const fallbackCard = visibleModuleCards[0];
+          if (fallbackCard instanceof HTMLElement) {
+            fallbackCard.classList.add('is-active');
+          }
         }
       };
 
-      const getAllowedModules = (roleRank) => {
-        return dashboardModuleOrder.filter((moduleKey) => {
-          const module = dashboardModules[moduleKey];
-          if (!module) return false;
-          const minRoleRank = Number(roleRanks[String(module.minRole || 'member').toLowerCase()] ?? 0);
+      const getAllowedSubSectionKeys = (roleRank) => {
+        return subSectionOrder.filter((subSectionKey) => {
+          const subSection = subSections[subSectionKey];
+          if (!subSection) return false;
+          const minRoleRank = Number(roleRanks[String(subSection.minRole || 'member').toLowerCase()] ?? 0);
           return roleRank >= minRoleRank;
         });
       };
 
-      const resolveModuleFromHash = (hash, roleRank) => {
+      const getAllowedSubSectionsForTopModule = (topModuleKey, roleRank) => {
+        const topModule = topModules[topModuleKey];
+        if (!topModule || !Array.isArray(topModule.subSectionKeys)) return [];
+        const topModuleMinRoleRank = Number(roleRanks[String(topModule.minRole || 'member').toLowerCase()] ?? 0);
+        if (roleRank < topModuleMinRoleRank) return [];
+        return topModule.subSectionKeys.filter((subSectionKey) => {
+          const subSection = subSections[subSectionKey];
+          if (!subSection) return false;
+          const minRoleRank = Number(roleRanks[String(subSection.minRole || 'member').toLowerCase()] ?? 0);
+          return roleRank >= minRoleRank;
+        });
+      };
+
+      const getAllowedTopModuleKeys = (roleRank) => {
+        return topModuleOrder.filter((topModuleKey) => getAllowedSubSectionsForTopModule(topModuleKey, roleRank).length > 0);
+      };
+
+      const getFallbackSubSectionByTopModule = (topModuleKey, roleRank) => {
+        const allowed = getAllowedSubSectionsForTopModule(topModuleKey, roleRank);
+        if (allowed.length === 0) return null;
+        const topModule = topModules[topModuleKey];
+        const lastForTopModule = String(lastSubSectionByTopModule[topModuleKey] || '').trim();
+        if (lastForTopModule && allowed.includes(lastForTopModule)) {
+          return {
+            key: lastForTopModule,
+            ...subSections[lastForTopModule],
+          };
+        }
+        const defaultSubSectionKey = String(topModule?.defaultSubSectionKey || '').trim();
+        if (defaultSubSectionKey && allowed.includes(defaultSubSectionKey)) {
+          return {
+            key: defaultSubSectionKey,
+            ...subSections[defaultSubSectionKey],
+          };
+        }
+        const fallbackSubSectionKey = allowed[0];
+        return {
+          key: fallbackSubSectionKey,
+          ...subSections[fallbackSubSectionKey],
+        };
+      };
+
+      const resolveSubSectionFromHash = (hash, roleRank, preferredTopModuleKey = '') => {
         const normalizedHash = resolveModuleHash(hash);
-        const allowedModules = getAllowedModules(roleRank);
-        if (allowedModules.length === 0) {
+        const allowedSubSections = getAllowedSubSectionKeys(roleRank);
+        if (allowedSubSections.length === 0) {
           return {
             key: 'general',
-            ...dashboardModules.general,
+            ...subSections.general,
           };
         }
 
-        const fromHash = allowedModules
-          .map((moduleKey) => ({
-            key: moduleKey,
-            ...dashboardModules[moduleKey],
+        const fromHash = allowedSubSections
+          .map((subSectionKey) => ({
+            key: subSectionKey,
+            ...subSections[subSectionKey],
           }))
-          .find((module) => String(module.hash || '') === normalizedHash);
+          .find((subSection) => String(subSection.hash || '') === normalizedHash);
         if (fromHash) return fromHash;
 
-        const fallbackModuleKey = allowedModules[0];
-        const fallbackModule = dashboardModules[fallbackModuleKey] || dashboardModules.general;
+        const preferredKey = String(preferredTopModuleKey || '').trim().toLowerCase();
+        if (preferredKey) {
+          const fallbackForPreferredTopModule = getFallbackSubSectionByTopModule(preferredKey, roleRank);
+          if (fallbackForPreferredTopModule) {
+            return fallbackForPreferredTopModule;
+          }
+        }
+
+        const allowedTopModuleKeys = getAllowedTopModuleKeys(roleRank);
+        if (allowedTopModuleKeys.length > 0) {
+          const fallbackForFirstTopModule = getFallbackSubSectionByTopModule(allowedTopModuleKeys[0], roleRank);
+          if (fallbackForFirstTopModule) {
+            return fallbackForFirstTopModule;
+          }
+        }
+
+        const fallbackSubSectionKey = allowedSubSections[0];
+        const fallbackSubSection = subSections[fallbackSubSectionKey] || subSections.general;
         return {
-          key: fallbackModuleKey || 'general',
-          ...fallbackModule,
+          key: fallbackSubSectionKey || 'general',
+          ...fallbackSubSection,
         };
       };
 
@@ -2803,41 +3321,101 @@ const dashboardCopy = {
         const syncHash = options.syncHash !== false;
         const focusTarget = options.focusTarget === true;
         const requestedFocusTargetId = String(options.focusTargetId || '').trim();
-        const module = resolveModuleFromHash(hash, currentRoleRank);
-        if (!module) return null;
+        const persistState = options.persistState !== false;
+        const preferredTopModuleKey = String(options.preferredTopModuleKey || activeTopModuleKey || '')
+          .trim()
+          .toLowerCase();
+        const subSection = resolveSubSectionFromHash(hash, currentRoleRank, preferredTopModuleKey);
+        if (!subSection) return null;
+        const resolvedTopModuleKey = String(subSection.topModuleKey || '').trim().toLowerCase();
+        const safeTopModuleKey = topModules[resolvedTopModuleKey] ? resolvedTopModuleKey : 'account';
+        const activeTopModule = topModules[safeTopModuleKey] || topModules.account;
+        activeTopModuleKey = safeTopModuleKey;
 
-        const showAllAllowedLanes = String(module.key || '') === 'general';
+        topModuleLinks.forEach((link) => {
+          if (!(link instanceof HTMLElement)) return;
+          const topModuleKey = String(link.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
+          const allowedTopModules = getAllowedTopModuleKeys(currentRoleRank);
+          link.hidden = !topModuleKey || !allowedTopModules.includes(topModuleKey);
+        });
+
+        sectionNavPillLinks.forEach((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return;
+          const subSectionKey = String(link.dataset.dashboardSubsectionKey || '').trim();
+          const topModuleKey = String(link.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
+          const subSectionConfig = subSections[subSectionKey];
+          const minRole = String(link.getAttribute('data-min-role') || subSectionConfig?.minRole || 'member').toLowerCase();
+          const minRoleRank = Number(roleRanks[minRole] ?? 0);
+          const hasRoleAccess = currentRoleRank >= minRoleRank;
+          if (!hasRoleAccess) {
+            link.hidden = true;
+            return;
+          }
+          const hideByFocusMode = focusedModuleView && topModuleKey !== activeTopModuleKey;
+          link.hidden = hideByFocusMode;
+        });
+
+        moduleCardLinks.forEach((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return;
+          const subSectionKey = String(link.dataset.dashboardSubsectionKey || '').trim();
+          const topModuleKey = String(link.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
+          const subSectionConfig = subSections[subSectionKey];
+          const minRole = String(link.getAttribute('data-min-role') || subSectionConfig?.minRole || 'member').toLowerCase();
+          const minRoleRank = Number(roleRanks[minRole] ?? 0);
+          const hasRoleAccess = currentRoleRank >= minRoleRank;
+          if (!hasRoleAccess) {
+            link.hidden = true;
+            return;
+          }
+          const hideByTopModule = topModuleKey && topModuleKey !== activeTopModuleKey;
+          link.hidden = hideByTopModule;
+        });
+
+        const showAllAllowedLanes = !focusedModuleView && String(subSection.key || '') === 'general';
+        const activeTopModuleLaneSet = new Set(
+          Array.isArray(activeTopModule?.laneIds) ? activeTopModule.laneIds.map((laneId) => String(laneId || '').trim()) : []
+        );
 
         laneNodes.forEach((lane) => {
           if (!(lane instanceof HTMLElement)) return;
           const minRole = String(lane.getAttribute('data-min-role') || 'member').toLowerCase();
           const minRoleRank = Number(roleRanks[minRole] ?? 0);
           const hasRoleAccess = currentRoleRank >= minRoleRank;
-          const shouldShow =
-            hasRoleAccess &&
-            (showAllAllowedLanes || String(lane.id || '') === String(module.laneId || ''));
+          const laneId = String(lane.id || '').trim();
+          const shouldShow = focusedModuleView
+            ? hasRoleAccess && activeTopModuleLaneSet.has(laneId)
+            : hasRoleAccess && (showAllAllowedLanes || laneId === String(subSection.laneId || ''));
           lane.hidden = !shouldShow;
           if (shouldShow) {
-            const laneId = String(lane.id || '').trim();
             const isCollapsed = Boolean(laneCollapsedState[laneId]);
             updateLaneCollapsedState(lane, isCollapsed, { persist: false });
           }
         });
 
+        if (persistState) {
+          activeTopModuleKey = safeTopModuleKey;
+          persistActiveTopModuleState();
+          lastSubSectionByTopModule[safeTopModuleKey] = String(subSection.key || '').trim();
+          persistLastSubSectionState();
+        }
+
         const currentHash = String(window.location.hash || '').trim();
-        if (syncHash && module.hash && module.hash !== currentHash) {
+        if (syncHash && subSection.hash && subSection.hash !== currentHash) {
           try {
-            history.replaceState(null, '', module.hash);
+            history.replaceState(null, '', subSection.hash);
           } catch {
             // no-op
           }
         }
-        setActiveSectionPill(hash || module.hash);
+        setActiveSectionPill(hash || subSection.hash, {
+          topModuleKey: safeTopModuleKey,
+          subSectionKey: subSection.key,
+        });
 
         try {
           window.dispatchEvent(
             new CustomEvent(DASHBOARD_NAV_SYNC_EVENT, {
-              detail: { hash: String(module.hash || hash || '') },
+              detail: { hash: String(subSection.hash || hash || '') },
             })
           );
         } catch {
@@ -2845,7 +3423,7 @@ const dashboardCopy = {
         }
 
         if (focusTarget) {
-          const targetId = String(requestedFocusTargetId || module.focusId || module.laneId || '').trim();
+          const targetId = String(requestedFocusTargetId || subSection.focusId || subSection.laneId || '').trim();
           if (targetId) {
             const targetNode = document.getElementById(targetId);
             if (targetNode instanceof HTMLElement) {
@@ -2854,7 +3432,7 @@ const dashboardCopy = {
           }
         }
 
-        return module;
+        return subSection;
       };
 
       const applyHashNavigation = (hash, options = {}) => {
@@ -2862,6 +3440,8 @@ const dashboardCopy = {
         if (!requestedHash.startsWith('#')) return null;
         const syncHash = options.syncHash !== false;
         const focusTargetId = String(options.focusTargetId || '').trim();
+        const preferredTopModuleKey = String(options.preferredTopModuleKey || '').trim().toLowerCase();
+        const persistState = options.persistState !== false;
         if (syncHash) {
           try {
             history.replaceState(null, '', requestedHash);
@@ -2873,11 +3453,26 @@ const dashboardCopy = {
           syncHash: false,
           focusTarget: options.focusTarget === true,
           focusTargetId,
+          preferredTopModuleKey,
+          persistState,
+        });
+      };
+
+      const applyTopModuleSelection = (topModuleKey, options = {}) => {
+        const normalizedTopModuleKey = String(topModuleKey || '').trim().toLowerCase();
+        if (!normalizedTopModuleKey || !topModules[normalizedTopModuleKey]) return null;
+        const fallbackSubSection = getFallbackSubSectionByTopModule(normalizedTopModuleKey, currentRoleRank);
+        if (!fallbackSubSection) return null;
+        return applyHashNavigation(fallbackSubSection.hash, {
+          syncHash: options.syncHash !== false,
+          focusTarget: options.focusTarget !== false,
+          persistState: options.persistState !== false,
+          focusTargetId: String(options.focusTargetId || fallbackSubSection.focusId || '').trim(),
         });
       };
 
       const syncActiveSectionFromScroll = () => {
-        setActiveSectionPill(window.location.hash);
+        setActiveSectionPill(window.location.hash, { topModuleKey: activeTopModuleKey });
       };
 
       const requestSectionSync = () => {
@@ -4546,6 +5141,10 @@ const dashboardCopy = {
 
         activityHistory = readActivityHistory();
         laneCollapsedState = readLaneCollapsedState();
+        const storedTopModuleKey = readActiveTopModuleState();
+        activeTopModuleKey = topModules[storedTopModuleKey] ? storedTopModuleKey : 'account';
+        lastSubSectionByTopModule = readLastSubSectionState();
+        applyFocusMode(readFocusModeState(), { persist: false, syncView: false });
         renderActivityFeed(false, { includeLive: false, persist: false });
         startActivityTicker();
 
@@ -4559,6 +5158,12 @@ const dashboardCopy = {
             } finally {
               refreshButton.disabled = false;
             }
+          });
+        }
+
+        if (focusModeToggle instanceof HTMLInputElement) {
+          focusModeToggle.addEventListener('change', () => {
+            applyFocusMode(focusModeToggle.checked, { persist: true, syncView: true });
           });
         }
 
@@ -4594,8 +5199,15 @@ const dashboardCopy = {
             const href = String(link.getAttribute('href') || '').trim();
             if (!href.startsWith('#')) return;
             const focusTargetId = String(link.dataset.dashboardFocusTarget || '').trim();
+            const preferredTopModuleKey = String(link.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
             event.preventDefault();
-            applyHashNavigation(href, { syncHash: true, focusTarget: true, focusTargetId });
+            applyHashNavigation(href, {
+              syncHash: true,
+              focusTarget: true,
+              focusTargetId,
+              preferredTopModuleKey,
+              persistState: true,
+            });
           });
         });
 
@@ -4604,17 +5216,33 @@ const dashboardCopy = {
           link.addEventListener('click', (event) => {
             const href = String(link.getAttribute('href') || '').trim();
             if (!href.startsWith('#')) return;
+            const preferredTopModuleKey = String(link.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
             event.preventDefault();
-            applyHashNavigation(href, { syncHash: true, focusTarget: true });
+            applyHashNavigation(href, {
+              syncHash: true,
+              focusTarget: true,
+              preferredTopModuleKey,
+              persistState: true,
+            });
+          });
+        });
+
+        topModuleLinks.forEach((link) => {
+          if (!(link instanceof HTMLAnchorElement)) return;
+          link.addEventListener('click', (event) => {
+            const topModuleKey = String(link.dataset.dashboardTopModuleKey || '').trim().toLowerCase();
+            if (!topModuleKey) return;
+            event.preventDefault();
+            applyTopModuleSelection(topModuleKey, { syncHash: true, focusTarget: true, persistState: true });
           });
         });
 
         window.addEventListener('hashchange', () => {
-          applyModuleView(window.location.hash, { syncHash: true, focusTarget: true });
+          applyModuleView(window.location.hash, { syncHash: true, focusTarget: true, persistState: true });
         });
 
         // If hash changed while dashboard data was loading, reconcile once after handlers are bound.
-        applyModuleView(window.location.hash, { syncHash: false, focusTarget: false });
+        applyModuleView(window.location.hash, { syncHash: false, focusTarget: false, persistState: true });
 
         copyCommandButtons.forEach((button) => {
           if (!(button instanceof HTMLButtonElement)) return;
@@ -4819,6 +5447,64 @@ const dashboardCopy = {
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
+  }
+
+  .dashboard-head-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .dashboard-focus-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    padding: 0.24rem 0.58rem;
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+    user-select: none;
+  }
+
+  .dashboard-focus-mode input {
+    margin: 0;
+    accent-color: var(--brand-strong);
+  }
+
+  .dashboard-top-module-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .dashboard-top-module-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface-2) 72%, var(--brand-soft));
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.22rem 0.72rem;
+    letter-spacing: 0.01em;
+  }
+
+  .dashboard-top-module-pill:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+    background: color-mix(in srgb, var(--brand-soft) 58%, var(--surface-2));
+  }
+
+  .dashboard-top-module-pill.is-active {
+    border-color: color-mix(in srgb, var(--brand) 48%, var(--border));
+    color: var(--brand-strong);
+    background: color-mix(in srgb, var(--brand-soft) 82%, var(--surface-2));
   }
 
   .dashboard-section-nav {

@@ -984,6 +984,7 @@ dashboardRoleCases.forEach((roleCase) => {
 
     await page.goto('/en/dashboard/');
     await dismissConsentBanner(page);
+    await expect(page.locator('[data-testid="dashboard-focus-mode-toggle"]')).toBeVisible();
 
     await expect(page.locator('[data-dashboard-role]')).toHaveText(roleCase.expectedRoleLabel);
 
@@ -1869,8 +1870,11 @@ test('dashboard section nav tracks hash and click for admin lanes', async ({ pag
   const memberPill = page.locator('[data-dashboard-section-pill][href="#dashboard-member"]').first();
   const controlPill = page.locator('[data-dashboard-section-pill][href="#dashboard-control"]').first();
   const controlLane = page.locator('#dashboard-control');
+  const topOpsModule = page.locator('[data-testid="dashboard-top-module-ops"]');
+  const activeModuleState = page.locator('[data-testid="dashboard-active-module"]');
 
   await expect(controlPill).toBeVisible();
+  await expect(topOpsModule).toBeVisible();
   await expect(memberPill).toHaveClass(/is-active/);
 
   await page.evaluate(() => {
@@ -1878,12 +1882,14 @@ test('dashboard section nav tracks hash and click for admin lanes', async ({ pag
   });
   await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-control');
   await expect(controlLane).toBeVisible();
+  await expect(activeModuleState).toHaveText('ops');
   await expect
     .poll(async () => (await controlPill.getAttribute('class')) || '')
     .toMatch(/is-active/);
 
   await memberPill.click();
   await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-member');
+  await expect(activeModuleState).toHaveText('account');
   await expect
     .poll(async () => (await memberPill.getAttribute('class')) || '')
     .toMatch(/is-active/);
@@ -2194,7 +2200,7 @@ test('dashboard hash alias keeps sidebar links active on canonical seo lane', as
   await expect(
     page.locator('.desktop-tablet-column [data-auth-admin-link][href="/en/dashboard/#dashboard-editorial-reports"]').first()
   ).toHaveClass(/is-active/);
-  await expect(page.locator('[data-dashboard-section-pill][href="#dashboard-editorial-moderation"]').first()).toHaveClass(
+  await expect(page.locator('[data-dashboard-section-pill][href="#dashboard-editorial-reports"]').first()).toHaveClass(
     /is-active/
   );
 });
