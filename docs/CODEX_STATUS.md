@@ -1,9 +1,9 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-18T19:15:49Z
+Last updated (UTC): 2026-03-19T08:19:28Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `f56fd3a`
+Current head before this status update commit: `1c08c15`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
@@ -14,6 +14,8 @@ Current head before this status update commit: `f56fd3a`
 - Handoff quick file: `docs/RELEASE_HANDOFF.md` (release snapshot + new-session command block).
 
 ## Completed Recent Work
+- `feat(dashboard): modular top-menu navigation with focus persistence` (`1c08c15`)
+- `ops(release): dashboard modularization checkpoint tag pushed (2026-03-19-0818)` (`checkpoint-dashboard-menu-modularization-20260319-0818`)
 - `test(dashboard): stabilize admin lane hash activation assertion` (`frontend/tests/dashboard-activity.spec.ts`)
 - `feat(obs): add readiness cron freshness gate check with rotated-log fallback`
 - `feat(obs): add readiness watch automation for strict gate transition`
