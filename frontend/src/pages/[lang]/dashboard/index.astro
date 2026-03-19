@@ -980,7 +980,7 @@ const dashboardCopy = {
         </header>
 
         <div class="dashboard-grid" data-dashboard-lane-content>
-          <article class="card panel gv-stack" id="dashboard-member-overview">
+          <article class="card panel gv-stack" id="dashboard-member-overview" data-dashboard-subsection-panel="general">
             <h3 class="dashboard-mini-title">{dashboardCopy.overviewTitle}</h3>
             <dl class="dashboard-dl">
               <div>
@@ -1006,7 +1006,7 @@ const dashboardCopy = {
             </dl>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-preferences">
+          <article class="card panel gv-stack" id="dashboard-member-preferences" data-dashboard-subsection-panel="general">
             <h3 class="dashboard-mini-title">{dashboardCopy.preferenceTitle}</h3>
             <p class="small">{dashboardCopy.preferenceBody}</p>
             <p class="dashboard-kpi">
@@ -1015,7 +1015,7 @@ const dashboardCopy = {
             </p>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-onboarding">
+          <article class="card panel gv-stack" id="dashboard-member-onboarding" data-dashboard-subsection-panel="general">
             <h3 class="dashboard-mini-title">{dashboardCopy.onboardingTitle}</h3>
             <p class="small">{dashboardCopy.onboardingBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1068,7 +1068,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-follow">
+          <article class="card panel gv-stack" id="dashboard-member-follow" data-dashboard-subsection-panel="communityFollow">
             <h3 class="dashboard-mini-title">{dashboardCopy.followTitle}</h3>
             <p class="small">{dashboardCopy.followBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1101,7 +1101,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-notifications">
+          <article class="card panel gv-stack" id="dashboard-member-notifications" data-dashboard-subsection-panel="communityNotifications">
             <h3 class="dashboard-mini-title">{dashboardCopy.notificationsTitle}</h3>
             <p class="small">{dashboardCopy.notificationsBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1130,7 +1130,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-saved-lists">
+          <article class="card panel gv-stack" id="dashboard-member-saved-lists" data-dashboard-subsection-panel="communitySaved">
             <h3 class="dashboard-mini-title">{dashboardCopy.savedListsTitle}</h3>
             <p class="small">{dashboardCopy.savedListsBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1165,7 +1165,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" data-dashboard-subsection-panel="general">
             <h3 class="dashboard-mini-title">{dashboardCopy.commentsTitle}</h3>
             <p class="small">{dashboardCopy.commentsBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1177,7 +1177,7 @@ const dashboardCopy = {
             <ul class="dashboard-mini-list" data-dashboard-comments-recent hidden></ul>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-creator">
+          <article class="card panel gv-stack" id="dashboard-member-creator" data-dashboard-subsection-panel="general">
             <h3 class="dashboard-mini-title">{dashboardCopy.creatorTitle}</h3>
             <p class="small">{dashboardCopy.creatorBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1229,7 +1229,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack">
+          <article class="card panel gv-stack" data-dashboard-subsection-panel="settings">
             <h3 class="dashboard-mini-title">{dashboardCopy.accessTitle}</h3>
             <p class="small">{dashboardCopy.accessBody}</p>
             <ul class="dashboard-capabilities">
@@ -1248,7 +1248,7 @@ const dashboardCopy = {
             </ul>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-member-settings">
+          <article class="card panel gv-stack" id="dashboard-member-settings" data-dashboard-subsection-panel="settings">
             <h3 class="dashboard-mini-title">{dashboardCopy.quickTitle}</h3>
             <p class="small">{dashboardCopy.quickBody}</p>
             <div class="dashboard-actions">
@@ -1352,7 +1352,7 @@ const dashboardCopy = {
         </header>
 
         <div class="dashboard-grid" data-dashboard-lane-content>
-          <article class="card panel gv-stack" id="dashboard-editorial-moderation">
+          <article class="card panel gv-stack" id="dashboard-editorial-moderation" data-dashboard-subsection-panel="moderation adminModeration">
             <div class="gv-stack dashboard-moderation-wrap" data-dashboard-moderation-wrap hidden>
               <h3 class="dashboard-mini-title">{dashboardCopy.moderationQueueTitle}</h3>
               <p class="small">{dashboardCopy.moderationQueueBody}</p>
@@ -1378,7 +1378,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-editorial-locale">
+          <article class="card panel gv-stack" id="dashboard-editorial-locale" data-dashboard-subsection-panel="translation adminLocale">
             <h3 class="dashboard-mini-title">{dashboardCopy.localeTitle}</h3>
             <p class="small">{dashboardCopy.localeBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1391,7 +1391,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-locale-note hidden>{dashboardCopy.localeLimited}</p>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-editorial-reports">
+          <article class="card panel gv-stack" id="dashboard-editorial-reports" data-dashboard-subsection-panel="reports">
             <h3 class="dashboard-mini-title">{dashboardCopy.reportInboxTitle}</h3>
             <p class="small">{dashboardCopy.reportInboxBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1411,7 +1411,7 @@ const dashboardCopy = {
             <ul class="dashboard-mini-list" data-dashboard-report-list></ul>
           </article>
 
-          <article class="card panel gv-stack" id="dashboard-editorial-account-requests">
+          <article class="card panel gv-stack" id="dashboard-editorial-account-requests" data-dashboard-subsection-panel="accountRequests">
             <h3 class="dashboard-mini-title">{dashboardCopy.accountRequestsTitle}</h3>
             <p class="small">{dashboardCopy.accountRequestsBody}</p>
             <div class="dashboard-kpi-grid">
@@ -1461,7 +1461,7 @@ const dashboardCopy = {
           </p>
         </header>
 
-        <div class="dashboard-control-strip" data-dashboard-role-gated data-min-role="admin" hidden>
+        <div class="dashboard-control-strip" data-dashboard-role-gated data-min-role="admin" data-dashboard-subsection-panel="adminRelease" hidden>
           <article class="dashboard-control-pill">
             <span>{dashboardCopy.ownerSummaryReleaseStatus}</span>
             <strong data-dashboard-control-release-status>{dashboardCopy.ownerSummaryStatusUnknown}</strong>
@@ -1477,7 +1477,7 @@ const dashboardCopy = {
         </div>
 
         <div class="dashboard-grid" data-dashboard-lane-content>
-          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-governance">
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-governance" data-dashboard-subsection-panel="adminRelease">
             <h3 class="dashboard-mini-title">{dashboardCopy.roleGovernanceTitle}</h3>
             <p class="small">{dashboardCopy.roleGovernanceBody}</p>
             <p class="small"><strong>{dashboardCopy.roleGovernanceScope}:</strong> <span data-dashboard-governance-scope>{dashboardCopy.roleGovernanceMemberScope}</span></p>
@@ -1507,7 +1507,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-governance-limited>{dashboardCopy.roleGovernanceLimited}</p>
           </article>
 
-          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-admin">
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-admin" data-dashboard-subsection-panel="adminRelease">
             <h3 class="dashboard-mini-title">{dashboardCopy.controlTitle}</h3>
             <p class="small">{dashboardCopy.controlBody}</p>
             <div class="dashboard-actions">
@@ -1544,7 +1544,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-control-note>{dashboardCopy.controlLimited}</p>
           </article>
 
-          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-community">
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-community" data-dashboard-subsection-panel="adminRelease">
             <h3 class="dashboard-mini-title">{dashboardCopy.communityTitle}</h3>
             <p class="small">{dashboardCopy.communityBody}</p>
             <ul class="dashboard-owner-summary-list">
@@ -1720,7 +1720,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-community-note hidden></p>
           </article>
 
-          <article class="card panel gv-stack dashboard-control-card" id="dashboard-control-seo">
+          <article class="card panel gv-stack dashboard-control-card" id="dashboard-control-seo" data-dashboard-subsection-panel="seo">
             <h3 class="dashboard-mini-title">{dashboardCopy.moduleSeo}</h3>
             <p class="small">
               Canonical, robots, and sitemap operations are centralized in release checks.
@@ -1741,7 +1741,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack dashboard-control-card" id="dashboard-control-ads">
+          <article class="card panel gv-stack dashboard-control-card" id="dashboard-control-ads" data-dashboard-subsection-panel="ads">
             <h3 class="dashboard-mini-title">{dashboardCopy.moduleAds}</h3>
             <p class="small">
               Keep ad slots CLS-safe and consent-gated. Placement updates should preserve reserved heights and
@@ -1763,7 +1763,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-activity">
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-activity" data-dashboard-subsection-panel="adminRelease">
             <h3 class="dashboard-mini-title">{dashboardCopy.activityTitle}</h3>
             <p class="small">{dashboardCopy.activityBody}</p>
             <div class="dashboard-activity-controls">
@@ -1779,7 +1779,7 @@ const dashboardCopy = {
             <p class="small" data-dashboard-activity-empty>{dashboardCopy.activityEmpty}</p>
           </article>
 
-          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-summary" data-dashboard-role-gated data-min-role="owner" hidden>
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-summary" data-dashboard-role-gated data-min-role="owner" data-dashboard-subsection-panel="adminRelease" hidden>
             <h3 class="dashboard-mini-title">{dashboardCopy.ownerSummaryTitle}</h3>
             <p class="small">{dashboardCopy.ownerSummaryBody}</p>
             <ul class="dashboard-owner-summary-list">
@@ -1928,7 +1928,7 @@ const dashboardCopy = {
             </div>
           </article>
 
-          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-ops" data-dashboard-role-gated data-min-role="owner" hidden>
+          <article class="card panel gv-stack dashboard-control-card dashboard-control-card-ops" data-dashboard-role-gated data-min-role="owner" data-dashboard-subsection-panel="adminRelease" hidden>
             <h3 class="dashboard-mini-title">{dashboardCopy.ownerOpsTitle}</h3>
             <p class="small">{dashboardCopy.ownerOpsBody}</p>
             <div class="dashboard-command-grid">
@@ -2121,6 +2121,7 @@ const dashboardCopy = {
       const moduleCardLinks = Array.from(document.querySelectorAll('[data-dashboard-module-link]'));
       const laneNodes = Array.from(document.querySelectorAll('[data-dashboard-lane]'));
       const laneToggleButtons = Array.from(document.querySelectorAll('[data-dashboard-lane-toggle]'));
+      const subSectionPanelNodes = Array.from(document.querySelectorAll('[data-dashboard-subsection-panel]'));
       let currentSession = null;
       let canRunModeration = false;
       let isLoading = false;
@@ -3250,6 +3251,23 @@ const dashboardCopy = {
         return topModuleOrder.filter((topModuleKey) => getAllowedSubSectionsForTopModule(topModuleKey, roleRank).length > 0);
       };
 
+      const applySubSectionPanelVisibility = (subSectionKey, strictMode) => {
+        const normalizedSubSectionKey = String(subSectionKey || '').trim();
+        const strict = Boolean(strictMode) && Boolean(normalizedSubSectionKey);
+        subSectionPanelNodes.forEach((panelNode) => {
+          if (!(panelNode instanceof HTMLElement)) return;
+          const panelKeys = String(panelNode.dataset.dashboardSubsectionPanel || '')
+            .split(/\s+/)
+            .map((value) => value.trim())
+            .filter(Boolean);
+          if (!strict || panelKeys.length === 0) {
+            panelNode.classList.remove('is-subsection-hidden');
+            return;
+          }
+          panelNode.classList.toggle('is-subsection-hidden', !panelKeys.includes(normalizedSubSectionKey));
+        });
+      };
+
       const getFallbackSubSectionByTopModule = (topModuleKey, roleRank) => {
         const allowed = getAllowedSubSectionsForTopModule(topModuleKey, roleRank);
         if (allowed.length === 0) return null;
@@ -3391,6 +3409,9 @@ const dashboardCopy = {
             updateLaneCollapsedState(lane, isCollapsed, { persist: false });
           }
         });
+
+        const strictSubSectionView = focusedModuleView || String(subSection.key || '').trim() !== 'general';
+        applySubSectionPanelVisibility(subSection.key, strictSubSectionView);
 
         if (persistState) {
           activeTopModuleKey = safeTopModuleKey;
@@ -5680,6 +5701,10 @@ const dashboardCopy = {
     display: grid;
     gap: 0.875rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .is-subsection-hidden {
+    display: none !important;
   }
 
   .dashboard-control-strip {

@@ -572,7 +572,7 @@ test('dashboard community settings form patches admin policy fields', async ({ p
     );
   }, [MOCK_JWT]);
 
-  await page.goto('/en/dashboard/#dashboard-control');
+  await page.goto('/en/dashboard/#dashboard-admin-release');
   await dismissConsentBanner(page);
 
   const communityForm = page.locator('[data-dashboard-community-form]');
@@ -799,13 +799,25 @@ test('dashboard editorial inbox renders report and account-request queues with m
   await page.goto('/en/dashboard/#dashboard-editorial-moderation');
   await dismissConsentBanner(page);
 
+  const reportsPill = page.locator('[data-testid="dashboard-subsection-reports"]');
+  const accountRequestsPill = page.locator('[data-testid="dashboard-subsection-accountRequests"]');
+
+  await expect(page.locator('#dashboard-editorial-moderation')).toBeVisible();
+
+  await reportsPill.click();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-editorial-reports');
+  await expect(page.locator('#dashboard-editorial-reports')).toBeVisible();
   await expect(page.locator('[data-dashboard-report-new]')).toHaveText('1');
-  await expect(page.locator('[data-dashboard-account-request-new]')).toHaveText('1');
   await expect(page.locator('[data-dashboard-report-list]')).toContainText('COMMENT');
-  await expect(page.locator('[data-dashboard-account-request-list]')).toContainText('DELETE');
 
   await page.locator('[data-dashboard-report-set="reviewing"][data-report-id="report-1"]').click();
   await expect(page.locator('[data-dashboard-report-reviewing]')).toHaveText('1');
+
+  await accountRequestsPill.click();
+  await expect.poll(async () => page.evaluate(() => window.location.hash)).toBe('#dashboard-editorial-account-requests');
+  await expect(page.locator('#dashboard-editorial-account-requests')).toBeVisible();
+  await expect(page.locator('[data-dashboard-account-request-new]')).toHaveText('1');
+  await expect(page.locator('[data-dashboard-account-request-list]')).toContainText('DELETE');
 
   await page
     .locator('[data-dashboard-account-request-set="approved"][data-request-id="acct-1"]')

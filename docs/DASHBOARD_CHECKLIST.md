@@ -39,6 +39,9 @@
   - `geovito_dashboard_focus_mode_v1`
   - `geovito_dashboard_active_module_v1`
   - `geovito_dashboard_last_subsection_v1`
+- Sub-section panel lock:
+  - `#dashboard-member` (`general`) hariç alt menü seçildiğinde sadece seçili alt menüye ait kartlar görünür.
+  - Böylece `SEO`, `Ads`, `Reports`, `Account requests` gibi seçimlerde yanlış kart tıklaması engellenir.
 - Init precedence:
   1. URL hash
   2. persisted last subsection
