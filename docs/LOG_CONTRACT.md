@@ -2,19 +2,19 @@
 
 Geovito uses JSON lines (one JSON object per line) for contract logs.
 
-## Required fields
+## Required fields (locked)
 - `ts`: ISO timestamp
 - `env`: `dev|staging|prod`
 - `channel`: `app|security|moderation|audit|release|dr`
 - `level`: `debug|info|warn|error`
 - `msg`: short human-readable message
-- `request_id`: correlation id (HTTP request id or script run id)
 - `service`: `astro|strapi|scripts|worker`
+- `request_id`: correlation id (HTTP request id or script run id)
 - `route_or_action`: route name or action name
-- `status`: numeric status, nullable
-- `latency_ms`: numeric latency, nullable
-- `user_ref`: pseudonymous user reference, nullable
-- `meta`: object for structured context
+- `status`: numeric status, nullable (`null` if not applicable)
+- `latency_ms`: numeric latency, nullable (`null` if not applicable)
+- `user_ref`: pseudonymous user reference, nullable (`null` if not applicable)
+- `meta`: object for structured context (always object, can be empty)
 
 ## Channel mapping (locked)
 - `app`: general app/runtime events
@@ -34,6 +34,8 @@ Never log raw values for:
 - authorization headers, cookies, password/token/secret/api keys/jwt
 - guest email fields (`guest_email`, `reporter_email`)
 - full IP addresses (default mode drops IP fields)
+
+Script contract logs (`tools/lib_log_contract.sh`) and backend contract logs (`app/src/modules/domain-logging`) both apply protective redaction/masking in L0.
 
 Config:
 - `LOG_REDACT_IP_MODE=drop` (default)

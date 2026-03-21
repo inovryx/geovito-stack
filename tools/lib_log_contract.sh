@@ -67,6 +67,65 @@ _gv_json_escape() {
   printf '%s' "$value"
 }
 
+_gv_trim() {
+  local value="${1-}"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+
+_gv_redact_text() {
+  local value="${1-}"
+  [[ -n "$value" ]] || {
+    printf ''
+    return 0
+  }
+
+  value="$(printf '%s' "$value" | sed -E \
+    -e 's/(bearer[[:space:]]+)[A-Za-z0-9._~+\/=-]+/\1[REDACTED]/Ig' \
+    -e 's/((token|secret|password|authorization|api[_-]?key|jwt|cookie)[A-Za-z0-9_.-]*[[:space:]]*[:=][[:space:]]*)[^,;[:space:]]+/\1[REDACTED]/Ig' \
+    -e 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/[REDACTED_EMAIL]/g' \
+    -e 's/\b([0-9]{1,3}\.){3}[0-9]{1,3}\b/[REDACTED_IP]/g' \
+    -e 's/\b([[:xdigit:]]{1,4}:){2,7}[[:xdigit:]]{1,4}\b/[REDACTED_IP]/Ig')"
+
+  printf '%s' "$value"
+}
+
+_gv_redact_detail() {
+  local raw="${1-}"
+  [[ -n "$raw" ]] || {
+    printf ''
+    return 0
+  }
+
+  local -a parts=()
+  local output="" part trimmed key normalized_key redacted
+  IFS=';' read -r -a parts <<< "$raw"
+  for part in "${parts[@]}"; do
+    trimmed="$(_gv_trim "$part")"
+    [[ -n "$trimmed" ]] || continue
+
+    if [[ "$trimmed" == *"="* ]]; then
+      key="${trimmed%%=*}"
+      normalized_key="$(printf '%s' "$key" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+      case "$normalized_key" in
+        guestemail|guest_email|guest-email|reporteremail|reporter_email|reporter-email)
+          continue
+          ;;
+      esac
+    fi
+
+    redacted="$(_gv_redact_text "$trimmed")"
+    if [[ -n "$output" ]]; then
+      output="${output};${redacted}"
+    else
+      output="$redacted"
+    fi
+  done
+
+  printf '%s' "$output"
+}
+
 gv_log_contract_emit() {
   local channel="${1:-app}"
   local level="${2:-info}"
@@ -99,12 +158,16 @@ gv_log_contract_emit() {
   fi
 
   local detail_part=""
-  if [[ -n "$detail" ]]; then
-    detail_part=",\"detail\":\"$(_gv_json_escape "$detail")\""
+  local redacted_msg redacted_detail
+  redacted_msg="$(_gv_redact_text "$msg")"
+  redacted_detail="$(_gv_redact_detail "$detail")"
+
+  if [[ -n "$redacted_detail" ]]; then
+    detail_part=",\"detail\":\"$(_gv_json_escape "$redacted_detail")\""
   fi
 
   local line
-  line="{\"ts\":\"$ts\",\"env\":\"$(_gv_json_escape "${GV_LOG_ENV:-dev}")\",\"channel\":\"$(_gv_json_escape "$channel")\",\"level\":\"$(_gv_json_escape "$level")\",\"msg\":\"$(_gv_json_escape "$msg")\",\"request_id\":\"$(_gv_json_escape "$request_id")\",\"service\":\"$(_gv_json_escape "${GV_LOG_SERVICE:-scripts}")\",\"route_or_action\":\"$(_gv_json_escape "$route_or_action")\",\"status\":${status_json},\"latency_ms\":${latency_json},\"user_ref\":${user_ref_json},\"meta\":{\"run_id\":\"$(_gv_json_escape "${GV_LOG_RUN_ID:-}")\"${detail_part}}}"
+  line="{\"ts\":\"$ts\",\"env\":\"$(_gv_json_escape "${GV_LOG_ENV:-dev}")\",\"channel\":\"$(_gv_json_escape "$channel")\",\"level\":\"$(_gv_json_escape "$level")\",\"msg\":\"$(_gv_json_escape "$redacted_msg")\",\"request_id\":\"$(_gv_json_escape "$request_id")\",\"service\":\"$(_gv_json_escape "${GV_LOG_SERVICE:-scripts}")\",\"route_or_action\":\"$(_gv_json_escape "$route_or_action")\",\"status\":${status_json},\"latency_ms\":${latency_json},\"user_ref\":${user_ref_json},\"meta\":{\"run_id\":\"$(_gv_json_escape "${GV_LOG_RUN_ID:-}")\"${detail_part}}}"
 
   if [[ "${GV_LOG_CONTRACT_STDOUT:-false}" == "true" ]]; then
     printf '%s\n' "$line"

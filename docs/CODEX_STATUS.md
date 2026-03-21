@@ -1,6 +1,6 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-19T09:44:02Z
+Last updated (UTC): 2026-03-21T16:52:30Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
 Current head before this status update commit: `f5c8616`
@@ -11,10 +11,13 @@ Current head before this status update commit: `f5c8616`
 - Dashboard strict single-view shell now has premium visual polish while preserving behavior contracts and test flow.
 - Hardening pack is integrated: staging isolation, DR freshness, kill switch smoke, audit log smoke, SEO drift/error/storage checks.
 - Log Foundation v1 is active in dual-write mode: structured contract channels (`app/security/moderation/audit/release/dr`) + legacy domain logs preserved.
+- Log Foundation L0 gap-hardening is complete: locked nullable contract fields, script-side redaction parity, and strict audit action-set smoke mode are in place.
 - Observability readiness remains strict-ready (`7/7` distinct days + sample floors satisfied).
 - Handoff quick file: `docs/RELEASE_HANDOFF.md` (release snapshot + new-session command block).
 
 ## Completed Recent Work
+- `chore(logging): harden L0 contract + script redaction + strict audit smoke coverage` (`tools/lib_log_contract.sh`, `tools/log_contract_smoke.sh`, `tools/audit_log_smoke.sh`, `app/scripts/audit_log_smoke.js`)
+- `docs(logging): lock L0 contract/audit smoke guidance and status evidence refresh` (`docs/LOG_CONTRACT.md`, `docs/LOGGING_GUIDE.md`, `docs/AUDIT_EVENTS.md`, `docs/CODEX_STATUS.md`)
 - `feat(dashboard): premium visual polish for strict single-view shell` (`f5c8616`)
 - `ops(release): dashboard premium polish checkpoint tag pushed (2026-03-19-0943)` (`checkpoint-dashboard-premium-polish-20260319-0943`)
 - `feat(dashboard): modular top-menu navigation with focus persistence` (`1c08c15`)
@@ -159,18 +162,22 @@ Recent full-pass checkpoints:
 
 ## Last Verified Checks and Gate Status
 - Latest successful full gate evidence:
-  - `artifacts/go-live/go-live-full-20260318T190638Z.txt`
+  - `artifacts/go-live/go-live-full-20260321T164105Z.txt`
   - Result: PASS
   - Includes: Core Gate, Release Docs Sync Check, Staging Isolation, Restore Freshness, DR Cron Schedule, Kill Switch, Audit Log, SEO Drift, Error Rate, Storage Pressure, Observability Cron Schedule, Observability Cron Freshness, Readiness Cron Freshness, Observability Trend Freshness, Baseline Readiness Check, Readiness Watch Smoke, Override Policy Smoke.
 - Latest baseline readiness report:
   - `artifacts/observability/baseline-readiness-last.json`
-  - `ready=true`, observed: `error_samples=43`, `storage_samples=43`, `error_distinct_days=7`, `storage_distinct_days=7`.
+  - `ready=true`, observed: `error_samples=41`, `storage_samples=41`, `error_distinct_days=8`, `storage_distinct_days=8`.
 - Latest cron guard reports:
   - `artifacts/observability/cron-schedule-last.json` -> PASS
   - `artifacts/observability/cron-freshness-last.json` -> PASS
   - `artifacts/observability/readiness-cron-freshness-last.json` -> PASS
   - `artifacts/observability/trend-freshness-last.json` -> PASS
   - `artifacts/dr/cron-schedule-last.json` -> PASS
+- Latest logging L0 hardening smoke checks:
+  - `bash tools/log_contract_smoke.sh` -> PASS (backend + scripts contract row, redaction probe, taxonomy check)
+  - `bash tools/audit_log_smoke.sh` -> PASS (quick mode)
+  - `AUDIT_SMOKE_STRICT=true bash tools/audit_log_smoke.sh` -> PASS (full required action set)
 - Latest observability trend report:
   - `artifacts/observability/trend-report-last.txt` -> `OVERALL=PASS`
   - `artifacts/observability/trend-report-last.json` -> `status.all_green=true`
@@ -178,7 +185,7 @@ Recent full-pass checkpoints:
   - `/etc/logrotate.d/geovito-observability-trend` active
   - test rotate produced `artifacts/observability/cron-trend.log.1` and reset `artifacts/observability/cron-trend.log`
 - Latest readiness watch state:
-  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-18T02:30:02.029Z`.
+  - `artifacts/observability/readiness-watch-state.json` -> `ready=true`, `previous_ready=true`, `transitioned_to_ready=false`, `first_ready_at=2026-03-14T02:30:02.137Z`, latest checked `2026-03-21T02:30:02.568Z`.
 - Latest dashboard activity targeted smoke after flake patch:
   - `bash tools/dashboard_activity_ui_playwright.sh`
   - Result: PASS (`12 passed`, `2 skipped`).
