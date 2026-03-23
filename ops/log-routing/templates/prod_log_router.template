@@ -1,28 +1,73 @@
 # prod_log_router.template
-# Pseudocode template for production log router (disabled by default)
+# Agent-agnostic pseudocode for production log router (disabled by default)
+
+router:
+  name: "geovito-prod-log-router"
+  enabled: false
+  mode: "template-only"
 
 input:
-  source: "logs/channels/*.jsonl"
+  source_glob: "logs/channels/*.jsonl"
   format: "jsonl"
+  read_mode: "tail"
+
+contract_validation:
+  required_fields:
+    - ts
+    - env
+    - channel
+    - level
+    - msg
+    - service
+    - request_id
+    - route_or_action
+    - status
+    - latency_ms
+    - user_ref
+    - meta
+  nullable_fields:
+    - status
+    - latency_ms
+    - user_ref
+  required_object_fields:
+    - meta
+  allowed_channels:
+    - app
+    - security
+    - moderation
+    - audit
+    - release
+    - dr
 
 pipeline:
   parse_json: true
+  validate_contract: true
   split_by_channel: true
-  add_fields:
-    origin: "prod"
+  drop_invalid_records: false
+  invalid_record_target: "/var/log/geovito-router/invalid/%Y-%m-%d.jsonl"
 
 output_local_buffer:
+  enabled: true
   path: "/var/log/geovito-router/buffer"
-  retention_hours: "${PROD_BUFFER_HOURS:-48}"
+  by_channel: true
+  retention_hours: "${PROD_BUFFER_HOURS:-48h}"
+  file_pattern: "channels/${channel}/%Y-%m-%d-%H.jsonl"
 
-output_remote:
-  protocol: "tcp"
+output_remote_forward:
+  enabled: false
+  protocol: "tcp+tls"
   host: "${LOG_VPS_HOST}"
   port: "${LOG_VPS_PORT}"
-  retry: true
-  backoff: "exponential"
+  retry_policy: "exponential_backoff"
+  at_least_once_delivery: true
 
-rotation:
-  by_channel: true
-  hot_retention_days: "${LOG_RETENTION_DAYS_HOT:-14}"
-  archive_days: "${LOG_ARCHIVE_DAYS:-90}"
+archive_export:
+  r2:
+    enabled: false
+    bucket: "${LOG_ARCHIVE_R2_BUCKET:-}"
+    prefix: "${LOG_ARCHIVE_R2_PREFIX:-geovito/logs}"
+    schedule: "weekly"
+  home_pc:
+    enabled: false
+    target: "${LOG_ARCHIVE_HOME_PC_TARGET:-}"
+    schedule: "weekly"

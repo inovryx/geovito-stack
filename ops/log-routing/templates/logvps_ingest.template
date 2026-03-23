@@ -1,29 +1,65 @@
 # logvps_ingest.template
-# Pseudocode template for log VPS ingest service (disabled by default)
+# Agent-agnostic pseudocode for log VPS ingest (disabled by default)
+
+ingest_service:
+  name: "geovito-logvps-ingest"
+  enabled: false
+  mode: "template-only"
 
 listen:
-  protocol: "tcp"
+  protocol: "tcp+tls"
   address: "0.0.0.0"
   port: "${LOG_VPS_PORT}"
 
 ingest:
   format: "jsonl"
-  validate_required_fields:
+  parse_json: true
+  required_fields:
     - ts
     - env
     - channel
     - level
     - msg
-    - request_id
     - service
+    - request_id
     - route_or_action
+    - status
+    - latency_ms
+    - user_ref
     - meta
+  nullable_fields:
+    - status
+    - latency_ms
+    - user_ref
+  required_object_fields:
+    - meta
+  allowed_channels:
+    - app
+    - security
+    - moderation
+    - audit
+    - release
+    - dr
+  invalid_record_target: "/var/log/geovito/channels/invalid/%Y-%m-%d.jsonl"
 
 store:
   root: "/var/log/geovito/channels"
-  file_pattern: "${channel}/%Y-%m-%d.jsonl"
+  file_pattern: "channels/${channel}/%Y-%m-%d.jsonl"
+  fsync_mode: "batched"
 
-rotation:
-  hot_retention_days: "${LOG_RETENTION_DAYS_HOT:-14}"
-  archive_days: "${LOG_ARCHIVE_DAYS:-90}"
+retention:
+  hot_retention_days: "${LOG_RETENTION_DAYS_HOT:-14d}"
+  archive_days: "${LOG_ARCHIVE_DAYS:-90d}"
   compress_archives: true
+  prune_schedule: "daily"
+
+archive_export:
+  r2:
+    enabled: false
+    bucket: "${LOG_ARCHIVE_R2_BUCKET:-}"
+    prefix: "${LOG_ARCHIVE_R2_PREFIX:-geovito/logs}"
+    schedule: "weekly"
+  home_pc:
+    enabled: false
+    target: "${LOG_ARCHIVE_HOME_PC_TARGET:-}"
+    schedule: "weekly"
