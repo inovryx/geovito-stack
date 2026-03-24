@@ -1,0 +1,14 @@
+{
+  "site_name": "Geovito",
+  "project_slug": "geovito",
+  "project_type": "travel-community",
+  "canonical_locale": "en",
+  "brand_basics": {
+    "primary_color": "#0A5BD8",
+    "secondary_color": "#12314A",
+    "tone": "trusted, practical, editorial",
+    "tagline": "Atlas authority with community layer",
+    "logo_placeholder": "assets/brand/logo.svg"
+  },
+  "notes": "Template-only profile. Replace identity fields for new projects like Pet. Keep secrets out of repo."
+}
