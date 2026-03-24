@@ -83,6 +83,11 @@ test('analytics events map to dataLayer payload after analytics consent', async 
         entry !== null &&
         !Array.isArray(entry) &&
         (entry as { event?: string }).event === 'search_submit' &&
+        (entry as { legacy_event?: string }).legacy_event === 'search_submit' &&
+        (entry as { event_name?: string }).event_name === 'analytics.search.submit' &&
+        (entry as { event_version?: number }).event_version === 1 &&
+        (entry as { consent_scope?: string }).consent_scope === 'analytics_granted' &&
+        /^sess_[a-z0-9]{10,}$/i.test(String((entry as { session_ref?: string }).session_ref || '')) &&
         (entry as { query?: string }).query === 'rome' &&
         (entry as { lang?: string }).lang === 'en'
     );

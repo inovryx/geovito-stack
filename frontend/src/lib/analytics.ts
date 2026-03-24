@@ -1,15 +1,31 @@
-import { EVENT_PROP_WHITELIST, PROP_SANITIZERS, isEventName, type EventName } from './analytics/schema';
+import {
+  EVENT_PROP_WHITELIST,
+  PROP_SANITIZERS,
+  getCanonicalEventName,
+  getFunnelStage,
+  isEventName,
+  type EventName,
+  type FunnelStage,
+} from './analytics/schema';
 import { getConsent } from './consent';
 
 export type AnalyticsProps = Record<string, unknown>;
 
 type AnalyticsProvider = 'console' | 'datalayer' | 'custom';
+type ConsentScope = 'analytics_granted';
 
 type SanitizedValue = string | number | boolean;
 type SanitizedProps = Record<string, SanitizedValue>;
 
 type GeoVitoEvent = {
   event: EventName;
+  legacy_event: EventName;
+  event_name: `analytics.${string}`;
+  event_version: 1;
+  event_ts: string;
+  session_ref: string;
+  consent_scope: ConsentScope;
+  funnel_stage: FunnelStage;
   props: SanitizedProps;
   ts: string;
 };
@@ -27,6 +43,9 @@ const ANALYTICS_ENABLED = import.meta.env.PUBLIC_ANALYTICS_ENABLED === 'true';
 const ANALYTICS_DEBUG = import.meta.env.PUBLIC_ANALYTICS_DEBUG === 'true';
 const DEDUPE_WINDOW_MS = 800;
 const SIGNATURE_TTL_MS = 10_000;
+const SESSION_REF_STORAGE_KEY = 'gv.analytics.session_ref.v1';
+const EVENT_VERSION = 1;
+const CONSENT_SCOPE: ConsentScope = 'analytics_granted';
 const PII_KEY_PATTERN = /(email|phone|user.?id|name|address|token|session|cookie|password|passwd|jwt|auth)/i;
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const PHONE_PATTERN = /\b(?:\+?\d[\d().\-\s]{7,}\d)\b/g;
@@ -39,6 +58,7 @@ const EVENT_THROTTLE_MS: Partial<Record<EventName, number>> = {
 const recentSignatures = new Map<string, number>();
 const lastEventAt = new Map<EventName, number>();
 const seenAdSlotIds = new Set<string>();
+let inMemorySessionRef: string | null = null;
 
 const rawProvider = String(import.meta.env.PUBLIC_ANALYTICS_PROVIDER || 'console').toLowerCase();
 const ANALYTICS_PROVIDER: AnalyticsProvider =
@@ -57,15 +77,11 @@ const ensureBuffer = () => {
   return window.__gvEvents;
 };
 
-const pushBufferedEvent = (eventName: EventName, props: SanitizedProps) => {
+const pushBufferedEvent = (entry: GeoVitoEvent) => {
   if (!shouldBuffer()) return;
   const buffer = ensureBuffer();
   if (!buffer) return;
-  buffer.push({
-    event: eventName,
-    props,
-    ts: new Date().toISOString(),
-  });
+  buffer.push(entry);
 };
 
 const debugLog = (kind: string, payload: unknown) => {
@@ -86,6 +102,37 @@ const hasAnalyticsConsent = () => {
   if (fromDocument === '0') return false;
 
   return getConsent()?.analytics === true;
+};
+
+const isSessionRef = (value: string) => /^sess_[a-z0-9]{10,}$/i.test(value);
+
+const randomRefChunk = () => {
+  if (canUseWindow() && typeof window.crypto?.getRandomValues === 'function') {
+    const bytes = new Uint8Array(9);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('').slice(0, 14);
+  }
+  return Math.random().toString(36).slice(2, 16);
+};
+
+const createSessionRef = () => `sess_${randomRefChunk()}`;
+
+const getSessionRef = () => {
+  if (!canUseWindow()) {
+    if (!inMemorySessionRef) inMemorySessionRef = createSessionRef();
+    return inMemorySessionRef;
+  }
+
+  try {
+    const existing = window.sessionStorage.getItem(SESSION_REF_STORAGE_KEY);
+    if (existing && isSessionRef(existing)) return existing;
+    const next = createSessionRef();
+    window.sessionStorage.setItem(SESSION_REF_STORAGE_KEY, next);
+    return next;
+  } catch {
+    if (!inMemorySessionRef) inMemorySessionRef = createSessionRef();
+    return inMemorySessionRef;
+  }
 };
 
 const toSafeLang = (value: unknown) => {
@@ -186,10 +233,36 @@ export const sanitizeProps = (eventName: EventName, props: AnalyticsProps = {}):
   return sanitized;
 };
 
-const dispatchEvent = (eventName: EventName, props: SanitizedProps) => {
+const toEventEnvelope = (eventName: EventName, props: SanitizedProps): GeoVitoEvent => {
+  const eventTs = new Date().toISOString();
+  return {
+    event: eventName,
+    legacy_event: eventName,
+    event_name: getCanonicalEventName(eventName),
+    event_version: EVENT_VERSION,
+    event_ts: eventTs,
+    session_ref: getSessionRef(),
+    consent_scope: CONSENT_SCOPE,
+    funnel_stage: getFunnelStage(eventName),
+    props,
+    ts: eventTs,
+  };
+};
+
+const dispatchEvent = (entry: GeoVitoEvent) => {
   if (ANALYTICS_PROVIDER === 'datalayer') {
     window.dataLayer = window.dataLayer || [];
-    const payload = { event: eventName, ...props };
+    const payload = {
+      event: entry.event,
+      legacy_event: entry.legacy_event,
+      event_name: entry.event_name,
+      event_version: entry.event_version,
+      event_ts: entry.event_ts,
+      session_ref: entry.session_ref,
+      consent_scope: entry.consent_scope,
+      funnel_stage: entry.funnel_stage,
+      ...entry.props,
+    };
     window.dataLayer.push(payload);
     if (ANALYTICS_DEBUG) {
       console.log('[analytics]', 'dataLayer.push', payload);
@@ -198,16 +271,13 @@ const dispatchEvent = (eventName: EventName, props: SanitizedProps) => {
   }
 
   if (ANALYTICS_PROVIDER === 'console') {
-    console.log('[analytics]', eventName, props);
+    console.log('[analytics]', entry.event, entry);
     return;
   }
 
   window.dispatchEvent(
     new CustomEvent('gv:analytics', {
-      detail: {
-        event: eventName,
-        props,
-      },
+      detail: entry,
     })
   );
 };
@@ -226,10 +296,11 @@ export const track = (eventName: string, props: AnalyticsProps = {}) => {
   if (isThrottled(eventName, now)) return;
   if (isDuplicateSignature(eventName, sanitized, now)) return;
 
-  pushBufferedEvent(eventName, sanitized);
+  const entry = toEventEnvelope(eventName, sanitized);
+  pushBufferedEvent(entry);
 
-  dispatchEvent(eventName, sanitized);
-  debugLog(eventName, sanitized);
+  dispatchEvent(entry);
+  debugLog(entry.event_name, entry);
 };
 
 export const trackSearchSubmit = (props: {

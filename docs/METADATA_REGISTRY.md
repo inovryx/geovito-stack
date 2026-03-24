@@ -107,11 +107,13 @@ Privacy-first rules for this section (locked in M0):
 
 | field name | meaning | example | pii classification | retention | access level | canonical vs derived | notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `event_name` | Normalized analytics/logging event identifier | `release.gate.step.pass` | none | hot-14d | ops | canonical | Must follow `EVENT_NAMING.md` rules. |
+| `event_name` | Canonical analytics event identifier | `analytics.search.submit` | none | hot-14d | ops | canonical | Must follow `EVENT_NAMING.md` rules. |
+| `legacy_event` | Compatibility alias for legacy event consumers | `search_submit` | none | hot-14d | ops | derived | Maintained in parallel during M0 migration. |
 | `event_version` | Event contract version marker | `1` | none | hot-14d | system | canonical | Prefer explicit version field over name suffix churn. |
 | `event_ts` | Event occurrence timestamp | `2026-03-23T18:58:49Z` | none | hot-14d | ops | canonical | ISO-8601 UTC recommended. |
 | `consent_scope` | Consent envelope applicable to event stream | `analytics_granted` | none | session | system | canonical | Required before user analytics collection expansion. |
-| `session_ref` | Ephemeral session pseudonymous reference | `sess_9f31b2` | pseudonymous | session | system | derived | No long-lived cross-context identity stitching in M0. |
+| `session_ref` | Ephemeral session pseudonymous reference | `sess_9f31b2` | pseudonymous | session | system | derived | Stored under `sessionStorage['gv.analytics.session_ref.v1']`; no long-lived stitching in M0. |
+| `funnel_stage` | Normalized funnel stage grouping | `search_discovery` | none | hot-14d | ops | derived | Core web funnel: search, navigation, ads visibility. |
 | `feature_context` | Feature/workflow context tag | `dashboard_activity` | none | hot-14d | ops | canonical | Keep scoped and low-cardinality. |
 | `error_class` | Sanitized error bucket/classification | `TurnstileVerificationFailed` | none | hot-14d | ops | derived | Must not embed raw secret payloads. |
 | `delivery_status` | Pipeline delivery outcome metadata | `accepted` | none | hot-14d | ops | derived | Operational quality metric, not product state authority. |

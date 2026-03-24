@@ -15,6 +15,11 @@ export const EVENT_NAMES = [
 ] as const;
 
 export type EventName = (typeof EVENT_NAMES)[number];
+export type FunnelStage =
+  | 'search_discovery'
+  | 'navigation_interaction'
+  | 'ads_visibility'
+  | 'ui_preferences';
 
 export const EVENT_PROP_WHITELIST: Record<EventName, string[]> = {
   search_submit: ['query', 'type', 'location', 'lang'],
@@ -27,6 +32,33 @@ export const EVENT_PROP_WHITELIST: Record<EventName, string[]> = {
   theme_toggle: ['to', 'lang'],
   sidebar_toggle: ['to', 'lang'],
 };
+
+export const EVENT_CANONICAL_NAME_MAP: Record<EventName, `analytics.${string}`> = {
+  search_submit: 'analytics.search.submit',
+  filter_chip_click: 'analytics.search.filter_chip.click',
+  sort_change: 'analytics.search.sort.change',
+  pagination_click: 'analytics.search.pagination.click',
+  tool_open: 'analytics.navigation.tool.open',
+  nav_click: 'analytics.navigation.item.click',
+  ad_slot_view: 'analytics.ad.slot.view',
+  theme_toggle: 'analytics.ui.theme.toggle',
+  sidebar_toggle: 'analytics.ui.sidebar.toggle',
+};
+
+export const EVENT_FUNNEL_STAGE_MAP: Record<EventName, FunnelStage> = {
+  search_submit: 'search_discovery',
+  filter_chip_click: 'search_discovery',
+  sort_change: 'search_discovery',
+  pagination_click: 'search_discovery',
+  tool_open: 'navigation_interaction',
+  nav_click: 'navigation_interaction',
+  ad_slot_view: 'ads_visibility',
+  theme_toggle: 'ui_preferences',
+  sidebar_toggle: 'ui_preferences',
+};
+
+export const getCanonicalEventName = (eventName: EventName) => EVENT_CANONICAL_NAME_MAP[eventName];
+export const getFunnelStage = (eventName: EventName) => EVENT_FUNNEL_STAGE_MAP[eventName];
 
 const toSafeString = (value: unknown, maxLength = 80) => {
   if (typeof value !== 'string') return undefined;

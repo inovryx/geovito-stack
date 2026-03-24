@@ -57,6 +57,25 @@ Reference:
 - `security.*`
 - `analytics.*` (future, consent-bound)
 
+## M0 Analytics Canonical + Alias Policy
+Analytics migration is compatibility-first in M0:
+- legacy snake_case event names stay readable by existing consumers
+- canonical `analytics.*` names are emitted in parallel via `event_name`
+- `legacy_event` keeps the previous name during transition
+
+Core web canonical mapping:
+| legacy event | canonical event |
+| --- | --- |
+| `search_submit` | `analytics.search.submit` |
+| `filter_chip_click` | `analytics.search.filter_chip.click` |
+| `sort_change` | `analytics.search.sort.change` |
+| `pagination_click` | `analytics.search.pagination.click` |
+| `tool_open` | `analytics.navigation.tool.open` |
+| `nav_click` | `analytics.navigation.item.click` |
+| `ad_slot_view` | `analytics.ad.slot.view` |
+| `theme_toggle` | `analytics.ui.theme.toggle` |
+| `sidebar_toggle` | `analytics.ui.sidebar.toggle` |
+
 ## Good Examples
 - `release.go_live_gate.start`
 - `release.go_live_gate.summary`

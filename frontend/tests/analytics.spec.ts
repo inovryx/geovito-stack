@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 
+const SESSION_REF_KEY = 'gv.analytics.session_ref.v1';
+const SESSION_REF_PATTERN = /^sess_[a-z0-9]{10,}$/i;
+
 const getEvents = async (page: import('@playwright/test').Page) => {
   return page.evaluate(() => {
     return Array.isArray(window.__gvEvents) ? window.__gvEvents : [];
@@ -48,6 +51,12 @@ test('analytics pipeline emits search/chip/pagination/theme/sidebar events', asy
     const hasSearch = events.some(
       (entry) =>
         entry.event === 'search_submit' &&
+        entry.legacy_event === 'search_submit' &&
+        entry.event_name === 'analytics.search.submit' &&
+        entry.event_version === 1 &&
+        entry.consent_scope === 'analytics_granted' &&
+        typeof entry.event_ts === 'string' &&
+        SESSION_REF_PATTERN.test(String(entry.session_ref || '')) &&
         entry.props?.query === 'rome' &&
         entry.props?.location === 'header' &&
         entry.props?.lang === 'en'
@@ -79,6 +88,53 @@ test('analytics pipeline emits search/chip/pagination/theme/sidebar events', asy
 
     return hasSearch && hasChip && hasPagination && hasThemeToggle && hasSidebarToggle;
   }).toBeTruthy();
+});
+
+test('session_ref is stable in same tab and isolated across different tabs', async ({ page, context }) => {
+  await setConsent(page, true, false);
+  await page.goto('/en/atlas/');
+  await expect(page.locator('[data-atlas-skeleton]')).toBeHidden();
+
+  await page.evaluate(() => {
+    window.__gvTrack?.('nav_click', {
+      item: 'home',
+      lang: 'en',
+    });
+    window.__gvTrack?.('tool_open', {
+      tool: 'search',
+      context: 'atlas',
+      lang: 'en',
+    });
+  });
+
+  const firstTabEvents = await getEvents(page);
+  const firstTabNav = firstTabEvents.find((entry) => entry.event === 'nav_click');
+  const firstTabTool = firstTabEvents.find((entry) => entry.event === 'tool_open');
+  expect(firstTabNav?.session_ref).toMatch(SESSION_REF_PATTERN);
+  expect(firstTabTool?.session_ref).toBe(firstTabNav?.session_ref);
+
+  const firstTabStoredRef = await page.evaluate((sessionKey) => {
+    return sessionStorage.getItem(sessionKey);
+  }, SESSION_REF_KEY);
+  expect(firstTabStoredRef).toBe(firstTabNav?.session_ref);
+
+  const secondPage = await context.newPage();
+  await setConsent(secondPage, true, false);
+  await secondPage.goto('/en/atlas/');
+  await expect(secondPage.locator('[data-atlas-skeleton]')).toBeHidden();
+
+  await secondPage.evaluate(() => {
+    window.__gvTrack?.('nav_click', {
+      item: 'home',
+      lang: 'en',
+    });
+  });
+
+  const secondTabEvents = await getEvents(secondPage);
+  const secondTabNav = secondTabEvents.find((entry) => entry.event === 'nav_click');
+  expect(secondTabNav?.session_ref).toMatch(SESSION_REF_PATTERN);
+  expect(secondTabNav?.session_ref).not.toBe(firstTabNav?.session_ref);
+  await secondPage.close();
 });
 
 test('ugc/content area cannot trigger analytics even with injected data-ev attributes', async ({ page }) => {
