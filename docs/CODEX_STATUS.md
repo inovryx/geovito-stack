@@ -1,14 +1,15 @@
 # CODEX STATUS
 
-Last updated (UTC): 2026-03-21T16:52:30Z
+Last updated (UTC): 2026-03-24T18:30:44Z
 Repo: `/home/ali/geovito-stack`
 Branch: `main`
-Current head before this status update commit: `f5c8616`
+Current head before this status update commit: `0aeadb4`
 
 ## Current Project Snapshot
 - Core chain is stable and green: Clean Core contracts, Atlas SEO gate, dormant guards, and go-live smoke chain remain intact.
 - UGC + Community contracts are active: creator profile, moderation/report flow, follow/preferences/saved-list, dashboard role gates.
 - Dashboard strict single-view shell now has premium visual polish while preserving behavior contracts and test flow.
+- Site usage language governance is now hardened around EN source-of-truth with explicit audit visibility for fallback drift and EN/TR/FR parity.
 - Hardening pack is integrated: staging isolation, DR freshness, kill switch smoke, audit log smoke, SEO drift/error/storage checks.
 - Log Foundation v1 is active in dual-write mode: structured contract channels (`app/security/moderation/audit/release/dr`) + legacy domain logs preserved.
 - Log Foundation L0 gap-hardening is complete: locked nullable contract fields, script-side redaction parity, and strict audit action-set smoke mode are in place.
@@ -16,6 +17,8 @@ Current head before this status update commit: `f5c8616`
 - Handoff quick file: `docs/RELEASE_HANDOFF.md` (release snapshot + new-session command block).
 
 ## Completed Recent Work
+- `feat(i18n): enforce EN source truth for site UI + add audit/parity visibility scripts` (`tools/i18n_site_language_audit.sh`, `tools/i18n_parity_visibility.sh`, `docs/I18N_GOVERNANCE.md`, fallback alignment on dashboard/account/right-tools)
+- `fix(blog): default draft language to preferred UI language when payload language is absent` (`app/src/api/blog-post/controllers/blog-post.js`)
 - `chore(logging): harden L0 contract + script redaction + strict audit smoke coverage` (`tools/lib_log_contract.sh`, `tools/log_contract_smoke.sh`, `tools/audit_log_smoke.sh`, `app/scripts/audit_log_smoke.js`)
 - `docs(logging): lock L0 contract/audit smoke guidance and status evidence refresh` (`docs/LOG_CONTRACT.md`, `docs/LOGGING_GUIDE.md`, `docs/AUDIT_EVENTS.md`, `docs/CODEX_STATUS.md`)
 - `feat(dashboard): premium visual polish for strict single-view shell` (`f5c8616`)

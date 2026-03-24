@@ -34,7 +34,7 @@ const availableLanguages = SUPPORTED_LANGUAGES;
 const accountCopy = {
   loginRequiredTitle: translate(ui, 'account.loginRequiredTitle', {}, 'Login required'),
   loginRequiredBody: translate(ui, 'account.loginRequiredBody', {}, 'You need to login before managing account preferences.'),
-  loginCta: translate(ui, 'account.loginCta', {}, 'Go to login'),
+  loginCta: translate(ui, 'account.loginCta', {}, 'Open admin login'),
   profileTitle: translate(ui, 'account.profileTitle', {}, 'Profile overview'),
   profileDescription: translate(ui, 'account.profileDescription', {}, 'Basic account identity pulled from your authenticated session.'),
   profileUsername: translate(ui, 'account.profileUsername', {}, 'Username'),
@@ -412,7 +412,7 @@ const accountCopy = {
 
 <MainLayout
   title={translate(ui, 'account.title', {}, 'Account')}
-  description={translate(ui, 'account.description', {}, 'Manage your account and UI language preferences.')}
+  description={translate(ui, 'account.description', {}, 'User account shell is active in read-only mode for now.')}
   canonical={canonical}
   robots="noindex,nofollow"
   currentLanguage={lang}
@@ -421,7 +421,7 @@ const accountCopy = {
   ui={ui}
 >
   <h1>{translate(ui, 'account.title', {}, 'Account')}</h1>
-  <p class="small">{translate(ui, 'account.description', {}, 'Manage your account and UI language preferences.')}</p>
+  <p class="small">{translate(ui, 'account.description', {}, 'User account shell is active in read-only mode for now.')}</p>
 
   <section class="card panel gv-stack" data-account-logged-out hidden>
     <h2>{accountCopy.loginRequiredTitle}</h2>

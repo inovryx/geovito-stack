@@ -12,8 +12,9 @@ interface Props {
 
 const { currentLanguage, ui, contextLabel = null } = Astro.props as Props;
 const hasContext = Boolean(contextLabel && contextLabel.trim());
+const contextReadyTemplate = translate(ui, 'tools.contextReady', { context: contextLabel || '' }, 'Context: {context}');
 const contextText = hasContext
-  ? translate(ui, 'tools.contextReady', { context: contextLabel || '' }, `Context: ${contextLabel}`)
+  ? contextReadyTemplate.replace('{context}', contextLabel || '')
   : translate(ui, 'tools.contextMissing', {}, 'No place selected yet. Pick a country/city to activate quick helpers.');
 const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
 const routeContext = pathSegments[1] || 'home';
