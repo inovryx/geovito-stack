@@ -7,7 +7,7 @@
     "help": "Yardim",
     "home": "Ana Sayfa",
     "about": "Hakkinda",
-    "atlas": "Kesif",
+    "atlas": "Atlas",
     "rules": "Kurallar",
     "account": "Hesap",
     "regions": "Bolgeler"
@@ -45,7 +45,7 @@
   },
   "blog": {
     "noBody": "Henuz icerik govdesi yok.",
-    "listHint": "Yazilar ceviri complete olmasa da gorunur; eksik varyantlar indexlenmez.",
+    "listHint": "Yazilar ceviri tam olmasa da gorunur; eksik varyantlar indexlenmez.",
     "listTitle": "Yazilar",
     "listDescription": "Geovito blog listesi"
   },
@@ -78,7 +78,7 @@
     },
     "list": {
       "empty": "Henuz ulke yok.",
-      "title": "Kesif",
+      "title": "Atlas",
       "states": {
         "draft": "taslak",
         "missing": "eksik",
@@ -271,8 +271,8 @@
   "stateBanner": {
     "mock": "Bu sayfada MOCK DATA gosteriliyor. Bu gorunum her zaman noindex.",
     "runtime": "Calisma zamani ceviri onizlemesi gosteriliyor. Bu gorunum indexlenmez.",
-    "fallback": "Bu dilde complete icerik hazir degil ({language}). Canonical complete surum gosteriliyor.",
-    "incomplete": "Bu dilde icerik complete degil ({language}, durum: {state}). Canonical complete surum gosteriliyor.",
-    "canonicalLink": "Canonical complete surume git"
+    "fallback": "Bu dilde tam icerik hazir degil ({language}). Kanonik tam surum gosteriliyor.",
+    "incomplete": "Bu dilde icerik tam degil ({language}, durum: {state}). Kanonik tam surum gosteriliyor.",
+    "canonicalLink": "Kanonik tam surume git"
   }
 }

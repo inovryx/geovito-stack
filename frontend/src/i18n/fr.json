@@ -7,7 +7,7 @@
     "help": "Aide",
     "home": "Accueil",
     "about": "A propos",
-    "atlas": "Explorer",
+    "atlas": "Atlas",
     "rules": "Regles",
     "account": "Compte",
     "regions": "Zones"
@@ -53,11 +53,11 @@
     "noTrending": "Aucun lieu tendance pour le moment.",
     "blogSection": "Articles",
     "defaultBody": "Aucun contenu principal pour le moment.",
-    "defaultTitle": "Geovito Explorer",
+    "defaultTitle": "Geovito Atlas",
     "trendingHint": "Les lieux de type ville sont determines via country_profile.city_like_levels.",
     "noPostSummary": "Aucun resume pour le moment.",
     "trendingTitle": "Lieux tendances",
-    "atlasCountries": "Explorer (Pays)",
+    "atlasCountries": "Atlas (Pays)",
     "defaultExcerpt": "Page d'accueil alimentee par Strapi.",
     "noCountryDescription": "Aucune description pour le moment."
   },
@@ -78,7 +78,7 @@
     },
     "list": {
       "empty": "Aucun pays disponible pour le moment.",
-      "title": "Explorer",
+      "title": "Atlas",
       "states": {
         "draft": "brouillon",
         "missing": "manquant",
@@ -93,15 +93,15 @@
       },
       "noSnippet": "Aucun resume pour le moment.",
       "emptyTitle": "Aucun lieu trouve",
-      "filterAria": "Filtrer les lieux Explorer",
+      "filterAria": "Filtrer les lieux Atlas",
       "pagination": {
-        "aria": "Pagination Explorer",
+        "aria": "Pagination Atlas",
         "next": "Suivant",
         "prev": "Precedent",
         "pageLabel": "Page n {page}",
         "pageCurrentLabel": "Page actuelle, {page}"
       },
-      "description": "Points d'entree au niveau pays dans la hierarchie Explorer.",
+      "description": "Points d'entree au niveau pays dans la hierarchie Atlas.",
       "emptyAction": "Reinitialiser les filtres",
       "metaSummary": "{shown} lieux affiches sur {total}",
       "stateLegendAria": "Legende de statut linguistique",
@@ -183,7 +183,7 @@
   },
   "footer": {
     "terms": "Conditions",
-    "cookies": "Parametres cookies",
+    "cookies": "Parametres des cookies",
     "privacy": "Confidentialite"
   },
   "uiPage": {
@@ -194,8 +194,8 @@
   "account": {
     "roles": {
       "user": "Utilisateur authentifie : reserve aux futures soumissions de blog et fonctions de profil.",
-      "editor": "Editor/Admin : revise et publie le contenu Explorer et Blog.",
-      "public": "Public : lire Explorer/Blog/UI et soumettre des suggestions Explorer."
+      "editor": "Editor/Admin : revise et publie le contenu Atlas et Blog.",
+      "public": "Public : lire Atlas/Blog/UI et soumettre des suggestions Atlas."
     },
     "title": "Compte",
     "loginCta": "Ouvrir la connexion admin",
@@ -248,7 +248,7 @@
     "items": {
       "blogDrafts": "Mes brouillons de blog (a venir)",
       "savedPlaces": "Lieux sauvegardes/liste de suivi (a venir)",
-      "submissions": "Mes suggestions Explorer (vue perso a venir)"
+      "submissions": "Mes suggestions Atlas (vue perso a venir)"
     },
     "title": "Tableau de bord",
     "loginCta": "Aller au shell de compte",
