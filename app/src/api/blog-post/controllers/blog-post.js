@@ -11,12 +11,14 @@ const { resolveActorFromIdentity, writeAuditLog } = require('../../../modules/se
 
 const BLOG_POST_UID = 'api::blog-post.blog-post';
 const USER_UID = 'plugin::users-permissions.user';
+const USER_PREFERENCE_UID = 'api::user-preference.user-preference';
 
 const BLOG_LANGUAGES = new Set(['en', 'tr', 'de', 'es', 'ru', 'zh-cn']);
 const SUBMISSION_STATES = new Set(['draft', 'submitted', 'approved', 'rejected', 'spam', 'deleted']);
 const MODERATION_TARGET_STATES = new Set(['approved', 'rejected', 'spam', 'deleted']);
 const SITE_VISIBILITY_SET = new Set(['visible', 'hidden']);
 const OWNER_EMAIL_HINTS = resolveOwnerEmailHints(process.env);
+const hasOwn = (objectValue, key) => Object.prototype.hasOwnProperty.call(objectValue || {}, key);
 
 const isTrue = (value, fallback = false) => {
   if (value === undefined || value === null || value === '') return fallback;
@@ -26,10 +28,12 @@ const isTrue = (value, fallback = false) => {
   return fallback;
 };
 
-const normalizeLanguage = (value) => {
+const normalizeLanguageOrNull = (value) => {
   const normalized = String(value || '').trim().toLowerCase();
-  return BLOG_LANGUAGES.has(normalized) ? normalized : 'en';
+  return BLOG_LANGUAGES.has(normalized) ? normalized : null;
 };
+
+const normalizeLanguage = (value) => normalizeLanguageOrNull(value) || 'en';
 
 const normalizeSubmissionState = (value) => {
   const normalized = String(value || '').trim().toLowerCase();
@@ -61,6 +65,22 @@ const toPositiveInt = (value) => {
 };
 
 const parsePayload = (ctx) => ctx.request?.body?.data || ctx.request?.body || {};
+
+const resolvePreferredDraftLanguage = async (strapi, userId) => {
+  const ownerUserId = toPositiveInt(userId);
+  if (!ownerUserId) return null;
+
+  try {
+    const records = await strapi.entityService.findMany(USER_PREFERENCE_UID, {
+      filters: { owner_user_id: ownerUserId },
+      fields: ['preferred_ui_language'],
+      limit: 1,
+    });
+    return normalizeLanguageOrNull(records?.[0]?.preferred_ui_language);
+  } catch (_error) {
+    return null;
+  }
+};
 
 const parseLimit = (value, fallback = 20, min = 1, max = 100) => {
   const parsed = Number.parseInt(String(value || ''), 10);
@@ -252,7 +272,10 @@ module.exports = createCoreController(BLOG_POST_UID, ({ strapi }) => ({
     if (!communitySettings.ugc_enabled) {
       return ctx.forbidden('UGC is disabled.');
     }
-    const canonicalLanguage = normalizeLanguage(payload.language || payload.canonical_language || 'en');
+    const hasPayloadLanguage = hasOwn(payload, 'language') || hasOwn(payload, 'canonical_language');
+    const canonicalLanguage = hasPayloadLanguage
+      ? normalizeLanguage(payload.language || payload.canonical_language || 'en')
+      : (await resolvePreferredDraftLanguage(strapi, user.id)) || 'en';
     const title = sanitizeText(payload.title, 160);
     if (!title) return ctx.badRequest('title is required.');
 
