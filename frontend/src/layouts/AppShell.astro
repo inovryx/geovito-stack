@@ -135,7 +135,7 @@ const isDashboardCanonicalRoute = canonicalSegments.length >= 2 && canonicalSegm
     <div class="mobile-drawer-head">
       <strong class="brand drawer-brand">
         <Icon name="Map" size={20} />
-        <span class="truncate">{t('layout.mainNavigation', 'Navigation')}</span>
+        <span class="truncate">{t('layout.mainNavigation', 'Main navigation')}</span>
       </strong>
       <button type="button" class="icon-button" data-shell-menu-close aria-label={t('layout.closeMenu', 'Close menu')}>
         <Icon name="X" size={20} />
@@ -147,7 +147,7 @@ const isDashboardCanonicalRoute = canonicalSegments.length >= 2 && canonicalSegm
       {
         !isDashboardCanonicalRoute ? (
           <div class="mobile-drawer-nav">
-            <h2 class="sidebar-title">{t('layout.mainNavigation', 'Navigation')}</h2>
+            <h2 class="sidebar-title">{t('layout.mainNavigation', 'Main navigation')}</h2>
             <Nav currentLanguage={currentLanguage} ui={ui} />
           </div>
         ) : null
