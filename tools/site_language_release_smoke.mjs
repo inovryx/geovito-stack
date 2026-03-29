@@ -92,6 +92,13 @@ assertPattern(
 );
 
 assertPattern(
+  languageSwitcherPath,
+  /const\s+canShowPreview\s*=\s*previewMode\s*&&\s*previewEligible/,
+  'selector_blocks_unreleased_without_preview_role',
+  'Unreleased selector entries require preview mode + owner/admin eligibility'
+);
+
+assertPattern(
   pageHelpersPath,
   /for\s*\(const\s+language\s+of\s+PUBLIC_RELEASED_SITE_UI_LANGUAGES\)/,
   'language_links_use_released_set',
@@ -99,10 +106,24 @@ assertPattern(
 );
 
 assertPattern(
+  pageHelpersPath,
+  /PUBLIC_RELEASED_SITE_UI_LANGUAGES\.filter\(\(language\)\s*=>\s*Boolean\(languageLinks\[language\]\)\)/,
+  'hreflang_surface_uses_released_set',
+  'Alternates/hreflang generation must stay in released language set'
+);
+
+assertPattern(
   baseLayoutPath,
   /const\s+effectiveCanonical\s*=\s*currentLanguageReleased\s*\?/,
   'canonical_guard_present',
   'Unreleased routes should rewrite canonical to released fallback'
+);
+
+assertPattern(
+  baseLayoutPath,
+  /hreflang="x-default"[\s\S]*DEFAULT_PUBLIC_LANGUAGE/,
+  'x_default_uses_public_fallback_language',
+  'x-default should always point to released fallback language'
 );
 
 assertPattern(
@@ -131,6 +152,13 @@ assertPattern(
   /resolvePublicLanguage|DEFAULT_PUBLIC_LANGUAGE/,
   'alias_redirect_uses_public_language',
   '/@username redirect resolves to released language set'
+);
+
+assertPattern(
+  aliasRedirectPath,
+  /PUBLIC_RELEASED_SITE_UI_LANGUAGES\.includes\(fallback\)\s*\?\s*fallback\s*:\s*DEFAULT_PUBLIC_LANGUAGE/,
+  'redirect_fallback_stays_in_public_set',
+  'Unreleased redirect candidates should always fall back to released public language'
 );
 
 const ok = checks.every((entry) => entry.ok);

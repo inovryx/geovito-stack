@@ -13,6 +13,7 @@ This command enforces:
 - legacy core gate chain (`tools/go_live_gate.sh`)
 - mandatory `Log Contract Smoke` inside the core gate path
 - release docs sync check (`tools/release_docs_sync_check.sh`)
+- site language release smoke (`tools/site_language_release_smoke.sh`, non-blocking by default)
 - staging isolation checks
 - restore freshness SLA checks
 - optional DR cron schedule check
@@ -31,6 +32,10 @@ This command enforces:
 Summary evidence is written under:
 - `artifacts/go-live/go-live-full-<UTCSTAMP>.txt`
 - summary includes `baseline_readiness_state` (`ready|not_ready|missing_report|disabled`)
+- summary includes site language smoke mode fields:
+  - `site_language_release_smoke_enabled`
+  - `site_language_release_smoke_strict`
+  - `site_language_release_smoke_artifact`
 
 ## Latest Stable Checkpoint
 - Date (UTC): `2026-03-18`
@@ -134,6 +139,27 @@ Enable DR cron schedule check (recommended after DR cron jobs are installed):
 
 ```bash
 GO_LIVE_WITH_DR_CRON_SCHEDULE_CHECK=true \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Disable site language release smoke (emergency/debug only):
+
+```bash
+GO_LIVE_WITH_SITE_LANGUAGE_RELEASE_SMOKE=false \
+GO_LIVE_WITH_BACKUP_VERIFY=true \
+GO_LIVE_WITH_SMTP=true \
+RESET_SMOKE_EMAIL=you@example.com \
+bash tools/go_live_gate_full.sh
+```
+
+Enable strict (blocking) mode for site language release smoke:
+
+```bash
+GO_LIVE_WITH_SITE_LANGUAGE_RELEASE_SMOKE=true \
+GO_LIVE_SITE_LANGUAGE_RELEASE_SMOKE_STRICT=true \
 GO_LIVE_WITH_BACKUP_VERIFY=true \
 GO_LIVE_WITH_SMTP=true \
 RESET_SMOKE_EMAIL=you@example.com \

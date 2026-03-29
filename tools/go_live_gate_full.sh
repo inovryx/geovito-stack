@@ -26,6 +26,8 @@ GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK="${GO_LIVE_WITH_OBS_CRON_SCHEDULE_CHECK:-tr
 GO_LIVE_WITH_OBS_TREND_FRESHNESS_CHECK="${GO_LIVE_WITH_OBS_TREND_FRESHNESS_CHECK:-true}"
 GO_LIVE_WITH_RELEASE_DOCS_SYNC_CHECK="${GO_LIVE_WITH_RELEASE_DOCS_SYNC_CHECK:-true}"
 GO_LIVE_WITH_DR_CRON_SCHEDULE_CHECK="${GO_LIVE_WITH_DR_CRON_SCHEDULE_CHECK:-false}"
+GO_LIVE_WITH_SITE_LANGUAGE_RELEASE_SMOKE="${GO_LIVE_WITH_SITE_LANGUAGE_RELEASE_SMOKE:-true}"
+GO_LIVE_SITE_LANGUAGE_RELEASE_SMOKE_STRICT="${GO_LIVE_SITE_LANGUAGE_RELEASE_SMOKE_STRICT:-false}"
 
 CREATOR_USERNAME="${CREATOR_USERNAME:-}"
 RESET_SMOKE_EMAIL="${RESET_SMOKE_EMAIL:-${EMAIL_SMOKE_TO:-}}"
@@ -131,12 +133,55 @@ run_step() {
   fi
 }
 
+run_optional_step() {
+  local label="$1"
+  local strict_mode="$2"
+  shift 2
+  local started_at_ms
+  started_at_ms="$(date +%s%3N 2>/dev/null || true)"
+  if [[ ! "$started_at_ms" =~ ^[0-9]+$ ]]; then
+    started_at_ms="$(( $(date +%s) * 1000 ))"
+  fi
+
+  set +e
+  "$@"
+  local code=$?
+  set -e
+  local ended_at_ms latency_ms
+  ended_at_ms="$(date +%s%3N 2>/dev/null || true)"
+  if [[ ! "$ended_at_ms" =~ ^[0-9]+$ ]]; then
+    ended_at_ms="$(( $(date +%s) * 1000 ))"
+  fi
+  latency_ms="$((ended_at_ms - started_at_ms))"
+
+  STEP_NAMES+=("$label")
+  STEP_CODES+=("$code")
+
+  if [[ $code -eq 0 ]]; then
+    STEP_STATUS+=("PASS")
+    echo "PASS | ${label} | exit=${code}"
+    gv_log_contract_emit "release" "info" "Go-live full step passed" "go_live_gate_full.step" 200 "$latency_ms" "step=${label};result=PASS;optional=true;strict=${strict_mode}"
+    return
+  fi
+
+  if [[ "$strict_mode" == "true" ]]; then
+    STEP_STATUS+=("FAIL")
+    echo "FAIL | ${label} | exit=${code}"
+    gv_log_contract_emit "release" "error" "Go-live full step failed" "go_live_gate_full.step" "$code" "$latency_ms" "step=${label};result=FAIL;optional=true;strict=true"
+    return
+  fi
+
+  STEP_STATUS+=("WARN")
+  echo "WARN | ${label} | exit=${code} (non-blocking)"
+  gv_log_contract_emit "release" "warn" "Go-live full optional step failed (non-blocking)" "go_live_gate_full.step" 200 "$latency_ms" "step=${label};result=WARN;exit=${code};optional=true;strict=false"
+}
+
 echo "=============================================================="
 echo "GEOVITO GO-LIVE FULL GATE"
 echo "creator_username=${CREATOR_USERNAME:-<empty>}"
 echo "override=${GO_LIVE_EMERGENCY_OVERRIDE}"
 echo "=============================================================="
-gv_log_contract_emit "release" "info" "Go-live full gate started" "go_live_gate_full.start" 0 0 "override=${GO_LIVE_EMERGENCY_OVERRIDE};creator=${CREATOR_USERNAME}"
+gv_log_contract_emit "release" "info" "Go-live full gate started" "go_live_gate_full.start" 0 0 "override=${GO_LIVE_EMERGENCY_OVERRIDE};creator=${CREATOR_USERNAME};site_lang_smoke=${GO_LIVE_WITH_SITE_LANGUAGE_RELEASE_SMOKE};site_lang_smoke_strict=${GO_LIVE_SITE_LANGUAGE_RELEASE_SMOKE_STRICT}"
 if [[ "$GO_LIVE_POLICY_TEST_MODE" == "true" ]]; then
   echo "INFO: GO_LIVE_POLICY_TEST_MODE=true (skipping runtime checks, simulating failed steps)."
   IFS=',' read -r -a failed_simulated_raw <<<"$GO_LIVE_POLICY_TEST_FAILED_STEPS"
@@ -157,6 +202,9 @@ else
   run_step "Core Go-Live Gate" bash -lc "cd '$ROOT_DIR' && GO_LIVE_WITH_BACKUP_VERIFY=true GO_LIVE_WITH_UGC_SHOWCASE_MOD=true GO_LIVE_REQUIRE_CREATOR=true GO_LIVE_WITH_SMTP=true GO_LIVE_WITH_LOG_CONTRACT_SMOKE=true GO_LIVE_SKIP_PRE_IMPORT=false GO_LIVE_SKIP_PRE_DESIGN=false GO_LIVE_SKIP_UI=false GO_LIVE_SKIP_REPORT_SMOKE=false GO_LIVE_SKIP_COMMUNITY_SETTINGS_SMOKE=false GO_LIVE_SKIP_UGC_API_CONTRACT=false GO_LIVE_SKIP_UI_PAGE_PROGRESS=false GO_LIVE_SKIP_DASHBOARD_ROLE_SMOKE=false GO_LIVE_SKIP_FOLLOW_SMOKE=false GO_LIVE_SKIP_NOTIFICATION_SMOKE=false GO_LIVE_SKIP_SAVED_LIST_SMOKE=false CREATOR_USERNAME='${CREATOR_USERNAME}' RESET_SMOKE_EMAIL='${RESET_SMOKE_EMAIL}' bash tools/go_live_gate.sh"
   if [[ "$GO_LIVE_WITH_RELEASE_DOCS_SYNC_CHECK" == "true" ]]; then
     run_step "Release Docs Sync Check" bash tools/release_docs_sync_check.sh
+  fi
+  if [[ "$GO_LIVE_WITH_SITE_LANGUAGE_RELEASE_SMOKE" == "true" ]]; then
+    run_optional_step "Site Language Release Smoke" "$GO_LIVE_SITE_LANGUAGE_RELEASE_SMOKE_STRICT" bash tools/site_language_release_smoke.sh
   fi
   run_step "Staging Isolation" bash tools/staging_isolation_check.sh
   run_step "Restore Freshness" bash tools/restore_freshness_check.sh
@@ -217,6 +265,9 @@ printf 'override=%s\n' "$GO_LIVE_EMERGENCY_OVERRIDE" >> "$SUMMARY_FILE"
 printf 'creator_username=%s\n' "${CREATOR_USERNAME:-}" >> "$SUMMARY_FILE"
 printf 'override_policy_allowlist=%s\n' "$(join_array_csv "${OVERRIDE_POLICY_STEPS[@]}")" >> "$SUMMARY_FILE"
 printf 'baseline_readiness_state=%s\n' "$BASELINE_READINESS_STATE" >> "$SUMMARY_FILE"
+printf 'site_language_release_smoke_enabled=%s\n' "$GO_LIVE_WITH_SITE_LANGUAGE_RELEASE_SMOKE" >> "$SUMMARY_FILE"
+printf 'site_language_release_smoke_strict=%s\n' "$GO_LIVE_SITE_LANGUAGE_RELEASE_SMOKE_STRICT" >> "$SUMMARY_FILE"
+printf 'site_language_release_smoke_artifact=%s\n' "artifacts/i18n/site-language-release-smoke-last.json" >> "$SUMMARY_FILE"
 echo "summary_file=${SUMMARY_FILE}"
 
 if [[ "$fail_count" -eq 0 ]]; then
