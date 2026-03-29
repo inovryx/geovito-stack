@@ -1,5 +1,6 @@
 ---
 import { resolveStrapiBaseUrl } from '../../lib/strapiConfig';
+import { getUiMessages, resolvePreferredLanguage, translate } from '../../lib/uiLanguage';
 
 interface Props {
   username: string;
@@ -8,8 +9,9 @@ interface Props {
 
 const { username: rawUsername, lang: rawLang = 'en' } = Astro.props as Props;
 const username = String(rawUsername || '').trim().toLowerCase();
-const lang = String(rawLang || 'en').trim().toLowerCase();
+const lang = resolvePreferredLanguage([rawLang, 'en']);
 const loginPath = `/${lang}/login/`;
+const ui = getUiMessages(lang);
 
 const authBaseUrl = resolveStrapiBaseUrl({
   STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
@@ -19,21 +21,67 @@ const authBaseUrl = resolveStrapiBaseUrl({
   ALLOW_LOCALHOST_STRAPI:
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
+
+const t = (key: string, params: Record<string, string | number> = {}, fallback?: string) =>
+  translate(ui, key, params, fallback);
+
+const panelTitle = t('profile.followPanel.title', {}, 'Follow creator');
+const panelSubtitle = t(
+  'profile.followPanel.subtitle',
+  { username: `@${username}` },
+  'Follow {username} to keep this creator in your personal feed.'
+);
+const followLabel = t('profile.followPanel.followLabel', {}, 'Follow');
+const followingLabel = t('profile.followPanel.followingLabel', {}, 'Following');
+const loginLabel = t('profile.followPanel.loginLabel', {}, 'Login');
+const loginRequired = t('profile.followPanel.loginRequired', {}, 'Login required to follow creators.');
+const ownProfile = t('profile.followPanel.ownProfile', {}, 'This is your profile.');
+const loadingState = t('profile.followPanel.loadingState', {}, 'Loading follow state...');
+const sessionExpired = t('profile.followPanel.sessionExpired', {}, 'Session expired. Please login again.');
+const loadFailed = t('profile.followPanel.loadFailed', {}, 'Could not load follow state.');
+const systemDisabled = t('profile.followPanel.systemDisabled', {}, 'Follow system is currently disabled.');
+const loadNetworkError = t('profile.followPanel.loadNetworkError', {}, 'Network error while loading follow state.');
+const updatingState = t('profile.followPanel.updatingState', {}, 'Updating follow status...');
+const updateFailed = t('profile.followPanel.updateFailed', {}, 'Could not update follow status.');
+const updateNetworkError = t('profile.followPanel.updateNetworkError', {}, 'Network error while updating follow status.');
+const followSuccess = t('profile.followPanel.followSuccess', { username: `@${username}` }, 'You are now following {username}.');
+const unfollowSuccess = t('profile.followPanel.unfollowSuccess', { username: `@${username}` }, 'Unfollowed {username}.');
 ---
 
 <section class="card panel gv-card gv-stack follow-user-panel" data-follow-user-panel data-auth-base={authBaseUrl}>
-  <h2 class="gv-h2">Follow creator</h2>
-  <p class="small" data-follow-user-subtitle>Follow @{username} to keep this creator in your personal feed.</p>
+  <h2 class="gv-h2">{panelTitle}</h2>
+  <p class="small" data-follow-user-subtitle>{panelSubtitle}</p>
   <div class="gv-row gv-row--gap gv-row--wrap" data-follow-user-controls>
     <button type="button" class="ui-button ui-button-primary ui-button-md" data-follow-user-toggle>
-      <span class="ui-button-label">Follow</span>
+      <span class="ui-button-label">{followLabel}</span>
     </button>
-    <a class="ui-button ui-button-secondary ui-button-sm" href={loginPath} data-follow-user-login hidden>Login</a>
+    <a class="ui-button ui-button-secondary ui-button-sm" href={loginPath} data-follow-user-login hidden>{loginLabel}</a>
   </div>
   <p class="small account-feedback" data-follow-user-feedback aria-live="polite"></p>
 </section>
 
-<script is:inline define:vars={{ username, authBaseUrl, loginPath }}>
+<script
+  is:inline
+  define:vars={{
+    username,
+    authBaseUrl,
+    loginPath,
+    followLabel,
+    followingLabel,
+    loginRequired,
+    ownProfile,
+    loadingState,
+    sessionExpired,
+    loadFailed,
+    systemDisabled,
+    loadNetworkError,
+    updatingState,
+    updateFailed,
+    updateNetworkError,
+    followSuccess,
+    unfollowSuccess,
+  }}
+>
   (() => {
     const root = document.querySelector('[data-follow-user-panel]');
     if (!(root instanceof HTMLElement)) return;
@@ -81,7 +129,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
       toggleButton.classList.toggle('ui-button-secondary', isFollowing);
       toggleButton.classList.toggle('ui-button-primary', !isFollowing);
       if (label) {
-        label.textContent = isFollowing ? 'Following' : 'Follow';
+        label.textContent = isFollowing ? followingLabel : followLabel;
       }
     };
 
@@ -106,7 +154,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
       toggleButton.hidden = true;
       loginButton.hidden = false;
       loginButton.href = loginPath;
-      setFeedback('Login required to follow creators.');
+      setFeedback(loginRequired);
       return;
     }
 
@@ -114,7 +162,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
     if (authUsername && authUsername === targetUsername) {
       toggleButton.hidden = true;
       loginButton.hidden = true;
-      subtitle.textContent = 'This is your profile.';
+      subtitle.textContent = ownProfile;
       setFeedback('');
       return;
     }
@@ -122,7 +170,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
     let followEnabled = true;
 
     const refreshState = async () => {
-      setFeedback('Loading follow state...');
+      setFeedback(loadingState);
       try {
         const result = await fetchMyFollows(jwt);
         if (!result.ok) {
@@ -130,10 +178,10 @@ const authBaseUrl = resolveStrapiBaseUrl({
             toggleButton.hidden = true;
             loginButton.hidden = false;
             loginButton.href = loginPath;
-            setFeedback('Session expired. Please login again.', true);
+            setFeedback(sessionExpired, true);
             return;
           }
-          setFeedback('Could not load follow state.', true);
+          setFeedback(loadFailed, true);
           return;
         }
 
@@ -143,7 +191,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
         if (!followEnabled) {
           toggleButton.disabled = true;
           setButtonState(false);
-          setFeedback('Follow system is currently disabled.');
+          setFeedback(systemDisabled);
           return;
         }
 
@@ -152,18 +200,18 @@ const authBaseUrl = resolveStrapiBaseUrl({
         toggleButton.disabled = false;
         setFeedback('');
       } catch (_error) {
-        setFeedback('Network error while loading follow state.', true);
+        setFeedback(loadNetworkError, true);
       }
     };
 
     toggleButton.addEventListener('click', async () => {
       if (!followEnabled) {
-        setFeedback('Follow system is currently disabled.');
+        setFeedback(systemDisabled);
         return;
       }
 
       toggleButton.disabled = true;
-      setFeedback('Updating follow status...');
+      setFeedback(updatingState);
       try {
         const response = await fetch(`${authBaseUrl}/api/user-follows/me/toggle`, {
           method: 'POST',
@@ -180,7 +228,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
 
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          const message = payload?.error?.message || 'Could not update follow status.';
+          const message = payload?.error?.message || updateFailed;
           setFeedback(message, true);
           toggleButton.disabled = false;
           return;
@@ -188,9 +236,9 @@ const authBaseUrl = resolveStrapiBaseUrl({
 
         const following = payload?.data?.following === true;
         setButtonState(following);
-        setFeedback(following ? `You are now following @${targetUsername}.` : `Unfollowed @${targetUsername}.`);
+        setFeedback(following ? followSuccess : unfollowSuccess);
       } catch (_error) {
-        setFeedback('Network error while updating follow status.', true);
+        setFeedback(updateNetworkError, true);
       } finally {
         toggleButton.disabled = false;
       }
@@ -199,4 +247,3 @@ const authBaseUrl = resolveStrapiBaseUrl({
     refreshState();
   })();
 </script>
-

@@ -1,5 +1,7 @@
 ---
 import Icon from '../Icon.astro';
+import { isSupportedLanguage } from '../../lib/languages';
+import { getUiMessages, translate } from '../../lib/uiLanguage';
 
 interface Props {
   variant?: 'info' | 'success' | 'warning' | 'danger';
@@ -18,6 +20,10 @@ const {
 } = Astro.props as Props;
 
 const key = storageKey || `geovito.ui-banner.${variant}`;
+const pathLanguage = Astro.url.pathname.split('/').filter(Boolean)[0] || 'en';
+const uiLanguage = isSupportedLanguage(pathLanguage) ? pathLanguage : 'en';
+const ui = getUiMessages(uiLanguage);
+const dismissLabel = translate(ui, 'layout.dismissBanner', {}, 'Dismiss banner');
 const variantClasses = {
   info: 'border-accent/40 bg-accent/10 text-fg',
   success: 'border-success/40 bg-success/10 text-fg',
@@ -37,7 +43,7 @@ const variantClasses = {
   </div>
   {
     dismissible ? (
-      <button type="button" class="ui-banner-close" data-ui-banner-dismiss aria-label="Dismiss banner">
+      <button type="button" class="ui-banner-close" data-ui-banner-dismiss aria-label={dismissLabel}>
         <Icon name="X" size={16} />
       </button>
     ) : null

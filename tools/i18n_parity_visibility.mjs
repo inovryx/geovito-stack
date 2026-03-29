@@ -21,6 +21,9 @@ const classifyKeyRoot = (key) => {
   if (key.startsWith('dashboard.')) return 'dashboard';
   if (key.startsWith('account.')) return 'account';
   if (key.startsWith('auth.')) return 'auth';
+  if (key.startsWith('profile.')) return 'profile';
+  if (key.startsWith('stateBanner.')) return 'state';
+  if (key.startsWith('atlas.')) return 'atlas';
   if (
     key.startsWith('layout.') ||
     key.startsWith('nav.') ||

@@ -20,6 +20,12 @@ const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
 const routeContext = pathSegments[1] || 'home';
 const analyticsContext = routeContext === 'regions' ? 'region' : routeContext === 'atlas' ? 'atlas' : 'home';
 const openAtlasLabel = translate(ui, 'tools.openAtlas', {}, 'Open atlas to choose context');
+const contextReadyBadge = translate(ui, 'tools.badges.contextReady', {}, 'context ready');
+const contextNeededBadge = translate(ui, 'tools.badges.contextNeeded', {}, 'context needed');
+const draftChecklistBadge = translate(ui, 'tools.badges.draftChecklist', {}, 'draft checklist');
+const promptOnlyBadge = translate(ui, 'tools.badges.promptOnly', {}, 'prompt only');
+const routeHintsBadge = translate(ui, 'tools.badges.routeHints', {}, 'route hints');
+const selectPlaceFirstBadge = translate(ui, 'tools.badges.selectPlaceFirst', {}, 'select place first');
 ---
 
 <div class="right-tools-stack gv-stack">
@@ -29,7 +35,7 @@ const openAtlasLabel = translate(ui, 'tools.openAtlas', {}, 'Open atlas to choos
     description={translate(ui, 'tools.currency.description', {}, 'Quick FX note')}
   >
     <p class="small">{contextText}</p>
-    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'context ready' : 'context needed'}</Badge>
+    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? contextReadyBadge : contextNeededBadge}</Badge>
     <p class="small">
       <a
         href={`/${currentLanguage}/atlas/`}
@@ -49,7 +55,7 @@ const openAtlasLabel = translate(ui, 'tools.openAtlas', {}, 'Open atlas to choos
     description={translate(ui, 'tools.visa.description', {}, 'Entry checklist starter')}
   >
     <p class="small">{contextText}</p>
-    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'draft checklist' : 'prompt only'}</Badge>
+    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? draftChecklistBadge : promptOnlyBadge}</Badge>
     <p class="small">{translate(ui, 'tools.visa.hint', {}, 'Regulations vary by passport and destination.')}</p>
     <p class="small">
       <a
@@ -70,7 +76,7 @@ const openAtlasLabel = translate(ui, 'tools.openAtlas', {}, 'Open atlas to choos
     description={translate(ui, 'tools.flights.description', {}, 'Route planning cue')}
   >
     <p class="small">{contextText}</p>
-    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? 'route hints' : 'select place first'}</Badge>
+    <Badge variant={hasContext ? 'success' : 'warning'}>{hasContext ? routeHintsBadge : selectPlaceFirstBadge}</Badge>
     <p class="small">{translate(ui, 'tools.flights.hint', {}, 'Use this as a planning prompt, not booking engine.')}</p>
     <p class="small">
       <a

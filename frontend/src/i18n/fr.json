@@ -1,6 +1,7 @@
 {
   "ads": {
-    "label": "Publicite"
+    "label": "Publicite",
+    "placeholder": "Espace pub"
   },
   "nav": {
     "blog": "Articles",
@@ -208,6 +209,7 @@
       "emptyAction": "Reinitialiser les filtres",
       "metaSummary": "{shown} lieux affiches sur {total}",
       "stateLegendAria": "Legende de statut linguistique",
+      "metadataBadges": "badges metadonnees",
       "emptyDescription": "Essayez un autre filtre pour continuer l'exploration."
     },
     "meta": {
@@ -890,23 +892,93 @@
     "runtime": "L'apercu de traduction runtime est affiche. Cette vue n'est pas indexee.",
     "fallback": "Le contenu complet n'est pas pret dans cette langue ({language}). La version canonique complete est affichee.",
     "incomplete": "Le contenu n'est pas complet dans cette langue ({language}, etat : {state}). La version canonique complete est affichee.",
-    "canonicalLink": "Aller vers la version canonique complete"
+    "canonicalLink": "Aller vers la version canonique complete",
+    "badgeMock": "MOCK",
+    "badgeRuntime": "RUNTIME",
+    "badgeFallback": "FALLBACK",
+    "dismissAria": "Fermer la banniere",
+    "state": {
+      "missing": "manquant",
+      "draft": "brouillon",
+      "complete": "complet"
+    }
   },
-  "commentLoggedModeHint": "Logged in as {name}. Email and captcha are not required.",
-  "commentGuestModeHint": "Guest mode: email and captcha are required.",
-  "likeAuthRequired": "Please login to like this post.",
-  "unlike": "Unlike",
-  "like": "Like",
-  "likeForbidden": "Like action is currently unavailable for this account role.",
-  "likeFailed": "Like action failed. Please try again.",
-  "commentMissingBody": "Comment body is required.",
-  "commentMissingEmail": "Please enter email.",
-  "turnstileRequired": "Please complete the captcha challenge.",
-  "submitting": "Submitting...",
-  "commentFailed": "Comment could not be submitted.",
-  "commentApproved": "Your comment is now visible.",
-  "commentPending": "Your comment was received and is pending moderation.",
-  "submitComment": "Submit comment",
+  "profile": {
+    "meta": {
+      "miniSiteTitle": "{handle} • Geovito",
+      "miniSiteDescription": "Mini-site de {username} sur Geovito",
+      "aboutTitle": "A propos de {username} • Geovito",
+      "aboutDescription": "A propos de {username}",
+      "postsTitle": "Publications de {username} • Geovito",
+      "postsDescription": "Publications visibles de {username}"
+    },
+    "navigation": {
+      "aria": "Navigation createur",
+      "home": "Accueil",
+      "posts": "Publications",
+      "about": "A propos"
+    },
+    "stats": {
+      "posts": "Publications",
+      "countries": "Pays",
+      "cities": "Villes"
+    },
+    "status": {
+      "enabled": "Active",
+      "disabled": "Desactive"
+    },
+    "labels": {
+      "miniSite": "Mini-site createur",
+      "creatorProfile": "Profil createur",
+      "creatorPosts": "Publications createur",
+      "visiblePosts": "Publications visibles",
+      "latestVisiblePosts": "Dernieres publications visibles",
+      "citizenCardBasic": "Citizen ID (basique)",
+      "citizenCardStatus": "Statut de la carte citoyen",
+      "shareLink": "Lien de partage",
+      "visibility": "Visibilite",
+      "socialLinks": "Liens sociaux",
+      "untitledPost": "Sans titre",
+      "inReview": "En revision",
+      "noVisiblePosts": "Aucune publication visible pour le moment.",
+      "noBio": "Ce createur n'a pas encore ajoute de bio.",
+      "noBiography": "Aucune biographie pour le moment."
+    },
+    "followPanel": {
+      "title": "Suivre le createur",
+      "subtitle": "Suivez {username} pour garder ce createur dans votre flux personnel.",
+      "followLabel": "Suivre",
+      "followingLabel": "Suivi",
+      "loginLabel": "Connexion",
+      "loginRequired": "Connexion requise pour suivre les createurs.",
+      "ownProfile": "Ceci est votre profil.",
+      "loadingState": "Chargement de l'etat de suivi...",
+      "sessionExpired": "Session expiree. Veuillez vous reconnecter.",
+      "loadFailed": "Impossible de charger l'etat de suivi.",
+      "systemDisabled": "Le systeme de suivi est actuellement desactive.",
+      "loadNetworkError": "Erreur reseau lors du chargement de l'etat de suivi.",
+      "updatingState": "Mise a jour du statut de suivi...",
+      "updateFailed": "Impossible de mettre a jour le statut de suivi.",
+      "updateNetworkError": "Erreur reseau lors de la mise a jour du statut de suivi.",
+      "followSuccess": "Vous suivez maintenant {username}.",
+      "unfollowSuccess": "Vous ne suivez plus {username}."
+    }
+  },
+  "commentLoggedModeHint": "Connecte en tant que {name}. Email et captcha ne sont pas requis.",
+  "commentGuestModeHint": "Mode invite: email et captcha sont requis.",
+  "likeAuthRequired": "Veuillez vous connecter pour aimer cet article.",
+  "unlike": "Retirer le like",
+  "like": "Aimer",
+  "likeForbidden": "L'action de like est indisponible pour ce role de compte.",
+  "likeFailed": "L'action de like a echoue. Veuillez reessayer.",
+  "commentMissingBody": "Le texte du commentaire est requis.",
+  "commentMissingEmail": "Veuillez saisir une adresse email.",
+  "turnstileRequired": "Veuillez terminer le challenge captcha.",
+  "submitting": "Envoi en cours...",
+  "commentFailed": "Le commentaire n'a pas pu etre envoye.",
+  "commentApproved": "Votre commentaire est maintenant visible.",
+  "commentPending": "Votre commentaire a ete recu et attend une moderation.",
+  "submitComment": "Envoyer le commentaire",
   "saved": {
     "comingSoonTitle": "Saved places coming soon",
     "comingSoonBody": "Saved lists and watchlist features will be enabled in a later phase."
@@ -932,12 +1004,21 @@
     "emptyTitle": "Aucun resultat correspondant",
     "emptyBody": "Essayez un mot-cle plus large ou changez de filtre.",
     "emptyAction": "Ouvrir l'atlas",
+    "inReview": "En revision",
     "aria": "Rechercher des lieux",
     "button": "Rechercher"
   },
   "tools": {
     "contextReady": "Contexte pret : {context}",
     "openAtlas": "Ouvrir l'atlas pour choisir un contexte",
+    "badges": {
+      "contextReady": "contexte pret",
+      "contextNeeded": "contexte requis",
+      "draftChecklist": "checklist brouillon",
+      "promptOnly": "invite seulement",
+      "routeHints": "indices d'itineraire",
+      "selectPlaceFirst": "selectionnez un lieu d'abord"
+    },
     "currency": {
       "title": "Devise",
       "description": "Apercu rapide du change"
@@ -966,6 +1047,7 @@
     "expandSidebar": "Etendre la barre laterale",
     "collapseSidebar": "Reduire la barre laterale",
     "toolsTitle": "Outils",
-    "closeMenu": "Fermer le menu"
+    "closeMenu": "Fermer le menu",
+    "dismissBanner": "Fermer la banniere"
   }
 }

@@ -1367,7 +1367,7 @@ const dashboardCopy = {
                 </p>
                 <p class="dashboard-kpi">
                   <span>{dashboardCopy.moderationQueueOldest}</span>
-                  <strong data-dashboard-moderation-oldest>0h</strong>
+                  <strong data-dashboard-moderation-oldest>0</strong>
                 </p>
               </div>
               <p class="small dashboard-alert" data-dashboard-moderation-alert hidden></p>
@@ -1722,10 +1722,7 @@ const dashboardCopy = {
 
           <article class="card panel gv-stack dashboard-control-card" id="dashboard-control-seo" data-dashboard-subsection-panel="seo">
             <h3 class="dashboard-mini-title">{dashboardCopy.moduleSeo}</h3>
-            <p class="small">
-              Canonical, robots, and sitemap operations are centralized in release checks.
-              Use runbook and smoke scripts to validate index gates before publish.
-            </p>
+            <p class="small">{dashboardCopy.moduleSeoBody}</p>
             <div class="dashboard-actions">
               <a
                 class="ui-button ui-button-secondary ui-button-sm"
@@ -1743,10 +1740,7 @@ const dashboardCopy = {
 
           <article class="card panel gv-stack dashboard-control-card" id="dashboard-control-ads" data-dashboard-subsection-panel="ads">
             <h3 class="dashboard-mini-title">{dashboardCopy.moduleAds}</h3>
-            <p class="small">
-              Keep ad slots CLS-safe and consent-gated. Placement updates should preserve reserved heights and
-              no runtime layout shift on load.
-            </p>
+            <p class="small">{dashboardCopy.moduleAdsBody}</p>
             <div class="dashboard-actions">
               <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, 'blog')}>
                 <span class="ui-button-label">{dashboardCopy.quickBlog}</span>

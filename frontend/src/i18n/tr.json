@@ -1,6 +1,7 @@
 {
   "ads": {
-    "label": "Reklam"
+    "label": "Reklam",
+    "placeholder": "Reklam alani"
   },
   "nav": {
     "blog": "Yazilar",
@@ -208,6 +209,7 @@
       "emptyAction": "Filtreleri sifirla",
       "metaSummary": "{total} yerden {shown} tanesi gosteriliyor",
       "stateLegendAria": "Dil durumu aciklamasi",
+      "metadataBadges": "meta rozetleri",
       "emptyDescription": "Kesfe devam etmek icin baska bir filtre secin."
     },
     "meta": {
@@ -890,23 +892,93 @@
     "runtime": "Calisma zamani ceviri onizlemesi gosteriliyor. Bu gorunum indexlenmez.",
     "fallback": "Bu dilde tam icerik hazir degil ({language}). Kanonik tam surum gosteriliyor.",
     "incomplete": "Bu dilde icerik tam degil ({language}, durum: {state}). Kanonik tam surum gosteriliyor.",
-    "canonicalLink": "Kanonik tam surume git"
+    "canonicalLink": "Kanonik tam surume git",
+    "badgeMock": "SAHTE",
+    "badgeRuntime": "CANLI",
+    "badgeFallback": "YEDEK",
+    "dismissAria": "Bildirimi kapat",
+    "state": {
+      "missing": "eksik",
+      "draft": "taslak",
+      "complete": "tamam"
+    }
   },
-  "commentLoggedModeHint": "Logged in as {name}. Email and captcha are not required.",
-  "commentGuestModeHint": "Guest mode: email and captcha are required.",
-  "likeAuthRequired": "Please login to like this post.",
-  "unlike": "Unlike",
-  "like": "Like",
-  "likeForbidden": "Like action is currently unavailable for this account role.",
-  "likeFailed": "Like action failed. Please try again.",
-  "commentMissingBody": "Comment body is required.",
-  "commentMissingEmail": "Please enter email.",
-  "turnstileRequired": "Please complete the captcha challenge.",
-  "submitting": "Submitting...",
-  "commentFailed": "Comment could not be submitted.",
-  "commentApproved": "Your comment is now visible.",
-  "commentPending": "Your comment was received and is pending moderation.",
-  "submitComment": "Submit comment",
+  "profile": {
+    "meta": {
+      "miniSiteTitle": "{handle} • Geovito",
+      "miniSiteDescription": "{username} icin Geovito mini sitesi",
+      "aboutTitle": "{username} Hakkinda • Geovito",
+      "aboutDescription": "{username} hakkinda",
+      "postsTitle": "{username} yazilari • Geovito",
+      "postsDescription": "{username} tarafindan gorunur yazilar"
+    },
+    "navigation": {
+      "aria": "Uretici gezintisi",
+      "home": "Ana Sayfa",
+      "posts": "Yazilar",
+      "about": "Hakkinda"
+    },
+    "stats": {
+      "posts": "Yazi",
+      "countries": "Ulke",
+      "cities": "Sehir"
+    },
+    "status": {
+      "enabled": "Etkin",
+      "disabled": "Devre disi"
+    },
+    "labels": {
+      "miniSite": "Uretici mini sitesi",
+      "creatorProfile": "Uretici profili",
+      "creatorPosts": "Uretici yazilari",
+      "visiblePosts": "Gorunur yazilar",
+      "latestVisiblePosts": "Son gorunur yazilar",
+      "citizenCardBasic": "Vatandas Karti (temel)",
+      "citizenCardStatus": "Vatandas karti durumu",
+      "shareLink": "Paylasim baglantisi",
+      "visibility": "Gorunurluk",
+      "socialLinks": "Sosyal baglantilar",
+      "untitledPost": "Basliksiz",
+      "inReview": "Incelemede",
+      "noVisiblePosts": "Henuz gorunur yazi yok.",
+      "noBio": "Bu uretici henuz bir biyografi eklemedi.",
+      "noBiography": "Henuz biyografi eklenmedi."
+    },
+    "followPanel": {
+      "title": "Ureticiyi takip et",
+      "subtitle": "{username} hesabini takip ederek bu ureticiyi kisisel akisinda tut.",
+      "followLabel": "Takip et",
+      "followingLabel": "Takiptesin",
+      "loginLabel": "Giris yap",
+      "loginRequired": "Ureticileri takip etmek icin giris yapmalisin.",
+      "ownProfile": "Bu senin profilin.",
+      "loadingState": "Takip durumu yukleniyor...",
+      "sessionExpired": "Oturum suresi doldu. Lutfen tekrar giris yap.",
+      "loadFailed": "Takip durumu su an yuklenemedi.",
+      "systemDisabled": "Takip sistemi su anda devre disi.",
+      "loadNetworkError": "Takip durumu yuklenirken ag hatasi olustu.",
+      "updatingState": "Takip durumu guncelleniyor...",
+      "updateFailed": "Takip durumu guncellenemedi.",
+      "updateNetworkError": "Takip durumu guncellenirken ag hatasi olustu.",
+      "followSuccess": "{username} artik takip ediliyor.",
+      "unfollowSuccess": "{username} artik takip edilmiyor."
+    }
+  },
+  "commentLoggedModeHint": "{name} olarak giris yaptin. E-posta ve captcha gerekli degil.",
+  "commentGuestModeHint": "Misafir modunda e-posta ve captcha zorunludur.",
+  "likeAuthRequired": "Bu yaziyi begenmek icin giris yapmalisin.",
+  "unlike": "Begeniyi kaldir",
+  "like": "Begen",
+  "likeForbidden": "Bu hesap rolunde begeni islemi su an kullanilamaz.",
+  "likeFailed": "Begeni islemi basarisiz oldu. Lutfen tekrar dene.",
+  "commentMissingBody": "Yorum metni zorunludur.",
+  "commentMissingEmail": "Lutfen e-posta girin.",
+  "turnstileRequired": "Lutfen captcha dogrulamasini tamamlayin.",
+  "submitting": "Gonderiliyor...",
+  "commentFailed": "Yorum gonderilemedi.",
+  "commentApproved": "Yorumin artik gorunur.",
+  "commentPending": "Yorumin alindi ve moderasyon bekliyor.",
+  "submitComment": "Yorumu gonder",
   "saved": {
     "comingSoonTitle": "Saved places coming soon",
     "comingSoonBody": "Saved lists and watchlist features will be enabled in a later phase."
@@ -932,12 +1004,21 @@
     "emptyTitle": "Eslesen sonuc yok",
     "emptyBody": "Daha genel bir anahtar kelime deneyin veya filtreyi degistirin.",
     "emptyAction": "Atlasi ac",
+    "inReview": "Incelemede",
     "aria": "Yer ara",
     "button": "Ara"
   },
   "tools": {
     "contextReady": "Baglam hazir: {context}",
     "openAtlas": "Baglam secmek icin atlasi ac",
+    "badges": {
+      "contextReady": "baglam hazir",
+      "contextNeeded": "baglam gerekiyor",
+      "draftChecklist": "taslak kontrol listesi",
+      "promptOnly": "yalnizca yonlendirme",
+      "routeHints": "rota ipuclari",
+      "selectPlaceFirst": "once yer sec"
+    },
     "currency": {
       "title": "Para Birimi",
       "description": "Hizli kur ozeti"
@@ -966,6 +1047,7 @@
     "expandSidebar": "Kenar cubugunu genislet",
     "collapseSidebar": "Kenar cubugunu daralt",
     "toolsTitle": "Araclar",
-    "closeMenu": "Menuyu kapat"
+    "closeMenu": "Menuyu kapat",
+    "dismissBanner": "Bildirimi kapat"
   }
 }

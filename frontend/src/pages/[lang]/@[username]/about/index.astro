@@ -4,7 +4,7 @@ import FollowUserPanel from '../../../../components/community/FollowUserPanel.as
 import { SUPPORTED_LANGUAGES, isSupportedLanguage, pathForLanguage } from '../../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../../lib/pageHelpers';
 import { getCreatorProfileByUsername, getCreatorProfiles } from '../../../../lib/strapi';
-import { getUiMessages } from '../../../../lib/uiLanguage';
+import { getUiMessages, translate } from '../../../../lib/uiLanguage';
 
 export const prerender = true;
 
@@ -49,11 +49,12 @@ const languageLinks = buildLanguageLinks(
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage(lang, `@${username}/about`));
 const socialLinks = profile.social_links && typeof profile.social_links === 'object' ? profile.social_links : null;
+const t = (key: string, params: Record<string, string | number> = {}, fallback?: string) => translate(ui, key, params, fallback);
 ---
 
 <MainLayout
-  title={`About @${username} • Geovito`}
-  description={profile.bio || `About @${username}`}
+  title={t('profile.meta.aboutTitle', { username: `@${username}` }, 'About {username} • Geovito')}
+  description={profile.bio || t('profile.meta.aboutDescription', { username: `@${username}` }, 'About {username}')}
   canonical={canonical}
   robots="noindex,nofollow"
   currentLanguage={lang}
@@ -62,36 +63,36 @@ const socialLinks = profile.social_links && typeof profile.social_links === 'obj
   ui={ui}
 >
   <section class="card panel gv-card gv-stack">
-    <p class="gv-caption">Creator profile</p>
+    <p class="gv-caption">{t('profile.labels.creatorProfile', {}, 'Creator profile')}</p>
     <h1 class="gv-h1">{profile.display_name || `@${username}`}</h1>
     <p class="small">@{profile.username}</p>
-    <nav class="gv-row gv-row--gap" aria-label="Creator navigation">
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}`)}>Home</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/posts`)}>Posts</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/about`)}>About</a>
+    <nav class="gv-row gv-row--gap" aria-label={t('profile.navigation.aria', {}, 'Creator navigation')}>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}`)}>{t('profile.navigation.home', {}, 'Home')}</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/posts`)}>{t('profile.navigation.posts', {}, 'Posts')}</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/about`)}>{t('profile.navigation.about', {}, 'About')}</a>
     </nav>
   </section>
 
   <FollowUserPanel username={username} lang={lang} />
 
   <section class="card panel gv-card gv-stack">
-    <h2 class="gv-h2">About</h2>
-    <p class="gv-body">{profile.bio || 'No biography provided yet.'}</p>
-    <p class="small">Visibility: {String(profile.visibility || 'public')}</p>
+    <h2 class="gv-h2">{t('profile.navigation.about', {}, 'About')}</h2>
+    <p class="gv-body">{profile.bio || t('profile.labels.noBiography', {}, 'No biography provided yet.')}</p>
+    <p class="small">{t('profile.labels.visibility', {}, 'Visibility')}: {String(profile.visibility || 'public')}</p>
   </section>
 
   <section class="card panel gv-card gv-stack">
-    <h2 class="gv-h2">Citizen card status</h2>
-    <p class="small">{profile.citizen_card_enabled === false ? 'Disabled' : 'Enabled'}</p>
-    <p class="small">Posts: {Number(profile.stats?.posts_count || 0)}</p>
-    <p class="small">Countries: {Number(profile.stats?.countries_count || 0)}</p>
-    <p class="small">Cities: {Number(profile.stats?.cities_count || 0)}</p>
+    <h2 class="gv-h2">{t('profile.labels.citizenCardStatus', {}, 'Citizen card status')}</h2>
+    <p class="small">{profile.citizen_card_enabled === false ? t('profile.status.disabled', {}, 'Disabled') : t('profile.status.enabled', {}, 'Enabled')}</p>
+    <p class="small">{t('profile.stats.posts', {}, 'Posts')}: {Number(profile.stats?.posts_count || 0)}</p>
+    <p class="small">{t('profile.stats.countries', {}, 'Countries')}: {Number(profile.stats?.countries_count || 0)}</p>
+    <p class="small">{t('profile.stats.cities', {}, 'Cities')}: {Number(profile.stats?.cities_count || 0)}</p>
   </section>
 
   {
     socialLinks ? (
       <section class="card panel gv-card gv-stack">
-        <h2 class="gv-h2">Social links</h2>
+        <h2 class="gv-h2">{t('profile.labels.socialLinks', {}, 'Social links')}</h2>
         <pre class="gv-caption">{JSON.stringify(socialLinks, null, 2)}</pre>
       </section>
     ) : null

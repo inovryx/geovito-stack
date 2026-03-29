@@ -14,6 +14,7 @@ if (!fs.existsSync(enFile)) {
 
 const criticalPrefixes = [
   'src/pages/[lang]/dashboard/',
+  'src/pages/[lang]/atlas/',
   'src/pages/[lang]/account/',
   'src/pages/[lang]/auth/',
   'src/pages/[lang]/login',
@@ -21,15 +22,20 @@ const criticalPrefixes = [
   'src/pages/[lang]/forgot-password',
   'src/pages/[lang]/reset-password',
   'src/pages/[lang]/search/',
+  'src/pages/[lang]/@[username]/',
+  'src/pages/u/[username]/',
   'src/layouts/',
   'src/components/LeftSidebar.astro',
   'src/components/RightTools.astro',
   'src/components/Nav.astro',
   'src/components/SearchBar.astro',
+  'src/components/StateBanner.astro',
+  'src/components/community/',
 ];
 
 const rootBuckets = [
   { name: 'dashboard', match: (file) => file.startsWith('src/pages/[lang]/dashboard/') },
+  { name: 'atlas', match: (file) => file.startsWith('src/pages/[lang]/atlas/') },
   { name: 'account', match: (file) => file.startsWith('src/pages/[lang]/account/') },
   {
     name: 'auth',
@@ -43,6 +49,12 @@ const rootBuckets = [
   { name: 'layout', match: (file) => file.startsWith('src/layouts/') || file === 'src/components/Nav.astro' },
   { name: 'sidebar', match: (file) => file === 'src/components/LeftSidebar.astro' },
   { name: 'righttools', match: (file) => file === 'src/components/RightTools.astro' },
+  { name: 'state', match: (file) => file === 'src/components/StateBanner.astro' },
+  {
+    name: 'profile',
+    match: (file) => file.startsWith('src/pages/[lang]/@[username]/') || file.startsWith('src/pages/u/[username]/'),
+  },
+  { name: 'community', match: (file) => file.startsWith('src/components/community/') },
   {
     name: 'search',
     match: (file) => file.startsWith('src/pages/[lang]/search/') || file === 'src/components/SearchBar.astro',

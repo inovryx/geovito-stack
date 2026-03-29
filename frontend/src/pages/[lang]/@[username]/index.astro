@@ -4,7 +4,7 @@ import FollowUserPanel from '../../../components/community/FollowUserPanel.astro
 import { SUPPORTED_LANGUAGES, isSupportedLanguage, pathForLanguage } from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, toAlternates } from '../../../lib/pageHelpers';
 import { getCreatorProfileByUsername, getCreatorPostsByUsername, getCreatorProfiles } from '../../../lib/strapi';
-import { getUiMessages } from '../../../lib/uiLanguage';
+import { getUiMessages, translate } from '../../../lib/uiLanguage';
 
 export const prerender = true;
 
@@ -53,8 +53,10 @@ const languageLinks = buildLanguageLinks(
 const alternates = toAlternates(languageLinks);
 const canonicalPath = pathForLanguage(lang, `@${username}`);
 const canonical = absoluteUrl(canonicalPath);
-const title = `${profile.display_name || `@${username}`} • Geovito`;
-const description = profile.bio || `Mini-site for @${username} on Geovito`;
+const t = (key: string, params: Record<string, string | number> = {}, fallback?: string) => translate(ui, key, params, fallback);
+const displayName = profile.display_name || `@${username}`;
+const title = t('profile.meta.miniSiteTitle', { handle: displayName }, '{handle} • Geovito');
+const description = profile.bio || t('profile.meta.miniSiteDescription', { username: `@${username}` }, 'Mini-site for {username} on Geovito');
 const stats = profile.stats || { posts_count: 0, countries_count: 0, cities_count: 0 };
 const avatarUrl = profile.avatar?.url || null;
 ---
@@ -72,7 +74,7 @@ const avatarUrl = profile.avatar?.url || null;
   <section class="card panel gv-card gv-stack">
     <div class="gv-row gv-row--between gv-row--wrap">
       <div class="gv-stack">
-        <p class="gv-caption">Creator mini-site</p>
+        <p class="gv-caption">{t('profile.labels.miniSite', {}, 'Creator mini-site')}</p>
         <h1 class="gv-h1">{profile.display_name || `@${username}`}</h1>
         <p class="small">@{profile.username}</p>
       </div>
@@ -91,51 +93,51 @@ const avatarUrl = profile.avatar?.url || null;
       }
     </div>
 
-    <p class="gv-body">{profile.bio || 'This creator has not added a bio yet.'}</p>
+    <p class="gv-body">{profile.bio || t('profile.labels.noBio', {}, 'This creator has not added a bio yet.')}</p>
 
-    <nav class="gv-row gv-row--gap" aria-label="Creator navigation">
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}`)}>Home</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/posts`)}>Posts</a>
-      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/about`)}>About</a>
+    <nav class="gv-row gv-row--gap" aria-label={t('profile.navigation.aria', {}, 'Creator navigation')}>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}`)}>{t('profile.navigation.home', {}, 'Home')}</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/posts`)}>{t('profile.navigation.posts', {}, 'Posts')}</a>
+      <a class="ui-button ui-button-secondary ui-button-sm" href={pathForLanguage(lang, `@${username}/about`)}>{t('profile.navigation.about', {}, 'About')}</a>
     </nav>
   </section>
 
   <FollowUserPanel username={username} lang={lang} />
 
   <section class="card panel gv-card gv-stack">
-    <h2 class="gv-h2">Citizen ID (basic)</h2>
+    <h2 class="gv-h2">{t('profile.labels.citizenCardBasic', {}, 'Citizen ID (basic)')}</h2>
     <div class="grid grid-3">
       <article class="card">
-        <p class="gv-caption">Posts</p>
+        <p class="gv-caption">{t('profile.stats.posts', {}, 'Posts')}</p>
         <p class="gv-h3">{stats.posts_count ?? 0}</p>
       </article>
       <article class="card">
-        <p class="gv-caption">Countries</p>
+        <p class="gv-caption">{t('profile.stats.countries', {}, 'Countries')}</p>
         <p class="gv-h3">{stats.countries_count ?? 0}</p>
       </article>
       <article class="card">
-        <p class="gv-caption">Cities</p>
+        <p class="gv-caption">{t('profile.stats.cities', {}, 'Cities')}</p>
         <p class="gv-h3">{stats.cities_count ?? 0}</p>
       </article>
     </div>
-    <p class="small">Share link: <code>{canonical}</code></p>
+    <p class="small">{t('profile.labels.shareLink', {}, 'Share link')}: <code>{canonical}</code></p>
   </section>
 
   <section class="card panel gv-card gv-stack">
-    <h2 class="gv-h2">Latest visible posts</h2>
+    <h2 class="gv-h2">{t('profile.labels.latestVisiblePosts', {}, 'Latest visible posts')}</h2>
     {
       posts.length > 0 ? (
         <ul class="gv-stack">
           {posts.slice(0, 8).map((post) => (
             <li class="card">
               <a href={String(post.url_path || '#')}>
-                <strong>{String(post.title || post.post_id || 'Untitled')}</strong>
+                <strong>{String(post.title || post.post_id || t('profile.labels.untitledPost', {}, 'Untitled'))}</strong>
               </a>
               <p class="small">{String(post.excerpt || '')}</p>
               {
                 String(post.submission_state || '').toLowerCase() === 'submitted' ? (
                   <p class="gv-caption">
-                    <span class="status-pill">In review</span>
+                    <span class="status-pill">{t('profile.labels.inReview', {}, 'In review')}</span>
                   </p>
                 ) : null
               }
@@ -143,7 +145,7 @@ const avatarUrl = profile.avatar?.url || null;
           ))}
         </ul>
       ) : (
-        <p class="small">No visible posts yet.</p>
+        <p class="small">{t('profile.labels.noVisiblePosts', {}, 'No visible posts yet.')}</p>
       )
     }
   </section>

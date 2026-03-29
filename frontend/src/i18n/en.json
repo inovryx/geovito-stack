@@ -1,6 +1,7 @@
 {
   "ads": {
-    "label": "Advertisement"
+    "label": "Advertisement",
+    "placeholder": "Ad space"
   },
   "nav": {
     "blog": "Blog",
@@ -208,6 +209,7 @@
       "emptyAction": "Reset filters",
       "metaSummary": "Showing {shown} of {total} places",
       "stateLegendAria": "Language state legend",
+      "metadataBadges": "metadata badges",
       "emptyDescription": "Try another filter chip to continue exploring the atlas."
     },
     "meta": {
@@ -890,7 +892,77 @@
     "runtime": "Runtime translation preview is shown. This view is not indexed.",
     "fallback": "Complete content is not ready in this language ({language}). Canonical complete version is shown.",
     "incomplete": "Content is not complete in this language ({language}, state: {state}). Canonical complete version is shown.",
-    "canonicalLink": "Go to canonical complete version"
+    "canonicalLink": "Go to canonical complete version",
+    "badgeMock": "MOCK",
+    "badgeRuntime": "RUNTIME",
+    "badgeFallback": "FALLBACK",
+    "dismissAria": "Dismiss banner",
+    "state": {
+      "missing": "missing",
+      "draft": "draft",
+      "complete": "complete"
+    }
+  },
+  "profile": {
+    "meta": {
+      "miniSiteTitle": "{handle} • Geovito",
+      "miniSiteDescription": "Mini-site for {username} on Geovito",
+      "aboutTitle": "About {username} • Geovito",
+      "aboutDescription": "About {username}",
+      "postsTitle": "{username} posts • Geovito",
+      "postsDescription": "Visible posts from {username}"
+    },
+    "navigation": {
+      "aria": "Creator navigation",
+      "home": "Home",
+      "posts": "Posts",
+      "about": "About"
+    },
+    "stats": {
+      "posts": "Posts",
+      "countries": "Countries",
+      "cities": "Cities"
+    },
+    "status": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "labels": {
+      "miniSite": "Creator mini-site",
+      "creatorProfile": "Creator profile",
+      "creatorPosts": "Creator posts",
+      "visiblePosts": "Visible posts",
+      "latestVisiblePosts": "Latest visible posts",
+      "citizenCardBasic": "Citizen ID (basic)",
+      "citizenCardStatus": "Citizen card status",
+      "shareLink": "Share link",
+      "visibility": "Visibility",
+      "socialLinks": "Social links",
+      "untitledPost": "Untitled",
+      "inReview": "In review",
+      "noVisiblePosts": "No visible posts yet.",
+      "noBio": "This creator has not added a bio yet.",
+      "noBiography": "No biography provided yet."
+    },
+    "followPanel": {
+      "title": "Follow creator",
+      "subtitle": "Follow {username} to keep this creator in your personal feed.",
+      "followLabel": "Follow",
+      "followingLabel": "Following",
+      "loginLabel": "Login",
+      "loginRequired": "Login required to follow creators.",
+      "ownProfile": "This is your profile.",
+      "loadingState": "Loading follow state...",
+      "sessionExpired": "Session expired. Please login again.",
+      "loadFailed": "Could not load follow state.",
+      "systemDisabled": "Follow system is currently disabled.",
+      "loadNetworkError": "Network error while loading follow state.",
+      "updatingState": "Updating follow status...",
+      "updateFailed": "Could not update follow status.",
+      "updateNetworkError": "Network error while updating follow status.",
+      "followSuccess": "You are now following {username}.",
+      "unfollowSuccess": "Unfollowed {username}."
+    }
   },
   "commentLoggedModeHint": "Logged in as {name}. Email and captcha are not required.",
   "commentGuestModeHint": "Guest mode: email and captcha are required.",
@@ -932,12 +1004,21 @@
     "emptyTitle": "No matching results",
     "emptyBody": "Try a broader keyword or switch to another filter.",
     "emptyAction": "Open atlas",
+    "inReview": "In review",
     "aria": "Search places",
     "button": "Search"
   },
   "tools": {
     "contextReady": "Context: {context}",
     "openAtlas": "Open atlas to choose context",
+    "badges": {
+      "contextReady": "context ready",
+      "contextNeeded": "context needed",
+      "draftChecklist": "draft checklist",
+      "promptOnly": "prompt only",
+      "routeHints": "route hints",
+      "selectPlaceFirst": "select place first"
+    },
     "currency": {
       "title": "Currency",
       "description": "Quick FX note"
@@ -966,6 +1047,7 @@
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "toolsTitle": "Tools",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "dismissBanner": "Dismiss banner"
   }
 }

@@ -201,6 +201,7 @@ const serializedUiText = JSON.stringify({
   totalResults: translate(ui, 'search.totalResults', {}, '{count} results for "{query}"'),
   totalNoQuery: translate(ui, 'search.totalNoQuery', {}, '{count} total results'),
   unknownDate: translate(ui, 'search.unknownDate', {}, 'Unknown date'),
+  inReview: translate(ui, 'search.inReview', {}, 'In review'),
 });
 
 const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLanguage(language, 'search')));
@@ -719,7 +720,7 @@ const canonical = absoluteUrl(pathForLanguage('en', 'search'));
                     <span class="status-pill">${escapeHtml(item.status || 'missing')}</span>
                     ${
                       item.kind === 'blog' && item.inReview
-                        ? '<span class="status-pill">In review</span>'
+                        ? `<span class="status-pill">${escapeHtml(uiText.inReview || '')}</span>`
                         : ''
                     }
                   </div>

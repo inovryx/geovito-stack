@@ -17,6 +17,7 @@ const pathLanguage = Astro.url.pathname.split('/').filter(Boolean)[0] || 'en';
 const uiLanguage = isSupportedLanguage(pathLanguage) ? pathLanguage : 'en';
 const ui = getUiMessages(uiLanguage);
 const labelText = translate(ui, 'ads.label', {}, 'Advertisement');
+const placeholderText = translate(ui, 'ads.placeholder', {}, 'Ad space');
 const slotElementId = getAdSlotElementId(slot);
 
 const adStyle = `--gv-ad-mobile:${slotConfig.size.mobile}px; --gv-ad-tablet:${slotConfig.size.tablet}px; --gv-ad-desktop:${slotConfig.size.desktop}px;`;
@@ -33,7 +34,7 @@ const rootClass = ['gv-ad-slot', `gv-ad-slot-${slot}`, className].filter(Boolean
       </div>
     ) : (
       <div class="gv-ad-frame gv-ad-frame-disabled">
-        <span class="gv-ad-placeholder-copy">Ad space</span>
+        <span class="gv-ad-placeholder-copy">{placeholderText}</span>
       </div>
     )
   }

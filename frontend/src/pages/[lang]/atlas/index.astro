@@ -121,6 +121,8 @@ const serializedUiText = JSON.stringify({
   stateComplete: translate(ui, 'atlas.list.states.complete', {}, 'complete'),
   stateDraft: translate(ui, 'atlas.list.states.draft', {}, 'draft'),
   stateMissing: translate(ui, 'atlas.list.states.missing', {}, 'missing'),
+  metadataBadges: translate(ui, 'atlas.list.metadataBadges', {}, 'metadata badges'),
+  inReview: translate(ui, 'search.inReview', {}, 'In review'),
   prevLabel: translate(ui, 'atlas.list.pagination.prev', {}, 'Prev'),
   nextLabel: translate(ui, 'atlas.list.pagination.next', {}, 'Next'),
   pageLabel: translate(ui, 'atlas.list.pagination.pageLabel', {}, 'Page {page}'),
@@ -406,7 +408,7 @@ const serializedUiText = JSON.stringify({
           <article class="ui-card gv-card atlas-entry-card" data-atlas-item>
             <div class="atlas-entry-head">
               <a class="atlas-entry-title" href="${href}" title="${title}">${title}</a>
-              <div class="ui-badge-group atlas-entry-badges" aria-label="metadata badges">
+              <div class="ui-badge-group atlas-entry-badges" aria-label="${escapeHtml(uiText.metadataBadges || '')}">
                 <span class="ui-badge ui-badge-info atlas-entry-badge atlas-kind-badge"><span class="truncate">${kindLabel}</span></span>
                 <span class="ui-badge ${stateClass} atlas-entry-badge atlas-state-badge"><span class="truncate">${stateLabel}</span></span>
               </div>
