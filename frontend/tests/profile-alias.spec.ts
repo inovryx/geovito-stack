@@ -39,6 +39,16 @@ test('alias route falls back to accept-language when cookie is missing', () => {
   expect(response.headers.get('location')).toBe('/fr/@ali-user/');
 });
 
+test('alias route does not route to unreleased languages from cookie/accept-language', () => {
+  const response = callAliasRoute('ali-user', {
+    cookie: 'geovito_ui_lang=de',
+    'accept-language': 'de-DE,de;q=0.9',
+  });
+
+  expect(response.status).toBe(307);
+  expect(response.headers.get('location')).toBe('/en/@ali-user/');
+});
+
 test('alias route normalizes zh variants to zh-cn', () => {
   const response = callAliasRoute('geo', {
     'accept-language': 'zh-TW,zh;q=0.9,en;q=0.8',

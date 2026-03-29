@@ -1,7 +1,13 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import EmptyState from '../../../components/ui/EmptyState.astro';
-import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import {
+  DEFAULT_PUBLIC_LANGUAGE,
+  PUBLIC_RELEASED_SITE_UI_LANGUAGES,
+  isSupportedLanguage,
+  pathForLanguage,
+  SUPPORTED_LANGUAGES,
+} from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
 import { getUiMessages, translate } from '../../../lib/uiLanguage';
@@ -42,7 +48,7 @@ const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '')
 const turnstileEnabled = !siteLockdownEnabled && turnstileSiteKey.length > 0;
 const googleUrl = `${authBaseUrl}/api/connect/google`;
 const facebookUrl = `${authBaseUrl}/api/connect/facebook`;
-const availableLanguages = SUPPORTED_LANGUAGES;
+const availableLanguages = PUBLIC_RELEASED_SITE_UI_LANGUAGES;
 const dashboardPath = pathForLanguage(lang, 'dashboard');
 const loginMessages = {
   required: translate(ui, 'auth.loginRequired', {}, 'Email and password are required.'),
@@ -160,7 +166,10 @@ const loginMessages = {
 
   {turnstileEnabled ? <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> : null}
 
-  <script is:inline define:vars={{ lang, availableLanguages, dashboardPath, turnstileEnabled, loginMessages }}>
+  <script
+    is:inline
+    define:vars={{ lang, availableLanguages, defaultPublicLanguage: DEFAULT_PUBLIC_LANGUAGE, dashboardPath, turnstileEnabled, loginMessages }}
+  >
     (() => {
       try {
         const raw = localStorage.getItem('geovito_auth_session') || sessionStorage.getItem('geovito_auth_session');
@@ -277,10 +286,13 @@ const loginMessages = {
           if (isAllowedLanguage(redirectLanguage)) {
             localStorage.setItem('geovito.ui_lang', redirectLanguage);
           }
+          if (!isAllowedLanguage(redirectLanguage)) {
+            redirectLanguage = normalizeLanguage(defaultPublicLanguage);
+          }
 
           setFeedback(loginMessages.successRedirect);
           window.setTimeout(() => {
-          window.location.assign(`/${redirectLanguage}/dashboard/`);
+            window.location.assign(`/${redirectLanguage}/dashboard/`);
           }, 500);
         } catch (error) {
           setFeedback(loginMessages.networkError, true);

@@ -1,6 +1,11 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
-import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
+import {
+  PUBLIC_RELEASED_SITE_UI_LANGUAGES,
+  isSupportedLanguage,
+  pathForLanguage,
+  SUPPORTED_LANGUAGES,
+} from '../../../lib/languages';
 import { absoluteUrl, buildLanguageLinks, languagePathMap, toAlternates } from '../../../lib/pageHelpers';
 import { ONBOARDING_FIRST_PLACE_EXAMPLES, ONBOARDING_FIRST_POST_EXAMPLES } from '../../../lib/onboardingExamples';
 import { resolveStrapiBaseUrl } from '../../../lib/strapiConfig';
@@ -30,7 +35,7 @@ const authBaseUrl = resolveStrapiBaseUrl({
   ALLOW_LOCALHOST_STRAPI:
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
-const availableLanguages = SUPPORTED_LANGUAGES;
+const availableLanguages = PUBLIC_RELEASED_SITE_UI_LANGUAGES;
 const accountCopy = {
   loginRequiredTitle: translate(ui, 'account.loginRequiredTitle', {}, 'Login required'),
   loginRequiredBody: translate(ui, 'account.loginRequiredBody', {}, 'You need to login before managing account preferences.'),

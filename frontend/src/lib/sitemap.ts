@@ -1,4 +1,4 @@
-import { ATLAS_CONTENT_LANGUAGES } from './languages';
+import { ATLAS_CONTENT_LANGUAGES, DEFAULT_PUBLIC_LANGUAGE, isPublicReleasedLanguage } from './languages';
 import { buildIndexableLanguagePathMap } from './indexGate';
 import { absoluteUrl } from './pageHelpers';
 import { getAtlasPlaces, getBlogPosts, getRegionGroups } from './strapi';
@@ -37,8 +37,13 @@ const chunkArray = <T>(items: T[], size: number) => {
 export const buildAtlasSitemapChunks = async () => {
   const [places, regionGroups, blogPosts] = await Promise.all([getAtlasPlaces(), getRegionGroups(), getBlogPosts()]);
   const byLanguage = new Map<string, Set<string>>();
+  const sitemapAtlasLanguages: string[] = (() => {
+    const released = ATLAS_CONTENT_LANGUAGES.filter((language) => isPublicReleasedLanguage(language));
+    if (released.length > 0) return released;
+    return [DEFAULT_PUBLIC_LANGUAGE];
+  })();
 
-  for (const language of ATLAS_CONTENT_LANGUAGES) {
+  for (const language of sitemapAtlasLanguages) {
     byLanguage.set(language, new Set());
   }
 
@@ -90,7 +95,7 @@ export const buildAtlasSitemapChunks = async () => {
 
   const chunks: SitemapChunk[] = [];
 
-  for (const language of ATLAS_CONTENT_LANGUAGES) {
+  for (const language of sitemapAtlasLanguages) {
     const urlSet = byLanguage.get(language);
     if (!urlSet || urlSet.size === 0) continue;
 

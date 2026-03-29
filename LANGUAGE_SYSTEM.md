@@ -23,6 +23,20 @@ Supported UI locales:
 - build-time locale files under `frontend/src/i18n/*.json`
 - default baseline includes `en`, `tr`, `de`, `es`, `ru`, `zh-cn`, `fr`
 
+Site language release control (public visibility):
+- Registry: `frontend/src/config/site-language-release-registry.json`
+- States: `registered | review | released | hidden`
+- `released` controls public visibility (selector, hreflang, canonical/x-default, redirect surfaces)
+- non-released languages can exist in system/build without becoming public
+- Current released baseline: `en`, `tr`, `fr`
+
+Separation:
+1. Routable/site-known languages (`SUPPORTED_LANGUAGES`)
+2. Public released languages (`PUBLIC_RELEASED_SITE_UI_LANGUAGES`)
+
+Rule:
+- A language can be registered without being released.
+
 Files:
 - `frontend/src/i18n/en.json`
 - `frontend/src/i18n/tr.json`

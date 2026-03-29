@@ -506,6 +506,14 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
       const role = session ? await resolveSessionRole(session) : 'member';
       const roleRank = Number(roleOrder[role] ?? 0);
       const identity = session ? (session.username || session.email) : '';
+      const previewEligible = roleRank >= roleOrder.admin;
+
+      document.documentElement.setAttribute('data-site-language-preview-eligible', previewEligible ? '1' : '0');
+      window.dispatchEvent(
+        new CustomEvent('geovito:site-language-preview-role', {
+          detail: { eligible: previewEligible, role },
+        })
+      );
 
       document.querySelectorAll('.left-sidebar-stack').forEach((stack) => {
         if (!(stack instanceof HTMLElement)) return;

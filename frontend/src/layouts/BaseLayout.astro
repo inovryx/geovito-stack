@@ -7,6 +7,14 @@ import ConsentModal from '../components/consent/ConsentModal.astro';
 import Icon from '../components/Icon.astro';
 import SearchBar from '../components/SearchBar.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import {
+  DEFAULT_PUBLIC_LANGUAGE,
+  PUBLIC_RELEASED_SITE_UI_LANGUAGES,
+  SITE_LANGUAGE_PREVIEW_QUERY_PARAM,
+  SITE_LANGUAGE_PREVIEW_STORAGE_KEY,
+  isPublicReleasedLanguage,
+} from '../lib/languages';
+import { resolveStrapiBaseUrl } from '../lib/strapiConfig';
 import { translate } from '../lib/uiLanguage';
 
 interface AlternateLink {
@@ -52,7 +60,30 @@ const siteLockdownNotice = String(
     process.env.PUBLIC_SITE_LOCKDOWN_NOTICE ||
     t('site.lockdownNotice', 'Test mode is active. This environment is not open for public usage.')
 ).trim();
-const effectiveRobots = siteLockdownEnabled ? 'noindex,nofollow' : robots;
+const currentLanguageReleased = isPublicReleasedLanguage(currentLanguage);
+const rewriteCanonicalLanguage = (value: string, targetLanguage: string) => {
+  const candidate = String(value || '').trim();
+  if (!candidate) return candidate;
+
+  try {
+    const parsed = new URL(candidate);
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    if (segments.length > 0) {
+      segments[0] = targetLanguage;
+      parsed.pathname = `/${segments.join('/')}/`;
+    }
+    return parsed.toString();
+  } catch (_error) {
+    const segments = candidate.split('/').filter(Boolean);
+    if (segments.length > 0) {
+      segments[0] = targetLanguage;
+      return `/${segments.join('/')}/`;
+    }
+    return candidate;
+  }
+};
+const effectiveCanonical = currentLanguageReleased ? canonical : rewriteCanonicalLanguage(canonical, DEFAULT_PUBLIC_LANGUAGE);
+const effectiveRobots = siteLockdownEnabled || !currentLanguageReleased ? 'noindex,nofollow' : robots;
 const cfBuildSha = String(process.env.CF_PAGES_COMMIT_SHA || '').trim();
 const cfBuildBranch = String(process.env.CF_PAGES_BRANCH || '').trim();
 const isCfPages = process.env.CF_PAGES ? '1' : '0';
@@ -61,11 +92,28 @@ const resolvedOgImage = (() => {
   if (!candidate) return '';
   if (/^https?:\/\//i.test(candidate)) return candidate;
   try {
-    return new URL(candidate, canonical).toString();
+    return new URL(candidate, effectiveCanonical).toString();
   } catch (_error) {
     return candidate;
   }
 })();
+const authBaseUrl = resolveStrapiBaseUrl({
+  STRAPI_URL: import.meta.env.STRAPI_URL as string | undefined,
+  PUBLIC_STRAPI_URL: import.meta.env.PUBLIC_STRAPI_URL as string | undefined,
+  CF_PAGES: process.env.CF_PAGES,
+  NODE_ENV: process.env.NODE_ENV,
+  ALLOW_LOCALHOST_STRAPI:
+    process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
+});
+const ownerEmailHintsCsv = String(
+  (import.meta.env.PUBLIC_OWNER_EMAILS as string | undefined) ||
+    (import.meta.env.PUBLIC_OWNER_EMAIL as string | undefined) ||
+    ''
+)
+  .split(',')
+  .map((entry) => String(entry || '').trim().toLowerCase())
+  .filter(Boolean)
+  .join(',');
 const normalizePath = (value: string) => (value.endsWith('/') ? value : `${value}/`);
 const currentPath = normalizePath(Astro.url.pathname || '/');
 const headerNav = [
@@ -77,26 +125,209 @@ const headerNav = [
 ---
 
 <!doctype html>
-<html lang={currentLanguage} data-build-sha={cfBuildSha} data-build-branch={cfBuildBranch} data-cf-pages={isCfPages}>
+<html
+  lang={currentLanguage}
+  data-build-sha={cfBuildSha}
+  data-build-branch={cfBuildBranch}
+  data-cf-pages={isCfPages}
+  data-site-language-released={currentLanguageReleased ? '1' : '0'}
+  data-site-language-fallback={DEFAULT_PUBLIC_LANGUAGE}
+  data-site-language-preview-query={SITE_LANGUAGE_PREVIEW_QUERY_PARAM}
+  data-site-language-preview-storage={SITE_LANGUAGE_PREVIEW_STORAGE_KEY}
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content={effectiveRobots} />
-    <link rel="canonical" href={canonical} />
+    <link rel="canonical" href={effectiveCanonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonical} />
+    <meta property="og:url" content={effectiveCanonical} />
     {resolvedOgImage ? <meta property="og:image" content={resolvedOgImage} /> : null}
     <meta name="twitter:card" content={twitterCard} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {resolvedOgImage ? <meta name="twitter:image" content={resolvedOgImage} /> : null}
     {alternates.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
-    <link rel="alternate" hreflang="x-default" href={languageLinks['en'] || '/en/'} />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={languageLinks[DEFAULT_PUBLIC_LANGUAGE] || `/${DEFAULT_PUBLIC_LANGUAGE}/`}
+    />
     <slot name="head" />
+
+    <script
+      is:inline
+      define:vars={{
+        currentLanguage,
+        currentLanguageReleased,
+        defaultPublicLanguage: DEFAULT_PUBLIC_LANGUAGE,
+        previewQueryParam: SITE_LANGUAGE_PREVIEW_QUERY_PARAM,
+        previewStorageKey: SITE_LANGUAGE_PREVIEW_STORAGE_KEY,
+        previewAuthBaseUrl: authBaseUrl,
+        ownerEmailHintsCsv,
+      }}
+    >
+      (() => {
+        const root = document.documentElement;
+        const normalize = (value) => String(value || '').trim().toLowerCase();
+        const released = currentLanguageReleased === true;
+        const fallbackLanguage = normalize(defaultPublicLanguage) || 'en';
+
+        const parseOwnerHints = (value) => {
+          const rows = String(value || '')
+            .split(',')
+            .map((entry) => normalize(entry))
+            .filter(Boolean);
+          return Array.from(new Set(rows));
+        };
+
+        const readSession = () => {
+          try {
+            const fromLocal = localStorage.getItem('geovito_auth_session');
+            const fromSession = sessionStorage.getItem('geovito_auth_session');
+            const raw = fromLocal || fromSession;
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return null;
+            const jwt = typeof parsed.jwt === 'string' ? parsed.jwt.trim() : '';
+            if (!jwt) return null;
+            const email =
+              typeof parsed.email === 'string'
+                ? parsed.email.trim()
+                : typeof parsed?.user?.email === 'string'
+                  ? parsed.user.email.trim()
+                  : typeof parsed?.identifier === 'string'
+                    ? parsed.identifier.trim()
+                    : '';
+            return { jwt, email };
+          } catch {
+            return null;
+          }
+        };
+
+        const inferRole = (payload, ownerHints, session) => {
+          const roleRaw = normalize(payload?.role?.type || payload?.role?.name || payload?.role?.code);
+          if (roleRaw.includes('super') || roleRaw.includes('admin') || roleRaw.includes('administrator')) {
+            return 'admin';
+          }
+          if (roleRaw.includes('owner')) {
+            return 'owner';
+          }
+          const email = normalize(payload?.email || session?.email || '');
+          if (email && ownerHints.includes(email)) {
+            return 'owner';
+          }
+          return 'member';
+        };
+
+        const emitPreviewRole = (eligible, role) => {
+          root.setAttribute('data-site-language-preview-eligible', eligible ? '1' : '0');
+          window.dispatchEvent(
+            new CustomEvent('geovito:site-language-preview-role', {
+              detail: { eligible: Boolean(eligible), role: String(role || 'member') },
+            })
+          );
+        };
+
+        const buildFallbackTarget = () => {
+          const url = new URL(window.location.href);
+          const segments = url.pathname.split('/').filter(Boolean);
+          if (segments.length === 0) {
+            url.pathname = `/${fallbackLanguage}/`;
+          } else {
+            segments[0] = fallbackLanguage;
+            url.pathname = `/${segments.join('/')}/`;
+          }
+          url.searchParams.delete(String(previewQueryParam || '').trim());
+          return `${url.pathname}${url.search}${url.hash}`;
+        };
+
+        const redirectToReleased = () => {
+          const target = buildFallbackTarget();
+          if (target !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+            window.location.replace(target);
+          }
+        };
+
+        const syncPreviewMode = () => {
+          const key = String(previewStorageKey || 'geovito_ui_lang_preview_v1').trim();
+          const paramKey = String(previewQueryParam || 'ui_lang_preview').trim();
+          let enabled = false;
+
+          try {
+            const url = new URL(window.location.href);
+            const param = normalize(url.searchParams.get(paramKey));
+            if (param === '1' || param === 'true' || param === 'on') {
+              localStorage.setItem(key, '1');
+            }
+            if (param === '0' || param === 'false' || param === 'off') {
+              localStorage.removeItem(key);
+            }
+            enabled = localStorage.getItem(key) === '1';
+          } catch {
+            enabled = false;
+          }
+
+          root.setAttribute('data-site-language-preview-mode', enabled ? '1' : '0');
+          window.dispatchEvent(new Event('geovito:site-language-preview-mode'));
+          return enabled;
+        };
+
+        const previewMode = syncPreviewMode();
+        if (released) {
+          return;
+        }
+
+        if (!previewMode) {
+          redirectToReleased();
+          return;
+        }
+
+        const ownerHints = parseOwnerHints(ownerEmailHintsCsv);
+        const session = readSession();
+        if (!session) {
+          emitPreviewRole(false, 'member');
+          redirectToReleased();
+          return;
+        }
+
+        const authBase = String(previewAuthBaseUrl || '').trim();
+        if (!authBase) {
+          emitPreviewRole(false, 'member');
+          redirectToReleased();
+          return;
+        }
+
+        const requestId = `gv-lang-preview-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+        fetch(`${authBase}/api/users/me?populate=role`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${session.jwt}`,
+            'X-Request-Id': requestId,
+          },
+        })
+          .then((response) => {
+            if (!response.ok) return null;
+            return response.json().catch(() => null);
+          })
+          .then((payload) => {
+            const role = inferRole(payload || {}, ownerHints, session);
+            const eligible = role === 'admin' || role === 'owner';
+            emitPreviewRole(eligible, role);
+            if (!eligible) {
+              redirectToReleased();
+            }
+          })
+          .catch(() => {
+            emitPreviewRole(false, 'member');
+            redirectToReleased();
+          });
+      })();
+    </script>
 
     <script is:inline>
       (() => {
@@ -176,9 +407,9 @@ const headerNav = [
   <body>
     <a href="#main-content" class="skip-link">{t('layout.skipToContent', 'Skip to content')}</a>
 
-    <script is:inline>
+    <script is:inline define:vars={{ releasedUiLanguages: PUBLIC_RELEASED_SITE_UI_LANGUAGES, defaultPublicLanguage: DEFAULT_PUBLIC_LANGUAGE }}>
       try {
-        const supportedUiLanguages = new Set(['en', 'tr', 'de', 'es', 'ru', 'zh-cn', 'fr']);
+        const supportedUiLanguages = new Set(Array.isArray(releasedUiLanguages) ? releasedUiLanguages : []);
         const pageLanguage = String(document.documentElement.lang || '').trim().toLowerCase();
         const preferredLanguage = String(localStorage.getItem('geovito.ui_lang') || '')
           .trim()
@@ -187,7 +418,7 @@ const headerNav = [
           ? preferredLanguage
           : supportedUiLanguages.has(pageLanguage)
             ? pageLanguage
-            : 'en';
+            : String(defaultPublicLanguage || 'en').trim().toLowerCase();
         localStorage.setItem('geovito.ui_lang', activeLanguage);
         document.cookie = `geovito_ui_lang=${encodeURIComponent(activeLanguage)}; Path=/; Max-Age=31536000; SameSite=Lax`;
       } catch {

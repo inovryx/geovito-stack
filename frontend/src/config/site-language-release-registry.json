@@ -1,0 +1,16 @@
+{
+  "default_public_language": "en",
+  "preview": {
+    "query_param": "ui_lang_preview",
+    "storage_key": "geovito_ui_lang_preview_v1"
+  },
+  "languages": [
+    { "code": "en", "state": "released" },
+    { "code": "tr", "state": "released" },
+    { "code": "de", "state": "review" },
+    { "code": "es", "state": "review" },
+    { "code": "ru", "state": "review" },
+    { "code": "zh-cn", "state": "review" },
+    { "code": "fr", "state": "released" }
+  ]
+}

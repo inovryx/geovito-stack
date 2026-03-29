@@ -1,5 +1,10 @@
 import type { APIRoute } from 'astro';
-import { DEFAULT_LANGUAGE, isSupportedLanguage, SITE_UI_LANGUAGES, type SiteLanguage } from '../lib/languages';
+import {
+  DEFAULT_PUBLIC_LANGUAGE,
+  PUBLIC_RELEASED_SITE_UI_LANGUAGES,
+  resolvePublicLanguage,
+  type SiteLanguage,
+} from '../lib/languages';
 import { normalizeCreatorUsername } from '../lib/ugcPostRules';
 
 export const prerender = false;
@@ -7,11 +12,8 @@ export const prerender = false;
 const normalizeLanguage = (value: string | null | undefined): SiteLanguage | null => {
   const normalized = String(value || '').trim().toLowerCase();
   if (!normalized) return null;
-  if (isSupportedLanguage(normalized)) return normalized;
-  if (normalized.startsWith('zh')) return 'zh-cn';
-  const primary = normalized.split('-')[0];
-  if (isSupportedLanguage(primary)) return primary;
-  return null;
+  const resolved = resolvePublicLanguage(normalized);
+  return resolved || null;
 };
 
 const parseCookieLanguage = (cookieHeader: string | null): SiteLanguage | null => {
@@ -53,12 +55,12 @@ const resolveTargetLanguage = (request: Request): SiteLanguage => {
   const acceptLanguage = parseAcceptLanguage(request.headers.get('accept-language'));
   if (acceptLanguage) return acceptLanguage;
 
-  return DEFAULT_LANGUAGE;
+  return DEFAULT_PUBLIC_LANGUAGE;
 };
 
 const resolveMirrorLanguage = (request: Request): SiteLanguage => {
   const fallback = resolveTargetLanguage(request);
-  return SITE_UI_LANGUAGES.includes(fallback) ? fallback : DEFAULT_LANGUAGE;
+  return PUBLIC_RELEASED_SITE_UI_LANGUAGES.includes(fallback) ? fallback : DEFAULT_PUBLIC_LANGUAGE;
 };
 
 export const GET: APIRoute = ({ params, request, redirect }) => {

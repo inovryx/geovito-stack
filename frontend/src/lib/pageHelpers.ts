@@ -1,4 +1,11 @@
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, pathForLanguage, toHreflang, type SiteLanguage } from './languages';
+import {
+  DEFAULT_PUBLIC_LANGUAGE,
+  PUBLIC_RELEASED_SITE_UI_LANGUAGES,
+  SUPPORTED_LANGUAGES,
+  pathForLanguage,
+  toHreflang,
+  type SiteLanguage,
+} from './languages';
 
 const siteUrl =
   (import.meta.env.PUBLIC_SITE_URL as string | undefined) ||
@@ -25,8 +32,9 @@ export const absoluteUrl = (path: string) =>
 export const buildLanguageLinks = (pathByLanguage: Record<string, string>) => {
   const links: Record<string, string> = {};
 
-  for (const language of SUPPORTED_LANGUAGES) {
-    const resolvedPath = pathByLanguage[language] || pathByLanguage[DEFAULT_LANGUAGE] || pathForLanguage(language);
+  for (const language of PUBLIC_RELEASED_SITE_UI_LANGUAGES) {
+    const resolvedPath =
+      pathByLanguage[language] || pathByLanguage[DEFAULT_PUBLIC_LANGUAGE] || pathForLanguage(language);
     links[language] = absoluteUrl(resolvedPath);
   }
 
@@ -34,7 +42,7 @@ export const buildLanguageLinks = (pathByLanguage: Record<string, string>) => {
 };
 
 export const toAlternates = (languageLinks: Record<string, string>) =>
-  SUPPORTED_LANGUAGES.filter((language) => Boolean(languageLinks[language])).map((language) => ({
+  PUBLIC_RELEASED_SITE_UI_LANGUAGES.filter((language) => Boolean(languageLinks[language])).map((language) => ({
     hreflang: toHreflang(language),
     href: languageLinks[language],
   }));

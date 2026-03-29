@@ -22,6 +22,36 @@ Out of scope for this governance:
 2. Any new UI copy must add/update the EN key first.
 3. Other locale files (`tr`, `fr`, and others) must follow EN key parity.
 
+## Site Language Release Kill Switch
+Site usage language now has a release-state registry:
+- `registered`
+- `review`
+- `released`
+- `hidden`
+
+Registry source:
+- `frontend/src/config/site-language-release-registry.json`
+
+Separation is strict:
+1. `routable languages`: known by system/build (`SUPPORTED_LANGUAGES` / `ROUTABLE_SITE_UI_LANGUAGES`)
+2. `public released languages`: visible in selector + SEO/public surfaces (`PUBLIC_RELEASED_SITE_UI_LANGUAGES`)
+
+Security rule:
+- Only `released` languages are public.
+- Any language not explicitly `released` is non-public by default.
+
+Current default released set:
+- `en`, `tr`, `fr`
+
+Preview mode (non-public languages):
+1. Requires explicit preview mode (`ui_lang_preview=1` or storage key).
+2. Requires owner/admin role.
+3. Never changes public release state.
+
+Preview controls:
+- query param: `ui_lang_preview`
+- storage key: `geovito_ui_lang_preview_v1`
+
 ## Fallback Policy
 1. Runtime fallback order is fixed:
    - active locale value
@@ -77,6 +107,14 @@ bash tools/i18n_fallback_leaks_audit.sh
 Artifacts:
 - `artifacts/i18n/fallback-leaks-last.json`
 - `artifacts/i18n/fallback-leaks-last.txt`
+
+6. Site language release dry-run smoke:
+```bash
+bash tools/site_language_release_smoke.sh
+```
+Artifacts:
+- `artifacts/i18n/site-language-release-smoke-last.json`
+- `artifacts/i18n/site-language-release-smoke-last.txt`
 
 ## Gradual Gating Strategy
 1. During extraction sprint (default):

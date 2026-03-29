@@ -1,6 +1,10 @@
 ---
 import { translate } from '../lib/uiLanguage';
-import { SUPPORTED_LANGUAGES } from '../lib/languages';
+import {
+  PUBLIC_RELEASED_SITE_UI_LANGUAGES,
+  ROUTABLE_SITE_UI_LANGUAGES,
+  getSiteLanguageReleaseState,
+} from '../lib/languages';
 import Icon from './Icon.astro';
 
 interface Props {
@@ -10,13 +14,25 @@ interface Props {
 }
 
 const { currentLanguage, languageLinks, ui } = Astro.props;
-const languages = SUPPORTED_LANGUAGES;
+
+const releasedLanguages = PUBLIC_RELEASED_SITE_UI_LANGUAGES;
+const previewOnlyLanguages = ROUTABLE_SITE_UI_LANGUAGES.filter(
+  (language) => !releasedLanguages.includes(language)
+);
+
+const buildPreviewHref = (language: string) => {
+  const segments = String(Astro.url.pathname || '/')
+    .split('/')
+    .filter(Boolean);
+  const suffix = segments.length > 1 ? segments.slice(1).join('/') : '';
+  return suffix ? `/${language}/${suffix}/` : `/${language}/`;
+};
 ---
 
-<nav aria-label={translate(ui, 'language.switcherAria', {}, 'Language selector')} class="language-switcher">
+<nav aria-label={translate(ui, 'language.switcherAria', {}, 'Language selector')} class="language-switcher" data-site-language-switcher>
   <ul class="language-tabs">
     {
-      languages.map((language) => {
+      releasedLanguages.map((language) => {
         const label = language.toUpperCase();
         return (
           <li>
@@ -26,6 +42,31 @@ const languages = SUPPORTED_LANGUAGES;
               hreflang={language === 'zh-cn' ? 'zh-CN' : language}
               aria-label={label}
               title={label}
+              data-site-language-code={language}
+              data-site-language-release-state="released"
+            >
+              <Icon name="Languages" size={16} />
+              <span class="truncate">{label}</span>
+            </a>
+          </li>
+        );
+      })
+    }
+
+    {
+      previewOnlyLanguages.map((language) => {
+        const label = language.toUpperCase();
+        const releaseState = getSiteLanguageReleaseState(language);
+        return (
+          <li data-site-language-preview-only hidden>
+            <a
+              href={buildPreviewHref(language)}
+              class={`language-tab ${language === currentLanguage ? 'is-active' : ''}`}
+              hreflang={language === 'zh-cn' ? 'zh-CN' : language}
+              aria-label={label}
+              title={`${label} · ${releaseState}`}
+              data-site-language-code={language}
+              data-site-language-release-state={releaseState}
             >
               <Icon name="Languages" size={16} />
               <span class="truncate">{label}</span>
@@ -36,3 +77,32 @@ const languages = SUPPORTED_LANGUAGES;
     }
   </ul>
 </nav>
+
+<script>
+  (() => {
+    if (window.__geovitoLanguageSwitcherPreviewBound) return;
+    window.__geovitoLanguageSwitcherPreviewBound = true;
+
+    const applyPreviewVisibility = () => {
+      const previewMode = document.documentElement.getAttribute('data-site-language-preview-mode') === '1';
+      const previewEligible = document.documentElement.getAttribute('data-site-language-preview-eligible') === '1';
+      const canShowPreview = previewMode && previewEligible;
+
+      document.querySelectorAll('[data-site-language-preview-only]').forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        node.hidden = !canShowPreview;
+      });
+    };
+
+    window.addEventListener('geovito:site-language-preview-role', applyPreviewVisibility);
+    window.addEventListener('geovito:site-language-preview-mode', applyPreviewVisibility);
+    window.addEventListener('storage', applyPreviewVisibility);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', applyPreviewVisibility, { once: true });
+      return;
+    }
+
+    applyPreviewVisibility();
+  })();
+</script>
