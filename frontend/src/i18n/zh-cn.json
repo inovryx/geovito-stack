@@ -107,6 +107,15 @@
     "listHint": "Jishi fanyi wei complete ye keyi xianshi; fei complete banben buhui bei shoulu.",
     "listTitle": "Boke",
     "listDescription": "Geovito boke liebiao",
+    "listLead": "Curated stories from places, routes, and community insights across Geovito.",
+    "listMetaSummary": "{count} posts",
+    "listReviewSummary": "{count} in review",
+    "listExcerptFallback": "No summary yet.",
+    "listEmptyTitle": "No posts available yet",
+    "listEmptyDescription": "New editorial stories will appear here once published.",
+    "publishedLabel": "Published",
+    "publishedUnknown": "Unknown",
+    "creatorLabel": "Creator",
     "reviewBadge": "In review",
     "reviewHint": "This post is visible on site while moderation is pending; it is not indexed.",
     "engagementTitle": "Community",
@@ -136,7 +145,8 @@
     "commentMissingBody": "Comment body is required.",
     "commentGuestModeHint": "Guest mode: email and captcha are required.",
     "commentLoggedModeHint": "Logged in as {name}. Email and captcha are not required.",
-    "commentAuthHint": "Logged-in users can comment without email; guest comments require moderation."
+    "commentAuthHint": "Logged-in users can comment without email; guest comments require moderation.",
+    "guestName": "Guest"
   },
   "home": {
     "noTrending": "Zanwu remen didian.",

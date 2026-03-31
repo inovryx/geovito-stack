@@ -107,6 +107,15 @@
     "listHint": "Les billets restent visibles meme si la traduction n'est pas complete ; les variantes incompletes ne sont pas indexables.",
     "listTitle": "Articles",
     "listDescription": "Liste du blog Geovito",
+    "listLead": "Histoires selectionnees sur les lieux, itinerares et retours de communaute de Geovito.",
+    "listMetaSummary": "{count} articles",
+    "listReviewSummary": "{count} en relecture",
+    "listExcerptFallback": "Aucun resume pour le moment.",
+    "listEmptyTitle": "Aucun article pour le moment",
+    "listEmptyDescription": "Les nouveaux contenus editoriaux publies apparaitront ici.",
+    "publishedLabel": "Publication",
+    "publishedUnknown": "Inconnu",
+    "creatorLabel": "Createur",
     "reviewBadge": "En relecture",
     "reviewHint": "Cet article reste visible pendant la moderation, mais il n'est pas indexe.",
     "engagementTitle": "Communaute",
@@ -136,7 +145,8 @@
     "commentMissingBody": "Le contenu du commentaire est obligatoire.",
     "commentGuestModeHint": "Mode invite : email et captcha obligatoires.",
     "commentLoggedModeHint": "Connecte en tant que {name}. Email et captcha non requis.",
-    "commentAuthHint": "Les utilisateurs connectes commentent sans email ; les invites passent en moderation."
+    "commentAuthHint": "Les utilisateurs connectes commentent sans email ; les invites passent en moderation.",
+    "guestName": "Invite"
   },
   "home": {
     "noTrending": "Aucun lieu tendance pour le moment.",

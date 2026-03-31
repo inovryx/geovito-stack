@@ -17,6 +17,7 @@ interface Props {
   ui: Record<string, unknown>;
   showTools?: boolean;
   toolsContext?: string | null;
+  pageSurface?: string;
 }
 
 const {
@@ -30,6 +31,7 @@ const {
   ui,
   showTools = false,
   toolsContext = null,
+  pageSurface = 'default',
 } = Astro.props as Props;
 
 const hasToolsSlot = Astro.slots.has('tools');
@@ -46,6 +48,7 @@ const hasToolsSlot = Astro.slots.has('tools');
   ui={ui}
   showTools={showTools}
   toolsContext={toolsContext}
+  pageSurface={pageSurface}
   hasCustomTools={hasToolsSlot}
 >
   {Astro.slots.has('head') ? <slot name="head" slot="head" /> : null}

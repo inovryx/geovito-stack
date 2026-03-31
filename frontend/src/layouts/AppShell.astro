@@ -24,6 +24,7 @@ interface Props {
   showTools?: boolean;
   toolsContext?: string | null;
   hasCustomTools?: boolean;
+  pageSurface?: string;
 }
 
 const {
@@ -38,6 +39,7 @@ const {
   showTools = false,
   toolsContext = null,
   hasCustomTools = false,
+  pageSurface = 'default',
 } = Astro.props as Props;
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
 const canonicalPathname = (() => {
@@ -60,9 +62,15 @@ const isDashboardCanonicalRoute = canonicalSegments.length >= 2 && canonicalSegm
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
+  pageSurface={pageSurface}
 >
   {Astro.slots.has('head') ? <slot name="head" slot="head" /> : null}
-  <div class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`} data-ev-root="ui" data-shell-layout>
+  <div
+    class={`shell-layout ${showTools ? 'has-tools' : 'no-tools'}`}
+    data-ev-root="ui"
+    data-shell-layout
+    data-page-surface={pageSurface}
+  >
     <aside class="left-column desktop-tablet-column" aria-label={t('layout.mainNavigation', 'Main navigation')}>
       <div class="left-nav-card">
         <div class="left-nav-head">

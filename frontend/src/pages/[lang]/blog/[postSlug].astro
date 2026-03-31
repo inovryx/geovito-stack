@@ -100,6 +100,11 @@ const reviewHint = translate(
   {},
   'This post is visible on site while moderation is pending; it is not indexed.'
 );
+const creatorLabel = translate(ui, 'blog.creatorLabel', {}, 'Creator');
+const publishedLabel = translate(ui, 'blog.publishedLabel', {}, 'Published');
+const publishedUnknown = translate(ui, 'blog.publishedUnknown', {}, 'Unknown');
+const languageStatusValue = String(renderTranslation.status || resolution.requested?.status || 'missing').toLowerCase();
+const languageStatusLabel = translate(ui, `stateBanner.state.${languageStatusValue}`, {}, languageStatusValue);
 const turnstileSiteKey = String(import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim();
 const turnstileEnabled = turnstileSiteKey.length > 0;
 const strapiPublicBase = resolveStrapiBaseUrl({
@@ -155,6 +160,7 @@ const blogEngagementCopy = {
     {},
     'Logged-in users can comment without email; guest comments require moderation.'
   ),
+  guestName: translate(ui, 'blog.guestName', {}, 'Guest'),
 };
 ---
 
@@ -167,6 +173,8 @@ const blogEngagementCopy = {
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
+  showTools={false}
+  pageSurface="blog-detail"
 >
   {isMockView ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
 
@@ -178,112 +186,123 @@ const blogEngagementCopy = {
     ) : null
   }
 
-  <section class="card panel gv-card gv-stack">
-  {
-    creatorProfilePath ? (
-      <p class="small gv-caption">
-        <strong>Creator:</strong> <a href={creatorProfilePath}>@{creatorUsername}</a>
-      </p>
-    ) : null
-  }
-  {
-    reviewPost ? (
-      <p class="small gv-caption">
-        <span class="status-pill">{reviewBadgeLabel}</span> {reviewHint}
-      </p>
-    ) : null
-  }
-  <h1 class="gv-h1">{renderTranslation.title}</h1>
-  <p class="small gv-body">{renderTranslation.excerpt}</p>
-  <p class="gv-caption">
-    <strong>{translate(ui, 'post.meta.postId')}:</strong> {post.post_id}
-  </p>
-  <p class="gv-caption">
-    <strong>{translate(ui, 'post.meta.languageStatus')}:</strong> {renderTranslation.status || resolution.requested?.status || 'missing'}
-  </p>
-  {renderTranslation.body ? <article class="gv-prose gv-body" data-ev-root="off" set:html={renderTranslation.body}></article> : <p class="gv-body">{translate(ui, 'post.noBody')}</p>}
-  <EmbedGallery embeds={renderTranslation.embeds} ui={ui} />
-  </section>
-  <AdSlot {...{ slot: 'blog_incontent' }} class="blog-incontent-ad" testId="ad-slot-blog-incontent" />
+  <div class="blog-detail-page stack-lg section-gap-md">
+    <section class="blog-detail-hero card-base card-editorial surface-elevated stack-md" data-blog-detail-hero>
+      <header class="blog-detail-header stack-sm">
+        <p class="type-label">{translate(ui, 'nav.blog', {}, 'Blog')}</p>
+        <h1 class="gv-h1 blog-detail-title">{renderTranslation.title}</h1>
+        {renderTranslation.excerpt ? <p class="type-body-lg blog-detail-excerpt">{renderTranslation.excerpt}</p> : null}
+      </header>
 
-  <section
-    class="card panel gv-card blog-engagement"
-    data-blog-engagement
-    data-post-id={post.post_id}
-    data-language={lang}
-    data-auth-base={strapiPublicBase}
-    data-login-path={loginPath}
-    data-turnstile-enabled={turnstileEnabled ? 'true' : 'false'}
-    data-copy={JSON.stringify(blogEngagementCopy)}
-  >
-    <header class="blog-engagement-header">
-      <div>
-        <h2 class="gv-h2">{blogEngagementCopy.title}</h2>
-        <p class="small">{blogEngagementCopy.subtitle}</p>
+      <div class="blog-detail-meta stack-sm">
+        <div class="blog-detail-meta-row chip-row" data-blog-detail-meta>
+          {creatorProfilePath ? <span class="status-pill blog-detail-chip"><strong>{creatorLabel}:</strong> <a href={creatorProfilePath}>@{creatorUsername}</a></span> : null}
+          <span class="status-pill blog-detail-chip"><strong>{translate(ui, 'post.meta.postId')}:</strong> {post.post_id}</span>
+          <span class="status-pill blog-detail-chip"><strong>{publishedLabel}:</strong> {post.published_on || publishedUnknown}</span>
+          <span class="status-pill blog-detail-chip"><strong>{translate(ui, 'post.meta.languageStatus')}:</strong> {languageStatusLabel}</span>
+        </div>
+        {
+          reviewPost ? (
+            <p class="type-body-sm blog-detail-review-hint">
+              <span class="status-pill blog-detail-chip">{reviewBadgeLabel}</span> {reviewHint}
+            </p>
+          ) : null
+        }
       </div>
-      <div class="blog-engagement-stats">
-        <span class="blog-engagement-chip" data-like-count-chip>{blogEngagementCopy.likes}: <strong data-like-count>0</strong></span>
-        <span class="blog-engagement-chip" data-comment-count-chip>{blogEngagementCopy.comments}: <strong data-comment-count>0</strong></span>
-      </div>
-    </header>
+    </section>
 
-    <div class="blog-like-row">
-      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-like-toggle>
-        <span class="ui-button-label">{blogEngagementCopy.like}</span>
-      </button>
-      <p class="small blog-like-feedback" data-like-feedback aria-live="polite"></p>
-      <a class="small blog-like-login-link" data-like-login-link href={loginPath} hidden>
-        {blogEngagementCopy.likeLoginCta}
-      </a>
-    </div>
-
-    <div class="blog-comments-wrap">
-      <h3 class="gv-h3">{blogEngagementCopy.comments}</h3>
-      <ul class="blog-comment-list gv-stack" data-comment-list></ul>
-      <p class="small" data-comment-empty>{blogEngagementCopy.noComments}</p>
-    </div>
-
-    <form class="blog-comment-form gv-stack" data-comment-form novalidate>
-      <h3 class="gv-h3">{blogEngagementCopy.leaveComment}</h3>
-      <p class="small" data-comment-mode-note>{blogEngagementCopy.commentAuthHint}</p>
-
-      <label class="blog-comment-field" data-comment-display-wrap>
-        <span>{blogEngagementCopy.displayName}</span>
-        <input type="text" name="display_name" maxlength="120" placeholder={blogEngagementCopy.displayNamePlaceholder} />
-      </label>
-
-      <label class="blog-comment-field" data-comment-email-wrap>
-        <span>{blogEngagementCopy.email}</span>
-        <input type="email" name="email" maxlength="320" placeholder={blogEngagementCopy.emailPlaceholder} />
-      </label>
-
+    <section class="blog-detail-reading content-wrap-reading stack-md" data-blog-detail-reading>
       {
-        turnstileEnabled ? (
-          <div class="blog-comment-turnstile" data-comment-turnstile-wrap>
-            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto"></div>
-          </div>
-        ) : null
+        renderTranslation.body ? (
+          <article class="blog-detail-prose gv-prose gv-body" data-ev-root="off" set:html={renderTranslation.body}></article>
+        ) : (
+          <p class="gv-body">{translate(ui, 'post.noBody')}</p>
+        )
       }
+      <EmbedGallery embeds={renderTranslation.embeds} ui={ui} />
+    </section>
 
-      <label class="blog-comment-field">
-        <span>{blogEngagementCopy.commentBody}</span>
-        <textarea name="body" rows={4} maxlength={4000} required placeholder={blogEngagementCopy.commentBodyPlaceholder}></textarea>
-      </label>
+    <AdSlot {...{ slot: 'blog_incontent' }} class="blog-incontent-ad" testId="ad-slot-blog-incontent" />
 
-      <button type="submit" class="ui-button ui-button-primary ui-button-sm" data-comment-submit>
-        <span class="ui-button-label">{blogEngagementCopy.submitComment}</span>
-      </button>
-      <p class="small blog-comment-feedback" data-comment-feedback aria-live="polite"></p>
-    </form>
-  </section>
+    <section
+      class="card-base card-editorial panel gv-card blog-engagement"
+      data-blog-engagement
+      data-post-id={post.post_id}
+      data-language={lang}
+      data-auth-base={strapiPublicBase}
+      data-login-path={loginPath}
+      data-turnstile-enabled={turnstileEnabled ? 'true' : 'false'}
+      data-copy={JSON.stringify(blogEngagementCopy)}
+    >
+      <header class="blog-engagement-header">
+        <div>
+          <h2 class="gv-h2">{blogEngagementCopy.title}</h2>
+          <p class="small">{blogEngagementCopy.subtitle}</p>
+        </div>
+        <div class="blog-engagement-stats">
+          <span class="blog-engagement-chip" data-like-count-chip>{blogEngagementCopy.likes}: <strong data-like-count>0</strong></span>
+          <span class="blog-engagement-chip" data-comment-count-chip>{blogEngagementCopy.comments}: <strong data-comment-count>0</strong></span>
+        </div>
+      </header>
 
-  {
-    resolution.requested?.status !== 'complete' && !runtimeMode ? (
-      <p>
-        <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
-      </p>
-    ) : null
-  }
+      <div class="blog-like-row">
+        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-like-toggle>
+          <span class="ui-button-label">{blogEngagementCopy.like}</span>
+        </button>
+        <p class="small blog-like-feedback" data-like-feedback aria-live="polite"></p>
+        <a class="small blog-like-login-link" data-like-login-link href={loginPath} hidden>
+          {blogEngagementCopy.likeLoginCta}
+        </a>
+      </div>
+
+      <div class="blog-comments-wrap">
+        <h3 class="gv-h3">{blogEngagementCopy.comments}</h3>
+        <ul class="blog-comment-list gv-stack" data-comment-list></ul>
+        <p class="small" data-comment-empty>{blogEngagementCopy.noComments}</p>
+      </div>
+
+      <form class="blog-comment-form gv-stack" data-comment-form novalidate>
+        <h3 class="gv-h3">{blogEngagementCopy.leaveComment}</h3>
+        <p class="small" data-comment-mode-note>{blogEngagementCopy.commentAuthHint}</p>
+
+        <label class="blog-comment-field" data-comment-display-wrap>
+          <span>{blogEngagementCopy.displayName}</span>
+          <input type="text" name="display_name" maxlength="120" placeholder={blogEngagementCopy.displayNamePlaceholder} />
+        </label>
+
+        <label class="blog-comment-field" data-comment-email-wrap>
+          <span>{blogEngagementCopy.email}</span>
+          <input type="email" name="email" maxlength="320" placeholder={blogEngagementCopy.emailPlaceholder} />
+        </label>
+
+        {
+          turnstileEnabled ? (
+            <div class="blog-comment-turnstile" data-comment-turnstile-wrap>
+              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto"></div>
+            </div>
+          ) : null
+        }
+
+        <label class="blog-comment-field">
+          <span>{blogEngagementCopy.commentBody}</span>
+          <textarea name="body" rows={4} maxlength={4000} required placeholder={blogEngagementCopy.commentBodyPlaceholder}></textarea>
+        </label>
+
+        <button type="submit" class="ui-button ui-button-primary ui-button-sm" data-comment-submit>
+          <span class="ui-button-label">{blogEngagementCopy.submitComment}</span>
+        </button>
+        <p class="small blog-comment-feedback" data-comment-feedback aria-live="polite"></p>
+      </form>
+    </section>
+
+    {
+      resolution.requested?.status !== 'complete' && !runtimeMode ? (
+        <p class="blog-detail-preview-link type-body-sm">
+          <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
+        </p>
+      ) : null
+    }
+  </div>
 
   <script is:inline>
     (() => {
@@ -397,7 +416,7 @@ const blogEngagementCopy = {
           const li = document.createElement('li');
           li.className = 'blog-comment-item';
 
-          const name = escapeHtml(item?.display_name || 'Guest');
+          const name = escapeHtml(item?.display_name || t('guestName', 'Guest'));
           const body = escapeHtml(item?.body || '');
           const created = item?.created_at ? new Date(String(item.created_at)) : null;
           const when = created && !Number.isNaN(created.getTime()) ? created.toLocaleString() : '';
@@ -615,111 +634,3 @@ const blogEngagementCopy = {
   </script>
   {turnstileEnabled ? <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> : null}
 </MainLayout>
-
-<style>
-  .blog-engagement {
-    margin-top: 1rem;
-  }
-
-  .blog-engagement-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.9rem;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  .blog-engagement-stats {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .blog-engagement-chip {
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.25rem 0.6rem;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
-    background: rgb(var(--gv-surface-2));
-  }
-
-  .blog-like-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.65rem;
-    align-items: center;
-  }
-
-  .blog-like-login-link {
-    color: var(--brand);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
-  .blog-like-feedback,
-  .blog-comment-feedback {
-    margin: 0;
-    min-height: 1.1rem;
-  }
-
-  .blog-like-feedback.is-error,
-  .blog-comment-feedback.is-error {
-    color: rgb(var(--gv-danger));
-  }
-
-  .blog-comments-wrap {
-    border-top: 1px dashed var(--border);
-    padding-top: 0.9rem;
-  }
-
-  .blog-comment-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .blog-comment-item {
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: rgb(var(--gv-surface-2));
-    padding: 0.7rem 0.8rem;
-  }
-
-  .blog-comment-meta {
-    margin: 0 0 0.35rem;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
-  }
-
-  .blog-comment-body {
-    margin: 0;
-    white-space: pre-wrap;
-    line-height: 1.55;
-  }
-
-  .blog-comment-form {
-    border-top: 1px dashed var(--border);
-    padding-top: 0.9rem;
-  }
-
-  .blog-comment-field {
-    display: grid;
-    gap: 0.35rem;
-  }
-
-  .blog-comment-field input,
-  .blog-comment-field textarea {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.65rem 0.75rem;
-    background: var(--surface);
-    color: var(--ink);
-  }
-
-  .blog-comment-field input:focus-visible,
-  .blog-comment-field textarea:focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 1px;
-  }
-</style>

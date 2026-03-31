@@ -1,5 +1,6 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
+import Accordion from '../../../components/ui/Accordion.astro';
 import {
   PUBLIC_RELEASED_SITE_UI_LANGUAGES,
   isSupportedLanguage,
@@ -36,6 +37,8 @@ const authBaseUrl = resolveStrapiBaseUrl({
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
 const availableLanguages = PUBLIC_RELEASED_SITE_UI_LANGUAGES;
+const accountTitle = translate(ui, 'account.title', {}, 'Account');
+const accountDescription = translate(ui, 'account.description', {}, 'User account shell is active in read-only mode for now.');
 const accountCopy = {
   loginRequiredTitle: translate(ui, 'account.loginRequiredTitle', {}, 'Login required'),
   loginRequiredBody: translate(ui, 'account.loginRequiredBody', {}, 'You need to login before managing account preferences.'),
@@ -416,461 +419,488 @@ const accountCopy = {
 ---
 
 <MainLayout
-  title={translate(ui, 'account.title', {}, 'Account')}
-  description={translate(ui, 'account.description', {}, 'User account shell is active in read-only mode for now.')}
+  title={accountTitle}
+  description={accountDescription}
   canonical={canonical}
   robots="noindex,nofollow"
   currentLanguage={lang}
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
+  showTools={false}
+  pageSurface="account-workspace"
 >
-  <h1>{translate(ui, 'account.title', {}, 'Account')}</h1>
-  <p class="small">{translate(ui, 'account.description', {}, 'User account shell is active in read-only mode for now.')}</p>
+  <div class="account-workspace-page stack-lg section-gap-sm" data-account-workspace>
+    <section class="account-workspace-overview card-base surface-elevated stack-md" data-account-overview>
+      <div class="stack-sm">
+        <p class="type-label">{accountTitle}</p>
+        <h1 class="type-h1">{accountTitle}</h1>
+        <p class="type-body-sm">{accountDescription}</p>
+      </div>
+      <div class="account-workspace-overview-chips">
+        <span class="status-pill">{accountCopy.profileTitle}</span>
+        <span class="status-pill">{accountCopy.commentsTitle}</span>
+        <span class="status-pill">{accountCopy.languageTitle}</span>
+      </div>
+    </section>
 
-  <section class="card panel gv-stack" data-account-logged-out hidden>
-    <h2>{accountCopy.loginRequiredTitle}</h2>
-    <p class="small">{accountCopy.loginRequiredBody}</p>
-    <a class="ui-button ui-button-primary ui-button-md" href={loginPath}>{accountCopy.loginCta}</a>
-  </section>
+    <section class="card-base panel gv-stack account-section" data-account-logged-out hidden>
+      <h2 class="type-h2">{accountCopy.loginRequiredTitle}</h2>
+      <p class="type-body-sm">{accountCopy.loginRequiredBody}</p>
+      <a class="ui-button ui-button-primary ui-button-md" href={loginPath}>{accountCopy.loginCta}</a>
+    </section>
 
-  <section class="card panel gv-stack" data-account-profile hidden>
-    <h2>{accountCopy.profileTitle}</h2>
-    <p class="small">{accountCopy.profileDescription}</p>
+    <div class="account-workspace-grid" data-account-grid>
+      <div class="account-workspace-main stack-md" data-account-main-zone>
+        <section class="card-base panel gv-stack account-section" data-account-profile hidden>
+          <h2 class="type-h2">{accountCopy.profileTitle}</h2>
+          <p class="type-body-sm">{accountCopy.profileDescription}</p>
 
-    <dl class="account-profile-grid">
-      <div>
-        <dt>{accountCopy.profileUsername}</dt>
-        <dd data-account-profile-username>{accountCopy.profileUnknown}</dd>
-      </div>
-      <div>
-        <dt>{accountCopy.profileEmail}</dt>
-        <dd data-account-profile-email>{accountCopy.profileUnknown}</dd>
-      </div>
-      <div>
-        <dt>{accountCopy.profileCreatedAt}</dt>
-        <dd data-account-profile-created>{accountCopy.profileUnknown}</dd>
-      </div>
-      <div>
-        <dt>{accountCopy.profileStatus}</dt>
-        <dd data-account-profile-status>{accountCopy.profileUnknown}</dd>
-      </div>
-    </dl>
-    <p class="small account-feedback" data-account-profile-feedback aria-live="polite"></p>
-  </section>
+          <dl class="account-profile-grid">
+            <div>
+              <dt>{accountCopy.profileUsername}</dt>
+              <dd data-account-profile-username>{accountCopy.profileUnknown}</dd>
+            </div>
+            <div>
+              <dt>{accountCopy.profileEmail}</dt>
+              <dd data-account-profile-email>{accountCopy.profileUnknown}</dd>
+            </div>
+            <div>
+              <dt>{accountCopy.profileCreatedAt}</dt>
+              <dd data-account-profile-created>{accountCopy.profileUnknown}</dd>
+            </div>
+            <div>
+              <dt>{accountCopy.profileStatus}</dt>
+              <dd data-account-profile-status>{accountCopy.profileUnknown}</dd>
+            </div>
+          </dl>
+          <p class="small account-feedback" data-account-profile-feedback aria-live="polite"></p>
+        </section>
 
-  <section class="card panel gv-stack" id="comments" data-account-comments hidden>
-    <div class="account-comments-head">
-      <div>
-        <h2>{accountCopy.commentsTitle}</h2>
-        <p class="small">{accountCopy.commentsDescription}</p>
+        <section class="card-base panel gv-stack account-section" id="comments" data-account-comments hidden>
+          <div class="account-comments-head">
+            <div>
+              <h2 class="type-h2">{accountCopy.commentsTitle}</h2>
+              <p class="type-body-sm">{accountCopy.commentsDescription}</p>
+            </div>
+            <label class="account-field account-inline-field account-comments-filter">
+              <span>{accountCopy.commentsFilterLabel}</span>
+              <select data-account-comments-filter>
+                <option value="all">{accountCopy.commentsFilterAll}</option>
+                <option value="pending">{accountCopy.commentsFilterPending}</option>
+                <option value="approved">{accountCopy.commentsFilterApproved}</option>
+                <option value="rejected">{accountCopy.commentsFilterRejected}</option>
+                <option value="spam">{accountCopy.commentsFilterSpam}</option>
+              </select>
+            </label>
+            <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-comments-refresh>
+              <span class="ui-button-label">{accountCopy.commentsRefresh}</span>
+            </button>
+          </div>
+
+          <div class="account-comments-stats" data-account-comments-stats>
+            <span>
+              {accountCopy.commentsPending}: <strong data-account-comments-pending>0</strong>
+            </span>
+            <span>
+              {accountCopy.commentsApproved}: <strong data-account-comments-approved>0</strong>
+            </span>
+            <span>
+              {accountCopy.commentsRejected}: <strong data-account-comments-rejected>0</strong>
+            </span>
+            <span>
+              {accountCopy.commentsSpam}: <strong data-account-comments-spam>0</strong>
+            </span>
+          </div>
+
+          <ul class="account-comments-list gv-stack" data-account-comments-list></ul>
+          <p class="small" data-account-comments-empty>{accountCopy.commentsNone}</p>
+          <p class="small account-feedback" data-account-comments-feedback aria-live="polite"></p>
+        </section>
+
+        <section class="card-base panel gv-stack account-section" id="account-requests" data-account-requests hidden>
+          <div class="account-comments-head">
+            <div>
+              <h2 class="type-h2">{accountCopy.accountRequestsTitle}</h2>
+              <p class="type-body-sm">{accountCopy.accountRequestsDescription}</p>
+            </div>
+            <label class="account-field account-inline-field account-comments-filter">
+              <span>{accountCopy.accountRequestsFilterLabel}</span>
+              <select data-account-requests-filter>
+                <option value="all">{accountCopy.accountRequestsFilterAll}</option>
+                <option value="new">{accountCopy.accountRequestsFilterNew}</option>
+                <option value="approved">{accountCopy.accountRequestsFilterApproved}</option>
+                <option value="rejected">{accountCopy.accountRequestsFilterRejected}</option>
+                <option value="completed">{accountCopy.accountRequestsFilterCompleted}</option>
+              </select>
+            </label>
+            <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-requests-refresh>
+              <span class="ui-button-label">{accountCopy.accountRequestsRefresh}</span>
+            </button>
+          </div>
+
+          <form class="gv-stack account-form" data-account-requests-form novalidate>
+            <label class="account-field">
+              <span>{accountCopy.accountRequestsTypeLabel}</span>
+              <select name="request_type" data-account-request-type required>
+                <option value="deactivate">{accountCopy.accountRequestsTypeDeactivate}</option>
+                <option value="delete">{accountCopy.accountRequestsTypeDelete}</option>
+              </select>
+            </label>
+            <label class="account-field">
+              <span>{accountCopy.accountRequestsReasonLabel}</span>
+              <textarea
+                name="reason"
+                rows="3"
+                maxlength="2000"
+                data-account-request-reason
+                placeholder={accountCopy.accountRequestsReasonPlaceholder}
+              ></textarea>
+            </label>
+            <button type="submit" class="ui-button ui-button-primary ui-button-md" data-account-requests-submit>
+              <span class="ui-button-label">{accountCopy.accountRequestsSubmit}</span>
+            </button>
+            <p class="small account-feedback" data-account-requests-feedback aria-live="polite"></p>
+          </form>
+
+          <div class="account-comments-stats" data-account-requests-stats>
+            <span>
+              {accountCopy.accountRequestsCountNew}: <strong data-account-requests-new>0</strong>
+            </span>
+            <span>
+              {accountCopy.accountRequestsCountApproved}: <strong data-account-requests-approved>0</strong>
+            </span>
+            <span>
+              {accountCopy.accountRequestsCountRejected}: <strong data-account-requests-rejected>0</strong>
+            </span>
+            <span>
+              {accountCopy.accountRequestsCountCompleted}: <strong data-account-requests-completed>0</strong>
+            </span>
+          </div>
+
+          <ul class="account-comments-list gv-stack" data-account-requests-list></ul>
+          <p class="small" data-account-requests-empty>{accountCopy.accountRequestsEmpty}</p>
+        </section>
+
+        <section class="card-base panel gv-stack account-section" id="saved-lists" data-account-saved-lists hidden data-auth-base={authBaseUrl}>
+          <div class="account-comments-head">
+            <div>
+              <h2 class="type-h2">{accountCopy.savedListsTitle}</h2>
+              <p class="type-body-sm">{accountCopy.savedListsDescription}</p>
+            </div>
+            <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-saved-lists-refresh>
+              <span class="ui-button-label">{accountCopy.savedListsRefresh}</span>
+            </button>
+          </div>
+          <div class="account-comments-stats">
+            <span>
+              {accountCopy.savedListsTotalLists}: <strong data-account-saved-lists-total-lists>0</strong>
+            </span>
+            <span>
+              {accountCopy.savedListsTotalItems}: <strong data-account-saved-lists-total-items>0</strong>
+            </span>
+            <span>
+              {accountCopy.savedListsTotalPosts}: <strong data-account-saved-lists-total-posts>0</strong>
+            </span>
+            <span>
+              {accountCopy.savedListsTotalPlaces}: <strong data-account-saved-lists-total-places>0</strong>
+            </span>
+          </div>
+          <ul class="account-comments-list gv-stack" data-account-saved-lists-list></ul>
+          <p class="small" data-account-saved-lists-empty>{accountCopy.savedListsNone}</p>
+          <p class="small account-feedback" data-account-saved-lists-feedback aria-live="polite"></p>
+        </section>
       </div>
-      <label class="account-field account-inline-field account-comments-filter">
-        <span>{accountCopy.commentsFilterLabel}</span>
-        <select data-account-comments-filter>
-          <option value="all">{accountCopy.commentsFilterAll}</option>
-          <option value="pending">{accountCopy.commentsFilterPending}</option>
-          <option value="approved">{accountCopy.commentsFilterApproved}</option>
-          <option value="rejected">{accountCopy.commentsFilterRejected}</option>
-          <option value="spam">{accountCopy.commentsFilterSpam}</option>
-        </select>
-      </label>
-      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-comments-refresh>
-        <span class="ui-button-label">{accountCopy.commentsRefresh}</span>
-      </button>
+
+      <aside class="account-workspace-side stack-md" data-account-side-zone>
+        <section class="card-base panel gv-stack account-section" data-account-settings hidden>
+          <h2 class="type-h2">{accountCopy.languageTitle}</h2>
+          <p class="type-body-sm">{accountCopy.languageDescription}</p>
+
+          <form class="gv-stack account-form" data-account-language-form data-auth-base={authBaseUrl} novalidate>
+            <label class="account-field">
+              <span>{accountCopy.preferredLanguage}</span>
+              <select name="preferred_ui_language" data-account-language-select>
+                {
+                  availableLanguages.map((language) => (
+                    <option value={language} data-default-label={language.toUpperCase()}>
+                      {language.toUpperCase()}
+                    </option>
+                  ))
+                }
+              </select>
+            </label>
+            <p class="small account-feedback" data-account-language-health></p>
+
+            <button type="submit" class="ui-button ui-button-primary ui-button-md">
+              <span class="ui-button-label">{accountCopy.savePreference}</span>
+            </button>
+            <p class="small account-feedback" data-account-feedback aria-live="polite"></p>
+          </form>
+
+          <form class="gv-stack account-form" data-account-notifications-form data-auth-base={authBaseUrl} novalidate>
+            <h3 class="type-h3">{accountCopy.notificationsTitle}</h3>
+            <p class="type-body-sm">{accountCopy.notificationsDescription}</p>
+
+            <label class="account-field">
+              <span>
+                <input type="checkbox" name="notifications_site_enabled" data-account-notifications-site />
+                {accountCopy.notificationsSiteEnabled}
+              </span>
+            </label>
+
+            <label class="account-field">
+              <span>
+                <input type="checkbox" name="notifications_email_enabled" data-account-notifications-email />
+                {accountCopy.notificationsEmailEnabled}
+              </span>
+            </label>
+
+            <label class="account-field">
+              <span>{accountCopy.notificationsDigest}</span>
+              <select name="notifications_digest" data-account-notifications-digest>
+                <option value="off">{accountCopy.notificationsDigestOff}</option>
+                <option value="instant">{accountCopy.notificationsDigestInstant}</option>
+                <option value="daily">{accountCopy.notificationsDigestDaily}</option>
+                <option value="weekly">{accountCopy.notificationsDigestWeekly}</option>
+              </select>
+            </label>
+
+            <button type="submit" class="ui-button ui-button-primary ui-button-md">
+              <span class="ui-button-label">{accountCopy.notificationsSave}</span>
+            </button>
+            <p class="small account-feedback" data-account-notifications-feedback aria-live="polite"></p>
+          </form>
+
+          <form
+            class="gv-stack account-form"
+            data-account-onboarding-form
+            data-auth-base={authBaseUrl}
+            id="onboarding-progress"
+            novalidate
+          >
+            <h3 class="type-h3">{accountCopy.onboardingTitle}</h3>
+            <p class="type-body-sm">{accountCopy.onboardingDescription}</p>
+
+            <div class="account-comments-stats">
+              <span>
+                {accountCopy.onboardingStatus}: <strong data-account-onboarding-status>{accountCopy.onboardingUnknown}</strong>
+              </span>
+              <span>
+                {accountCopy.onboardingProgress}: <strong data-account-onboarding-progress>0%</strong>
+              </span>
+              <span>
+                {accountCopy.onboardingCompleted}: <strong data-account-onboarding-completed>0/4</strong>
+              </span>
+            </div>
+
+            <div class="account-onboarding-grid">
+              <label class="account-field">
+                <span>
+                  <input type="checkbox" data-account-onboarding-profile-completed />
+                  {accountCopy.onboardingProfileCompleted}
+                </span>
+              </label>
+              <label class="account-field">
+                <span>
+                  <input type="checkbox" data-account-onboarding-first-place-selected />
+                  {accountCopy.onboardingFirstPlaceSelected}
+                </span>
+              </label>
+              <label class="account-field">
+                <span>
+                  <input type="checkbox" data-account-onboarding-first-post-started />
+                  {accountCopy.onboardingFirstPostStarted}
+                </span>
+              </label>
+              <label class="account-field">
+                <span>
+                  <input type="checkbox" data-account-onboarding-share-prompt-seen />
+                  {accountCopy.onboardingSharePromptSeen}
+                </span>
+              </label>
+              <label class="account-field">
+                <span>
+                  <input type="checkbox" data-account-onboarding-skipped />
+                  {accountCopy.onboardingSkipped}
+                </span>
+              </label>
+            </div>
+
+            <div data-account-onboarding-examples>
+              <Accordion title={accountCopy.onboardingExamplesTitle} class="account-disclosure account-onboarding-examples">
+                <div class="account-onboarding-examples-grid">
+                  <section class="account-onboarding-example-block">
+                    <p class="small"><strong>{accountCopy.onboardingExamplesPlacesTitle}</strong></p>
+                    <ul class="account-onboarding-example-list">
+                      {ONBOARDING_FIRST_PLACE_EXAMPLES.map((example) => (
+                        <li>
+                          <strong>{example.title}</strong>
+                          <span>{example.note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                  <section class="account-onboarding-example-block">
+                    <p class="small"><strong>{accountCopy.onboardingExamplesPostsTitle}</strong></p>
+                    <ul class="account-onboarding-example-list">
+                      {ONBOARDING_FIRST_POST_EXAMPLES.map((example) => (
+                        <li>
+                          <strong>{example.title}</strong>
+                          <span>{example.note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                </div>
+              </Accordion>
+            </div>
+
+            <button type="submit" class="ui-button ui-button-primary ui-button-md">
+              <span class="ui-button-label">{accountCopy.onboardingSave}</span>
+            </button>
+            <p class="small account-feedback" data-account-onboarding-feedback aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section class="card-base panel gv-stack account-section" id="locale-progress" data-account-locale-progress hidden>
+          <div class="account-comments-head">
+            <div>
+              <h2 class="type-h2">{accountCopy.localeProgressTitle}</h2>
+              <p class="type-body-sm">{accountCopy.localeProgressDescription}</p>
+            </div>
+            <label class="account-field account-inline-field account-locale-filter">
+              <span>{accountCopy.localeProgressFilterLabel}</span>
+              <select data-account-locale-progress-filter>
+                <option value="all">{accountCopy.localeProgressFilterAll}</option>
+                <option value="missing">{accountCopy.localeProgressFilterMissing}</option>
+                <option value="untranslated">{accountCopy.localeProgressFilterUntranslated}</option>
+              </select>
+            </label>
+            <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-progress-refresh>
+              <span class="ui-button-label">{accountCopy.localeProgressRefresh}</span>
+            </button>
+          </div>
+
+          <div class="account-comments-stats" data-account-locale-progress-summary>
+            <span>
+              {accountCopy.localeProgressMissingLocales}: <strong data-account-locale-progress-missing-locales>0</strong>
+            </span>
+            <span>
+              {accountCopy.localeProgressUntranslatedLocales}: <strong data-account-locale-progress-untranslated-locales>0</strong>
+            </span>
+            <span>
+              {accountCopy.localeProgressDeployCount}: <strong data-account-locale-progress-deploy-count>0</strong>
+            </span>
+            <span>
+              {accountCopy.localeProgressActiveFilter}: <strong data-account-locale-progress-active-filter>{accountCopy.localeProgressFilterAll}</strong>
+            </span>
+            <span>
+              {accountCopy.localeProgressFilteredKeys}: <strong data-account-locale-progress-filtered-total>0</strong>
+            </span>
+          </div>
+
+          <div class="account-locale-deploy-hint gv-stack" data-account-locale-deploy-hint hidden>
+            <p class="account-comment-meta">
+              <strong>{accountCopy.localeProgressDeployActionTitle}</strong>
+            </p>
+            <p class="account-comment-meta" data-account-locale-deploy-body>{accountCopy.localeProgressDeployActionBody}</p>
+            <div class="account-locale-deploy-command-wrap">
+              <code data-account-locale-deploy-command>{accountCopy.localeProgressDeployCommand}</code>
+              <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-deploy-copy>
+                <span class="ui-button-label">{accountCopy.localeProgressDeployCopy}</span>
+              </button>
+            </div>
+            <div data-account-locale-deploy-extra>
+              <Accordion title={accountCopy.localeProgressShowDetails} class="account-disclosure account-locale-deploy-extra">
+                <div class="gv-stack">
+                  <div class="account-locale-deploy-command-wrap">
+                    <code data-account-locale-release-command>{accountCopy.localeProgressDeployReleaseCommand}</code>
+                    <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-release-copy>
+                      <span class="ui-button-label">{accountCopy.localeProgressDeployCopyRelease}</span>
+                    </button>
+                  </div>
+                  <div class="account-locale-deploy-command-wrap">
+                    <code data-account-locale-workflow-command>{accountCopy.localeProgressDeployWorkflowCommand}</code>
+                    <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-workflow-copy>
+                      <span class="ui-button-label">{accountCopy.localeProgressDeployCopyWorkflow}</span>
+                    </button>
+                  </div>
+                </div>
+              </Accordion>
+            </div>
+            <p class="small account-feedback" data-account-locale-deploy-feedback aria-live="polite"></p>
+          </div>
+
+          <ul class="account-comments-list gv-stack" data-account-locale-progress-list></ul>
+          <p class="small" data-account-locale-progress-empty>{accountCopy.localeProgressNone}</p>
+          <p class="small account-feedback" data-account-locale-progress-feedback aria-live="polite"></p>
+        </section>
+
+        <section class="card-base panel gv-stack account-section" data-account-follows hidden data-auth-base={authBaseUrl}>
+          <div class="account-comments-head">
+            <div>
+              <h2 class="type-h2">{accountCopy.followsTitle}</h2>
+              <p class="type-body-sm">{accountCopy.followsDescription}</p>
+            </div>
+            <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-follows-refresh>
+              <span class="ui-button-label">{accountCopy.followsRefresh}</span>
+            </button>
+          </div>
+          <div class="account-comments-stats">
+            <span>
+              {accountCopy.followsUsers}: <strong data-account-follows-users>0</strong>
+            </span>
+            <span>
+              {accountCopy.followsPlaces}: <strong data-account-follows-places>0</strong>
+            </span>
+          </div>
+          <div class="account-comments-stats">
+            <span>
+              {accountCopy.communityVisibilityCitizenCard}: <strong data-account-community-citizen-card>{accountCopy.communityVisibilityUnknown}</strong>
+            </span>
+            <span>
+              {accountCopy.communityVisibilityBadges}: <strong data-account-community-badges>{accountCopy.communityVisibilityUnknown}</strong>
+            </span>
+            <span>
+              {accountCopy.communityVisibilityLoadedAt}: <strong data-account-community-loaded-at>{accountCopy.communityVisibilityUnknown}</strong>
+            </span>
+          </div>
+          <ul class="account-comments-list gv-stack" data-account-follows-list></ul>
+          <p class="small" data-account-follows-empty>{accountCopy.followsNone}</p>
+          <p class="small account-feedback" data-account-community-feedback aria-live="polite"></p>
+          <p class="small account-feedback" data-account-follows-feedback aria-live="polite"></p>
+        </section>
+
+        <section class="card-base panel gv-stack account-section" data-account-password hidden>
+          <h2 class="type-h2">{accountCopy.passwordTitle}</h2>
+          <p class="type-body-sm">{accountCopy.passwordDescription}</p>
+
+          <form class="gv-stack account-form" data-account-password-form data-auth-base={authBaseUrl} novalidate>
+            <label class="account-field">
+              <span>{accountCopy.currentPassword}</span>
+              <input type="password" name="currentPassword" autocomplete="current-password" minlength="8" required />
+            </label>
+
+            <label class="account-field">
+              <span>{accountCopy.newPassword}</span>
+              <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+            </label>
+
+            <label class="account-field">
+              <span>{accountCopy.passwordConfirm}</span>
+              <input type="password" name="passwordConfirmation" autocomplete="new-password" minlength="8" required />
+            </label>
+
+            <button type="submit" class="ui-button ui-button-primary ui-button-md">
+              <span class="ui-button-label">{accountCopy.changePassword}</span>
+            </button>
+            <p class="small account-feedback" data-account-password-feedback aria-live="polite"></p>
+          </form>
+        </section>
+      </aside>
     </div>
-
-    <div class="account-comments-stats" data-account-comments-stats>
-      <span>
-        {accountCopy.commentsPending}: <strong data-account-comments-pending>0</strong>
-      </span>
-      <span>
-        {accountCopy.commentsApproved}: <strong data-account-comments-approved>0</strong>
-      </span>
-      <span>
-        {accountCopy.commentsRejected}: <strong data-account-comments-rejected>0</strong>
-      </span>
-      <span>
-        {accountCopy.commentsSpam}: <strong data-account-comments-spam>0</strong>
-      </span>
-    </div>
-
-    <ul class="account-comments-list gv-stack" data-account-comments-list></ul>
-    <p class="small" data-account-comments-empty>{accountCopy.commentsNone}</p>
-    <p class="small account-feedback" data-account-comments-feedback aria-live="polite"></p>
-  </section>
-
-  <section class="card panel gv-stack" id="account-requests" data-account-requests hidden>
-    <div class="account-comments-head">
-      <div>
-        <h2>{accountCopy.accountRequestsTitle}</h2>
-        <p class="small">{accountCopy.accountRequestsDescription}</p>
-      </div>
-      <label class="account-field account-inline-field account-comments-filter">
-        <span>{accountCopy.accountRequestsFilterLabel}</span>
-        <select data-account-requests-filter>
-          <option value="all">{accountCopy.accountRequestsFilterAll}</option>
-          <option value="new">{accountCopy.accountRequestsFilterNew}</option>
-          <option value="approved">{accountCopy.accountRequestsFilterApproved}</option>
-          <option value="rejected">{accountCopy.accountRequestsFilterRejected}</option>
-          <option value="completed">{accountCopy.accountRequestsFilterCompleted}</option>
-        </select>
-      </label>
-      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-requests-refresh>
-        <span class="ui-button-label">{accountCopy.accountRequestsRefresh}</span>
-      </button>
-    </div>
-
-    <form class="gv-stack account-form" data-account-requests-form novalidate>
-      <label class="account-field">
-        <span>{accountCopy.accountRequestsTypeLabel}</span>
-        <select name="request_type" data-account-request-type required>
-          <option value="deactivate">{accountCopy.accountRequestsTypeDeactivate}</option>
-          <option value="delete">{accountCopy.accountRequestsTypeDelete}</option>
-        </select>
-      </label>
-      <label class="account-field">
-        <span>{accountCopy.accountRequestsReasonLabel}</span>
-        <textarea
-          name="reason"
-          rows="3"
-          maxlength="2000"
-          data-account-request-reason
-          placeholder={accountCopy.accountRequestsReasonPlaceholder}
-        ></textarea>
-      </label>
-      <button type="submit" class="ui-button ui-button-primary ui-button-md" data-account-requests-submit>
-        <span class="ui-button-label">{accountCopy.accountRequestsSubmit}</span>
-      </button>
-      <p class="small account-feedback" data-account-requests-feedback aria-live="polite"></p>
-    </form>
-
-    <div class="account-comments-stats" data-account-requests-stats>
-      <span>
-        {accountCopy.accountRequestsCountNew}: <strong data-account-requests-new>0</strong>
-      </span>
-      <span>
-        {accountCopy.accountRequestsCountApproved}: <strong data-account-requests-approved>0</strong>
-      </span>
-      <span>
-        {accountCopy.accountRequestsCountRejected}: <strong data-account-requests-rejected>0</strong>
-      </span>
-      <span>
-        {accountCopy.accountRequestsCountCompleted}: <strong data-account-requests-completed>0</strong>
-      </span>
-    </div>
-
-    <ul class="account-comments-list gv-stack" data-account-requests-list></ul>
-    <p class="small" data-account-requests-empty>{accountCopy.accountRequestsEmpty}</p>
-  </section>
-
-  <section class="card panel gv-stack" data-account-follows hidden data-auth-base={authBaseUrl}>
-    <div class="account-comments-head">
-      <div>
-        <h2>{accountCopy.followsTitle}</h2>
-        <p class="small">{accountCopy.followsDescription}</p>
-      </div>
-      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-follows-refresh>
-        <span class="ui-button-label">{accountCopy.followsRefresh}</span>
-      </button>
-    </div>
-    <div class="account-comments-stats">
-      <span>
-        {accountCopy.followsUsers}: <strong data-account-follows-users>0</strong>
-      </span>
-      <span>
-        {accountCopy.followsPlaces}: <strong data-account-follows-places>0</strong>
-      </span>
-    </div>
-    <div class="account-comments-stats">
-      <span>
-        {accountCopy.communityVisibilityCitizenCard}: <strong data-account-community-citizen-card>{accountCopy.communityVisibilityUnknown}</strong>
-      </span>
-      <span>
-        {accountCopy.communityVisibilityBadges}: <strong data-account-community-badges>{accountCopy.communityVisibilityUnknown}</strong>
-      </span>
-      <span>
-        {accountCopy.communityVisibilityLoadedAt}: <strong data-account-community-loaded-at>{accountCopy.communityVisibilityUnknown}</strong>
-      </span>
-    </div>
-    <ul class="account-comments-list gv-stack" data-account-follows-list></ul>
-    <p class="small" data-account-follows-empty>{accountCopy.followsNone}</p>
-    <p class="small account-feedback" data-account-community-feedback aria-live="polite"></p>
-    <p class="small account-feedback" data-account-follows-feedback aria-live="polite"></p>
-  </section>
-
-  <section class="card panel gv-stack" id="saved-lists" data-account-saved-lists hidden data-auth-base={authBaseUrl}>
-    <div class="account-comments-head">
-      <div>
-        <h2>{accountCopy.savedListsTitle}</h2>
-        <p class="small">{accountCopy.savedListsDescription}</p>
-      </div>
-      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-saved-lists-refresh>
-        <span class="ui-button-label">{accountCopy.savedListsRefresh}</span>
-      </button>
-    </div>
-    <div class="account-comments-stats">
-      <span>
-        {accountCopy.savedListsTotalLists}: <strong data-account-saved-lists-total-lists>0</strong>
-      </span>
-      <span>
-        {accountCopy.savedListsTotalItems}: <strong data-account-saved-lists-total-items>0</strong>
-      </span>
-      <span>
-        {accountCopy.savedListsTotalPosts}: <strong data-account-saved-lists-total-posts>0</strong>
-      </span>
-      <span>
-        {accountCopy.savedListsTotalPlaces}: <strong data-account-saved-lists-total-places>0</strong>
-      </span>
-    </div>
-    <ul class="account-comments-list gv-stack" data-account-saved-lists-list></ul>
-    <p class="small" data-account-saved-lists-empty>{accountCopy.savedListsNone}</p>
-    <p class="small account-feedback" data-account-saved-lists-feedback aria-live="polite"></p>
-  </section>
-
-  <section class="card panel gv-stack" id="locale-progress" data-account-locale-progress hidden>
-    <div class="account-comments-head">
-      <div>
-        <h2>{accountCopy.localeProgressTitle}</h2>
-        <p class="small">{accountCopy.localeProgressDescription}</p>
-      </div>
-      <label class="account-field account-inline-field account-locale-filter">
-        <span>{accountCopy.localeProgressFilterLabel}</span>
-        <select data-account-locale-progress-filter>
-          <option value="all">{accountCopy.localeProgressFilterAll}</option>
-          <option value="missing">{accountCopy.localeProgressFilterMissing}</option>
-          <option value="untranslated">{accountCopy.localeProgressFilterUntranslated}</option>
-        </select>
-      </label>
-      <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-progress-refresh>
-        <span class="ui-button-label">{accountCopy.localeProgressRefresh}</span>
-      </button>
-    </div>
-
-    <div class="account-comments-stats" data-account-locale-progress-summary>
-      <span>
-        {accountCopy.localeProgressMissingLocales}: <strong data-account-locale-progress-missing-locales>0</strong>
-      </span>
-      <span>
-        {accountCopy.localeProgressUntranslatedLocales}: <strong data-account-locale-progress-untranslated-locales>0</strong>
-      </span>
-      <span>
-        {accountCopy.localeProgressDeployCount}: <strong data-account-locale-progress-deploy-count>0</strong>
-      </span>
-      <span>
-        {accountCopy.localeProgressActiveFilter}: <strong data-account-locale-progress-active-filter>{accountCopy.localeProgressFilterAll}</strong>
-      </span>
-      <span>
-        {accountCopy.localeProgressFilteredKeys}: <strong data-account-locale-progress-filtered-total>0</strong>
-      </span>
-    </div>
-
-    <div class="account-locale-deploy-hint gv-stack" data-account-locale-deploy-hint hidden>
-      <p class="account-comment-meta">
-        <strong>{accountCopy.localeProgressDeployActionTitle}</strong>
-      </p>
-      <p class="account-comment-meta" data-account-locale-deploy-body>{accountCopy.localeProgressDeployActionBody}</p>
-      <div class="account-locale-deploy-command-wrap">
-        <code data-account-locale-deploy-command>{accountCopy.localeProgressDeployCommand}</code>
-        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-deploy-copy>
-          <span class="ui-button-label">{accountCopy.localeProgressDeployCopy}</span>
-        </button>
-      </div>
-      <div class="account-locale-deploy-command-wrap">
-        <code data-account-locale-release-command>{accountCopy.localeProgressDeployReleaseCommand}</code>
-        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-release-copy>
-          <span class="ui-button-label">{accountCopy.localeProgressDeployCopyRelease}</span>
-        </button>
-      </div>
-      <div class="account-locale-deploy-command-wrap">
-        <code data-account-locale-workflow-command>{accountCopy.localeProgressDeployWorkflowCommand}</code>
-        <button type="button" class="ui-button ui-button-secondary ui-button-sm" data-account-locale-workflow-copy>
-          <span class="ui-button-label">{accountCopy.localeProgressDeployCopyWorkflow}</span>
-        </button>
-      </div>
-      <p class="small account-feedback" data-account-locale-deploy-feedback aria-live="polite"></p>
-    </div>
-
-    <ul class="account-comments-list gv-stack" data-account-locale-progress-list></ul>
-    <p class="small" data-account-locale-progress-empty>{accountCopy.localeProgressNone}</p>
-    <p class="small account-feedback" data-account-locale-progress-feedback aria-live="polite"></p>
-  </section>
-
-  <section class="card panel gv-stack" data-account-settings hidden>
-    <h2>{accountCopy.languageTitle}</h2>
-    <p class="small">{accountCopy.languageDescription}</p>
-
-    <form class="gv-stack account-form" data-account-language-form data-auth-base={authBaseUrl} novalidate>
-      <label class="account-field">
-        <span>{accountCopy.preferredLanguage}</span>
-        <select name="preferred_ui_language" data-account-language-select>
-          {
-            availableLanguages.map((language) => (
-              <option value={language} data-default-label={language.toUpperCase()}>
-                {language.toUpperCase()}
-              </option>
-            ))
-          }
-        </select>
-      </label>
-      <p class="small account-feedback" data-account-language-health></p>
-
-      <button type="submit" class="ui-button ui-button-primary ui-button-md">
-        <span class="ui-button-label">{accountCopy.savePreference}</span>
-      </button>
-      <p class="small account-feedback" data-account-feedback aria-live="polite"></p>
-    </form>
-
-    <form class="gv-stack account-form" data-account-notifications-form data-auth-base={authBaseUrl} novalidate>
-      <h3>{accountCopy.notificationsTitle}</h3>
-      <p class="small">{accountCopy.notificationsDescription}</p>
-
-      <label class="account-field">
-        <span>
-          <input type="checkbox" name="notifications_site_enabled" data-account-notifications-site />
-          {accountCopy.notificationsSiteEnabled}
-        </span>
-      </label>
-
-      <label class="account-field">
-        <span>
-          <input type="checkbox" name="notifications_email_enabled" data-account-notifications-email />
-          {accountCopy.notificationsEmailEnabled}
-        </span>
-      </label>
-
-      <label class="account-field">
-        <span>{accountCopy.notificationsDigest}</span>
-        <select name="notifications_digest" data-account-notifications-digest>
-          <option value="off">{accountCopy.notificationsDigestOff}</option>
-          <option value="instant">{accountCopy.notificationsDigestInstant}</option>
-          <option value="daily">{accountCopy.notificationsDigestDaily}</option>
-          <option value="weekly">{accountCopy.notificationsDigestWeekly}</option>
-        </select>
-      </label>
-
-      <button type="submit" class="ui-button ui-button-primary ui-button-md">
-        <span class="ui-button-label">{accountCopy.notificationsSave}</span>
-      </button>
-      <p class="small account-feedback" data-account-notifications-feedback aria-live="polite"></p>
-    </form>
-
-    <form
-      class="gv-stack account-form"
-      data-account-onboarding-form
-      data-auth-base={authBaseUrl}
-      id="onboarding-progress"
-      novalidate
-    >
-      <h3>{accountCopy.onboardingTitle}</h3>
-      <p class="small">{accountCopy.onboardingDescription}</p>
-
-      <div class="account-comments-stats">
-        <span>
-          {accountCopy.onboardingStatus}: <strong data-account-onboarding-status>{accountCopy.onboardingUnknown}</strong>
-        </span>
-        <span>
-          {accountCopy.onboardingProgress}: <strong data-account-onboarding-progress>0%</strong>
-        </span>
-        <span>
-          {accountCopy.onboardingCompleted}: <strong data-account-onboarding-completed>0/4</strong>
-        </span>
-      </div>
-
-      <div class="account-onboarding-grid">
-        <label class="account-field">
-          <span>
-            <input type="checkbox" data-account-onboarding-profile-completed />
-            {accountCopy.onboardingProfileCompleted}
-          </span>
-        </label>
-        <label class="account-field">
-          <span>
-            <input type="checkbox" data-account-onboarding-first-place-selected />
-            {accountCopy.onboardingFirstPlaceSelected}
-          </span>
-        </label>
-        <label class="account-field">
-          <span>
-            <input type="checkbox" data-account-onboarding-first-post-started />
-            {accountCopy.onboardingFirstPostStarted}
-          </span>
-        </label>
-        <label class="account-field">
-          <span>
-            <input type="checkbox" data-account-onboarding-share-prompt-seen />
-            {accountCopy.onboardingSharePromptSeen}
-          </span>
-        </label>
-        <label class="account-field">
-          <span>
-            <input type="checkbox" data-account-onboarding-skipped />
-            {accountCopy.onboardingSkipped}
-          </span>
-        </label>
-      </div>
-
-      <div class="account-onboarding-examples gv-stack">
-        <p class="small"><strong>{accountCopy.onboardingExamplesTitle}</strong></p>
-        <div class="account-onboarding-examples-grid">
-          <section class="account-onboarding-example-block">
-            <p class="small"><strong>{accountCopy.onboardingExamplesPlacesTitle}</strong></p>
-            <ul class="account-onboarding-example-list">
-              {ONBOARDING_FIRST_PLACE_EXAMPLES.map((example) => (
-                <li>
-                  <strong>{example.title}</strong>
-                  <span>{example.note}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-          <section class="account-onboarding-example-block">
-            <p class="small"><strong>{accountCopy.onboardingExamplesPostsTitle}</strong></p>
-            <ul class="account-onboarding-example-list">
-              {ONBOARDING_FIRST_POST_EXAMPLES.map((example) => (
-                <li>
-                  <strong>{example.title}</strong>
-                  <span>{example.note}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      </div>
-
-      <button type="submit" class="ui-button ui-button-primary ui-button-md">
-        <span class="ui-button-label">{accountCopy.onboardingSave}</span>
-      </button>
-      <p class="small account-feedback" data-account-onboarding-feedback aria-live="polite"></p>
-    </form>
-  </section>
-
-  <section class="card panel gv-stack" data-account-password hidden>
-    <h2>{accountCopy.passwordTitle}</h2>
-    <p class="small">{accountCopy.passwordDescription}</p>
-
-    <form class="gv-stack account-form" data-account-password-form data-auth-base={authBaseUrl} novalidate>
-      <label class="account-field">
-        <span>{accountCopy.currentPassword}</span>
-        <input type="password" name="currentPassword" autocomplete="current-password" minlength="8" required />
-      </label>
-
-      <label class="account-field">
-        <span>{accountCopy.newPassword}</span>
-        <input type="password" name="password" autocomplete="new-password" minlength="8" required />
-      </label>
-
-      <label class="account-field">
-        <span>{accountCopy.passwordConfirm}</span>
-        <input type="password" name="passwordConfirmation" autocomplete="new-password" minlength="8" required />
-      </label>
-
-      <button type="submit" class="ui-button ui-button-primary ui-button-md">
-        <span class="ui-button-label">{accountCopy.changePassword}</span>
-      </button>
-      <p class="small account-feedback" data-account-password-feedback aria-live="polite"></p>
-    </form>
-  </section>
+  </div>
 
   <script is:inline define:vars={{ lang, loginPath, availableLanguages, accountCopy }}>
     (() => {
@@ -2975,275 +3005,3 @@ const accountCopy = {
     })();
   </script>
 </MainLayout>
-
-<style>
-  .account-form {
-    gap: 0.75rem;
-    max-width: 520px;
-  }
-
-  .account-field {
-    display: grid;
-    gap: 0.4rem;
-  }
-
-  .account-field select {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.7rem 0.85rem;
-    background: var(--surface);
-    color: var(--text);
-  }
-
-  .account-field input {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.7rem 0.85rem;
-    background: var(--surface);
-    color: var(--text);
-  }
-
-  .account-field textarea {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.7rem 0.85rem;
-    background: var(--surface);
-    color: var(--text);
-    resize: vertical;
-    min-height: 92px;
-  }
-
-  .account-field select:focus-visible,
-  .account-field input:focus-visible,
-  .account-field textarea:focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 1px;
-  }
-
-  .account-feedback {
-    margin: 0;
-    min-height: 1.25rem;
-  }
-
-  .account-profile-grid {
-    margin: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .account-profile-grid div {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.65rem 0.75rem;
-    background: var(--surface);
-  }
-
-  .account-profile-grid dt {
-    margin: 0;
-    font-size: 0.78rem;
-    color: var(--text-muted);
-  }
-
-  .account-profile-grid dd {
-    margin: 0.22rem 0 0;
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-
-  .account-comments-head {
-    display: flex;
-    gap: 0.8rem;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .account-inline-field {
-    max-width: 220px;
-    min-width: 180px;
-  }
-
-  .account-onboarding-grid {
-    display: grid;
-    gap: 0.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
-
-  .account-onboarding-examples {
-    border: 1px dashed var(--border);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--surface) 92%, white 8%);
-    padding: 0.7rem 0.78rem;
-  }
-
-  .account-onboarding-examples-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 0.65rem;
-  }
-
-  .account-onboarding-example-block {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface-2);
-    padding: 0.6rem 0.66rem;
-  }
-
-  .account-onboarding-example-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 0.48rem;
-  }
-
-  .account-onboarding-example-list li {
-    display: grid;
-    gap: 0.22rem;
-  }
-
-  .account-onboarding-example-list strong {
-    font-size: 0.8rem;
-    color: var(--ink);
-  }
-
-  .account-onboarding-example-list span {
-    font-size: 0.76rem;
-    color: var(--text-muted);
-    line-height: 1.4;
-  }
-
-  .account-locale-filter {
-    margin: 0;
-  }
-
-  .account-comments-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-  }
-
-  .account-comments-stats span {
-    display: inline-flex;
-    gap: 0.35rem;
-    align-items: center;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.2rem 0.62rem;
-    background: var(--surface);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-  }
-
-  .account-comments-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .account-comment-item {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.65rem 0.78rem;
-    background: var(--surface);
-  }
-
-  .account-comment-meta {
-    margin: 0 0 0.35rem;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  .account-comment-body {
-    margin: 0;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
-
-  .account-comment-note {
-    margin: 0.48rem 0 0;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-  }
-
-  .account-locale-item-needs-work {
-    border-color: color-mix(in srgb, var(--warning) 58%, var(--border));
-  }
-
-  .account-comments-focus {
-    border-color: color-mix(in srgb, var(--brand) 62%, var(--border));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
-  }
-
-  .account-locale-item-focus {
-    border-color: color-mix(in srgb, var(--brand) 62%, var(--border));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
-  }
-
-  .account-locale-actions {
-    margin-top: 0.45rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-  }
-
-  .account-locale-deploy-hint {
-    border: 1px dashed color-mix(in srgb, var(--brand) 42%, var(--border));
-    border-radius: 10px;
-    padding: 0.6rem 0.7rem;
-    background: color-mix(in srgb, var(--surface) 90%, var(--surface2));
-  }
-
-  .account-locale-deploy-command-wrap {
-    display: flex;
-    gap: 0.45rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .account-locale-deploy-command-wrap code {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.35rem 0.5rem;
-    background: var(--surface);
-    font-size: 0.78rem;
-    overflow-wrap: anywhere;
-  }
-
-  .account-locale-preview-toggle,
-  .account-locale-preview-export {
-    margin-top: 0;
-  }
-
-  .account-locale-preview {
-    margin-top: 0.5rem;
-    padding: 0.6rem;
-    border: 1px dashed var(--border);
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--surface) 92%, var(--surface2));
-  }
-
-  .account-locale-preview-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 0.55rem;
-  }
-
-  .account-locale-preview-item {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.5rem 0.6rem;
-    background: var(--surface);
-  }
-
-  .account-comment-meta.is-error {
-    color: var(--danger);
-  }
-
-  .account-feedback.is-error {
-    color: var(--danger);
-  }
-</style>

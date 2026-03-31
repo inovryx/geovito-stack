@@ -33,7 +33,7 @@ const items = Array.isArray(breadcrumbs) ? breadcrumbs.filter((item) => item?.ti
 const tailIndex = Math.max(0, items.length - 1);
 ---
 
-<header class="atlas-place-header" data-atlas-place-header>
+<header class="atlas-place-header card-base card-atlas" data-atlas-place-header>
   {items.length ? (
     <nav class="atlas-place-breadcrumb" aria-label={breadcrumbLabel}>
       <ol>

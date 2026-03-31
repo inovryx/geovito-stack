@@ -96,7 +96,7 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
   }`}
 >
   <section
-    class="sidebar-block sidebar-dashboard-modules gv-card bg-surface border-border"
+    class="sidebar-block sidebar-dashboard-modules gv-card surface-card card-compact bg-surface border-border"
     data-auth-dashboard-shell
     hidden
   >
@@ -136,7 +136,7 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
   </section>
 
   <section
-    class="sidebar-block sidebar-dashboard-session gv-card bg-surface border-border"
+    class="sidebar-block sidebar-dashboard-session gv-card surface-card card-compact bg-surface border-border"
     data-auth-dashboard-session
     data-identity-label={dashboardSessionIdentityLabel}
     data-role-prefix={adminRoleLabel}
@@ -160,13 +160,13 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
     </div>
   </section>
 
-  <section class="sidebar-block sidebar-language-switch gv-card bg-surface border-border">
+  <section class="sidebar-block sidebar-language-switch gv-card surface-card card-compact bg-surface border-border">
     <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
     <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
   </section>
 
   <section
-    class="sidebar-block sidebar-auth-links gv-card bg-surface border-border"
+    class="sidebar-block sidebar-auth-links gv-card surface-card card-compact bg-surface border-border"
     data-auth-shell
     data-signed-in-label={signedInLabel}
     data-auth-base-url={authBaseUrl}
@@ -196,7 +196,7 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
   </section>
 
   <section
-    class="sidebar-block sidebar-workspace gv-card bg-surface border-border"
+    class="sidebar-block sidebar-workspace gv-card surface-card card-compact bg-surface border-border"
     data-auth-workspace-shell
     hidden
   >
@@ -232,7 +232,7 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
   </section>
 
   <section
-    class="sidebar-block sidebar-admin-tools gv-card bg-surface border-border"
+    class="sidebar-block sidebar-admin-tools gv-card surface-card card-compact bg-surface border-border"
     data-auth-admin-shell
     data-role-prefix={adminRoleLabel}
     data-role-member={accessMemberLabel}

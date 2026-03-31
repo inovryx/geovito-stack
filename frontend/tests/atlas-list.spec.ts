@@ -33,7 +33,7 @@ test('desktop filter chips + pagination update query params and keep tools hidde
   await expect(page.locator('.tablet-tools')).toHaveCount(0);
 });
 
-test('tablet and mobile render atlas list in single-column responsive mode', async ({ page }, testInfo) => {
+test('tablet ve mobile atlas listing grid dagilimi hedeflenen kolon sayisini korur', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'desktop', 'Tablet/mobile only');
 
   await gotoAtlas(page, '/en/atlas/?kind=all');
@@ -49,7 +49,8 @@ test('tablet and mobile render atlas list in single-column responsive mode', asy
 
   if (gridStyles.display !== 'none') {
     const normalized = gridStyles.columns.trim().split(/\s+/).filter(Boolean);
-    expect(normalized.length).toBe(1);
+    const expectedColumns = testInfo.project.name === 'tablet' ? 2 : 1;
+    expect(normalized.length).toBe(expectedColumns);
   }
 
   await expect(page.locator('[data-atlas-results-top] [data-atlas-item]').first()).toBeVisible();

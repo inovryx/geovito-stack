@@ -471,6 +471,19 @@ test('account shows my comment queue and refresh updates counts', async ({ page 
 
   await page.goto('/en/account/');
 
+  await expect(page.locator('body')).toHaveAttribute('data-page-surface', 'account-workspace');
+  await expect(page.locator('[data-account-workspace]')).toBeVisible();
+  await expect(page.locator('[data-account-main-zone]')).toBeVisible();
+  await expect(page.locator('[data-account-side-zone]')).toBeVisible();
+  await expect(page.locator('.desktop-tools-column')).toHaveCount(0);
+
+  const onboardingDisclosure = page.locator('[data-account-onboarding-examples] details.ui-accordion');
+  const localeDeployDisclosure = page.locator('[data-account-locale-deploy-extra] details.ui-accordion');
+  await expect(onboardingDisclosure).toHaveCount(1);
+  await expect(localeDeployDisclosure).toHaveCount(1);
+  await expect.poll(() => onboardingDisclosure.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
+  await expect.poll(() => localeDeployDisclosure.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
+
   await expect(page.locator('[data-account-comments]')).toBeVisible();
   await expect(page.locator('[data-account-comments-pending]')).toHaveText('1');
   await expect(page.locator('[data-account-comments-approved]')).toHaveText('0');
@@ -733,6 +746,9 @@ test('account commentState query pre-filters comment queue and focuses comments 
   }, [MOCK_JWT]);
 
   await page.goto('/en/account/?commentState=pending#comments');
+
+  await expect(page.locator('body')).toHaveAttribute('data-page-surface', 'account-workspace');
+  await expect(page.locator('.desktop-tools-column')).toHaveCount(0);
 
   await expect(page.locator('[data-account-comments]')).toBeVisible();
   await expect(page.locator('[data-account-comments]')).toHaveClass(/account-comments-focus/);

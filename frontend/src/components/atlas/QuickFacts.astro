@@ -26,7 +26,7 @@ const formatValue = (value: string | number | null | undefined) => {
 
 <section id={sectionId} class="atlas-detail-section" data-atlas-quick-facts>
   <h2 class="atlas-section-title gv-h2">{title}</h2>
-  <Card class="atlas-quick-facts-card gv-card bg-surface border-border">
+  <Card class="atlas-quick-facts-card gv-card card-base card-atlas">
     <dl class="atlas-quick-facts-grid">
       {
         safeFacts.map((fact) => (

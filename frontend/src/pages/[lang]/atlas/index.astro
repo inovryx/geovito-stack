@@ -139,163 +139,186 @@ const serializedUiText = JSON.stringify({
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
+  showTools={false}
+  pageSurface="atlas-listing"
 >
-  {
-    hasMockContent ? (
-      <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} />
-    ) : hasDraftContent || hasMissingContent ? (
-      <StateBanner status="fallback" language={lang} canonicalPath={canonical} contentStatus={fallbackState} ui={ui} />
-    ) : null
-  }
+  <div class="atlas-list-page stack-lg section-gap-md">
+    {
+      hasMockContent ? (
+        <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} />
+      ) : hasDraftContent || hasMissingContent ? (
+        <StateBanner status="fallback" language={lang} canonicalPath={canonical} contentStatus={fallbackState} ui={ui} />
+      ) : null
+    }
 
-  <section class="card panel atlas-list-intro gv-card gv-stack">
-    <h1 class="gv-h1">{translate(ui, 'atlas.list.title')}</h1>
-    <p class="small atlas-list-description gv-body">{translate(ui, 'atlas.list.description')}</p>
+    <section class="atlas-list-intro atlas-list-hero card-base card-atlas panel stack-md" data-atlas-list-intro>
+      <header class="atlas-list-head stack-sm">
+        <p class="type-label">{translate(ui, 'nav.atlas', {}, 'Atlas')}</p>
+        <h1 class="type-h1">{translate(ui, 'atlas.list.title')}</h1>
+        <p class="atlas-list-description type-body">{translate(ui, 'atlas.list.description')}</p>
+      </header>
 
-    <div class="search-chip-row atlas-chip-row" role="navigation" aria-label={translate(ui, 'atlas.list.filterAria', {}, 'Filter atlas places')}>
+      <div
+        class="search-chip-row atlas-chip-row"
+        role="navigation"
+        aria-label={translate(ui, 'atlas.list.filterAria', {}, 'Filter atlas places')}
+      >
+        <a
+          href={buildAtlasHref(lang, 'all', 1)}
+          class="search-chip is-active"
+          data-atlas-chip
+          data-kind="all"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="atlas"
+          data-ev-value="all"
+        >
+          <span class="truncate">{translate(ui, 'atlas.list.filters.all', {}, 'All')}</span>
+        </a>
+        <a
+          href={buildAtlasHref(lang, 'country', 1)}
+          class="search-chip"
+          data-atlas-chip
+          data-kind="country"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="atlas"
+          data-ev-value="country"
+        >
+          <span class="truncate">{translate(ui, 'atlas.list.filters.country', {}, 'Country')}</span>
+        </a>
+        <a
+          href={buildAtlasHref(lang, 'city', 1)}
+          class="search-chip"
+          data-atlas-chip
+          data-kind="city"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="atlas"
+          data-ev-value="city"
+        >
+          <span class="truncate">{translate(ui, 'atlas.list.filters.city', {}, 'City')}</span>
+        </a>
+        <a
+          href={buildAtlasHref(lang, 'region', 1)}
+          class="search-chip"
+          data-atlas-chip
+          data-kind="region"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="atlas"
+          data-ev-value="region"
+        >
+          <span class="truncate">{translate(ui, 'atlas.list.filters.region', {}, 'Region')}</span>
+        </a>
+        <a
+          href={buildAtlasHref(lang, 'landmark', 1)}
+          class="search-chip"
+          data-atlas-chip
+          data-kind="landmark"
+          data-ev="filter_chip_click"
+          data-ev-scope="ui"
+          data-ev-group="atlas"
+          data-ev-value="landmark"
+        >
+          <span class="truncate">{translate(ui, 'atlas.list.filters.landmark', {}, 'Landmark')}</span>
+        </a>
+      </div>
+
+      <div class="atlas-list-meta-wrap">
+        <p class="atlas-list-meta small" data-atlas-meta>
+          {translate(
+            ui,
+            'atlas.list.metaSummary',
+            { shown: Math.min(PAGE_SIZE, entries.length), total: entries.length },
+            'Showing {shown} of {total} places'
+          )}
+        </p>
+
+        <BadgeGroup class="atlas-list-legend" ariaLabel={translate(ui, 'atlas.list.stateLegendAria', {}, 'Language state legend')}>
+          <Badge variant="success">{translate(ui, 'atlas.list.states.complete', {}, 'complete')}</Badge>
+          <Badge variant="warning">{translate(ui, 'atlas.list.states.draft', {}, 'draft')}</Badge>
+          <Badge variant="danger">{translate(ui, 'atlas.list.states.missing', {}, 'missing')}</Badge>
+        </BadgeGroup>
+      </div>
+    </section>
+
+    <section class="atlas-list-skeleton card-base card-atlas panel" data-atlas-skeleton>
+      <Skeleton lines={3} />
+      <Skeleton lines={3} />
+      <Skeleton lines={2} />
+    </section>
+
+    <section class="atlas-list-empty card-base card-atlas panel" data-atlas-empty hidden>
+      <EmptyState
+        title={translate(ui, 'atlas.list.emptyTitle', {}, 'No places found')}
+        description={translate(ui, 'atlas.list.emptyDescription', {}, 'Try another filter chip to continue exploring the atlas.')}
+        actionLabel={translate(ui, 'atlas.list.emptyAction', {}, 'Reset filters')}
+        actionHref={buildAtlasHref(lang, 'all', 1)}
+        icon="MapPinned"
+      />
+    </section>
+
+    <section class="atlas-results-wrap" data-atlas-results hidden>
+      <div class="atlas-results-top" data-atlas-results-top></div>
+      <div class="atlas-results-grid" data-atlas-results-grid></div>
+    </section>
+
+    <nav
+      class="atlas-pagination"
+      data-atlas-pagination
+      aria-label={translate(ui, 'atlas.list.pagination.aria', {}, 'Atlas pagination')}
+      tabindex="0"
+    >
       <a
         href={buildAtlasHref(lang, 'all', 1)}
-        class="search-chip is-active"
-        data-atlas-chip
-        data-kind="all"
-        data-ev="filter_chip_click"
+        class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-prev"
+        data-atlas-page-control="prev"
+        data-ev="pagination_click"
         data-ev-scope="ui"
-        data-ev-group="atlas"
-        data-ev-value="all"
+        data-ev-context="atlas"
+        data-ev-action="prev"
+        data-ev-page="1"
       >
-        <span class="truncate">{translate(ui, 'atlas.list.filters.all', {}, 'All')}</span>
+        <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.prev', {}, 'Prev')}</span>
       </a>
+      <div class="atlas-pagination-pages" data-atlas-pagination-pages>
+        {
+          Array.from({ length: initialTotalPages }).map((_, index) => {
+            const page = index + 1;
+            return (
+              <a
+                href={buildAtlasHref(lang, 'all', page)}
+                class={`atlas-page-link${page === 1 ? ' is-current' : ''}`}
+                data-atlas-page-link
+                data-page={page}
+                data-ev="pagination_click"
+                data-ev-scope="ui"
+                data-ev-context="atlas"
+                data-ev-action="page"
+                data-ev-page={page}
+                aria-current={page === 1 ? 'page' : undefined}
+              >
+                {page}
+              </a>
+            );
+          })
+        }
+      </div>
       <a
-        href={buildAtlasHref(lang, 'country', 1)}
-        class="search-chip"
-        data-atlas-chip
-        data-kind="country"
-        data-ev="filter_chip_click"
+        href={buildAtlasHref(lang, 'all', Math.max(1, initialTotalPages))}
+        class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-next"
+        data-atlas-page-control="next"
+        data-ev="pagination_click"
         data-ev-scope="ui"
-        data-ev-group="atlas"
-        data-ev-value="country"
+        data-ev-context="atlas"
+        data-ev-action="next"
+        data-ev-page={Math.max(1, initialTotalPages)}
       >
-        <span class="truncate">{translate(ui, 'atlas.list.filters.country', {}, 'Country')}</span>
+        <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.next', {}, 'Next')}</span>
       </a>
-      <a
-        href={buildAtlasHref(lang, 'city', 1)}
-        class="search-chip"
-        data-atlas-chip
-        data-kind="city"
-        data-ev="filter_chip_click"
-        data-ev-scope="ui"
-        data-ev-group="atlas"
-        data-ev-value="city"
-      >
-        <span class="truncate">{translate(ui, 'atlas.list.filters.city', {}, 'City')}</span>
-      </a>
-      <a
-        href={buildAtlasHref(lang, 'region', 1)}
-        class="search-chip"
-        data-atlas-chip
-        data-kind="region"
-        data-ev="filter_chip_click"
-        data-ev-scope="ui"
-        data-ev-group="atlas"
-        data-ev-value="region"
-      >
-        <span class="truncate">{translate(ui, 'atlas.list.filters.region', {}, 'Region')}</span>
-      </a>
-      <a
-        href={buildAtlasHref(lang, 'landmark', 1)}
-        class="search-chip"
-        data-atlas-chip
-        data-kind="landmark"
-        data-ev="filter_chip_click"
-        data-ev-scope="ui"
-        data-ev-group="atlas"
-        data-ev-value="landmark"
-      >
-        <span class="truncate">{translate(ui, 'atlas.list.filters.landmark', {}, 'Landmark')}</span>
-      </a>
-    </div>
-
-    <p class="small atlas-list-meta" data-atlas-meta>
-      {translate(ui, 'atlas.list.metaSummary', { shown: Math.min(PAGE_SIZE, entries.length), total: entries.length }, 'Showing {shown} of {total} places')}
-    </p>
-
-    <BadgeGroup class="atlas-list-legend" ariaLabel={translate(ui, 'atlas.list.stateLegendAria', {}, 'Language state legend')}>
-      <Badge variant="success">{translate(ui, 'atlas.list.states.complete', {}, 'complete')}</Badge>
-      <Badge variant="warning">{translate(ui, 'atlas.list.states.draft', {}, 'draft')}</Badge>
-      <Badge variant="danger">{translate(ui, 'atlas.list.states.missing', {}, 'missing')}</Badge>
-    </BadgeGroup>
-  </section>
-
-  <section class="card panel gv-card" data-atlas-skeleton>
-    <Skeleton lines={3} />
-    <Skeleton lines={3} />
-    <Skeleton lines={2} />
-  </section>
-
-  <section class="card panel gv-card" data-atlas-empty hidden>
-    <EmptyState
-      title={translate(ui, 'atlas.list.emptyTitle', {}, 'No places found')}
-      description={translate(ui, 'atlas.list.emptyDescription', {}, 'Try another filter chip to continue exploring the atlas.')}
-      actionLabel={translate(ui, 'atlas.list.emptyAction', {}, 'Reset filters')}
-      actionHref={buildAtlasHref(lang, 'all', 1)}
-      icon="MapPinned"
-    />
-  </section>
-
-  <section class="atlas-results-wrap" data-atlas-results hidden>
-    <div class="atlas-results-top" data-atlas-results-top></div>
-    <div class="atlas-results-grid" data-atlas-results-grid></div>
-  </section>
-
-  <nav class="atlas-pagination" data-atlas-pagination aria-label={translate(ui, 'atlas.list.pagination.aria', {}, 'Atlas pagination')} tabindex="0">
-    <a
-      href={buildAtlasHref(lang, 'all', 1)}
-      class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-prev"
-      data-atlas-page-control="prev"
-      data-ev="pagination_click"
-      data-ev-scope="ui"
-      data-ev-context="atlas"
-      data-ev-action="prev"
-      data-ev-page="1"
-    >
-      <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.prev', {}, 'Prev')}</span>
-    </a>
-    <div class="atlas-pagination-pages" data-atlas-pagination-pages>
-      {
-        Array.from({ length: initialTotalPages }).map((_, index) => {
-          const page = index + 1;
-          return (
-            <a
-              href={buildAtlasHref(lang, 'all', page)}
-              class={`atlas-page-link${page === 1 ? ' is-current' : ''}`}
-              data-atlas-page-link
-              data-page={page}
-              data-ev="pagination_click"
-              data-ev-scope="ui"
-              data-ev-context="atlas"
-              data-ev-action="page"
-              data-ev-page={page}
-              aria-current={page === 1 ? 'page' : undefined}
-            >
-              {page}
-            </a>
-          );
-        })
-      }
-    </div>
-    <a
-      href={buildAtlasHref(lang, 'all', Math.max(1, initialTotalPages))}
-      class="ui-button ui-button-secondary ui-button-sm atlas-pagination-control atlas-pagination-next"
-      data-atlas-page-control="next"
-      data-ev="pagination_click"
-      data-ev-scope="ui"
-      data-ev-context="atlas"
-      data-ev-action="next"
-      data-ev-page={Math.max(1, initialTotalPages)}
-    >
-      <span class="ui-button-label truncate">{translate(ui, 'atlas.list.pagination.next', {}, 'Next')}</span>
-    </a>
-  </nav>
+    </nav>
+  </div>
 
   <script id="atlas-list-data" type="application/json" set:html={serializedEntries}></script>
   <script id="atlas-list-ui" type="application/json" set:html={serializedUiText}></script>
@@ -405,7 +428,7 @@ const serializedUiText = JSON.stringify({
         const stateClass = stateBadgeClass[languageState] || stateBadgeClass.missing;
 
         return `
-          <article class="ui-card gv-card atlas-entry-card" data-atlas-item>
+          <article class="ui-card gv-card card-base card-atlas atlas-entry-card" data-atlas-item>
             <div class="atlas-entry-head">
               <a class="atlas-entry-title" href="${href}" title="${title}">${title}</a>
               <div class="ui-badge-group atlas-entry-badges" aria-label="${escapeHtml(uiText.metadataBadges || '')}">

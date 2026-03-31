@@ -1,6 +1,7 @@
 ---
 import MainLayout from '../../../layouts/MainLayout.astro';
 import StateBanner from '../../../components/StateBanner.astro';
+import EmptyState from '../../../components/ui/EmptyState.astro';
 import { resolveTranslation } from '../../../lib/languageState';
 import { getBlogPosts } from '../../../lib/strapi';
 import { isSupportedLanguage, pathForLanguage, SUPPORTED_LANGUAGES } from '../../../lib/languages';
@@ -52,6 +53,7 @@ const entries = posts
       excerpt: output.excerpt || '',
       href: `/${lang}/blog/${slug}/`,
       status: requested?.status || 'missing',
+      published_on: post.published_on || '',
       inReview: isPostInReview(post),
     };
   })
@@ -61,6 +63,8 @@ const languageLinks = buildLanguageLinks(languagePathMap((language) => pathForLa
 const alternates = toAlternates(languageLinks);
 const canonical = absoluteUrl(pathForLanguage(lang, 'blog'));
 const robots = hasMockContent ? 'noindex,nofollow' : 'index,follow';
+const reviewEntryCount = entries.filter((entry) => entry?.inReview).length;
+const statusLabel = (state: string) => translate(ui, `stateBanner.state.${String(state || 'missing').toLowerCase()}`, {}, state || 'missing');
 ---
 
 <MainLayout
@@ -72,24 +76,77 @@ const robots = hasMockContent ? 'noindex,nofollow' : 'index,follow';
   languageLinks={languageLinks}
   alternates={alternates}
   ui={ui}
+  showTools={false}
+  pageSurface="blog-listing"
 >
   {hasMockContent ? <StateBanner status="mock" language={lang} canonicalPath={canonical} ui={ui} /> : null}
 
-  <h1>{translate(ui, 'blog.listTitle')}</h1>
-  <p class="small">{translate(ui, 'blog.listHint')}</p>
+  <div class="blog-listing-page stack-lg section-gap-md">
+    <section class="blog-listing-intro card-base card-editorial surface-elevated stack-md" data-blog-listing-intro>
+      <div class="blog-listing-head stack-sm">
+        <p class="type-label">{translate(ui, 'nav.blog', {}, 'Blog')}</p>
+        <h1 class="type-h1">{translate(ui, 'blog.listTitle')}</h1>
+        <p class="type-body-lg blog-listing-lead">
+          {translate(
+            ui,
+            'blog.listLead',
+            {},
+            'Curated stories from places, routes, and community insights across Geovito.'
+          )}
+        </p>
+      </div>
+      <div class="blog-listing-meta stack-sm">
+        <p class="type-body-sm">{translate(ui, 'blog.listHint')}</p>
+        <div class="blog-listing-meta-chips" data-blog-listing-meta-chips>
+          <span class="status-pill blog-listing-chip">
+            {translate(ui, 'blog.listMetaSummary', { count: String(entries.length) }, '{count} posts')}
+          </span>
+          {
+            reviewEntryCount > 0 ? (
+              <span class="status-pill blog-listing-chip">
+                {translate(ui, 'blog.listReviewSummary', { count: String(reviewEntryCount) }, '{count} in review')}
+              </span>
+            ) : null
+          }
+        </div>
+      </div>
+    </section>
 
-  <div class="grid">
-    {
-      entries.map((entry) => (
-        <article class="card">
-          <a href={entry?.href || '#'}>
-            <h2>{entry?.title}</h2>
-          </a>
-          <span class="status-pill">{entry?.status}</span>
-          {entry?.inReview ? <span class="status-pill">In review</span> : null}
-          <p class="small">{entry?.excerpt}</p>
-        </article>
-      ))
-    }
+    <section class="blog-listing-results stack-md" data-blog-listing-results>
+      {
+        entries.length > 0 ? (
+          <ul class="blog-listing-grid" data-blog-listing-grid>
+            {entries.map((entry) => (
+              <li class="blog-listing-item card-base card-editorial panel" data-blog-listing-card>
+                <div class="blog-listing-item-head stack-sm">
+                  <a class="blog-listing-item-title type-title" href={entry?.href || '#'} data-blog-listing-title>
+                    {entry?.title}
+                  </a>
+                  <div class="blog-listing-item-meta chip-row">
+                    <span class="status-pill blog-listing-chip">{statusLabel(entry?.status || 'missing')}</span>
+                    {entry?.inReview ? <span class="status-pill blog-listing-chip">{translate(ui, 'blog.reviewBadge', {}, 'In review')}</span> : null}
+                    <span class="type-meta blog-listing-date">
+                      {translate(ui, 'blog.publishedLabel', {}, 'Published')}:{' '}
+                      {entry?.published_on || translate(ui, 'blog.publishedUnknown', {}, 'Unknown')}
+                    </span>
+                  </div>
+                </div>
+                <p class="type-body-sm blog-listing-item-excerpt">
+                  {entry?.excerpt || translate(ui, 'blog.listExcerptFallback', {}, 'No summary yet.')}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div data-blog-listing-empty>
+            <EmptyState
+              title={translate(ui, 'blog.listEmptyTitle', {}, 'No posts available yet')}
+              description={translate(ui, 'blog.listEmptyDescription', {}, 'New editorial stories will appear here once published.')}
+              icon="FileText"
+            />
+          </div>
+        )
+      }
+    </section>
   </div>
 </MainLayout>

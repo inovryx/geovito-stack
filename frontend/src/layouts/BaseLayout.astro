@@ -33,6 +33,7 @@ interface Props {
   languageLinks: Record<string, string>;
   alternates?: AlternateLink[];
   ui: Record<string, unknown>;
+  pageSurface?: string;
 }
 
 const {
@@ -46,6 +47,7 @@ const {
   languageLinks,
   alternates = [],
   ui,
+  pageSurface = 'default',
 } = Astro.props as Props;
 
 const t = (key: string, fallback: string) => translate(ui, key, {}, fallback);
@@ -122,11 +124,13 @@ const headerNav = [
   { key: 'blog', href: `/${currentLanguage}/blog/`, fallback: 'Blog' },
   { key: 'about', href: `/${currentLanguage}/about/`, fallback: 'About' },
 ];
+const globalThemePreset = 'brand-default';
 ---
 
 <!doctype html>
 <html
   lang={currentLanguage}
+  data-theme-preset={globalThemePreset}
   data-build-sha={cfBuildSha}
   data-build-branch={cfBuildBranch}
   data-cf-pages={isCfPages}
@@ -388,23 +392,42 @@ const headerNav = [
 
     <script is:inline>
       (() => {
+        const normalizeThemeMode = (value) => {
+          const mode = String(value || '').trim().toLowerCase();
+          return mode === 'dark' || mode === 'system' ? mode : 'light';
+        };
+
+        const resolveThemeMode = (mode) => {
+          if (mode !== 'system') return mode;
+          try {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          } catch {
+            return 'light';
+          }
+        };
+
         try {
-          const theme = localStorage.getItem('theme');
-          const isDark = theme === 'dark';
+          const mode = normalizeThemeMode(localStorage.getItem('theme'));
+          const resolvedMode = resolveThemeMode(mode);
+          const isDark = resolvedMode === 'dark';
           const sidebar = localStorage.getItem('sidebar');
           const isCompactSidebar = sidebar === 'compact';
           document.documentElement.classList.toggle('dark', isDark);
           document.documentElement.classList.toggle('sidebar-compact', isCompactSidebar);
-          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+          document.documentElement.dataset.themeMode = mode;
+          document.documentElement.dataset.themeResolved = resolvedMode;
+          document.documentElement.style.colorScheme = resolvedMode;
         } catch {
           document.documentElement.classList.remove('dark');
           document.documentElement.classList.remove('sidebar-compact');
+          document.documentElement.dataset.themeMode = 'light';
+          document.documentElement.dataset.themeResolved = 'light';
           document.documentElement.style.colorScheme = 'light';
         }
       })();
     </script>
   </head>
-  <body>
+  <body data-page-surface={pageSurface}>
     <a href="#main-content" class="skip-link">{t('layout.skipToContent', 'Skip to content')}</a>
 
     <script is:inline define:vars={{ releasedUiLanguages: PUBLIC_RELEASED_SITE_UI_LANGUAGES, defaultPublicLanguage: DEFAULT_PUBLIC_LANGUAGE }}>
@@ -429,7 +452,7 @@ const headerNav = [
     <div class="background-layer" aria-hidden="true"></div>
 
     <header class="site-header" data-site-header data-ev-root="ui">
-      <div class="site-header-inner">
+      <div class={`site-header-inner surface-elevated ${pageSurface === 'home-discovery' ? 'site-header-inner-home' : ''}`}>
         <button type="button" class="icon-button shell-menu-button" data-shell-menu-open aria-label={t('layout.openMenu', 'Open menu')}>
           <Icon name="Menu" size={20} />
           <span class="sr-only">{t('layout.openMenu', 'Open menu')}</span>
@@ -475,7 +498,7 @@ const headerNav = [
 
     {
       siteLockdownEnabled ? (
-        <div class="site-lockdown-banner" role="status" aria-live="polite" data-site-lockdown-banner>
+        <div class="site-lockdown-banner surface-panel" role="status" aria-live="polite" data-site-lockdown-banner>
           <strong>{t('site.lockdownTitle', 'TEST MODE')}</strong>
           <span>{siteLockdownNotice}</span>
         </div>
@@ -487,8 +510,8 @@ const headerNav = [
     <ConsentBanner ui={ui} learnMoreHref={cookiesHref} />
     <ConsentModal ui={ui} />
 
-    <footer class="site-footer">
-      <div class="site-footer-inner">
+    <footer class="site-footer surface-soft">
+      <div class="site-footer-inner content-wrap-wide">
         <span>{t('layout.footerNote', 'GeoVito: search-first atlas and regional discovery.')}</span>
         <div class="site-footer-links">
           <a href={`/${currentLanguage}/about/`}>{t('nav.about', 'About')}</a>
@@ -1067,10 +1090,28 @@ const headerNav = [
 
     <script is:inline>
       (() => {
-        const applyTheme = (theme) => {
-          const isDark = theme === 'dark';
+        const normalizeThemeMode = (value) => {
+          const mode = String(value || '').trim().toLowerCase();
+          return mode === 'dark' || mode === 'system' ? mode : 'light';
+        };
+
+        const resolveThemeMode = (mode) => {
+          if (mode !== 'system') return mode;
+          try {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          } catch {
+            return 'light';
+          }
+        };
+
+        const applyThemeMode = (mode) => {
+          const normalizedMode = normalizeThemeMode(mode);
+          const resolvedMode = resolveThemeMode(normalizedMode);
+          const isDark = resolvedMode === 'dark';
           document.documentElement.classList.toggle('dark', isDark);
-          document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+          document.documentElement.dataset.themeMode = normalizedMode;
+          document.documentElement.dataset.themeResolved = resolvedMode;
+          document.documentElement.style.colorScheme = resolvedMode;
           document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
             button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
             const labelEl = button.querySelector('[data-theme-toggle-label]');
@@ -1082,21 +1123,58 @@ const headerNav = [
           });
         };
 
-        const readTheme = () => {
+        const readThemeMode = () => {
           try {
-            const value = localStorage.getItem('theme');
-            return value === 'dark' ? 'dark' : 'light';
+            return normalizeThemeMode(localStorage.getItem('theme'));
           } catch {
             return 'light';
           }
         };
 
-        const writeTheme = (theme) => {
+        const writeThemeMode = (mode) => {
           try {
-            localStorage.setItem('theme', theme);
+            localStorage.setItem('theme', normalizeThemeMode(mode));
           } catch {
             // no-op
           }
+        };
+
+        let themeMediaQuery = null;
+        let themeMediaQueryBound = false;
+        const syncSystemThemeSubscription = (mode) => {
+          const normalizedMode = normalizeThemeMode(mode);
+          if (normalizedMode !== 'system') {
+            themeMediaQueryBound = false;
+            return;
+          }
+          if (!themeMediaQuery) {
+            try {
+              themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            } catch {
+              themeMediaQuery = null;
+            }
+          }
+          if (!themeMediaQuery || themeMediaQueryBound) return;
+          const onChange = () => {
+            if (document.documentElement.dataset.themeMode === 'system') {
+              applyThemeMode('system');
+            }
+          };
+          if (typeof themeMediaQuery.addEventListener === 'function') {
+            themeMediaQuery.addEventListener('change', onChange);
+          } else if (typeof themeMediaQuery.addListener === 'function') {
+            themeMediaQuery.addListener(onChange);
+          }
+          themeMediaQueryBound = true;
+        };
+
+        const setThemeMode = (mode, { persist = true } = {}) => {
+          const normalizedMode = normalizeThemeMode(mode);
+          if (persist) {
+            writeThemeMode(normalizedMode);
+          }
+          applyThemeMode(normalizedMode);
+          syncSystemThemeSubscription(normalizedMode);
         };
 
         const bindToggles = () => {
@@ -1105,8 +1183,7 @@ const headerNav = [
             button.setAttribute('data-theme-bound', 'true');
             button.addEventListener('click', () => {
               const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-              writeTheme(next);
-              applyTheme(next);
+              setThemeMode(next);
               window.__gvTrack?.('theme_toggle', {
                 to: next,
                 lang: document.documentElement.lang?.toLowerCase() || 'en',
@@ -1115,7 +1192,13 @@ const headerNav = [
           });
         };
 
-        applyTheme(readTheme());
+        window.__gvThemeFoundation = {
+          getMode: () => normalizeThemeMode(document.documentElement.dataset.themeMode || 'light'),
+          getResolvedMode: () => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'),
+          setMode: (mode) => setThemeMode(mode),
+        };
+
+        setThemeMode(readThemeMode(), { persist: false });
         bindToggles();
       })();
     </script>
