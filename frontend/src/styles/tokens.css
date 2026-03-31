@@ -80,6 +80,14 @@
     radial-gradient(circle at 86% 16%, rgb(var(--theme-brand-accent) / 0.2) 0%, transparent 52%);
   --hero-noise:
     radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.2) 1px, transparent 0);
+  --hero-bg-image: url("/media/hero/home-discovery-light.webp");
+  --hero-overlay-gradient:
+    linear-gradient(
+      108deg,
+      rgb(255 255 255 / 0.82) 0%,
+      rgb(244 249 255 / 0.62) 42%,
+      rgb(9 21 44 / 0.34) 100%
+    );
 
   /* Backward-compatible aliases */
   --gv-radius-sm: var(--radius-md);
@@ -128,4 +136,12 @@
     radial-gradient(circle at 86% 16%, rgb(var(--theme-brand-accent) / 0.28) 0%, transparent 54%);
   --hero-noise:
     radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.06) 1px, transparent 0);
+  --hero-bg-image: url("/media/hero/home-discovery-dark.webp");
+  --hero-overlay-gradient:
+    linear-gradient(
+      112deg,
+      rgb(4 10 24 / 0.72) 0%,
+      rgb(8 18 38 / 0.62) 40%,
+      rgb(3 8 20 / 0.84) 100%
+    );
 }
