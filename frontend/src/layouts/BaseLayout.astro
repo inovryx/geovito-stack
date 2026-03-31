@@ -1040,6 +1040,10 @@ const globalThemePreset = 'brand-default';
           header.classList.toggle('header-hidden', hidden);
         };
 
+        const setScrolled = (next) => {
+          header.classList.toggle('is-scrolled', Boolean(next));
+        };
+
         const handleScroll = () => {
           const currentY = Math.max(window.scrollY || 0, 0);
           const delta = currentY - lastY;
@@ -1047,10 +1051,13 @@ const globalThemePreset = 'brand-default';
           if (currentY <= 0) {
             movement = 0;
             setHidden(false);
+            setScrolled(false);
             lastY = currentY;
             ticking = false;
             return;
           }
+
+          setScrolled(currentY > 8);
 
           if (Math.abs(delta) >= 2) {
             if ((delta > 0 && hidden) || (delta < 0 && !hidden)) {
@@ -1069,6 +1076,8 @@ const globalThemePreset = 'brand-default';
           lastY = currentY;
           ticking = false;
         };
+
+        setScrolled(lastY > 8);
 
         window.addEventListener(
           'scroll',

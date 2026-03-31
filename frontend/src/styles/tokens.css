@@ -3,14 +3,14 @@
   --theme-preset: brand-default;
   --theme-mode: light;
 
-  --gv-bg: 255 255 255;
-  --gv-surface: 248 250 252;
-  --gv-surface-2: 241 245 249;
-  --gv-fg: 15 23 42;
-  --gv-muted: 71 85 105;
-  --gv-border: 226 232 240;
-  --gv-accent: 59 130 246;
-  --gv-accent-2: 37 99 235;
+  --gv-bg: 245 248 253;
+  --gv-surface: 250 253 255;
+  --gv-surface-2: 239 246 253;
+  --gv-fg: 13 24 46;
+  --gv-muted: 84 99 125;
+  --gv-border: 212 223 237;
+  --gv-accent: 16 111 208;
+  --gv-accent-2: 10 88 168;
   --gv-success: 34 197 94;
   --gv-warn: 245 158 11;
   --gv-danger: 239 68 68;
@@ -35,17 +35,18 @@
   --radius-2xl: 24px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.06);
-  --shadow-md: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.08);
-  --shadow-lg: 0 8px 30px rgb(0 0 0 / 0.12);
-  --shadow-xl: 0 14px 42px rgb(0 0 0 / 0.16);
+  --shadow-sm: 0 1px 2px rgb(7 16 34 / 0.08);
+  --shadow-md: 0 1px 2px rgb(7 16 34 / 0.06), 0 10px 26px rgb(7 16 34 / 0.09);
+  --shadow-lg: 0 12px 32px rgb(7 16 34 / 0.14);
+  --shadow-xl: 0 20px 48px rgb(7 16 34 / 0.2);
 
   --surface-base: rgb(var(--gv-bg));
   --surface-subtle: rgb(var(--gv-surface-2));
-  --surface-card: rgb(var(--gv-surface) / 0.96);
-  --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface)) 86%, #ffffff);
-  --surface-overlay: rgb(2 6 23 / 0.44);
-  --surface-accent-soft: rgb(var(--theme-brand-accent) / 0.14);
+  --surface-card: rgb(var(--gv-surface) / 0.97);
+  --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface)) 84%, #ffffff);
+  --surface-overlay: rgb(7 12 28 / 0.48);
+  --surface-accent-soft: rgb(var(--theme-brand-accent) / 0.16);
+  --surface-glass: color-mix(in srgb, var(--surface-card) 72%, #ffffff);
 
   --border-subtle: rgb(var(--gv-border));
   --border-strong: color-mix(in srgb, rgb(var(--gv-border)) 70%, rgb(var(--gv-fg)) 30%);
@@ -58,15 +59,27 @@
   --content-xl: 84rem;
   --content-reading: 65ch;
 
-  --motion-fast: 120ms;
-  --motion-base: 180ms;
-  --motion-slow: 260ms;
+  --motion-fast: 110ms;
+  --motion-base: 170ms;
+  --motion-slow: 240ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
-  --focus-ring: rgb(var(--theme-brand-accent));
+  --focus-ring: color-mix(in srgb, rgb(var(--theme-brand-accent-strong)) 78%, #ffffff);
   --focus-ring-offset: 2px;
-  --interactive-hover: color-mix(in srgb, rgb(var(--theme-brand-accent)) 10%, transparent);
-  --interactive-active: color-mix(in srgb, rgb(var(--theme-brand-accent)) 18%, transparent);
+  --interactive-hover: color-mix(in srgb, rgb(var(--theme-brand-accent)) 14%, transparent);
+  --interactive-active: color-mix(in srgb, rgb(var(--theme-brand-accent)) 22%, transparent);
+
+  --hero-gradient:
+    linear-gradient(
+      128deg,
+      color-mix(in srgb, var(--surface-accent-soft) 86%, var(--surface-elevated)) 0%,
+      color-mix(in srgb, var(--surface-card) 88%, #ffffff) 52%,
+      color-mix(in srgb, var(--surface-subtle) 84%, #ffffff) 100%
+    );
+  --hero-radial-glow:
+    radial-gradient(circle at 86% 16%, rgb(var(--theme-brand-accent) / 0.2) 0%, transparent 52%);
+  --hero-noise:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.2) 1px, transparent 0);
 
   /* Backward-compatible aliases */
   --gv-radius-sm: var(--radius-md);
@@ -79,26 +92,40 @@
 
 .dark {
   --theme-mode: dark;
-  --gv-bg: 2 6 23;
-  --gv-surface: 15 23 42;
-  --gv-surface-2: 30 41 59;
-  --gv-fg: 226 232 240;
-  --gv-muted: 148 163 184;
-  --gv-border: 51 65 85;
-  --gv-accent: 59 130 246;
-  --gv-accent-2: 37 99 235;
+  --gv-bg: 6 12 30;
+  --gv-surface: 16 27 49;
+  --gv-surface-2: 27 41 67;
+  --gv-fg: 229 236 248;
+  --gv-muted: 154 170 196;
+  --gv-border: 58 77 109;
+  --gv-accent: 87 160 255;
+  --gv-accent-2: 64 141 246;
   --gv-success: 34 197 94;
   --gv-warn: 245 158 11;
   --gv-danger: 239 68 68;
 
-  --surface-card: rgb(var(--gv-surface) / 0.92);
-  --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface-2)) 82%, rgb(2 6 23));
-  --surface-overlay: rgb(2 6 23 / 0.72);
-  --surface-accent-soft: rgb(var(--theme-brand-accent) / 0.2);
+  --surface-card: rgb(var(--gv-surface) / 0.95);
+  --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface-2)) 82%, rgb(6 12 30));
+  --surface-overlay: rgb(2 6 20 / 0.76);
+  --surface-accent-soft: rgb(var(--theme-brand-accent) / 0.22);
+  --surface-glass: color-mix(in srgb, var(--surface-card) 70%, rgb(6 12 30));
 
   --border-strong: color-mix(in srgb, rgb(var(--gv-border)) 74%, rgb(var(--gv-fg)) 26%);
   --border-accent: color-mix(in srgb, rgb(var(--theme-brand-accent)) 56%, rgb(var(--gv-border)));
 
-  --interactive-hover: color-mix(in srgb, rgb(var(--theme-brand-accent)) 16%, transparent);
-  --interactive-active: color-mix(in srgb, rgb(var(--theme-brand-accent)) 24%, transparent);
+  --focus-ring: color-mix(in srgb, rgb(var(--theme-brand-accent)) 84%, #ffffff);
+  --interactive-hover: color-mix(in srgb, rgb(var(--theme-brand-accent)) 20%, transparent);
+  --interactive-active: color-mix(in srgb, rgb(var(--theme-brand-accent)) 30%, transparent);
+
+  --hero-gradient:
+    linear-gradient(
+      128deg,
+      color-mix(in srgb, var(--surface-accent-soft) 76%, var(--surface-elevated)) 0%,
+      color-mix(in srgb, var(--surface-card) 88%, rgb(6 12 30)) 52%,
+      color-mix(in srgb, var(--surface-subtle) 86%, rgb(6 12 30)) 100%
+    );
+  --hero-radial-glow:
+    radial-gradient(circle at 86% 16%, rgb(var(--theme-brand-accent) / 0.28) 0%, transparent 54%);
+  --hero-noise:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.06) 1px, transparent 0);
 }
