@@ -584,6 +584,7 @@ const dashboardCopy = {
   ui={ui}
   showTools={true}
   toolsContext={dashboardCopy.title}
+  pageSurface="dashboard-control"
 >
   <h1 class="dashboard-page-title">{dashboardCopy.title}</h1>
   <p class="small dashboard-page-lead">{dashboardCopy.description}</p>
@@ -596,7 +597,23 @@ const dashboardCopy = {
 
   <section class="dashboard-shell gv-stack" data-dashboard-authenticated hidden>
     <div class="dashboard-head">
-      <p class="small" data-dashboard-feedback aria-live="polite">{dashboardCopy.loading}</p>
+      <div class="dashboard-head-main">
+        <p class="small" data-dashboard-feedback aria-live="polite">{dashboardCopy.loading}</p>
+        <div class="dashboard-head-context" aria-live="polite">
+          <p class="dashboard-context-pill">
+            <span>{dashboardCopy.accessRole}</span>
+            <strong data-dashboard-head-role>{dashboardCopy.accessMember}</strong>
+          </p>
+          <p class="dashboard-context-pill">
+            <span>{dashboardCopy.topModuleNavTitle}</span>
+            <strong data-dashboard-active-module data-testid="dashboard-active-module"></strong>
+          </p>
+          <p class="dashboard-context-pill">
+            <span>{dashboardCopy.subSectionNavTitle}</span>
+            <strong data-dashboard-active-subsection data-testid="dashboard-active-subsection"></strong>
+          </p>
+        </div>
+      </div>
       <div class="dashboard-head-actions">
         <label class="dashboard-focus-mode">
           <input type="checkbox" data-dashboard-focus-mode data-testid="dashboard-focus-mode-toggle" />
@@ -606,11 +623,6 @@ const dashboardCopy = {
           <span class="ui-button-label">{dashboardCopy.refresh}</span>
         </button>
       </div>
-    </div>
-
-    <div class="dashboard-state-markers" hidden>
-      <span data-dashboard-active-module data-testid="dashboard-active-module"></span>
-      <span data-dashboard-active-subsection data-testid="dashboard-active-subsection"></span>
     </div>
 
     <nav class="dashboard-top-module-nav" aria-label={dashboardCopy.topModuleNavTitle}>
@@ -2005,6 +2017,7 @@ const dashboardCopy = {
       const loginAtNode = document.querySelector('[data-dashboard-loginat]');
       const preferredNode = document.querySelector('[data-dashboard-preferred]');
       const roleNode = document.querySelector('[data-dashboard-role]');
+      const headRoleNode = document.querySelector('[data-dashboard-head-role]');
       const governanceRoleNode = document.querySelector('[data-dashboard-governance-role]');
       const governanceScopeNode = document.querySelector('[data-dashboard-governance-scope]');
       const governancePolicyNode = document.querySelector('[data-dashboard-governance-policy]');
@@ -4133,6 +4146,7 @@ const dashboardCopy = {
               ? dashboardCopy.accessEditor
               : dashboardCopy.accessMember;
         setText(roleNode, roleLabel);
+        setText(headRoleNode, roleLabel);
         setText(governanceRoleNode, roleLabel);
 
         const governanceCopy = getGovernanceCopy(
@@ -5504,27 +5518,65 @@ const dashboardCopy = {
   }
 
   .dashboard-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.85rem;
-    padding: 0.68rem 0.78rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.74rem 0.82rem;
     border: 1px solid var(--dashboard-border);
-    border-radius: 0.9rem;
-    background: var(--dashboard-surface-strong);
+    border-radius: 0.96rem;
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 94%, #ffffff);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.58);
+  }
+
+  .dashboard-head-main {
+    display: grid;
+    gap: 0.55rem;
   }
 
   .dashboard-head [data-dashboard-feedback] {
     margin: 0;
-    font-size: 0.8rem;
-    line-height: 1.4;
+    font-size: 0.77rem;
+    line-height: 1.42;
     color: color-mix(in srgb, var(--ink-muted) 90%, #0f172a);
+  }
+
+  .dashboard-head-context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.42rem;
+  }
+
+  .dashboard-context-pill {
+    margin: 0;
+    display: inline-grid;
+    gap: 0.12rem;
+    min-width: 8.1rem;
+    padding: 0.32rem 0.52rem;
+    border: 1px solid color-mix(in srgb, var(--brand) 20%, var(--dashboard-border));
+    border-radius: 0.66rem;
+    background: color-mix(in srgb, var(--dashboard-surface-soft) 92%, #ffffff);
+  }
+
+  .dashboard-context-pill span {
+    font-size: 0.64rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .dashboard-context-pill strong {
+    font-size: 0.76rem;
+    line-height: 1.25;
+    text-transform: capitalize;
+    color: color-mix(in srgb, var(--ink) 94%, #0f172a);
+    min-height: 1.05rem;
   }
 
   .dashboard-head-actions {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.52rem;
     flex-wrap: wrap;
     justify-content: flex-end;
   }
@@ -5550,18 +5602,18 @@ const dashboardCopy = {
   .dashboard-top-module-nav {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.5rem;
-    padding: 0.52rem;
+    gap: 0.42rem;
+    padding: 0.5rem;
     border: 1px solid var(--dashboard-border);
-    border-radius: 0.9rem;
-    background: color-mix(in srgb, var(--dashboard-surface-soft) 88%, var(--brand-soft));
+    border-radius: 0.94rem;
+    background: color-mix(in srgb, var(--dashboard-surface-soft) 90%, var(--brand-soft));
   }
 
   .dashboard-shell:not(.is-dashboard-home) .dashboard-top-module-nav {
-    gap: 0.38rem;
-    padding: 0.34rem;
+    gap: 0.32rem;
+    padding: 0.38rem;
     border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
-    background: color-mix(in srgb, var(--dashboard-surface-soft) 88%, transparent);
+    background: color-mix(in srgb, var(--dashboard-surface-soft) 92%, transparent);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
   }
 
@@ -5569,25 +5621,30 @@ const dashboardCopy = {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 2rem;
-    border-radius: 0.76rem;
+    min-height: 2.06rem;
+    border-radius: 0.72rem;
     border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
-    background: var(--dashboard-surface-strong);
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 94%, #ffffff);
     color: var(--ink);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    padding: 0.26rem 0.72rem;
-    letter-spacing: 0.01em;
-    box-shadow: 0 5px 14px rgb(15 23 42 / 0.06);
+    padding: 0.28rem 0.66rem;
+    letter-spacing: 0.012em;
+    box-shadow: 0 4px 12px rgb(15 23 42 / 0.05);
+    transition:
+      border-color var(--motion-fast) var(--ease-standard),
+      background var(--motion-fast) var(--ease-standard),
+      color var(--motion-fast) var(--ease-standard),
+      box-shadow var(--motion-fast) var(--ease-standard);
   }
 
   .dashboard-shell:not(.is-dashboard-home) .dashboard-top-module-pill {
-    min-height: 1.72rem;
-    font-size: 0.74rem;
+    min-height: 1.78rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    border-radius: 0.64rem;
+    border-radius: 0.62rem;
     box-shadow: none;
-    opacity: 0.82;
+    opacity: 0.86;
   }
 
   .dashboard-shell:not(.is-dashboard-home) .dashboard-top-module-pill.is-active {
@@ -5601,6 +5658,12 @@ const dashboardCopy = {
     background: color-mix(in srgb, var(--brand-soft) 38%, var(--dashboard-surface-soft));
   }
 
+  .dashboard-top-module-pill:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    text-decoration: none;
+  }
+
   .dashboard-top-module-pill.is-active {
     border-color: color-mix(in srgb, var(--brand) 54%, var(--border));
     color: var(--brand-strong);
@@ -5611,14 +5674,14 @@ const dashboardCopy = {
   .dashboard-section-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.44rem 0.38rem 0.22rem;
+    gap: 0.42rem;
+    padding: 0.38rem 0.34rem 0.14rem;
   }
 
   .dashboard-shell:not(.is-dashboard-home) .dashboard-section-nav {
-    padding: 0.56rem;
+    padding: 0.52rem;
     border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--border));
-    border-radius: 0.82rem;
+    border-radius: 0.88rem;
     background: color-mix(in srgb, var(--dashboard-surface-strong) 92%, #ffffff);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
   }
@@ -5626,19 +5689,24 @@ const dashboardCopy = {
   .dashboard-section-pill {
     display: inline-flex;
     align-items: center;
-    min-height: 1.9rem;
+    min-height: 1.88rem;
     border-radius: 999px;
     border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
-    background: var(--dashboard-surface-strong);
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 94%, #ffffff);
     color: var(--ink);
-    font-size: 0.79rem;
+    font-size: 0.77rem;
     font-weight: 600;
-    padding: 0.2rem 0.7rem;
+    padding: 0.2rem 0.66rem;
+    transition:
+      border-color var(--motion-fast) var(--ease-standard),
+      background var(--motion-fast) var(--ease-standard),
+      color var(--motion-fast) var(--ease-standard),
+      box-shadow var(--motion-fast) var(--ease-standard);
   }
 
   .dashboard-shell:not(.is-dashboard-home) .dashboard-section-pill {
-    min-height: 2rem;
-    font-size: 0.8rem;
+    min-height: 1.96rem;
+    font-size: 0.79rem;
     font-weight: 700;
     border-color: color-mix(in srgb, var(--brand) 24%, var(--border));
   }
@@ -5656,32 +5724,48 @@ const dashboardCopy = {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 20%, transparent);
   }
 
+  .dashboard-section-pill:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    text-decoration: none;
+  }
+
   .dashboard-module-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.58rem;
-    padding: 0.5rem;
+    gap: 0.52rem;
+    padding: 0.52rem;
     border: 1px solid var(--dashboard-border);
-    border-radius: 0.88rem;
-    background: color-mix(in srgb, var(--dashboard-surface-soft) 90%, var(--brand-soft));
+    border-radius: 0.92rem;
+    background: color-mix(in srgb, var(--dashboard-surface-soft) 92%, var(--brand-soft));
   }
 
   .dashboard-module-card {
     display: grid;
     gap: 0.3rem;
-    padding: 0.62rem 0.72rem;
+    padding: 0.64rem 0.72rem;
     border: 1px solid color-mix(in srgb, var(--brand) 16%, var(--border));
-    border-radius: 0.82rem;
-    background: var(--dashboard-surface-strong);
+    border-radius: 0.86rem;
+    background: color-mix(in srgb, var(--dashboard-surface-strong) 94%, #ffffff);
     color: var(--ink);
     text-decoration: none;
     box-shadow: 0 5px 14px rgb(15 23 42 / 0.05);
+    transition:
+      border-color var(--motion-fast) var(--ease-standard),
+      background var(--motion-fast) var(--ease-standard),
+      box-shadow var(--motion-fast) var(--ease-standard);
   }
 
   .dashboard-module-card:hover {
     text-decoration: none;
     border-color: color-mix(in srgb, var(--brand) 38%, var(--border));
     background: color-mix(in srgb, var(--brand-soft) 24%, var(--dashboard-surface-soft));
+  }
+
+  .dashboard-module-card:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    text-decoration: none;
   }
 
   .dashboard-module-card strong {
@@ -5720,7 +5804,7 @@ const dashboardCopy = {
 
   .dashboard-shell:not(.is-dashboard-home) .dashboard-head {
     border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
-    background: color-mix(in srgb, var(--brand-soft) 26%, var(--dashboard-surface-strong));
+    background: color-mix(in srgb, var(--brand-soft) 22%, var(--dashboard-surface-strong));
   }
 
   .dashboard-shell:not(.is-dashboard-home) .dashboard-module-grid {
@@ -5800,19 +5884,19 @@ const dashboardCopy = {
 
   .dashboard-lanes {
     display: grid;
-    gap: 1rem;
+    gap: 0.92rem;
   }
 
   .dashboard-lane {
     border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
-    border-radius: 1rem;
+    border-radius: 0.94rem;
     background: linear-gradient(
       180deg,
       color-mix(in srgb, var(--dashboard-surface-strong) 94%, #ffffff),
       color-mix(in srgb, var(--dashboard-surface-soft) 92%, #ffffff)
     );
-    box-shadow: 0 10px 26px rgb(15 23 42 / 0.07);
-    padding: 0.88rem;
+    box-shadow: 0 8px 22px rgb(15 23 42 / 0.06);
+    padding: 0.8rem;
   }
 
   .dashboard-lane-control {
@@ -5828,17 +5912,17 @@ const dashboardCopy = {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.85rem;
+    gap: 0.78rem;
   }
 
   .dashboard-lane-title-wrap {
     display: grid;
-    gap: 0.2rem;
+    gap: 0.16rem;
   }
 
   .dashboard-lane-title {
     margin: 0;
-    font-size: 1.08rem;
+    font-size: 1.02rem;
     font-weight: 700;
     letter-spacing: -0.008em;
   }
@@ -6282,12 +6366,28 @@ const dashboardCopy = {
     background: color-mix(in srgb, var(--brand) 20%, var(--surface-2));
   }
 
+  .dashboard-activity-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    text-decoration: none;
+  }
+
   .dashboard-activity-item--warn {
     border-color: color-mix(in srgb, #b9382f 46%, var(--border));
+    background: color-mix(in srgb, #b9382f 6%, var(--dashboard-surface-strong));
   }
 
   .dashboard-activity-item--ok {
     border-color: color-mix(in srgb, #1f8d4c 42%, var(--border));
+    background: color-mix(in srgb, #1f8d4c 6%, var(--dashboard-surface-strong));
+  }
+
+  .dashboard-activity-item--warn .dashboard-activity-head strong {
+    color: #b9382f;
+  }
+
+  .dashboard-activity-item--ok .dashboard-activity-head strong {
+    color: #1f8d4c;
   }
 
   .dashboard-capabilities {
@@ -6389,16 +6489,28 @@ const dashboardCopy = {
   .dashboard-alert {
     color: #b9382f;
     font-weight: 600;
+    border: 1px solid color-mix(in srgb, #b9382f 28%, var(--border));
+    border-radius: 0.64rem;
+    background: color-mix(in srgb, #b9382f 8%, var(--dashboard-surface-strong));
+    padding: 0.34rem 0.5rem;
   }
 
   [data-dashboard-community-note].is-success {
     color: #1f8d4c;
     font-weight: 600;
+    border: 1px solid color-mix(in srgb, #1f8d4c 26%, var(--border));
+    border-radius: 0.62rem;
+    background: color-mix(in srgb, #1f8d4c 8%, var(--dashboard-surface-strong));
+    padding: 0.32rem 0.5rem;
   }
 
   [data-dashboard-community-note].is-error {
     color: #b9382f;
     font-weight: 600;
+    border: 1px solid color-mix(in srgb, #b9382f 26%, var(--border));
+    border-radius: 0.62rem;
+    background: color-mix(in srgb, #b9382f 8%, var(--dashboard-surface-strong));
+    padding: 0.32rem 0.5rem;
   }
 
   .dashboard-action-row {
@@ -6410,6 +6522,18 @@ const dashboardCopy = {
   @media (max-width: 960px) {
     .dashboard-shell {
       padding: 0.48rem;
+    }
+
+    .dashboard-head {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-head-actions {
+      justify-content: flex-start;
+    }
+
+    .dashboard-head-context {
+      width: 100%;
     }
 
     .dashboard-top-module-nav {
@@ -6460,6 +6584,10 @@ const dashboardCopy = {
   }
 
   @media (max-width: 560px) {
+    .dashboard-context-pill {
+      min-width: 100%;
+    }
+
     .dashboard-top-module-nav {
       grid-template-columns: 1fr;
     }
