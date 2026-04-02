@@ -88,6 +88,22 @@
       rgb(244 249 255 / 0.62) 42%,
       rgb(9 21 44 / 0.34) 100%
     );
+  --atlas-card-media-overlay:
+    linear-gradient(
+      168deg,
+      rgb(5 14 32 / 0.08) 0%,
+      rgb(6 18 40 / 0.44) 58%,
+      rgb(7 18 39 / 0.72) 100%
+    );
+  --atlas-card-media-fallback:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--surface-accent-soft) 82%, var(--surface-card)) 0%,
+      color-mix(in srgb, var(--surface-card) 74%, rgb(var(--theme-brand-accent))) 100%
+    );
+  --atlas-card-media-height: 11.25rem;
+  --atlas-card-media-noise:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.18) 1px, transparent 0);
 
   /* Backward-compatible aliases */
   --gv-radius-sm: var(--radius-md);
@@ -144,4 +160,81 @@
       rgb(8 18 38 / 0.62) 40%,
       rgb(3 8 20 / 0.84) 100%
     );
+  --atlas-card-media-overlay:
+    linear-gradient(
+      164deg,
+      rgb(3 8 20 / 0.2) 0%,
+      rgb(4 11 24 / 0.62) 54%,
+      rgb(2 7 18 / 0.86) 100%
+    );
+  --atlas-card-media-fallback:
+    linear-gradient(
+      150deg,
+      color-mix(in srgb, rgb(var(--theme-brand-accent)) 24%, rgb(8 17 36)) 0%,
+      color-mix(in srgb, var(--surface-elevated) 80%, rgb(4 9 24)) 100%
+    );
+  --atlas-card-media-height: 11.5rem;
+  --atlas-card-media-noise:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.08) 1px, transparent 0);
+}
+
+html[data-theme-accent="brand-default"] {
+  --theme-brand-accent: var(--gv-accent);
+  --theme-brand-accent-strong: var(--gv-accent-2);
+}
+
+html[data-theme-accent="sapphire"] {
+  --theme-brand-accent: 47 132 255;
+  --theme-brand-accent-strong: 22 104 235;
+}
+
+html[data-theme-accent="emerald"] {
+  --theme-brand-accent: 18 171 128;
+  --theme-brand-accent-strong: 9 136 101;
+}
+
+html[data-theme-accent="amber"] {
+  --theme-brand-accent: 226 150 11;
+  --theme-brand-accent-strong: 186 115 10;
+}
+
+html[data-theme-accent="plum"] {
+  --theme-brand-accent: 153 98 214;
+  --theme-brand-accent-strong: 120 74 176;
+}
+
+html[data-surface-style="soft"] {
+  --surface-card: rgb(var(--gv-surface) / 0.97);
+  --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface)) 84%, #ffffff);
+  --surface-glass: color-mix(in srgb, var(--surface-card) 72%, #ffffff);
+}
+
+html.dark[data-surface-style="soft"] {
+  --surface-card: rgb(var(--gv-surface) / 0.95);
+  --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface-2)) 82%, rgb(6 12 30));
+  --surface-glass: color-mix(in srgb, var(--surface-card) 70%, rgb(6 12 30));
+}
+
+html[data-surface-style="glass"] {
+  --surface-card: color-mix(in srgb, rgb(var(--gv-surface)) 76%, #ffffff);
+  --surface-elevated: color-mix(in srgb, var(--surface-card) 82%, #ffffff);
+  --surface-glass: color-mix(in srgb, var(--surface-card) 62%, #ffffff);
+}
+
+html.dark[data-surface-style="glass"] {
+  --surface-card: color-mix(in srgb, rgb(var(--gv-surface)) 72%, rgb(8 16 36));
+  --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface-2)) 66%, rgb(6 12 30));
+  --surface-glass: color-mix(in srgb, var(--surface-card) 60%, rgb(4 10 24));
+}
+
+html[data-surface-style="flat"] {
+  --surface-card: rgb(var(--gv-surface));
+  --surface-elevated: rgb(var(--gv-surface));
+  --surface-glass: rgb(var(--gv-surface));
+}
+
+html.dark[data-surface-style="flat"] {
+  --surface-card: rgb(var(--gv-surface));
+  --surface-elevated: rgb(var(--gv-surface));
+  --surface-glass: rgb(var(--gv-surface));
 }

@@ -131,6 +131,10 @@ const globalThemePreset = 'brand-default';
 <html
   lang={currentLanguage}
   data-theme-preset={globalThemePreset}
+  data-theme-mode="light"
+  data-theme-resolved="light"
+  data-theme-accent="brand-default"
+  data-surface-style="soft"
   data-build-sha={cfBuildSha}
   data-build-branch={cfBuildBranch}
   data-cf-pages={isCfPages}
@@ -392,9 +396,24 @@ const globalThemePreset = 'brand-default';
 
     <script is:inline>
       (() => {
+        const MODE_KEY = 'geovito_theme_mode';
+        const LEGACY_MODE_KEY = 'theme';
+        const ACCENT_KEY = 'geovito_theme_accent';
+        const SURFACE_STYLE_KEY = 'geovito_surface_style';
+        const ALLOWED_ACCENTS = new Set(['brand-default', 'sapphire', 'emerald', 'amber', 'plum']);
+        const ALLOWED_SURFACE_STYLES = new Set(['soft', 'glass', 'flat']);
+
         const normalizeThemeMode = (value) => {
           const mode = String(value || '').trim().toLowerCase();
           return mode === 'dark' || mode === 'system' ? mode : 'light';
+        };
+        const normalizeThemeAccent = (value) => {
+          const accent = String(value || '').trim().toLowerCase();
+          return ALLOWED_ACCENTS.has(accent) ? accent : 'brand-default';
+        };
+        const normalizeSurfaceStyle = (value) => {
+          const style = String(value || '').trim().toLowerCase();
+          return ALLOWED_SURFACE_STYLES.has(style) ? style : 'soft';
         };
 
         const resolveThemeMode = (mode) => {
@@ -407,7 +426,13 @@ const globalThemePreset = 'brand-default';
         };
 
         try {
-          const mode = normalizeThemeMode(localStorage.getItem('theme'));
+          const mode = (() => {
+            const modernValue = localStorage.getItem(MODE_KEY);
+            if (modernValue !== null) return normalizeThemeMode(modernValue);
+            return normalizeThemeMode(localStorage.getItem(LEGACY_MODE_KEY));
+          })();
+          const accent = normalizeThemeAccent(localStorage.getItem(ACCENT_KEY));
+          const surfaceStyle = normalizeSurfaceStyle(localStorage.getItem(SURFACE_STYLE_KEY));
           const resolvedMode = resolveThemeMode(mode);
           const isDark = resolvedMode === 'dark';
           const sidebar = localStorage.getItem('sidebar');
@@ -416,12 +441,16 @@ const globalThemePreset = 'brand-default';
           document.documentElement.classList.toggle('sidebar-compact', isCompactSidebar);
           document.documentElement.dataset.themeMode = mode;
           document.documentElement.dataset.themeResolved = resolvedMode;
+          document.documentElement.dataset.themeAccent = accent;
+          document.documentElement.dataset.surfaceStyle = surfaceStyle;
           document.documentElement.style.colorScheme = resolvedMode;
         } catch {
           document.documentElement.classList.remove('dark');
           document.documentElement.classList.remove('sidebar-compact');
           document.documentElement.dataset.themeMode = 'light';
           document.documentElement.dataset.themeResolved = 'light';
+          document.documentElement.dataset.themeAccent = 'brand-default';
+          document.documentElement.dataset.surfaceStyle = 'soft';
           document.documentElement.style.colorScheme = 'light';
         }
       })();
@@ -1099,9 +1128,24 @@ const globalThemePreset = 'brand-default';
 
     <script is:inline>
       (() => {
+        const MODE_KEY = 'geovito_theme_mode';
+        const LEGACY_MODE_KEY = 'theme';
+        const ACCENT_KEY = 'geovito_theme_accent';
+        const SURFACE_STYLE_KEY = 'geovito_surface_style';
+        const ALLOWED_ACCENTS = new Set(['brand-default', 'sapphire', 'emerald', 'amber', 'plum']);
+        const ALLOWED_SURFACE_STYLES = new Set(['soft', 'glass', 'flat']);
+
         const normalizeThemeMode = (value) => {
           const mode = String(value || '').trim().toLowerCase();
           return mode === 'dark' || mode === 'system' ? mode : 'light';
+        };
+        const normalizeThemeAccent = (value) => {
+          const accent = String(value || '').trim().toLowerCase();
+          return ALLOWED_ACCENTS.has(accent) ? accent : 'brand-default';
+        };
+        const normalizeSurfaceStyle = (value) => {
+          const style = String(value || '').trim().toLowerCase();
+          return ALLOWED_SURFACE_STYLES.has(style) ? style : 'soft';
         };
 
         const resolveThemeMode = (mode) => {
@@ -1131,18 +1175,58 @@ const globalThemePreset = 'brand-default';
             }
           });
         };
+        const applyThemeAccent = (accent) => {
+          const normalizedAccent = normalizeThemeAccent(accent);
+          document.documentElement.dataset.themeAccent = normalizedAccent;
+        };
+        const applySurfaceStyle = (surfaceStyle) => {
+          const normalizedStyle = normalizeSurfaceStyle(surfaceStyle);
+          document.documentElement.dataset.surfaceStyle = normalizedStyle;
+        };
 
         const readThemeMode = () => {
           try {
-            return normalizeThemeMode(localStorage.getItem('theme'));
+            const modernValue = localStorage.getItem(MODE_KEY);
+            if (modernValue !== null) return normalizeThemeMode(modernValue);
+            return normalizeThemeMode(localStorage.getItem(LEGACY_MODE_KEY));
           } catch {
             return 'light';
+          }
+        };
+        const readThemeAccent = () => {
+          try {
+            return normalizeThemeAccent(localStorage.getItem(ACCENT_KEY));
+          } catch {
+            return 'brand-default';
+          }
+        };
+        const readSurfaceStyle = () => {
+          try {
+            return normalizeSurfaceStyle(localStorage.getItem(SURFACE_STYLE_KEY));
+          } catch {
+            return 'soft';
           }
         };
 
         const writeThemeMode = (mode) => {
           try {
-            localStorage.setItem('theme', normalizeThemeMode(mode));
+            const normalizedMode = normalizeThemeMode(mode);
+            localStorage.setItem(MODE_KEY, normalizedMode);
+            localStorage.setItem(LEGACY_MODE_KEY, normalizedMode);
+          } catch {
+            // no-op
+          }
+        };
+        const writeThemeAccent = (accent) => {
+          try {
+            localStorage.setItem(ACCENT_KEY, normalizeThemeAccent(accent));
+          } catch {
+            // no-op
+          }
+        };
+        const writeSurfaceStyle = (surfaceStyle) => {
+          try {
+            localStorage.setItem(SURFACE_STYLE_KEY, normalizeSurfaceStyle(surfaceStyle));
           } catch {
             // no-op
           }
@@ -1185,6 +1269,20 @@ const globalThemePreset = 'brand-default';
           applyThemeMode(normalizedMode);
           syncSystemThemeSubscription(normalizedMode);
         };
+        const setThemeAccent = (accent, { persist = true } = {}) => {
+          const normalizedAccent = normalizeThemeAccent(accent);
+          if (persist) {
+            writeThemeAccent(normalizedAccent);
+          }
+          applyThemeAccent(normalizedAccent);
+        };
+        const setSurfaceStyle = (surfaceStyle, { persist = true } = {}) => {
+          const normalizedStyle = normalizeSurfaceStyle(surfaceStyle);
+          if (persist) {
+            writeSurfaceStyle(normalizedStyle);
+          }
+          applySurfaceStyle(normalizedStyle);
+        };
 
         const bindToggles = () => {
           document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
@@ -1204,10 +1302,16 @@ const globalThemePreset = 'brand-default';
         window.__gvThemeFoundation = {
           getMode: () => normalizeThemeMode(document.documentElement.dataset.themeMode || 'light'),
           getResolvedMode: () => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'),
+          getAccent: () => normalizeThemeAccent(document.documentElement.dataset.themeAccent || 'brand-default'),
+          getSurfaceStyle: () => normalizeSurfaceStyle(document.documentElement.dataset.surfaceStyle || 'soft'),
           setMode: (mode) => setThemeMode(mode),
+          setAccent: (accent) => setThemeAccent(accent),
+          setSurfaceStyle: (surfaceStyle) => setSurfaceStyle(surfaceStyle),
         };
 
         setThemeMode(readThemeMode(), { persist: false });
+        setThemeAccent(readThemeAccent(), { persist: false });
+        setSurfaceStyle(readSurfaceStyle(), { persist: false });
         bindToggles();
       })();
     </script>
