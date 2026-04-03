@@ -29,7 +29,12 @@ const buildPreviewHref = (language: string) => {
 };
 ---
 
-<nav aria-label={translate(ui, 'language.switcherAria', {}, 'Language selector')} class="language-switcher" data-site-language-switcher>
+<nav
+  aria-label={translate(ui, 'language.switcherAria', {}, 'Language selector')}
+  class="language-switcher"
+  data-site-language-switcher
+  data-language-switcher-variant="dock"
+>
   <ul class="language-tabs">
     {
       releasedLanguages.map((language) => {

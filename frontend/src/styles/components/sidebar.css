@@ -1,0 +1,274 @@
+[data-left-sidebar] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+[data-left-sidebar] .sidebar-toggle-button {
+  display: none;
+}
+
+[data-left-sidebar] .sidebar-toggle-button .gv-icon {
+  transition: transform 0.18s ease;
+}
+
+html.sidebar-compact [data-left-sidebar] .sidebar-toggle-button .gv-icon {
+  transform: rotate(180deg);
+}
+
+[data-left-sidebar] .sidebar-language-switch-dock {
+  margin-top: auto;
+}
+
+[data-left-sidebar] .sidebar-block {
+  border: 1px solid var(--glass-border-outer);
+  border-radius: var(--gv-radius-sm);
+  background: color-mix(in srgb, var(--surface-glass) 76%, var(--surface-strong));
+  padding: 0.68rem;
+  box-shadow: var(--glass-shadow-soft);
+  backdrop-filter: saturate(calc(var(--glass-saturate) * 0.96)) blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: saturate(calc(var(--glass-saturate) * 0.96)) blur(var(--glass-blur-soft));
+}
+
+.dark [data-left-sidebar] .sidebar-block {
+  box-shadow: var(--glass-shadow-soft);
+}
+
+[data-left-sidebar] .sidebar-title {
+  margin: 0 0 0.42rem;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+[data-left-sidebar] .sidebar-auth-links {
+  display: grid;
+  gap: 0.45rem;
+}
+
+[data-left-sidebar] .sidebar-auth-user {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+[data-left-sidebar] .sidebar-auth-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+[data-left-sidebar] .sidebar-admin-list {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.38rem;
+}
+
+[data-left-sidebar] .sidebar-workspace-hint {
+  margin: 0 0 0.4rem;
+  color: var(--ink-muted);
+}
+
+[data-left-sidebar] .sidebar-workspace-list {
+  gap: 0.3rem;
+}
+
+[data-left-sidebar] .small-link,
+[data-left-sidebar] .sidebar-auth-logout {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+[data-left-sidebar] .small-link {
+  font-size: 0.88rem;
+}
+
+[data-left-sidebar] .sidebar-workspace-list .small-link {
+  display: inline-block;
+  line-height: 1.25;
+}
+
+[data-left-sidebar] .sidebar-workspace-list .small-link.is-active {
+  font-weight: 700;
+  color: var(--link-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--link-primary-underline);
+  text-decoration-thickness: 1.4px;
+  text-underline-offset: 2px;
+}
+
+[data-left-sidebar] .sidebar-auth-logout {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+[data-left-sidebar] .sidebar-auth-logout:hover {
+  color: var(--link-primary-hover);
+  text-decoration: underline;
+  text-decoration-color: var(--link-primary-underline);
+}
+
+[data-left-sidebar] [data-site-language-switcher] {
+  margin: 0;
+}
+
+[data-left-sidebar] [data-site-language-switcher][data-language-switcher-variant="dock"] .language-tabs,
+[data-site-language-switcher][data-language-switcher-variant="dock"] .language-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.58rem;
+  grid-template-columns: none;
+}
+
+[data-site-language-switcher] .language-tabs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.34rem;
+}
+
+[data-site-language-switcher] a.language-tab:link,
+[data-site-language-switcher] a.language-tab:visited {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+[data-site-language-switcher] .language-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+  min-width: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-border-outer);
+  background: color-mix(in srgb, var(--surface-glass) 70%, var(--surface-subtle));
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.31rem 0.4rem;
+  box-shadow: var(--glass-shadow-soft);
+  backdrop-filter: saturate(calc(var(--glass-saturate) * 0.9)) blur(10px);
+  -webkit-backdrop-filter: saturate(calc(var(--glass-saturate) * 0.9)) blur(10px);
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard),
+    background var(--motion-base) var(--ease-standard);
+}
+
+[data-site-language-switcher] .language-tab:hover,
+[data-site-language-switcher] .language-tab:active {
+  border-color: color-mix(in srgb, var(--brand) 48%, var(--glass-border-outer));
+  transform: translateY(-1px);
+}
+
+[data-site-language-switcher] a.language-tab:hover,
+[data-site-language-switcher] a.language-tab:active {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+[data-site-language-switcher] a.language-tab.is-active,
+[data-site-language-switcher] a.language-tab.is-active:hover,
+[data-site-language-switcher] a.language-tab.is-active:active {
+  border-color: color-mix(in srgb, var(--brand) 62%, var(--glass-border-outer));
+  background: color-mix(in srgb, var(--brand) 92%, rgb(255 255 255 / 0.12));
+  color: #fff;
+  text-decoration: none;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, rgb(255 230 160 / 0.45) 55%, transparent),
+    0 6px 18px color-mix(in srgb, var(--brand) 28%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.28);
+}
+
+.dark [data-site-language-switcher] .language-tab {
+  box-shadow: var(--glass-shadow-soft);
+}
+
+.dark [data-site-language-switcher] a.language-tab.is-active,
+.dark [data-site-language-switcher] a.language-tab.is-active:hover,
+.dark [data-site-language-switcher] a.language-tab.is-active:active {
+  box-shadow:
+    0 0 0 1px rgb(var(--theme-brand-accent) / 0.42),
+    0 4px 20px rgb(0 8 28 / 0.48),
+    inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+
+[data-site-language-switcher][data-language-switcher-variant="dock"] a.language-tab:link,
+[data-site-language-switcher][data-language-switcher-variant="dock"] a.language-tab:visited {
+  color: var(--text-meta);
+  text-decoration: none;
+}
+
+[data-site-language-switcher][data-language-switcher-variant="dock"] .language-tab {
+  justify-content: center;
+  min-height: 2.35rem;
+  padding: 0.36rem 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border-light);
+  background: var(--surface-glass-soft);
+  color: var(--text-meta);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: var(--ls-meta);
+  line-height: var(--line-meta);
+  text-transform: uppercase;
+  box-shadow: var(--glass-shadow-soft);
+  backdrop-filter: saturate(var(--glass-saturate)) blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: saturate(var(--glass-saturate)) blur(var(--glass-blur-soft));
+}
+
+[data-site-language-switcher][data-language-switcher-variant="dock"] .language-tab:hover,
+[data-site-language-switcher][data-language-switcher-variant="dock"] .language-tab:active {
+  border-color: color-mix(in srgb, var(--glass-border-light) 65%, rgb(var(--gv-border) / 0.55));
+  background: color-mix(in srgb, var(--surface-glass-soft) 88%, var(--surface-subtle));
+  transform: translateY(-1px);
+}
+
+[data-site-language-switcher][data-language-switcher-variant="dock"] a.language-tab:hover,
+[data-site-language-switcher][data-language-switcher-variant="dock"] a.language-tab:active {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+[data-site-language-switcher][data-language-switcher-variant="dock"] a.language-tab.is-active,
+[data-site-language-switcher][data-language-switcher-variant="dock"] a.language-tab.is-active:hover,
+[data-site-language-switcher][data-language-switcher-variant="dock"] a.language-tab.is-active:active {
+  color: var(--lang-chip-active-fg);
+  text-decoration: none;
+  border-color: var(--lang-chip-active-border);
+  background: var(--lang-chip-active-bg);
+  box-shadow: var(--lang-chip-active-glow);
+  transform: translateY(-1px);
+}
+
+[data-site-language-switcher][data-language-switcher-variant="dock"] .language-tab .gv-icon-wrap {
+  display: none;
+}
+
+[data-left-sidebar] .sidebar-language-switch-dock .sidebar-title {
+  font-size: 0.74rem;
+  margin-bottom: 0.52rem;
+}
+
+html.sidebar-compact:not(.shell-dashboard-route) [data-left-sidebar] {
+  gap: 0.45rem;
+}
+
+html.sidebar-compact:not(.shell-dashboard-route) [data-left-sidebar] > .sidebar-block:not(:first-child) {
+  display: none;
+}
+
+html.sidebar-compact:not(.shell-dashboard-route) [data-left-sidebar] > .sidebar-block.sidebar-language-switch:not(:first-child) {
+  display: block;
+}

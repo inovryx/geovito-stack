@@ -1,0 +1,140 @@
+body[data-page-surface="blog-listing"] .blog-listing-page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-intro {
+  position: relative;
+  overflow: clip;
+  padding: clamp(var(--space-5), 3.2vw, var(--space-8));
+  border-color: var(--glass-border-outer);
+  background: color-mix(in srgb, var(--surface-glass) 84%, var(--surface-card));
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: saturate(var(--glass-saturate)) blur(var(--glass-blur));
+  -webkit-backdrop-filter: saturate(var(--glass-saturate)) blur(var(--glass-blur));
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-intro::after {
+  content: "";
+  position: absolute;
+  inset: auto -12% -58% auto;
+  width: min(340px, 46vw);
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--surface-accent-soft) 62%, transparent) 0%, transparent 74%);
+  pointer-events: none;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-head,
+body[data-page-surface="blog-listing"] .blog-listing-meta {
+  position: relative;
+  z-index: 1;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-head {
+  max-inline-size: min(72ch, 100%);
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-lead {
+  margin: 0;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-chip {
+  margin-left: 0;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-results {
+  display: grid;
+  gap: var(--space-3);
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-item {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+  background: var(--glass-surface-premium);
+  border-color: var(--glass-border-outer);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: saturate(var(--glass-saturate)) blur(calc(var(--glass-blur) * 0.88));
+  -webkit-backdrop-filter: saturate(var(--glass-saturate)) blur(calc(var(--glass-blur) * 0.88));
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    background var(--motion-base) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-item:hover {
+  border-color: color-mix(in srgb, var(--border-accent) 44%, var(--glass-border-outer));
+  background: var(--glass-surface-premium-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--glass-shadow);
+}
+
+body[data-page-surface="blog-listing"] a.blog-listing-item-title:link,
+body[data-page-surface="blog-listing"] a.blog-listing-item-title:visited {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+body[data-page-surface="blog-listing"] a.blog-listing-item-title:hover,
+body[data-page-surface="blog-listing"] a.blog-listing-item-title:active {
+  color: var(--link-primary);
+  text-decoration: none;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-item-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-item-meta {
+  align-items: center;
+  gap: var(--space-2);
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-date,
+body[data-page-surface="blog-listing"] .blog-listing-item-excerpt {
+  margin: 0;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-item-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body[data-page-surface="blog-listing"] .blog-listing-item-title:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (max-width: 1099px) {
+  body[data-page-surface="blog-listing"] .blog-listing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  body[data-page-surface="blog-listing"] .blog-listing-grid {
+    grid-template-columns: 1fr;
+  }
+}

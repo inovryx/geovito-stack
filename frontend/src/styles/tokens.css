@@ -60,6 +60,21 @@
     0 0 26px rgb(255 168 105 / 0.35),
     0 8px 22px rgb(var(--theme-brand-accent) / 0.14),
     inset 0 1px 0 rgb(255 255 255 / 0.45);
+  --link-primary: var(--theme-brand-accent-strong);
+  --link-primary-hover: var(--theme-brand-accent);
+  --link-primary-underline: color-mix(in srgb, rgb(var(--theme-brand-accent)) 68%, transparent);
+  --glass-surface-premium: color-mix(in srgb, var(--surface-glass) 88%, var(--surface-card));
+  --glass-surface-premium-strong: color-mix(in srgb, var(--surface-glass) 82%, var(--surface-accent-soft));
+  --glass-surface-premium-muted: color-mix(in srgb, var(--surface-glass) 86%, var(--surface-strong));
+  --glass-shadow-soft: 0 6px 22px rgb(12 28 56 / 0.09), var(--glass-highlight);
+  --glass-shadow-elevated: 0 14px 30px rgb(7 16 34 / 0.11), var(--glass-highlight);
+  --glass-blur-soft: calc(var(--glass-blur) * 0.55);
+  --glass-blur-card: calc(var(--glass-blur) * 0.85);
+  --text-on-media: rgb(248 251 255);
+  --text-on-media-muted: rgb(237 244 255 / 0.92);
+  --surface-media-pill: rgb(6 16 36 / 0.55);
+  --border-media-pill: rgb(248 251 255 / 0.34);
+  --text-shadow-media: 0 1px 2px rgb(2 9 24 / 0.45);
 
   --border-subtle: rgb(var(--gv-border));
   --border-strong: color-mix(in srgb, rgb(var(--gv-border)) 70%, rgb(var(--gv-fg)) 30%);
@@ -190,6 +205,21 @@
     0 0 30px rgb(95 145 255 / 0.35),
     0 0 22px rgb(255 140 95 / 0.12),
     inset 0 1px 0 rgb(255 255 255 / 0.1);
+  --link-primary: rgb(151 196 255);
+  --link-primary-hover: rgb(189 220 255);
+  --link-primary-underline: color-mix(in srgb, rgb(var(--theme-brand-accent)) 78%, transparent);
+  --glass-surface-premium: color-mix(in srgb, var(--surface-glass) 86%, rgb(10 18 38));
+  --glass-surface-premium-strong: color-mix(in srgb, var(--surface-glass) 76%, rgb(var(--theme-brand-accent) / 0.18));
+  --glass-surface-premium-muted: color-mix(in srgb, var(--surface-glass) 78%, rgb(6 12 30));
+  --glass-shadow-soft: 0 8px 24px rgb(0 6 20 / 0.4), var(--glass-highlight);
+  --glass-shadow-elevated: 0 18px 34px rgb(0 8 24 / 0.48), var(--glass-highlight);
+  --glass-blur-soft: calc(var(--glass-blur) * 0.55);
+  --glass-blur-card: calc(var(--glass-blur) * 0.85);
+  --text-on-media: rgb(248 251 255);
+  --text-on-media-muted: rgb(232 240 255 / 0.9);
+  --surface-media-pill: rgb(6 14 32 / 0.62);
+  --border-media-pill: rgb(248 251 255 / 0.32);
+  --text-shadow-media: 0 1px 2px rgb(2 9 24 / 0.5);
 
   --glass-blur: 22px;
   --glass-saturate: 1.12;

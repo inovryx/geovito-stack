@@ -1,0 +1,277 @@
+body[data-page-surface="atlas-listing"] .atlas-list-intro {
+  gap: var(--space-4);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-hero {
+  position: relative;
+  overflow: clip;
+  padding: clamp(var(--space-5), 3.2vw, var(--space-8));
+  border-color: color-mix(in srgb, var(--border-accent) 48%, var(--border-subtle));
+  box-shadow: var(--shadow-lg);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -12% -56% auto;
+  width: min(320px, 46vw);
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--surface-accent-soft) 70%, transparent) 0%, transparent 74%);
+  pointer-events: none;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-head {
+  position: relative;
+  z-index: 1;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-meta-wrap {
+  display: grid;
+  gap: var(--space-2);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-description,
+body[data-page-surface="atlas-listing"] .atlas-list-meta {
+  margin: 0;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-description {
+  max-inline-size: min(72ch, 100%);
+  font-size: 1.02rem;
+  line-height: 1.68;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-chip-row {
+  align-items: center;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-list-legend {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-results-wrap {
+  display: grid;
+  gap: var(--space-4);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-results-top,
+body[data-page-surface="atlas-listing"] .atlas-results-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-results-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-card {
+  display: grid;
+  gap: var(--space-2);
+  background: var(--glass-surface-premium);
+  border-color: var(--glass-border-outer);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: saturate(var(--glass-saturate)) blur(var(--glass-blur-card));
+  -webkit-backdrop-filter: saturate(var(--glass-saturate)) blur(var(--glass-blur-card));
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    background var(--motion-base) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-card:hover {
+  border-color: color-mix(in srgb, var(--border-accent) 48%, var(--glass-border-outer));
+  background: var(--glass-surface-premium-strong);
+  box-shadow: var(--glass-shadow);
+  transform: translateY(-2px);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-featured {
+  position: relative;
+  overflow: clip;
+  align-content: end;
+  min-height: clamp(9.8rem, 15vw, calc(var(--atlas-media-card-height) + 1rem));
+  padding: var(--space-4);
+  background-color: var(--surface-card);
+  background-image:
+    var(--atlas-media-overlay-layer),
+    var(--atlas-card-media-image, var(--atlas-media-fallback-layer)),
+    var(--atlas-media-noise-layer);
+  background-size: cover, cover, 3px 3px;
+  background-position: center, center, center;
+  background-repeat: no-repeat, no-repeat, repeat;
+  border-color: color-mix(in srgb, var(--border-accent) 62%, var(--border-subtle));
+  box-shadow: var(--shadow-lg);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-featured .atlas-entry-title {
+  color: var(--text-on-media);
+  text-shadow: var(--text-shadow-media);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-featured .atlas-entry-snippet {
+  color: var(--text-on-media-muted);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-featured .atlas-entry-badge {
+  border-color: var(--border-media-pill);
+  background: var(--surface-media-pill);
+  color: var(--text-on-media);
+}
+
+.dark body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-featured .atlas-entry-badge {
+  background: var(--surface-media-pill);
+  border-color: var(--border-media-pill);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-muted {
+  background:
+    linear-gradient(
+      150deg,
+      color-mix(in srgb, var(--surface-card) 90%, var(--surface-accent-soft)) 0%,
+      color-mix(in srgb, var(--surface-card) 94%, var(--surface-subtle)) 100%
+    );
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-head {
+  display: grid;
+  gap: var(--space-2);
+}
+
+body[data-page-surface="atlas-listing"] a.atlas-entry-title:link,
+body[data-page-surface="atlas-listing"] a.atlas-entry-title:visited {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+body[data-page-surface="atlas-listing"] a.atlas-entry-title:hover,
+body[data-page-surface="atlas-listing"] a.atlas-entry-title:active {
+  color: var(--link-primary);
+  text-decoration: none;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.34;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-badges {
+  max-width: 100%;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-badge {
+  max-width: min(100%, 13rem);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-snippet {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-pagination {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+body[data-page-surface="atlas-listing"] .atlas-pagination-pages {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.34rem;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: var(--gv-radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.2rem 0.52rem;
+  text-decoration: none;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-page-link:hover {
+  border-color: color-mix(in srgb, var(--brand) 46%, var(--border));
+  text-decoration: none;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-page-link.is-current {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #fff;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-page-ellipsis {
+  color: var(--ink-muted);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0 0.18rem;
+}
+
+body[data-page-surface="atlas-listing"] .atlas-entry-title:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (max-width: 1099px) {
+  body[data-page-surface="atlas-listing"] .atlas-results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-featured {
+    min-height: clamp(9.1rem, 24vw, 11rem);
+  }
+}
+
+@media (max-width: 767px) {
+  body[data-page-surface="atlas-listing"] .atlas-pagination {
+    justify-content: flex-start;
+  }
+
+  body[data-page-surface="atlas-listing"] .atlas-results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page-surface="atlas-listing"] .atlas-entry-card.atlas-media-featured {
+    min-height: clamp(8.9rem, 44vw, 10.4rem);
+    padding: var(--space-3);
+  }
+
+  body[data-page-surface="atlas-listing"] .atlas-pagination-pages {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 0.08rem;
+    flex-wrap: nowrap;
+  }
+
+  body[data-page-surface="atlas-listing"] .atlas-page-link {
+    flex: 0 0 auto;
+  }
+}
