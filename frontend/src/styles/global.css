@@ -1595,8 +1595,8 @@ html.sidebar-compact .sidebar-toggle-button .gv-icon {
   gap: 0.34rem;
 }
 
-/* Override global `a:hover` (brand color + underline) for chip-style locale links */
-a.language-tab,
+/* Override global `a` / `a:hover` (brand + underline) — need `a.` + pseudo for specificity */
+a.language-tab:link,
 a.language-tab:visited {
   color: var(--ink);
   text-decoration: none;
@@ -1628,18 +1628,23 @@ a.language-tab:visited {
 
 .language-tab:hover,
 .language-tab:active {
-  text-decoration: none;
-  color: var(--ink);
   border-color: color-mix(in srgb, var(--brand) 48%, var(--glass-border-outer));
   transform: translateY(-1px);
 }
 
-.language-tab.is-active,
-.language-tab.is-active:hover,
-.language-tab.is-active:active {
+a.language-tab:hover,
+a.language-tab:active {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+a.language-tab.is-active,
+a.language-tab.is-active:hover,
+a.language-tab.is-active:active {
   border-color: color-mix(in srgb, var(--brand) 62%, var(--glass-border-outer));
   background: color-mix(in srgb, var(--brand) 92%, rgb(255 255 255 / 0.12));
   color: #fff;
+  text-decoration: none;
   box-shadow:
     0 0 0 1px color-mix(in srgb, rgb(255 230 160 / 0.45) 55%, transparent),
     0 6px 18px color-mix(in srgb, var(--brand) 28%, transparent),
@@ -1650,7 +1655,9 @@ a.language-tab:visited {
   box-shadow: 0 3px 14px rgb(0 4 16 / 0.35), var(--glass-highlight);
 }
 
-.dark .language-tab.is-active {
+.dark a.language-tab.is-active,
+.dark a.language-tab.is-active:hover,
+.dark a.language-tab.is-active:active {
   box-shadow:
     0 0 0 1px rgb(var(--theme-brand-accent) / 0.42),
     0 4px 20px rgb(0 8 28 / 0.48),
@@ -1666,7 +1673,7 @@ a.language-tab:visited {
   grid-template-columns: none;
 }
 
-.sidebar-language-switch-dock a.language-tab,
+.sidebar-language-switch-dock a.language-tab:link,
 .sidebar-language-switch-dock a.language-tab:visited {
   color: var(--text-meta);
   text-decoration: none;
@@ -1692,17 +1699,21 @@ a.language-tab:visited {
 
 .sidebar-language-switch-dock .language-tab:hover,
 .sidebar-language-switch-dock .language-tab:active {
-  color: var(--ink);
-  text-decoration: none;
   border-color: color-mix(in srgb, var(--glass-border-light) 65%, rgb(var(--gv-border) / 0.55));
   background: color-mix(in srgb, var(--surface-glass-soft) 88%, var(--surface-subtle));
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgb(8 20 44 / 0.07), inset 0 1px 0 rgb(255 255 255 / 0.4);
 }
 
-.sidebar-language-switch-dock .language-tab.is-active,
-.sidebar-language-switch-dock .language-tab.is-active:hover,
-.sidebar-language-switch-dock .language-tab.is-active:active {
+.sidebar-language-switch-dock a.language-tab:hover,
+.sidebar-language-switch-dock a.language-tab:active {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.sidebar-language-switch-dock a.language-tab.is-active,
+.sidebar-language-switch-dock a.language-tab.is-active:hover,
+.sidebar-language-switch-dock a.language-tab.is-active:active {
   color: var(--lang-chip-active-fg);
   text-decoration: none;
   border-color: var(--lang-chip-active-border);
