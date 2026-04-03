@@ -1,7 +1,8 @@
-import { ATLAS_CONTENT_LANGUAGES, DEFAULT_PUBLIC_LANGUAGE, isPublicReleasedLanguage } from './languages';
+import { ATLAS_CONTENT_LANGUAGES, DEFAULT_LANGUAGE, DEFAULT_PUBLIC_LANGUAGE, isPublicReleasedLanguage } from './languages';
 import { buildIndexableLanguagePathMap } from './indexGate';
 import { absoluteUrl } from './pageHelpers';
 import { getAtlasPlaces, getBlogPosts, getRegionGroups } from './strapi';
+import { resolveBlogPostSitemapRelPath } from './ugcPostRules';
 
 const resolveChunkSize = () => {
   const rawValue = Number(import.meta.env.SITEMAP_CHUNK_SIZE || 5000);
@@ -34,6 +35,12 @@ const chunkArray = <T>(items: T[], size: number) => {
   return chunks;
 };
 
+/**
+ * Sitemap chunks for Atlas, RegionGroup, and EN blog URLs.
+ * Index-eligible URLs align with pages: EN + translation complete + non-mock + indexable !== false
+ * (buildIndexableLanguagePathMap / resolveBlogPostSitemapRelPath), and only UI-released languages
+ * get atlas/region bucket entries (blog EN URLs additionally require DEFAULT_LANGUAGE released).
+ */
 export const buildAtlasSitemapChunks = async () => {
   const [places, regionGroups, blogPosts] = await Promise.all([getAtlasPlaces(), getRegionGroups(), getBlogPosts()]);
   const byLanguage = new Map<string, Set<string>>();
@@ -50,6 +57,7 @@ export const buildAtlasSitemapChunks = async () => {
   for (const place of places) {
     const languagePathMap = buildIndexableLanguagePathMap(place.translations, 'atlas', place.mock === true);
     for (const [language, urlPath] of Object.entries(languagePathMap)) {
+      if (!isPublicReleasedLanguage(language)) continue;
       if (!byLanguage.has(language)) {
         byLanguage.set(language, new Set());
       }
@@ -64,6 +72,7 @@ export const buildAtlasSitemapChunks = async () => {
       regionGroup.mock === true
     );
     for (const [language, urlPath] of Object.entries(languagePathMap)) {
+      if (!isPublicReleasedLanguage(language)) continue;
       if (!byLanguage.has(language)) {
         byLanguage.set(language, new Set());
       }
@@ -71,31 +80,19 @@ export const buildAtlasSitemapChunks = async () => {
     }
   }
 
-  const ugcIndexableEnUrls = new Set<string>();
-  for (const post of blogPosts) {
-    if (post?.mock === true) continue;
-    if (post?.content_source !== 'user') continue;
-    if (post?.submission_state !== 'approved') continue;
-
-    const translations = Array.isArray(post?.translations) ? post.translations : [];
-    const enComplete = translations.find(
-      (entry) =>
-        String(entry?.language || '').trim().toLowerCase() === 'en' &&
-        entry?.status === 'complete' &&
-        entry?.runtime_translation !== true &&
-        entry?.indexable !== false
-    );
-    const slug = String(enComplete?.slug || '').trim();
-    if (!slug) continue;
-
-    const canonicalPath = String(enComplete?.canonical_path || '').trim();
-    const resolvedPath = canonicalPath || `/en/blog/${slug}/`;
-    ugcIndexableEnUrls.add(absoluteUrl(resolvedPath));
+  const blogIndexableEnUrls = new Set<string>();
+  if (isPublicReleasedLanguage(DEFAULT_LANGUAGE)) {
+    for (const post of blogPosts) {
+      const rel = resolveBlogPostSitemapRelPath(post);
+      if (!rel) continue;
+      blogIndexableEnUrls.add(absoluteUrl(rel));
+    }
   }
 
   const chunks: SitemapChunk[] = [];
 
   for (const language of sitemapAtlasLanguages) {
+    if (!isPublicReleasedLanguage(language)) continue;
     const urlSet = byLanguage.get(language);
     if (!urlSet || urlSet.size === 0) continue;
 
@@ -113,13 +110,13 @@ export const buildAtlasSitemapChunks = async () => {
     });
   }
 
-  if (ugcIndexableEnUrls.size > 0) {
-    const sorted = Array.from(ugcIndexableEnUrls).sort((left, right) => left.localeCompare(right));
+  if (blogIndexableEnUrls.size > 0) {
+    const sorted = Array.from(blogIndexableEnUrls).sort((left, right) => left.localeCompare(right));
     const segmented = chunkArray(sorted, SITEMAP_CHUNK_SIZE);
     segmented.forEach((urls, chunkIndex) => {
       const chunk = chunkIndex + 1;
       chunks.push({
-        bucket: `ugc-en-${chunk}`,
+        bucket: `blog-en-${chunk}`,
         language: 'en',
         chunk,
         urls,

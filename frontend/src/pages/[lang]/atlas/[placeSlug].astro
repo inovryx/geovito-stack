@@ -372,21 +372,29 @@ const tocSections = [
       <section id="overview" class="atlas-detail-section" data-atlas-overview>
         <h2 class="atlas-section-title gv-h2">{translate(ui, 'atlas.section.overview')}</h2>
         <Card class="atlas-overview-card gv-card card-base card-atlas" as="section">
-          {resolution.output.excerpt ? <p class="atlas-overview-lead gv-body">{resolution.output.excerpt}</p> : null}
-          {resolution.output.body ? (
-            <article class="prose-body atlas-detail-prose gv-prose" data-ev-root="off" set:html={resolution.output.body}></article>
-          ) : (
-            <p class="gv-body">{translate(ui, 'atlas.noBody')}</p>
-          )}
-          <EmbedGallery embeds={resolution.output.embeds} ui={ui} />
+          <div
+            class="atlas-ephemeral-translate-root"
+            data-ephemeral-translate-root
+            data-ephemeral-source-lang={String(resolution.output?.language || lang)
+              .trim()
+              .toLowerCase()}
+          >
+            {resolution.output.excerpt ? <p class="atlas-overview-lead gv-body">{resolution.output.excerpt}</p> : null}
+            {resolution.output.body ? (
+              <article class="prose-body atlas-detail-prose gv-prose" data-ev-root="off" set:html={resolution.output.body}></article>
+            ) : (
+              <p class="gv-body">{translate(ui, 'atlas.noBody')}</p>
+            )}
+            <EmbedGallery embeds={resolution.output.embeds} ui={ui} />
 
-          {
-            resolution.requested?.status !== 'complete' && !runtimeMode ? (
-              <p>
-                <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
-              </p>
-            ) : null
-          }
+            {
+              resolution.requested?.status !== 'complete' && !runtimeMode ? (
+                <p>
+                  <a href={`?translate=1`}>{translate(ui, 'actions.previewOnDemand')}</a>
+                </p>
+              ) : null
+            }
+          </div>
         </Card>
       </section>
 

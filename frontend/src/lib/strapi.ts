@@ -28,7 +28,7 @@ export type AtlasPlace = {
   lng?: number;
   latitude?: number;
   longitude?: number;
-  canonical_language: 'en' | 'tr' | 'de' | 'es' | 'ru' | 'zh-cn';
+  canonical_language: string;
   translations: LocalizedContent[];
   mock: boolean;
   parent?: {
@@ -53,7 +53,7 @@ export type BlogPost = {
   id: number;
   documentId?: string;
   post_id: string;
-  canonical_language: 'en' | 'tr' | 'de' | 'es' | 'ru' | 'zh-cn';
+  canonical_language: string;
   translations: LocalizedContent[];
   related_place_refs?: string[];
   content_source?: 'editorial' | 'user';
@@ -61,7 +61,7 @@ export type BlogPost = {
   owner_username_snapshot?: string | null;
   submission_state?: 'draft' | 'submitted' | 'approved' | 'rejected' | 'spam' | 'deleted';
   site_visibility?: 'visible' | 'hidden';
-  original_language?: 'en' | 'tr' | 'de' | 'es' | 'ru' | 'zh-cn';
+  original_language?: string;
   moderation_notes?: string | null;
   reviewed_at?: string | null;
   reviewed_by?: number | null;
@@ -106,7 +106,7 @@ export type UiPage = {
   id: number;
   documentId?: string;
   page_key: string;
-  canonical_language: 'en' | 'tr' | 'de' | 'es' | 'ru' | 'zh-cn';
+  canonical_language: string;
   translations: LocalizedContent[];
   mock: boolean;
 };
@@ -116,7 +116,7 @@ export type RegionGroup = {
   documentId?: string;
   region_key: string;
   country_code: string;
-  canonical_language: 'en' | 'tr' | 'de' | 'es' | 'ru' | 'zh-cn';
+  canonical_language: string;
   translations: LocalizedContent[];
   mock: boolean;
   members?: AtlasPlace[];

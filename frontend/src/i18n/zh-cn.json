@@ -539,7 +539,11 @@
     "passwordNetworkError": "Network error while updating password."
   },
   "actions": {
-    "previewOnDemand": "Dakai anxu fanyi yulan (noindex)"
+    "previewOnDemand": "Dakai anxu fanyi yulan (noindex)",
+    "ephemeralTranslate": "Fanyi wei wode yuyan (linshi)",
+    "ephemeralTranslateRestore": "Xianshi yuanwen",
+    "ephemeralTranslateWorking": "Fanyizhong…",
+    "ephemeralTranslateFailed": "Fanyi shibai, qing shaohou zaishi."
   },
   "consent": {
     "ads": "Guanggao",

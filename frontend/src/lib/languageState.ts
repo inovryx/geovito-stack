@@ -11,7 +11,8 @@ export type LocalizedEmbedItem = {
 };
 
 export type LocalizedContent = {
-  language: SiteLanguage;
+  /** Stored language tag from Strapi (may be any supported authoring locale, not only routed UI codes). */
+  language: string;
   status: TranslationStatus;
   title?: string;
   slug?: string;
@@ -39,9 +40,10 @@ export type TranslationResolution = {
 };
 
 const byLanguage = (translations: LocalizedContent[]) => {
-  const map = new Map<SiteLanguage, LocalizedContent>();
+  const map = new Map<string, LocalizedContent>();
   for (const translation of translations) {
-    map.set(translation.language, translation);
+    const key = String(translation.language || '').trim().toLowerCase();
+    if (key) map.set(key, translation);
   }
   return map;
 };
@@ -52,11 +54,11 @@ export const findCompleteTranslation = (
   canonicalLanguage: SiteLanguage = DEFAULT_LANGUAGE
 ): LocalizedContent | null => {
   const translationMap = byLanguage(translations);
-  const preferred = translationMap.get(preferredLanguage);
+  const preferred = translationMap.get(String(preferredLanguage || '').trim().toLowerCase());
 
   if (preferred?.status === 'complete') return preferred;
 
-  const canonical = translationMap.get(canonicalLanguage);
+  const canonical = translationMap.get(String(canonicalLanguage || '').trim().toLowerCase());
   if (canonical?.status === 'complete') return canonical;
 
   return translations.find((item) => item.status === 'complete') || null;
@@ -69,7 +71,7 @@ export const resolveTranslation = (
   runtimeMode = false
 ): TranslationResolution => {
   const translationMap = byLanguage(translations);
-  const requested = translationMap.get(requestedLanguage) || null;
+  const requested = translationMap.get(String(requestedLanguage || '').trim().toLowerCase()) || null;
   const complete = findCompleteTranslation(translations, requestedLanguage, canonicalLanguage);
 
   if (!complete) {

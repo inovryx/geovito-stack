@@ -207,8 +207,11 @@ const statusLabel = (state: string) =>
           {
             topCountries.length ? (
               <ul class="teaser-list">
-                {topCountries.map((entry) => (
-                  <li class="teaser-item teaser-item-atlas">
+                {topCountries.map((entry, index) => (
+                  <li
+                    class={`teaser-item teaser-item-atlas atlas-media-card${index < 3 ? ' atlas-media-featured' : ''}`}
+                    data-atlas-place-id={entry.place_id}
+                  >
                     <a href={entry.href || '#'}>{entry.title}</a>
                     <span class="status-pill">{statusLabel(entry.status)}</span>
                   </li>
@@ -228,8 +231,11 @@ const statusLabel = (state: string) =>
           {
             topCities.length ? (
               <ul class="teaser-list">
-                {topCities.map((entry) => (
-                  <li class="teaser-item teaser-item-atlas">
+                {topCities.map((entry, index) => (
+                  <li
+                    class={`teaser-item teaser-item-atlas atlas-media-card${index < 3 ? ' atlas-media-featured' : ''}`}
+                    data-atlas-place-id={entry.place_id}
+                  >
                     <a href={entry.href || '#'}>{entry.title}</a>
                     <span class="status-pill">{statusLabel(entry.status)}</span>
                   </li>

@@ -211,7 +211,14 @@ const blogEngagementCopy = {
       </div>
     </section>
 
-    <section class="blog-detail-reading content-wrap-reading stack-md" data-blog-detail-reading>
+    <section
+      class="blog-detail-reading content-wrap-reading stack-md"
+      data-blog-detail-reading
+      data-ephemeral-translate-root
+      data-ephemeral-source-lang={String(renderTranslation.language || post.canonical_language || lang)
+        .trim()
+        .toLowerCase()}
+    >
       {
         renderTranslation.body ? (
           <article class="blog-detail-prose gv-prose gv-body" data-ev-root="off" set:html={renderTranslation.body}></article>

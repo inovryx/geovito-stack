@@ -1,4 +1,5 @@
-import { pathForLanguage, type SiteLanguage } from './languages';
+import { DEFAULT_LANGUAGE, pathForLanguage, type SiteLanguage } from './languages';
+import { resolveTranslation, type LocalizedContent } from './languageState';
 
 type UgcLikePost = {
   content_source?: 'editorial' | 'user';
@@ -51,6 +52,50 @@ export const shouldBlogPostBeNoindex = (post: UgcLikePost, indexableByLanguageGa
   if (isPostInReview(post)) return true;
   if (!isPostApprovedForIndexGate(post)) return true;
   return !indexableByLanguageGate;
+};
+
+/** Input shape for sitemap indexing (matches Strapi blog-post fields used at build time). */
+export type BlogPostSitemapInput = UgcLikePost & {
+  translations: LocalizedContent[];
+  canonical_language?: SiteLanguage | string;
+  published_on?: string | null;
+};
+
+/**
+ * EN canonical blog path for sitemap when the post is index-eligible (vision / SEARCH_SYSTEM / UGC_SEO_RULES):
+ * - non-mock
+ * - visibility + moderation gates (shouldBlogPostBeNoindex)
+ * - EN translation complete, not runtime, indexable !== false
+ * - UGC additionally requires non-empty published_on
+ */
+export const resolveBlogPostSitemapRelPath = (post: BlogPostSitemapInput): string | null => {
+  if (post.mock === true) return null;
+  if (isUserPost(post) && !String(post.published_on || '').trim()) return null;
+
+  const canonical = (post.canonical_language || DEFAULT_LANGUAGE) as SiteLanguage;
+  const resolution = resolveTranslation(post.translations, DEFAULT_LANGUAGE, canonical, false);
+  if (shouldBlogPostBeNoindex(post, resolution.indexable)) return null;
+
+  const output = resolution.output;
+  if (!output || String(output.language || '').toLowerCase() !== String(DEFAULT_LANGUAGE).toLowerCase()) {
+    return null;
+  }
+  const slug = String(output.slug || '').trim();
+  if (!slug) return null;
+
+  const raw = String(output.canonical_path || '').trim();
+  if (raw) {
+    if (/^https?:\/\//i.test(raw)) {
+      try {
+        const pathname = new URL(raw).pathname;
+        return pathname || `/en/blog/${slug}/`;
+      } catch {
+        return `/en/blog/${slug}/`;
+      }
+    }
+    return raw.startsWith('/') ? raw : `/${raw}`;
+  }
+  return `/en/blog/${slug}/`;
 };
 
 export const normalizeCreatorUsername = (value: string) =>

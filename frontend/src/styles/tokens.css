@@ -46,7 +46,7 @@
   --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface)) 84%, #ffffff);
   --surface-overlay: rgb(7 12 28 / 0.48);
   --surface-accent-soft: rgb(var(--theme-brand-accent) / 0.16);
-  --surface-glass: color-mix(in srgb, var(--surface-card) 72%, #ffffff);
+  --surface-glass: color-mix(in srgb, rgb(255 253 250) 58%, rgb(232 244 255 / 0.55));
 
   --border-subtle: rgb(var(--gv-border));
   --border-strong: color-mix(in srgb, rgb(var(--gv-border)) 70%, rgb(var(--gv-fg)) 30%);
@@ -64,6 +64,29 @@
   --motion-slow: 240ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
+  /* Premium typography rhythm (UI mockups: airy display, relaxed body) */
+  --line-display: 1.05;
+  --line-heading: 1.18;
+  --line-title: 1.38;
+  --line-body: 1.68;
+  --line-meta: 1.52;
+  --ls-display: -0.03em;
+  --ls-heading: -0.02em;
+  --ls-title: -0.014em;
+  --ls-body: 0.003em;
+  --ls-meta: 0.018em;
+
+  /* Glass system: crystal (light) / frosted (dark) — used by cards + chrome */
+  --glass-blur: 18px;
+  --glass-saturate: 1.22;
+  --glass-border-light: rgb(255 255 255 / 0.55);
+  --glass-border-outer: color-mix(in srgb, rgb(var(--gv-border)) 55%, rgb(255 255 255) 45%);
+  --glass-shadow:
+    0 8px 28px rgb(13 35 68 / 0.08),
+    0 2px 8px rgb(13 35 68 / 0.05),
+    inset 0 1px 0 var(--glass-border-light);
+  --glass-highlight: inset 0 1px 0 rgb(255 255 255 / 0.65);
+
   --focus-ring: color-mix(in srgb, rgb(var(--theme-brand-accent-strong)) 78%, #ffffff);
   --focus-ring-offset: 2px;
   --interactive-hover: color-mix(in srgb, rgb(var(--theme-brand-accent)) 14%, transparent);
@@ -71,15 +94,19 @@
 
   --hero-gradient:
     linear-gradient(
-      128deg,
-      color-mix(in srgb, var(--surface-accent-soft) 86%, var(--surface-elevated)) 0%,
-      color-mix(in srgb, var(--surface-card) 88%, #ffffff) 52%,
-      color-mix(in srgb, var(--surface-subtle) 84%, #ffffff) 100%
+      168deg,
+      #fff8f2 0%,
+      #ffeede 22%,
+      #f3f8ff 58%,
+      #fafcfe 100%
     );
   --hero-radial-glow:
-    radial-gradient(circle at 86% 16%, rgb(var(--theme-brand-accent) / 0.2) 0%, transparent 52%);
+    radial-gradient(ellipse 130% 85% at 50% -12%, rgb(255 196 160 / 0.38) 0%, transparent 52%),
+    radial-gradient(circle at 92% 16%, rgb(var(--theme-brand-accent) / 0.2) 0%, transparent 46%),
+    radial-gradient(circle at 8% 90%, rgb(180 220 255 / 0.16) 0%, transparent 42%);
   --hero-noise:
-    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.2) 1px, transparent 0);
+    repeating-linear-gradient(-14deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(8deg, rgb(14 40 80 / 0.018) 0 1px, transparent 1px 6px);
   --hero-bg-image: url("/media/hero/home-discovery-light.webp");
   --hero-overlay-gradient:
     linear-gradient(
@@ -132,7 +159,20 @@
   --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface-2)) 82%, rgb(6 12 30));
   --surface-overlay: rgb(2 6 20 / 0.76);
   --surface-accent-soft: rgb(var(--theme-brand-accent) / 0.22);
-  --surface-glass: color-mix(in srgb, var(--surface-card) 70%, rgb(6 12 30));
+  --surface-glass: color-mix(in srgb, rgb(24 34 56) 62%, rgb(6 10 22 / 0.88));
+
+  --glass-blur: 22px;
+  --glass-saturate: 1.12;
+  --glass-border-light: rgb(255 255 255 / 0.1);
+  --glass-border-outer: color-mix(in srgb, rgb(var(--gv-border)) 72%, rgb(120 160 220 / 0.22));
+  --glass-shadow:
+    0 12px 36px rgb(0 4 18 / 0.45),
+    0 4px 14px rgb(0 2 12 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.07);
+  --glass-highlight: inset 0 1px 0 rgb(255 255 255 / 0.09);
+
+  --line-display: 1.06;
+  --line-body: 1.7;
 
   --border-strong: color-mix(in srgb, rgb(var(--gv-border)) 74%, rgb(var(--gv-fg)) 26%);
   --border-accent: color-mix(in srgb, rgb(var(--theme-brand-accent)) 56%, rgb(var(--gv-border)));
@@ -143,15 +183,17 @@
 
   --hero-gradient:
     linear-gradient(
-      128deg,
-      color-mix(in srgb, var(--surface-accent-soft) 76%, var(--surface-elevated)) 0%,
-      color-mix(in srgb, var(--surface-card) 88%, rgb(6 12 30)) 52%,
-      color-mix(in srgb, var(--surface-subtle) 86%, rgb(6 12 30)) 100%
+      180deg,
+      #101a32 0%,
+      #0b1226 45%,
+      #060a14 100%
     );
   --hero-radial-glow:
-    radial-gradient(circle at 86% 16%, rgb(var(--theme-brand-accent) / 0.28) 0%, transparent 54%);
+    radial-gradient(ellipse 115% 80% at 50% -8%, rgb(88 140 255 / 0.22) 0%, transparent 50%),
+    radial-gradient(circle at 88% 70%, rgb(40 90 200 / 0.14) 0%, transparent 48%);
   --hero-noise:
-    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.06) 1px, transparent 0);
+    repeating-linear-gradient(-12deg, rgb(255 255 255 / 0.028) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(7deg, rgb(0 0 0 / 0.15) 0 1px, transparent 1px 7px);
   --hero-bg-image: url("/media/hero/home-discovery-dark.webp");
   --hero-overlay-gradient:
     linear-gradient(
@@ -206,25 +248,25 @@ html[data-theme-accent="plum"] {
 html[data-surface-style="soft"] {
   --surface-card: rgb(var(--gv-surface) / 0.97);
   --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface)) 84%, #ffffff);
-  --surface-glass: color-mix(in srgb, var(--surface-card) 72%, #ffffff);
+  --surface-glass: color-mix(in srgb, rgb(255 253 250) 56%, rgb(230 242 255 / 0.52));
 }
 
 html.dark[data-surface-style="soft"] {
   --surface-card: rgb(var(--gv-surface) / 0.95);
   --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface-2)) 82%, rgb(6 12 30));
-  --surface-glass: color-mix(in srgb, var(--surface-card) 70%, rgb(6 12 30));
+  --surface-glass: color-mix(in srgb, rgb(26 38 62) 64%, rgb(5 8 18 / 0.9));
 }
 
 html[data-surface-style="glass"] {
   --surface-card: color-mix(in srgb, rgb(var(--gv-surface)) 76%, #ffffff);
   --surface-elevated: color-mix(in srgb, var(--surface-card) 82%, #ffffff);
-  --surface-glass: color-mix(in srgb, var(--surface-card) 62%, #ffffff);
+  --surface-glass: color-mix(in srgb, rgb(255 252 248) 52%, rgb(220 238 255 / 0.45));
 }
 
 html.dark[data-surface-style="glass"] {
   --surface-card: color-mix(in srgb, rgb(var(--gv-surface)) 72%, rgb(8 16 36));
   --surface-elevated: color-mix(in srgb, rgb(var(--gv-surface-2)) 66%, rgb(6 12 30));
-  --surface-glass: color-mix(in srgb, var(--surface-card) 60%, rgb(4 10 24));
+  --surface-glass: color-mix(in srgb, rgb(22 32 54) 58%, rgb(4 8 20 / 0.92));
 }
 
 html[data-surface-style="flat"] {

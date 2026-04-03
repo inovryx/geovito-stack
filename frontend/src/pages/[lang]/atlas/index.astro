@@ -415,10 +415,11 @@ const serializedUiText = JSON.stringify({
         });
       };
 
-      const renderItem = (item) => {
+      const renderItem = (item, featured = false) => {
         const title = escapeHtml(item.title || item.id || 'Untitled');
         const excerpt = escapeHtml(item.excerpt || uiText.noSnippet || 'No summary yet.');
         const href = escapeHtml(item.href || '#');
+        const placeId = escapeHtml(item.id || '');
 
         const kindKey = VALID_KINDS.includes(item.kind) ? item.kind : 'landmark';
         const kindLabel = escapeHtml(kindLabels[kindKey] || kindLabels.landmark || 'Landmark');
@@ -427,8 +428,10 @@ const serializedUiText = JSON.stringify({
         const stateLabel = escapeHtml(stateLabels[languageState] || stateLabels.missing || 'missing');
         const stateClass = stateBadgeClass[languageState] || stateBadgeClass.missing;
 
+        const mediaClass = featured ? 'atlas-media-featured' : 'atlas-media-muted';
+
         return `
-          <article class="ui-card gv-card card-base card-atlas atlas-entry-card" data-atlas-item>
+          <article class="ui-card gv-card card-base card-atlas atlas-entry-card atlas-media-card ${mediaClass}" data-atlas-item data-atlas-place-id="${placeId}">
             <div class="atlas-entry-head">
               <a class="atlas-entry-title" href="${href}" title="${title}">${title}</a>
               <div class="ui-badge-group atlas-entry-badges" aria-label="${escapeHtml(uiText.metadataBadges || '')}">
@@ -535,8 +538,8 @@ const serializedUiText = JSON.stringify({
           resultsWrap.hidden = false;
           pagination.hidden = false;
 
-          topResults.innerHTML = topItems.map(renderItem).join('');
-          gridResults.innerHTML = gridItems.map(renderItem).join('');
+          topResults.innerHTML = topItems.map((item) => renderItem(item, true)).join('');
+          gridResults.innerHTML = gridItems.map((item) => renderItem(item, false)).join('');
           gridResults.hidden = gridItems.length === 0;
         }
 

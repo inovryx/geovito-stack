@@ -539,7 +539,11 @@
     "passwordNetworkError": "Network error while updating password."
   },
   "actions": {
-    "previewOnDemand": "Istege bagli ceviri onizlemesini ac (noindex)"
+    "previewOnDemand": "Istege bagli ceviri onizlemesini ac (noindex)",
+    "ephemeralTranslate": "Kendi dilime cevir (gecici)",
+    "ephemeralTranslateRestore": "Orijinali goster",
+    "ephemeralTranslateWorking": "Cevriliyor…",
+    "ephemeralTranslateFailed": "Ceviri basarisiz. Daha sonra deneyin."
   },
   "consent": {
     "ads": "Reklam",

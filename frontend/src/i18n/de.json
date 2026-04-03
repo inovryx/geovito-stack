@@ -539,7 +539,11 @@
     "passwordNetworkError": "Network error while updating password."
   },
   "actions": {
-    "previewOnDemand": "On-demand-Ubersetzungsvorschau offnen (noindex)"
+    "previewOnDemand": "On-demand-Ubersetzungsvorschau offnen (noindex)",
+    "ephemeralTranslate": "In meine Sprache ubersetzen (vorubergehend)",
+    "ephemeralTranslateRestore": "Original anzeigen",
+    "ephemeralTranslateWorking": "Ubersetzen…",
+    "ephemeralTranslateFailed": "Ubersetzung fehlgeschlagen. Bitte spater erneut versuchen."
   },
   "consent": {
     "ads": "Werbung",

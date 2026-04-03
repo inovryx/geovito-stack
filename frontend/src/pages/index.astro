@@ -1,5 +1,5 @@
 ---
-const fallbackLanguage = 'en';
+import { DEFAULT_PUBLIC_LANGUAGE, SUPPORTED_LANGUAGES } from '../lib/languages';
 ---
 
 <!doctype html>
@@ -8,13 +8,11 @@ const fallbackLanguage = 'en';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Geovito</title>
-    <meta http-equiv="refresh" content={`0;url=/${fallbackLanguage}/`} />
+    <meta http-equiv="refresh" content={`0;url=/${DEFAULT_PUBLIC_LANGUAGE}/`} />
   </head>
   <body>
-    <script is:inline>
+    <script is:inline define:vars={{ supported: SUPPORTED_LANGUAGES, fallback: DEFAULT_PUBLIC_LANGUAGE }}>
       (() => {
-        const supported = ['en', 'tr', 'de', 'es', 'ru', 'zh-cn', 'fr'];
-
         const normalize = (value) => {
           if (!value || typeof value !== 'string') return null;
           const lowered = value.trim().toLowerCase();
@@ -40,7 +38,7 @@ const fallbackLanguage = 'en';
           : [navigator.language];
 
         const browserLanguage = browserCandidates.map(normalize).find(Boolean) || null;
-        const target = selected || browserLanguage || 'en';
+        const target = selected || browserLanguage || fallback;
 
         window.location.replace(`/${target}/`);
       })();

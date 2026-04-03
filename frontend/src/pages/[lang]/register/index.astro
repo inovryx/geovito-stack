@@ -171,7 +171,7 @@ const registerMessages = {
 
   {turnstileEnabled ? <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script> : null}
 
-  <script is:inline define:vars={{ accountPath, turnstileEnabled, registerMessages }}>
+  <script is:inline define:vars={{ accountPath, turnstileEnabled, registerMessages, availableLanguages: SUPPORTED_LANGUAGES }}>
     (() => {
       try {
         const raw = localStorage.getItem('geovito_auth_session') || sessionStorage.getItem('geovito_auth_session');
@@ -246,6 +246,44 @@ const registerMessages = {
               registerMessages.failed;
             setFeedback(message, true);
             return;
+          }
+
+          const jwt = typeof payload?.jwt === 'string' ? payload.jwt.trim() : '';
+          if (jwt) {
+            const sessionPayload = {
+              email: String(payload?.user?.email || email || '').trim(),
+              username: String(payload?.user?.username || username || '').trim(),
+              jwt,
+              loginAt: new Date().toISOString(),
+            };
+            try {
+              const rawSession = JSON.stringify(sessionPayload);
+              localStorage.setItem('geovito_auth_session', rawSession);
+              sessionStorage.setItem('geovito_auth_session', rawSession);
+            } catch {
+              // no-op
+            }
+
+            try {
+              const bootResponse = await fetch(`${authBase}/api/user-preferences/bootstrap-locale`, {
+                method: 'POST',
+                headers: {
+                  Accept: 'application/json',
+                  Authorization: `Bearer ${jwt}`,
+                },
+              });
+              const bootPayload = await bootResponse.json().catch(() => ({}));
+              const preferred = String(bootPayload?.data?.preferred_ui_language || '')
+                .trim()
+                .toLowerCase();
+              const isAllowedLanguage = (value) =>
+                Array.isArray(availableLanguages) && availableLanguages.includes(value);
+              if (preferred && isAllowedLanguage(preferred)) {
+                localStorage.setItem('geovito.ui_lang', preferred);
+              }
+            } catch {
+              // no-op — geo bootstrap is best-effort
+            }
           }
 
           setFeedback(registerMessages.success);

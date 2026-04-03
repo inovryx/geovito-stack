@@ -539,7 +539,11 @@
     "passwordNetworkError": "Network error while updating password."
   },
   "actions": {
-    "previewOnDemand": "Otkryt prevyu perevoda po zaprosu (noindex)"
+    "previewOnDemand": "Otkryt prevyu perevoda po zaprosu (noindex)",
+    "ephemeralTranslate": "Perevesti na moy yazyk (vremenno)",
+    "ephemeralTranslateRestore": "Pokazat original",
+    "ephemeralTranslateWorking": "Perevod…",
+    "ephemeralTranslateFailed": "Perevod ne udalos. Poprobuyte pozzhe."
   },
   "consent": {
     "ads": "Reklama",

@@ -160,11 +160,6 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
     </div>
   </section>
 
-  <section class="sidebar-block sidebar-language-switch gv-card surface-card card-compact bg-surface border-border">
-    <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
-    <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
-  </section>
-
   <section
     class="sidebar-block sidebar-auth-links gv-card surface-card card-compact bg-surface border-border"
     data-auth-shell
@@ -290,6 +285,13 @@ const hideSiteNavigationResolved = hideSiteNavigation || isDashboardRoute;
         </a>
       </li>
     </ul>
+  </section>
+
+  <section
+    class="sidebar-block sidebar-language-switch sidebar-language-switch-dock gv-card surface-card card-compact bg-surface border-border"
+  >
+    <h2 class="sidebar-title">{translate(ui, 'layout.languageTitle', {}, 'Language')}</h2>
+    <LanguageSwitcher currentLanguage={currentLanguage} languageLinks={languageLinks} ui={ui} />
   </section>
 </div>
 

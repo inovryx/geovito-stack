@@ -13,6 +13,7 @@ import {
   SITE_LANGUAGE_PREVIEW_QUERY_PARAM,
   SITE_LANGUAGE_PREVIEW_STORAGE_KEY,
   isPublicReleasedLanguage,
+  pathForLanguage,
 } from '../lib/languages';
 import { resolveStrapiBaseUrl } from '../lib/strapiConfig';
 import { translate } from '../lib/uiLanguage';
@@ -107,6 +108,18 @@ const authBaseUrl = resolveStrapiBaseUrl({
   ALLOW_LOCALHOST_STRAPI:
     process.env.ALLOW_LOCALHOST_STRAPI || (import.meta.env.ALLOW_LOCALHOST_STRAPI as string | undefined),
 });
+const ephemeralTranslateEnabled = isTruthy(
+  (import.meta.env.PUBLIC_EPHEMERAL_TRANSLATE_ENABLED as string | undefined) || process.env.PUBLIC_EPHEMERAL_TRANSLATE_ENABLED
+);
+const ephemeralTranslateAuthBase = String(authBaseUrl || '')
+  .trim()
+  .replace(/\/$/, '');
+const ephemeralTranslateLabels = {
+  translate: t('actions.ephemeralTranslate', 'Translate to my language (temporary)'),
+  restore: t('actions.ephemeralTranslateRestore', 'Show original'),
+  working: t('actions.ephemeralTranslateWorking', 'Translating…'),
+  failed: t('actions.ephemeralTranslateFailed', 'Translation failed. Try again later.'),
+};
 const ownerEmailHintsCsv = String(
   (import.meta.env.PUBLIC_OWNER_EMAILS as string | undefined) ||
     (import.meta.env.PUBLIC_OWNER_EMAIL as string | undefined) ||
@@ -125,6 +138,7 @@ const headerNav = [
   { key: 'about', href: `/${currentLanguage}/about/`, fallback: 'About' },
 ];
 const globalThemePreset = 'brand-default';
+const accountHref = pathForLanguage(currentLanguage, 'account');
 ---
 
 <!doctype html>
@@ -514,6 +528,16 @@ const globalThemePreset = 'brand-default';
         </div>
 
         <div class="site-header-actions">
+          <a
+            class="site-header-profile-chip"
+            href={accountHref}
+            data-ev="nav_click"
+            data-ev-scope="ui"
+            data-ev-action="header_profile"
+          >
+            <Icon name="User" size={18} />
+            <span class="site-header-profile-label">{t('nav.account', 'Profile')}</span>
+          </a>
           <ThemeToggle
             compact={true}
             label={t('layout.themeToggle', 'Toggle theme')}
@@ -1315,5 +1339,155 @@ const globalThemePreset = 'brand-default';
         bindToggles();
       })();
     </script>
+
+    {
+      ephemeralTranslateEnabled ? (
+        <>
+          <div class="geovito-ephemeral-translate-host" data-geovito-ephemeral-translate-host hidden>
+            <button
+              type="button"
+              class="geovito-ephemeral-translate-toggle ui-button ui-button-secondary ui-button-sm"
+              data-geovito-ephemeral-translate-toggle
+              aria-label={t('actions.ephemeralTranslate', 'Translate to my language (temporary)')}
+            />
+          </div>
+          <script is:inline define:vars={{ ephemeralTranslateAuthBase, ephemeralLabels: ephemeralTranslateLabels }}>
+            (() => {
+              const authBase = String(ephemeralTranslateAuthBase || '').trim().replace(/\/$/, '');
+              const labels = ephemeralLabels || {};
+
+              const readTargetLang = () => {
+                try {
+                  const fromStorage = String(localStorage.getItem('geovito.ui_lang') || '').trim().toLowerCase();
+                  const fromDoc = String(document.documentElement.lang || '').trim().toLowerCase();
+                  return fromStorage || fromDoc || 'en';
+                } catch {
+                  return 'en';
+                }
+              };
+
+              const findRoot = () => document.querySelector('[data-ephemeral-translate-root]');
+
+              const collectBlocks = (root) => {
+                const nodes = Array.from(
+                  root.querySelectorAll('p, li, h1, h2, h3, h4, blockquote, td, th, figcaption')
+                ).filter((el) => (el.textContent || '').trim().length > 0);
+                return nodes.slice(0, 28);
+              };
+
+              let translated = false;
+
+              const setButtonState = (btn, state) => {
+                if (!(btn instanceof HTMLButtonElement)) return;
+                if (state === 'working') {
+                  btn.disabled = true;
+                  btn.textContent = labels.working || '…';
+                  return;
+                }
+                btn.disabled = false;
+                btn.textContent = translated ? labels.restore || 'Original' : labels.translate || 'Translate';
+              };
+
+              const runTranslate = async (btn) => {
+                const root = findRoot();
+                if (!root) return;
+                const blocks = collectBlocks(root);
+                if (!blocks.length) return;
+
+                if (translated) {
+                  blocks.forEach((el) => {
+                    const orig = el.getAttribute('data-gv-ephemeral-original');
+                    if (orig !== null) {
+                      el.innerHTML = orig;
+                      el.removeAttribute('data-gv-ephemeral-original');
+                    }
+                  });
+                  translated = false;
+                  setButtonState(btn, 'idle');
+                  root.removeAttribute('data-ephemeral-translate-active');
+                  return;
+                }
+
+                setButtonState(btn, 'working');
+                const segments = blocks.map((el) => (el.textContent || '').trim()).filter(Boolean);
+                if (!segments.length) {
+                  setButtonState(btn, 'idle');
+                  return;
+                }
+
+                blocks.forEach((el) => {
+                  if (!el.hasAttribute('data-gv-ephemeral-original')) {
+                    el.setAttribute('data-gv-ephemeral-original', el.innerHTML);
+                  }
+                });
+
+                try {
+                  const target = readTargetLang();
+                  const res = await fetch(`${authBase}/api/ui-translate/ephemeral`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({
+                      data: {
+                        source: 'auto',
+                        target,
+                        segments,
+                      },
+                    }),
+                  });
+                  const payload = await res.json().catch(() => ({}));
+                  if (!res.ok || !payload?.ok || !Array.isArray(payload?.data?.translated)) {
+                    throw new Error(payload?.error || 'translate_failed');
+                  }
+                  const outs = payload.data.translated;
+                  blocks.forEach((el, i) => {
+                    if (typeof outs[i] === 'string') {
+                      el.textContent = outs[i];
+                    }
+                  });
+                  translated = true;
+                  root.setAttribute('data-ephemeral-translate-active', '1');
+                  setButtonState(btn, 'idle');
+                } catch {
+                  blocks.forEach((el) => {
+                    const orig = el.getAttribute('data-gv-ephemeral-original');
+                    if (orig !== null) {
+                      el.innerHTML = orig;
+                      el.removeAttribute('data-gv-ephemeral-original');
+                    }
+                  });
+                  translated = false;
+                  setButtonState(btn, 'idle');
+                  if (btn instanceof HTMLButtonElement) {
+                    btn.textContent = labels.failed || 'Failed';
+                    window.setTimeout(() => setButtonState(btn, 'idle'), 2600);
+                  }
+                }
+              };
+
+              const mount = () => {
+                const root = findRoot();
+                const host = document.querySelector('[data-geovito-ephemeral-translate-host]');
+                if (!(host instanceof HTMLElement)) return;
+                if (!root) {
+                  host.hidden = true;
+                  return;
+                }
+                host.hidden = false;
+                const toggle = host.querySelector('[data-geovito-ephemeral-translate-toggle]');
+                if (!(toggle instanceof HTMLButtonElement)) return;
+                setButtonState(toggle, 'idle');
+                toggle.addEventListener('click', () => runTranslate(toggle));
+              };
+
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', mount);
+              } else {
+                mount();
+              }
+            })();
+          </script>
+        </>
+      ) : null
+    }
   </body>
 </html>
